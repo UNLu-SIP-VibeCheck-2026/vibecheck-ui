@@ -1,0 +1,33 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 64px);
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.register-card {
+  max-width: 400px;
+  width: 100%;
+  padding: 20px;
+
+  mat-card-header {
+    text-align: center;
+    margin-bottom: 20px;
+
+    mat-card-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.button-container {
+  margin-top: 20px;
+}
