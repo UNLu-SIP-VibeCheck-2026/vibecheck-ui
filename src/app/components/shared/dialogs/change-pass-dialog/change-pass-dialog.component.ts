@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-change-password-dialog',
+  selector: 'app-change-pass-dialog',
   standalone: true,
   imports: [
     CommonModule,
