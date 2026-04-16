@@ -3,8 +3,8 @@
 :host {
   display: block;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  min-height: calc(100vh - 64px); /* assuming navbar exists, or 100vh if it covers it all */
-  background-color: #f4f4f4; /* Light minimalist background */
+  min-height: calc(100vh - 64px); 
+  background-color: #f4f4f4; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,7 +16,7 @@
   padding: 20px;
   box-sizing: border-box;
   margin: 0 auto;
-  margin-top: -10vh; /* slightly move it up as per visual balance */
+  margin-top: -10vh; 
 }
 
 .login-header {
@@ -39,16 +39,17 @@
   margin: 8px 0 0 0;
 }
 
+/* Material overrides */
 .login-card {
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 32px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  background-color: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  padding: 32px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
 }
 
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
 }
@@ -60,57 +61,99 @@
   margin-bottom: 8px;
 }
 
-.form-group input {
-  padding: 12px 14px;
-  font-size: 15px;
-  border: 1px solid #cccccc;
-  border-radius: 6px;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  font-family: inherit;
-
-  &:focus {
-    border-color: #555555;
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
-  }
-}
-
-.error-container {
-  min-height: 20px; /* reserve space to prevent layout shift */
-  margin-top: 6px;
-}
-
-.error-text {
-  color: #dc3545;
-  font-size: 13px;
-  display: block;
-}
-
-.btn-submit {
+/* Override Mat Form Field */
+.custom-mat-form-field {
   width: 100%;
-  padding: 14px;
-  background-color: #2b2b2b;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
+}
+
+::ng-deep .custom-mat-form-field .mdc-notched-outline__leading,
+::ng-deep .custom-mat-form-field .mdc-notched-outline__notch,
+::ng-deep .custom-mat-form-field .mdc-notched-outline__trailing {
+  border-color: #cccccc !important;
+  border-width: 1px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+::ng-deep .custom-mat-form-field .mdc-notched-outline__leading {
+  border-top-left-radius: 6px !important;
+  border-bottom-left-radius: 6px !important;
+}
+
+::ng-deep .custom-mat-form-field .mdc-notched-outline__trailing {
+  border-top-right-radius: 6px !important;
+  border-bottom-right-radius: 6px !important;
+}
+
+::ng-deep .custom-mat-form-field.mat-focused .mdc-notched-outline__leading,
+::ng-deep .custom-mat-form-field.mat-focused .mdc-notched-outline__notch,
+::ng-deep .custom-mat-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: #555555 !important;
+  border-width: 1px !important;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.05) !important;
+}
+
+/* Avoid padding inside material input */
+::ng-deep .custom-mat-form-field .mat-mdc-form-field-flex {
+  height: 48px !important;
+  align-items: center;
+}
+
+::ng-deep .custom-mat-form-field .mat-mdc-form-field-infix {
+  padding: 0 14px !important;
+  min-height: auto !important;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .custom-mat-form-field .mat-mdc-text-field-wrapper {
+  padding: 0 !important;
+}
+
+::ng-deep .custom-mat-form-field .mat-mdc-input-element {
+  font-family: inherit !important;
+  font-size: 15px !important;
+  color: #1a1a1a !important;
+  line-height: normal !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+::ng-deep .custom-mat-form-field .mat-mdc-form-field-subscript-wrapper {
+  padding: 0 !important;
+  margin-top: 6px !important;
+}
+
+::ng-deep .custom-mat-form-field .mat-mdc-form-field-error {
+  color: #dc3545 !important;
+  font-size: 13px !important;
+}
+
+/* Mat Button Override */
+.custom-btn-submit {
+  width: 100%;
+  height: 48px !important;
+  background-color: #2b2b2b !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  font-family: inherit;
-  margin-top: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease !important;
+  font-family: inherit !important;
+  box-shadow: none !important; /* Material button un-shadow */
+  margin-top: 16px !important;
+}
 
-  &:hover {
-    background-color: #1a1a1a;
-  }
+.custom-btn-submit:hover {
+  background-color: #1a1a1a !important;
+}
 
-  &:active {
-    transform: scale(0.98);
-  }
+.custom-btn-submit:active {
+  transform: scale(0.98) !important;
+}
 
-  &:disabled {
-    background-color: #888888;
-    cursor: not-allowed;
-    transform: none;
-  }
+.custom-btn-submit:disabled {
+  background-color: #888888 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }

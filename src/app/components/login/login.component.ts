@@ -2,6 +2,10 @@ import {Component, inject} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {CommonModule} from '@angular/common';
+import {MatCardModule} from '@angular/material/card';
+import {MatInputModule} from '@angular/material/input';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatButtonModule} from '@angular/material/button';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {AuthService} from '../../services/auth.service';
 import {LoginRequest} from '../../models/login-request.model';
@@ -11,7 +15,11 @@ import {LoginRequest} from '../../models/login-request.model';
     standalone: true,
     imports: [
         ReactiveFormsModule,
-        CommonModule
+        CommonModule,
+        MatCardModule,
+        MatInputModule,
+        MatFormFieldModule,
+        MatButtonModule
     ],
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss']
