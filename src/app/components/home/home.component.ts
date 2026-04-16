@@ -22,4 +22,20 @@ export class HomeComponent {
   navigateToRecovery() {
     this.router.navigate(['/pass-recovery']);
   }
+
+  navigateToUserProfile() {
+    this.router.navigate(['/perfil-user']);
+  }
+
+  navigateToAdminUsers() {
+    this.router.navigate(['/admin-users']);
+  }
+
+  navigateToAdminRoles() {
+    this.router.navigate(['/admin-roles']);
+  }
+
+  navigateToAdminPermissions() {
+    this.router.navigate(['/admin-permissions']);
+  }
 }

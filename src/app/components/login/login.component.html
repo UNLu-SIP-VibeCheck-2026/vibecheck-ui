@@ -11,14 +11,11 @@
                 <label for="email">Nombre de Usuario</label>
                 <mat-form-field appearance="outline" class="custom-mat-form-field">
                     <input matInput
-                           type="email"
+                           type="text"
                            id="email"
                            formControlName="email">
                     <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
-                        El email es requerido
-                    </mat-error>
-                    <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
-                        Ingresa un email válido
+                        El nombre de usuario es requerido
                     </mat-error>
                 </mat-form-field>
             </div>
