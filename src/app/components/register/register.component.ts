@@ -29,10 +29,12 @@ export class RegisterComponent {
   private snackBar = inject(MatSnackBar);
 
   registerForm: FormGroup = this.fb.group({
+    username: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-    firstName: ['', [Validators.required, Validators.minLength(2)]],
-    lastName: ['', [Validators.required, Validators.minLength(2)]]
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    phoneNumber: [''],
+    password: ['', [Validators.required, Validators.minLength(8)]]
   });
 
   isSubmitting = false;

@@ -14,6 +14,7 @@ import { User } from '../models/user.model';
 export class AuthService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl;
+  private endpoints = environment.endpoints;
   
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -24,7 +25,7 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}${this.endpoints.login}`, credentials).pipe(
       tap(response => {
         this.setToken(response.token);
         this.currentUserSubject.next(response.user);
@@ -33,7 +34,7 @@ export class AuthService {
   }
 
   register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, data).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}${this.endpoints.register}`, data).pipe(
       tap(response => {
         this.setToken(response.token);
         this.currentUserSubject.next(response.user);

@@ -1,4 +1,8 @@
 export const environment = {
   production: false,
-  apiBaseUrl: '/api/v1'
+  apiBaseUrl: '/api',
+  endpoints: {
+    login: '/auth/login',
+    register: '/users/register'
+  }
 };
