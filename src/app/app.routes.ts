@@ -19,6 +19,6 @@ export const routes: Routes = [
     {path: 'admin-users', component: AdminUsersComponent},
     {path: 'login', component: LoginComponent},
     {path: 'register', component: RegisterComponent},
-    {path: '', redirectTo: '/login', pathMatch: 'full'},
-    {path: '**', redirectTo: '/login'}
+    {path: '', redirectTo: '/home', pathMatch: 'full'},
+    {path: '**', redirectTo: '/home'}
 ];
