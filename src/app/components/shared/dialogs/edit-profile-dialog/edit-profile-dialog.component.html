@@ -1,0 +1,71 @@
+<div class="edit-profile-container">
+    <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
+        
+        <div class="form-group custom-field-wrapper">
+            <label for="username">Nombre de Usuario</label>
+            <mat-form-field appearance="outline" class="custom-mat-form-field">
+                <input matInput type="text" id="username" formControlName="username">
+                <mat-error *ngIf="editForm.get('username')?.hasError('required')">
+                    El nombre de usuario es requerido
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form-group custom-field-wrapper">
+            <label for="email">Correo Electrónico</label>
+            <mat-form-field appearance="outline" class="custom-mat-form-field">
+                <input matInput type="email" id="email" formControlName="email">
+                <mat-error *ngIf="editForm.get('email')?.hasError('required')">
+                    El correo es requerido
+                </mat-error>
+                <mat-error *ngIf="editForm.get('email')?.hasError('email')">
+                    Email inválido
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form-group custom-field-wrapper">
+            <label for="phoneNumber">Teléfono</label>
+            <mat-form-field appearance="outline" class="custom-mat-form-field">
+                <input matInput type="tel" id="phoneNumber" formControlName="phoneNumber" placeholder="+54 9 11 1234 5678">
+            </mat-form-field>
+        </div>
+
+        <div class="form-group custom-field-wrapper">
+            <label>Fecha de Nacimiento</label>
+            <div class="multi-input-row">
+                <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                    <input matInput type="number" formControlName="birthDay" placeholder="DD">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                    <input matInput type="number" formControlName="birthMonth" placeholder="MM">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                    <input matInput type="number" formControlName="birthYear" placeholder="AAAA">
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="form-group custom-field-wrapper">
+            <label>Nombre y Apellido</label>
+            <div class="multi-input-row">
+                <mat-form-field appearance="outline" class="custom-mat-form-field half">
+                    <input matInput type="text" formControlName="name" placeholder="Nombre">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="custom-mat-form-field half">
+                    <input matInput type="text" formControlName="lastName" placeholder="Apellido">
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="dialog-actions">
+            <button mat-raised-button 
+                    type="submit"
+                    [disabled]="editForm.invalid"
+                    class="custom-btn-submit">
+                Confirmar Modificaciones
+            </button>
+        </div>
+
+    </form>
+</div>

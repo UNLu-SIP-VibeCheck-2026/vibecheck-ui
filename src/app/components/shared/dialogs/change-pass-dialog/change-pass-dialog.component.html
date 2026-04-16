@@ -1,0 +1,50 @@
+<div class="change-password-container">
+    <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()">
+        
+        <div class="form-group custom-field-wrapper">
+            <label for="currentPassword">Contraseña Actual</label>
+            <mat-form-field appearance="outline" class="custom-mat-form-field">
+                <input matInput type="password" id="currentPassword" formControlName="currentPassword">
+                <mat-error *ngIf="passwordForm.get('currentPassword')?.hasError('required')">
+                    La contraseña actual es requerida
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form-group custom-field-wrapper">
+            <label for="newPassword">Nueva Contraseña</label>
+            <mat-form-field appearance="outline" class="custom-mat-form-field">
+                <input matInput type="password" id="newPassword" formControlName="newPassword">
+                <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">
+                    La nueva contraseña es requerida
+                </mat-error>
+                <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">
+                    Mínimo 8 caracteres
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form-group custom-field-wrapper">
+            <label for="confirmNewPassword">Repetir Nueva Contraseña</label>
+            <mat-form-field appearance="outline" class="custom-mat-form-field">
+                <input matInput type="password" id="confirmNewPassword" formControlName="confirmNewPassword">
+                <mat-error *ngIf="passwordForm.get('confirmNewPassword')?.hasError('required')">
+                    Debe repetir la nueva contraseña
+                </mat-error>
+                <mat-error *ngIf="passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmNewPassword')?.touched">
+                    Las contraseñas no coinciden
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="dialog-actions">
+            <button mat-raised-button 
+                    type="submit"
+                    [disabled]="passwordForm.invalid"
+                    class="custom-btn-submit">
+                Confirmar Modificación
+            </button>
+        </div>
+
+    </form>
+</div>

@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.edit-profile-container {
+  padding: 16px;
+  font-family: 'Inter', sans-serif;
+  max-width: 400px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+/* Row-based inputs */
+.multi-input-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+
+  .small { flex: 1; }
+  .medium { flex: 2; }
+  .half { flex: 1; }
+}
+
+/* Override Mat Form Field (Matching Brand Criteria) */
+.custom-mat-form-field {
+  width: 100%;
+}
+
+::ng-deep .custom-mat-form-field .mdc-notched-outline__leading,
+::ng-deep .custom-mat-form-field .mdc-notched-outline__notch,
+::ng-deep .custom-mat-form-field .mdc-notched-outline__trailing {
+  border-color: #e0e0e0 !important;
+  border-width: 1.5px !important;
+}
+
+::ng-deep .custom-mat-form-field.mat-focused .mdc-notched-outline__leading,
+::ng-deep .custom-mat-form-field.mat-focused .mdc-notched-outline__notch,
+::ng-deep .custom-mat-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: #1a1a1a !important;
+}
+
+::ng-deep .custom-mat-form-field .mat-mdc-form-field-flex {
+  height: 44px !important;
+  align-items: center;
+}
+
+::ng-deep .custom-mat-form-field .mat-mdc-form-field-infix {
+  padding: 0 12px !important;
+  min-height: auto !important;
+}
+
+/* Specific fix for birthday placeholders */
+.multi-input-row ::ng-deep .mat-mdc-form-field-infix {
+  padding: 0 4px !important;
+}
+
+/* Submit Button */
+.custom-btn-submit {
+  width: 100%;
+  height: 48px !important;
+  background-color: #2b2b2b !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  margin-top: 12px !important;
+  box-shadow: none !important;
+}
+
+.custom-btn-submit:disabled {
+  background-color: #cccccc !important;
+}
+
+.dialog-actions {
+  margin-top: 8px;
+}

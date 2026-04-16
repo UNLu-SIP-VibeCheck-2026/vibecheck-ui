@@ -7,5 +7,6 @@ export interface AuthResponse {
     lastName: string;
     createdAt: string;
     updatedAt: string;
+    role: string;
   };
 }

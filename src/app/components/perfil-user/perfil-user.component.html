@@ -1,1 +1,40 @@
-<p>perfil-user works!</p>
+<div class="profile-page">
+    <div class="profile-header">
+        <div class="profile-icon-container">
+            <svg class="profile-icon" width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" fill="currentColor"/>
+                <path d="M12 13C7.58172 13 4 16.5817 4 21H20C20 16.5817 16.4183 13 12 13Z" fill="currentColor"/>
+            </svg>
+        </div>
+        <p class="greeting-subtitle">Bienvenido</p>
+        <h1 class="greeting-title">{{ greeting }}</h1>
+    </div>
+
+    <div class="profile-content">
+        <!-- Common User Actions -->
+        <div class="action-group">
+            <button mat-raised-button class="custom-btn-submit" (click)="openEditProfile()">
+                Editar Perfil
+            </button>
+            <button mat-raised-button class="custom-btn-submit" (click)="openChangeRole()">
+                Cambiar mi Rol
+            </button>
+            <button mat-raised-button class="custom-btn-submit" (click)="openChangePassword()">
+                Cambiar mi Contraseña
+            </button>
+        </div>
+
+        <!-- Admin Actions (Conditional) -->
+        <div class="action-group admin-group" *ngIf="isAdmin">
+            <button mat-raised-button class="custom-btn-submit" (click)="navigateToAdminUsers()">
+                Administrar Usuarios
+            </button>
+            <button mat-raised-button class="custom-btn-submit" (click)="navigateToAdminRoles()">
+                Administrar Roles
+            </button>
+            <button mat-raised-button class="custom-btn-submit" (click)="navigateToAdminPermissions()">
+                Administrar Permisos
+            </button>
+        </div>
+    </div>
+</div>
