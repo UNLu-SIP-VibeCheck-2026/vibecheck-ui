@@ -1,0 +1,36 @@
+<div class="permission-dialog-container">
+    <form [formGroup]="permissionForm" (ngSubmit)="onSubmit()">
+        
+        <!-- IDP (Alta only) -->
+        <div class="form-group custom-field-wrapper" *ngIf="!isEditMode">
+            <label for="idp">IDP</label>
+            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                <input matInput id="idp" formControlName="idp" placeholder="ID Permiso">
+            </mat-form-field>
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group custom-field-wrapper">
+            <label for="description">Descripción</label>
+            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                <input matInput id="description" formControlName="description" placeholder="Descripción del permiso">
+            </mat-form-field>
+        </div>
+
+        <div class="dialog-actions">
+            <button mat-raised-button 
+                    type="submit"
+                    [disabled]="permissionForm.invalid"
+                    class="btn-submit">
+                {{ isEditMode ? 'Modificar Permiso' : 'Crear Permiso' }}
+            </button>
+            <button mat-stroked-button 
+                    type="button"
+                    (click)="onCancel()"
+                    class="btn-cancel">
+                Cancelar
+            </button>
+        </div>
+
+    </form>
+</div>

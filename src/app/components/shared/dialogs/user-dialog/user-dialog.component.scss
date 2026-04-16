@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.user-dialog-container {
+  padding: 12px 24px;
+  font-family: 'Inter', sans-serif;
+  max-width: 440px;
+  max-height: 85vh; /* Ensure it fits on screen */
+  overflow-y: auto; /* Enable scrolling */
+  scrollbar-width: thin; /* Clean scrollbar for Firefox */
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    border-radius: 10px;
+  }
+}
+
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+/* Custom Mat Form Field Style */
+.custom-mat-form-field {
+  width: 100%;
+  
+  ::ng-deep .mat-mdc-form-field-flex {
+    height: 48px !important;
+    border-radius: 8px !important;
+    background-color: #ffffff !important;
+  }
+
+  ::ng-deep .mdc-notched-outline__leading,
+  ::ng-deep .mdc-notched-outline__notch,
+  ::ng-deep .mdc-notched-outline__trailing {
+    border-color: #e0e0e0 !important;
+  }
+}
+
+/* DOB Fields Layout */
+.dob-inputs {
+  display: flex;
+  gap: 12px;
+
+  .dob-field {
+    width: 80px;
+    &.year { flex: 1; }
+  }
+}
+
+/* Stacked Name/LastName */
+.stacked-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Role Select Styling */
+.custom-mat-select {
+  width: 100%;
+  
+  ::ng-deep .mat-mdc-form-field-flex {
+    background-color: #e0e0e0 !important; /* Grey background as per wireframe roles select */
+    height: 48px !important;
+    border-radius: 4px !important;
+    padding: 0 12px !important;
+    align-items: center !important;
+  }
+
+  ::ng-deep .mat-mdc-select-value {
+    color: #4a4a4a !important;
+    font-weight: 500;
+  }
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+}
+
+/* Dialog Actions */
+.dialog-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+
+  button {
+    flex: 1;
+    height: 48px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+  }
+
+  .btn-submit {
+    background-color: #2b2b2b !important;
+    color: #ffffff !important;
+  }
+
+  .btn-cancel {
+    background-color: transparent !important;
+    color: #4a4a4a !important;
+    border: 1px solid #4a4a4a !important;
+  }
+}
+
+.btn-submit:disabled {
+  background-color: #cccccc !important;
+}
+
+mat-error {
+  font-size: 11px;
+  margin-top: 4px;
+  color: #f44336;
+}

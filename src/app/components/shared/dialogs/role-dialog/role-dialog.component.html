@@ -1,0 +1,51 @@
+<div class="role-dialog-container">
+    <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Role Name (Alta only) -->
+        <div class="form-group custom-field-wrapper" *ngIf="!isEditMode">
+            <label for="roleName">Nombre del Rol</label>
+            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                <input matInput id="roleName" formControlName="roleName">
+            </mat-form-field>
+        </div>
+
+        <!-- Permissions Selector -->
+        <div class="form-group custom-field-wrapper">
+            <label>Permisos del Rol</label>
+            <mat-form-field appearance="fill" class="custom-mat-select" subscriptSizing="dynamic">
+                <mat-select formControlName="tempPermission" placeholder="Permisos" (selectionChange)="addPermission()">
+                    <mat-option *ngFor="let perm of availablePermissions" [value]="perm">
+                        {{perm}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+
+        <!-- Permissions List -->
+        <div class="permissions-list">
+            <div class="permission-item" *ngFor="let perm of addedPermissions; let i = index">
+                <span class="dot">•</span>
+                <span class="perm-text">{{ perm }}</span>
+                <button type="button" class="remove-btn" (click)="removePermission(i)">
+                    <span>-</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="dialog-actions">
+            <button mat-raised-button 
+                    type="submit"
+                    [disabled]="roleForm.invalid || addedPermissions.length === 0"
+                    class="btn-submit">
+                {{ isEditMode ? 'Modificar Rol' : 'Crear Rol' }}
+            </button>
+            <button mat-stroked-button 
+                    type="button"
+                    (click)="onCancel()"
+                    class="btn-cancel">
+                Cancelar
+            </button>
+        </div>
+
+    </form>
+</div>

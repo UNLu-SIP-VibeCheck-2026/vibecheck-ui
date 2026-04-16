@@ -1,0 +1,14 @@
+<div class="confirm-dialog-container">
+    <div class="confirm-message">
+        {{ data.message || '¿Confirma eliminación?' }}
+    </div>
+
+    <div class="dialog-actions">
+        <button mat-raised-button class="btn-dark" (click)="onConfirm()">
+            {{ data.confirmText || 'Eliminar' }}
+        </button>
+        <button mat-stroked-button class="btn-outline" (click)="onCancel()">
+            {{ data.cancelText || 'Cancelar' }}
+        </button>
+    </div>
+</div>

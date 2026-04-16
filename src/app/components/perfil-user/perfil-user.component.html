@@ -16,7 +16,7 @@
             <button mat-raised-button class="custom-btn-submit" (click)="openEditProfile()">
                 Editar Perfil
             </button>
-            <button mat-raised-button class="custom-btn-submit" (click)="openChangeRole()">
+            <button *ngIf="!isAdmin" mat-raised-button class="custom-btn-submit" (click)="openChangeRole()">
                 Cambiar mi Rol
             </button>
             <button mat-raised-button class="custom-btn-submit" (click)="openChangePassword()">
