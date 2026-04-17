@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  vibecheck-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vibecheck-ui
+    ports:
+      - "4200:4200"
+    volumes:
+      - .:/app:z
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Ayuda al hot-reload en ciertos entornos Docker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

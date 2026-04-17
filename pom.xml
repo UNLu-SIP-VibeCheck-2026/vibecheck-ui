@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.vibecheck</groupId>
+    <artifactId>vibecheck-ui</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    
+    <!-- Debe ser POM ya que no compila código Java -->
+    <packaging>pom</packaging>
+
+    <name>vibecheck-ui</name>
+    <description>VibeCheck Angular Frontend</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Versión de Node.js a utilizar (coincide con tu Dockerfile) -->
+        <node.version>v22.11.0</node.version>
+        <!-- Versión de npm -->
+        <npm.version>10.9.0</npm.version>
+        <frontend-maven-plugin.version>1.15.0</frontend-maven-plugin.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <!-- Plugin para integrar el build de node/npm en el ciclo de vida de Maven -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend-maven-plugin.version}</version>
+                
+                <executions>
+                    <!-- 1. Descarga Node y NPM de forma local para este proyecto (no interfiere con tu sistema) -->
+                    <execution>
+                        <id>install node and npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
+                        </configuration>
+                    </execution>
+                    
+                    <!-- 2. Ejecuta 'npm install' para descargar las dependencias -->
+                    <execution>
+                        <id>npm install</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    
+                    <!-- 3. Ejecuta 'npm run build' compilar Angular y generar la carpeta dist -->
+                    <execution>
+                        <id>npm run build</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <!-- Llama al script "build" configurado en tu package.json -->
+                            <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
