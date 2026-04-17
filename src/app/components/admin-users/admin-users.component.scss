@@ -175,6 +175,11 @@
     border-bottom: none !important;
   }
 
+  .mat-column-select {
+    width: 48px;
+    padding-right: 0 !important;
+  }
+
   tr:hover {
     background-color: rgba(0, 0, 0, 0.02);
   }
