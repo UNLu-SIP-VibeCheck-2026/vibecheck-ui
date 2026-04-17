@@ -33,4 +33,8 @@ export class UsersService {
   deactivateUser(username: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/users/${username}`);
   }
+
+  changePassword(username: string, payload: any): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/users/${username}/changePassword`, payload);
+  }
 }
