@@ -99,12 +99,7 @@ export class RegisterComponent {
       lastName: formValue.lastName,
       phoneNumber: formValue.phoneNumber,
       password: formValue.password,
-      birthdate:
-        formValue.birthDay +
-        "-" +
-        formValue.birthMonth +
-        "-" +
-        formValue.birthYear,
+      birthdate: `${formValue.birthYear}-${String(formValue.birthMonth).padStart(2, '0')}-${String(formValue.birthDay).padStart(2, '0')}`,
       role: formValue.role,
     };
 
@@ -113,7 +108,7 @@ export class RegisterComponent {
         this.snackBar.open("Registro exitoso", "Cerrar", {
           duration: 3000,
         });
-        this.router.navigate(["/login"]);
+        this.router.navigate(["/dashboard"]);
       },
       error: (error) => {
         this.isSubmitting = false;

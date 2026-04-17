@@ -1,0 +1,41 @@
+<div class="dashboard-container" *ngIf="user$ | async as user; else noUser">
+  <div class="header">
+    <h1>Bienvenido al Dashboard, {{ user.username }}</h1>
+    <p>Rol: {{ user.role }}</p>
+  </div>
+
+  <div class="actions-grid">
+    <mat-card class="action-card" (click)="navigateTo('/perfil-user')">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">person</mat-icon>
+        <mat-card-title>Mi Perfil</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Ver mis datos personales de la cuenta.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary">Ir al perfil</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="action-card" *ngIf="user.role !== 'comprar'" (click)="navigateTo('/perfil-config')">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="accent">settings</mat-icon>
+        <mat-card-title>Configuraciones</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Ajustes avanzados y preferencias.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="accent">Configurar</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+
+<ng-template #noUser>
+  <div class="dashboard-container">
+    <h2>Inicia sesión para ver tu contenido.</h2>
+  </div>
+</ng-template>
+

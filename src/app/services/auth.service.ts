@@ -1,45 +1,58 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
-import { LoginRequest } from '../models/login-request.model';
-import { RegisterRequest } from '../models/register-request.model';
-import { AuthResponse } from '../models/auth-response.model';
-import { User } from '../models/user.model';
+import { Injectable, inject } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable, BehaviorSubject } from "rxjs";
+import { map, tap } from "rxjs/operators";
+import { environment } from "../../environments/environment";
+import { LoginRequest } from "../models/login-request.model";
+import { RegisterRequest } from "../models/register-request.model";
+import { AuthResponse } from "../models/auth-response.model";
+import { User } from "../models/user.model";
+import { jwtDecode } from "jwt-decode";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class AuthService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl;
-  private endpoints = environment.endpoints;
-  
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+
+  private currentUserSubject = new BehaviorSubject<{
+    username: string;
+    role: string;
+  } | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-  private tokenKey = 'auth_token';
+  private tokenKey = "auth_token";
 
   constructor() {
     this.loadUserFromStorage();
   }
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}${this.endpoints.login}`, credentials).pipe(
-      tap(response => {
-        this.setToken(response.token);
-        this.currentUserSubject.next(response.user);
-      })
-    );
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials)
+      .pipe(
+        tap((response) => {
+          this.setToken(response.token);
+          this.currentUserSubject.next({
+            username: response.username,
+            role: response.role,
+          });
+        }),
+      );
   }
 
   register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}${this.endpoints.register}`, data).pipe(
-      tap(response => {
-        this.setToken(response.token);
-        this.currentUserSubject.next(response.user);
-      })
-    );
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/users/register`, data)
+      .pipe(
+        tap((response) => {
+          this.setToken(response.token);
+          this.currentUserSubject.next({
+            username: response.username,
+            role: response.role,
+          });
+        }),
+      );
   }
 
   logout(): void {
@@ -58,9 +71,15 @@ export class AuthService {
   private loadUserFromStorage(): void {
     const token = this.getToken();
     if (token) {
-      // TODO: Decode token to get user info or fetch from API
-      // For now, we'll just set a placeholder
-      this.currentUserSubject.next(null);
+      try {
+        const decoded: any = jwtDecode(token);
+        this.currentUserSubject.next({
+          username: decoded.sub || decoded.username || "Usuario",
+          role: decoded.role || "comprar",
+        });
+      } catch (e) {
+        this.logout();
+      }
     }
   }
 
@@ -68,7 +87,7 @@ export class AuthService {
     return !!this.getToken();
   }
 
-  getCurrentUserValue(): User | null {
+  getCurrentUserValue(): { username: string; role: string } | null {
     return this.currentUserSubject.value;
   }
 }

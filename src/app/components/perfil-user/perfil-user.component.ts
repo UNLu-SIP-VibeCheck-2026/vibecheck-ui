@@ -27,7 +27,7 @@ export class PerfilUserComponent {
   private router = inject(Router);
   private dialog = inject(MatDialog);
   
-  currentUser$: Observable<User | null> = this.authService.currentUser$;
+  currentUser$: Observable<{ username: string; role: string } | null> = this.authService.currentUser$;
 
   get isAdmin(): boolean {
     const roleParam = this.route.snapshot.queryParamMap.get('role');

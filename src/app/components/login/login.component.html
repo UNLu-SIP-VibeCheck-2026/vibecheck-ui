@@ -8,13 +8,13 @@
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
             <div class="form-group custom-field-wrapper">
-                <label for="email">Nombre de Usuario</label>
+                <label for="username">Nombre de Usuario</label>
                 <mat-form-field appearance="outline" class="custom-mat-form-field">
                     <input matInput
                            type="text"
-                           id="email"
-                           formControlName="email">
-                    <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+                           id="username"
+                           formControlName="username">
+                    <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
                         El nombre de usuario es requerido
                     </mat-error>
                 </mat-form-field>
@@ -41,6 +41,20 @@
                     [disabled]="isSubmitting || loginForm.invalid"
                     class="custom-btn-submit">
                 {{ isSubmitting ? 'Ingresando...' : 'Ingresar' }}
+            </button>
+
+            <div class="divider-container">
+                <span class="divider-line"></span>
+                <span class="divider-text">o continuar con</span>
+                <span class="divider-line"></span>
+            </div>
+
+            <button mat-stroked-button
+                    type="button"
+                    (click)="loginWithGoogle()"
+                    class="google-btn">
+                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google Logo" class="google-logo">
+                Google
             </button>
 
         </form>
