@@ -1,41 +1,22 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatChipsModule } from '@angular/material/chips';
-import { SelectionModel } from '@angular/cdk/collections';
-import { FormsModule } from '@angular/forms';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../shared/dialogs/confirm-dialog/confirm-dialog.component';
-import { UserDialogComponent } from '../shared/dialogs/user-dialog/user-dialog.component';
-
-export interface UserAdmin {
-  id: string;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  role: string;
-  status: string;
-}
-
-const MOCK_DATA: UserAdmin[] = Array.from({ length: 10 }, (_, i) => ({
-  id: `USUARIO0${i + 1}`,
-  username: 'MattZander',
-  email: 'matt@gmail.com',
-  firstName: 'Matt',
-  lastName: 'Zander',
-  phoneNumber: '54 9 11 1234 5678',
-  role: 'ADMIN',
-  status: 'Activo'
-}));
+import { SelectionModel } from "@angular/cdk/collections";
+import { CommonModule } from "@angular/common";
+import { Component, inject, OnInit, ViewChild } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { MatButtonModule } from "@angular/material/button";
+import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatChipsModule } from "@angular/material/chips";
+import { MatDialog, MatDialogModule } from "@angular/material/dialog";
+import { MatIconModule } from "@angular/material/icon";
+import { MatInputModule } from "@angular/material/input";
+import { MatPaginator, MatPaginatorModule, PageEvent } from "@angular/material/paginator";
+import { MatTableDataSource, MatTableModule } from "@angular/material/table";
+import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
+import { UserDialogComponent } from "../shared/dialogs/user-dialog/user-dialog.component";
+import { UserSummaryResponse } from "../../models/user-summary-response.model";
+import { UsersService } from "../../services/users.service";
 
 @Component({
-  selector: 'app-admin-users',
+  selector: "app-admin-users",
   standalone: true,
   imports: [
     CommonModule,
@@ -46,20 +27,57 @@ const MOCK_DATA: UserAdmin[] = Array.from({ length: 10 }, (_, i) => ({
     MatButtonModule,
     MatChipsModule,
     FormsModule,
-    MatDialogModule
+    MatDialogModule,
+    MatPaginatorModule,
   ],
-  templateUrl: './admin-users.component.html',
-  styleUrl: './admin-users.component.scss'
+  templateUrl: "./admin-users.component.html",
+  styleUrl: "./admin-users.component.scss",
 })
 export class AdminUsersComponent implements OnInit {
   private dialog = inject(MatDialog);
-  
-  displayedColumns: string[] = ['select', 'id', 'username', 'email', 'firstName', 'lastName', 'phoneNumber', 'role', 'status', 'actions'];
-  dataSource = new MatTableDataSource<UserAdmin>(MOCK_DATA);
-  selection = new SelectionModel<UserAdmin>(true, []);
-  searchQuery: string = '';
+  private usersService = inject(UsersService);
 
-  ngOnInit(): void {}
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  displayedColumns: string[] = [
+    "select",
+    "id",
+    "username",
+    "email",
+    "name",
+    "lastName",
+    "phoneNumber",
+    "role",
+    "active",
+    "actions",
+  ];
+  dataSource = new MatTableDataSource<UserSummaryResponse>([]);
+  selection = new SelectionModel<UserSummaryResponse>(true, []);
+  searchQuery: string = "";
+
+  totalElements = 0;
+  pageSize = 10;
+  pageIndex = 0;
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.usersService.getUsers(this.pageIndex, this.pageSize).subscribe({
+      next: (page) => {
+        this.dataSource.data = page.content;
+        this.totalElements = page.totalElements;
+      },
+      error: (err) => console.error("Error cargando usuarios:", err)
+    });
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadUsers();
+  }
 
   /** Whether the number of selected elements matches the total number of rows. */
   isAllSelected() {
@@ -79,62 +97,65 @@ export class AdminUsersComponent implements OnInit {
   }
 
   /** The label for the checkbox on the passed row */
-  checkboxLabel(row?: UserAdmin): string {
+  checkboxLabel(row?: UserSummaryResponse): string {
     if (!row) {
-      return `${this.isAllSelected() ? 'deselect' : 'select'} all`;
+      return `${this.isAllSelected() ? "deselect" : "select"} all`;
     }
-    return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.id}`;
+    return `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.id}`;
   }
 
   addUser() {
     const dialogRef = this.dialog.open(UserDialogComponent, {
-      width: '440px',
-      autoFocus: false
+      width: "440px",
+      autoFocus: false,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        console.log('Add user data:', result);
+        console.log("Add user data:", result);
+        this.loadUsers();
       }
     });
   }
 
   importUsers() {
-    console.log('Import clicked');
+    console.log("Import clicked");
   }
 
   exportUsers() {
-    console.log('Export clicked');
+    console.log("Export clicked");
   }
 
-  editUser(user: UserAdmin) {
+  editUser(user: UserSummaryResponse) {
     const dialogRef = this.dialog.open(UserDialogComponent, {
-      width: '440px',
+      width: "440px",
       data: { user },
-      autoFocus: false
+      autoFocus: false,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        console.log('Edit user data:', result);
+        console.log("Edit user data:", result);
+        this.loadUsers();
       }
     });
   }
 
-  deleteUser(user: UserAdmin) {
+  deleteUser(user: UserSummaryResponse) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: { 
-        message: '¿Confirma eliminación?',
-        confirmText: 'Eliminar',
-        cancelText: 'Cancelar'
+      width: "400px",
+      data: {
+        message: "¿Confirma eliminación?",
+        confirmText: "Eliminar",
+        cancelText: "Cancelar",
       },
-      autoFocus: false
+      autoFocus: false,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        console.log('Deleting user:', user.username);
+        console.log("Deleting user:", user.username);
+        // todo call delete endpoint then this.loadUsers()
       }
     });
   }
