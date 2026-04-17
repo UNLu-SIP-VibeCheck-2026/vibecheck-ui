@@ -50,7 +50,7 @@ export class UserDialogComponent implements OnInit {
       birthDay: ['', [Validators.required, Validators.min(1), Validators.max(31)]],
       birthMonth: ['', [Validators.required, Validators.min(1), Validators.max(12)]],
       birthYear: ['', [Validators.required, Validators.min(1900), Validators.max(2026)]],
-      firstName: [this.data?.user?.firstName || '', [Validators.required]],
+      firstName: [this.data?.user?.name || '', [Validators.required]],
       lastName: [this.data?.user?.lastName || '', [Validators.required]]
     });
 
@@ -60,17 +60,20 @@ export class UserDialogComponent implements OnInit {
       this.userForm.addControl('confirmPassword', this.fb.control('', [Validators.required]));
       this.userForm.addControl('role', this.fb.control('', [Validators.required]));
       this.userForm.setValidators(this.passwordMatchValidator);
+    } else {
+      // Add active field in edit mode
+      this.userForm.addControl('active', this.fb.control(this.data?.user?.active, [Validators.required]));
     }
 
     // Pre-fill birth date if editing
-    if (this.isEditMode && this.data.user.birthDate) {
-      // Assuming ISO format or similar
-      const date = new Date(this.data.user.birthDate);
-      if (!isNaN(date.getTime())) {
+    if (this.isEditMode && this.data.user.birthdate) {
+      // Expecting format like "YYYY-MM-DD"
+      const dateParts = this.data.user.birthdate.split('-');
+      if (dateParts.length === 3) {
         this.userForm.patchValue({
-          birthDay: date.getDate(),
-          birthMonth: date.getMonth() + 1,
-          birthYear: date.getFullYear()
+          birthYear: parseInt(dateParts[0], 10),
+          birthMonth: parseInt(dateParts[1], 10),
+          birthDay: parseInt(dateParts[2], 10)
         });
       }
     }

@@ -81,6 +81,18 @@
             </div>
         </ng-container>
 
+        <ng-container *ngIf="isEditMode">
+            <div class="form-group custom-field-wrapper">
+                <label>Estado</label>
+                <mat-form-field appearance="fill" class="custom-mat-select" subscriptSizing="dynamic">
+                    <mat-select formControlName="active" placeholder="Estado">
+                        <mat-option [value]="true">Activo</mat-option>
+                        <mat-option [value]="false">Inactivo</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </ng-container>
+
         <div class="dialog-actions">
             <button mat-raised-button 
                     type="submit"

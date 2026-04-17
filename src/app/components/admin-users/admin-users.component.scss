@@ -121,33 +121,6 @@
   }
 }
 
-/* Actions Row */
-.actions-row {
-  display: flex;
-  justify-content: flex-end; /* Align to the right as per wireframe */
-  gap: 16px; 
-  margin-bottom: 40px;
-
-  .btn-add {
-    background-color: #10b981 !important; /* Proper Emerald Green */
-    color: #ffffff !important;
-    font-weight: 500 !important;
-    padding: 0 32px !important;
-    height: 44px !important;
-    border-radius: 6px !important;
-    box-shadow: none !important;
-  }
-
-  .btn-dark {
-    background-color: #2b2b2b !important;
-    color: #ffffff !important;
-    font-weight: 500 !important;
-    padding: 0 32px !important;
-    height: 44px !important;
-    border-radius: 6px !important;
-    box-shadow: none !important;
-  }
-}
 
 /* Table Styling */
 .table-container {
@@ -175,23 +148,53 @@
     border-bottom: none !important;
   }
 
-  .mat-column-select {
-    width: 48px;
-    padding-right: 0 !important;
-  }
-
   tr:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: rgba(0, 0, 0, 0.04) !important;
   }
 
-  /* Selection style */
-  ::ng-deep .mat-mdc-checkbox {
-    --mdc-checkbox-selected-focus-icon-color: #1a1a1a;
-    --mdc-checkbox-selected-hover-icon-color: #1a1a1a;
-    --mdc-checkbox-selected-icon-color: #1a1a1a;
-    --mdc-checkbox-unselected-focus-outline-color: #e0e0e0;
-    --mdc-checkbox-unselected-hover-outline-color: #e0e0e0;
-    --mdc-checkbox-unselected-icon-color: #e0e0e0;
+  tr.mat-row:nth-child(even) {
+    background-color: #f7f7f7 !important;
+  }
+}
+
+.empty-state-row {
+  height: auto !important;
+}
+
+.empty-state-cell {
+  padding: 64px 24px !important;
+  text-align: center;
+  border-bottom: none !important;
+  
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    .empty-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: #b0b0b0;
+      margin-bottom: 12px;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 0;
+    }
+
+    .empty-subtitle {
+      font-size: 14px;
+      color: #8c8c8c;
+      margin: 0;
+      max-width: 300px;
+      line-height: 1.4;
+    }
   }
 }
 
@@ -227,12 +230,7 @@
     padding: 20px;
   }
 
-  .actions-row {
-    flex-direction: column;
-    align-items: stretch;
-    
     .secondary-actions {
       flex-direction: column;
     }
-  }
 }
