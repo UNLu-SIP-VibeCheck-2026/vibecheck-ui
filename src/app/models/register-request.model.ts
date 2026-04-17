@@ -5,4 +5,6 @@ export interface RegisterRequest {
   lastName: string;
   phoneNumber: string;
   password: string;
+  birthdate: string;
+  role: string;
 }
