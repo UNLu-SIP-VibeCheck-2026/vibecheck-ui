@@ -36,8 +36,8 @@ export class NavbarComponent {
     this.router.navigate(['/dashboard']);
   }
 
-  navigateToChangePassword(): void {
-    this.router.navigate(['/change-password']);
+  navigateToPerfilUser(): void {
+    this.router.navigate(['/perfil-user']);
   }
 
   logout(): void {

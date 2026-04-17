@@ -84,15 +84,6 @@ export class PerfilUserComponent {
   }
 
   openChangePassword() {
-    const dialogRef = this.dialog.open(ChangePasswordDialogComponent, {
-      width: '440px',
-      autoFocus: false
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log('Password change data:', result);
-      }
-    });
+    this.router.navigate(['/change-password']);
   }
 }
