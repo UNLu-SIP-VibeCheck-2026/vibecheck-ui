@@ -18,4 +18,4 @@ COPY . .
 EXPOSE 4200
 
 # El comando por defecto para iniciar la aplicación permitiendo conexiones externas al contenedor
-CMD ["npm", "run", "start", "--", "--host", "0.0.0.0"]
+CMD ["npm", "run", "start:docker", "--", "--host", "0.0.0.0"]
