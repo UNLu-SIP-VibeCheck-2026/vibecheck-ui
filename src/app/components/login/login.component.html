@@ -8,14 +8,15 @@
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
             <div class="form-group custom-field-wrapper">
-                <label for="username">Nombre de Usuario</label>
+                <label for="username">Usuario o Correo Electrónico</label>
                 <mat-form-field appearance="outline" class="custom-mat-form-field">
                     <input matInput
                            type="text"
                            id="username"
-                           formControlName="username">
+                           formControlName="username"
+                           placeholder="usuario o ejemplo@correo.com">
                     <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
-                        El nombre de usuario es requerido
+                        El usuario o correo es requerido
                     </mat-error>
                 </mat-form-field>
             </div>
