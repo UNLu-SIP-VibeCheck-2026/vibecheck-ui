@@ -84,8 +84,6 @@ export class LoginComponent {
   }
 
   loginWithGoogle(): void {
-    this.snackBar.open("El inicio de sesión con Google estará disponible próximamente.", "Cerrar", {
-      duration: 4000
-    });
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   }
 }

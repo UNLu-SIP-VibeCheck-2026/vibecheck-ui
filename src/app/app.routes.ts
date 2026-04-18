@@ -10,6 +10,7 @@ import { AdminPermissionsComponent } from "./components/admin-permissions/admin-
 import { AdminRolesComponent } from "./components/admin-roles/admin-roles.component";
 import { AdminUsersComponent } from "./components/admin-users/admin-users.component";
 import { DashboardComponent } from "./components/dashboard/dashboard.component";
+import { OAuthCallbackComponent } from "./components/oauth-callback/oauth-callback.component";
 import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 
@@ -52,6 +53,10 @@ export const routes: Routes = [
   },
   { path: "login", component: LoginComponent, canActivate: [guestGuard] },
   { path: "register", component: RegisterComponent, canActivate: [guestGuard] },
+  {
+    path: "auth/oauth2/callback",
+    component: OAuthCallbackComponent,
+  },
   {
     path: "dashboard",
     component: DashboardComponent,

@@ -64,8 +64,20 @@ export class AuthService {
     return localStorage.getItem(this.tokenKey);
   }
 
-  private setToken(token: string): void {
+  public setToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
+  }
+
+  public loadUserFromToken(token: string): void {
+    try {
+      const decoded: any = jwtDecode(token);
+      this.currentUserSubject.next({
+        username: decoded.sub || decoded.username || "Usuario",
+        role: decoded.role || "comprar",
+      });
+    } catch (e) {
+      this.logout();
+    }
   }
 
   private loadUserFromStorage(): void {

@@ -98,6 +98,20 @@
                 {{ isSubmitting ? 'Registrando...' : 'Registrarse' }}
             </button>
 
+            <div class="divider-container">
+                <span class="divider-line"></span>
+                <span class="divider-text">o registrarte con</span>
+                <span class="divider-line"></span>
+            </div>
+
+            <button mat-stroked-button
+                    type="button"
+                    (click)="loginWithGoogle()"
+                    class="google-btn">
+                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google Logo" class="google-logo">
+                Google
+            </button>
+
         </form>
     </mat-card>
 </div>
