@@ -20,11 +20,9 @@
                 <mat-label>Rol</mat-label>
                 <mat-select [(ngModel)]="filterRole" (selectionChange)="applyFilter()">
                     <mat-option value="">Todos</mat-option>
-                    <mat-option value="ADMIN">Administrador</mat-option>
-                    <mat-option value="USER">Usuario</mat-option>
-                    <mat-option value="comprar">Comprar entradas</mat-option>
-                    <mat-option value="crear">Crear Eventos</mat-option>
-                    <mat-option value="validar">Validar entradas en puerta</mat-option>
+                    <mat-option *ngFor="let role of availableRoles" [value]="role.name">
+                        {{role.name}}
+                    </mat-option>
                 </mat-select>
             </mat-form-field>
 

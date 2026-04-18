@@ -15,6 +15,8 @@ import { UserDialogComponent } from "../shared/dialogs/user-dialog/user-dialog.c
 import { UserSummaryResponse } from "../../models/user-summary-response.model";
 import { UserUpdateRequest } from "../../models/user-update-request.model";
 import { UsersService } from "../../services/users.service";
+import { RolesService } from "../../services/roles.service";
+import { RoleResponse } from "../../models/role-response.model";
 
 @Component({
   selector: "app-admin-users",
@@ -38,6 +40,7 @@ import { UsersService } from "../../services/users.service";
 export class AdminUsersComponent implements OnInit {
   private dialog = inject(MatDialog);
   private usersService = inject(UsersService);
+  private rolesService = inject(RolesService);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -57,6 +60,7 @@ export class AdminUsersComponent implements OnInit {
   
   filterRole: string = "";
   filterActive: string = "";
+  availableRoles: RoleResponse[] = [];
 
   sortBy: string = "id";
   sortDirection: string = "asc";
@@ -67,6 +71,10 @@ export class AdminUsersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
+    this.rolesService.getRoles(0, 100).subscribe({
+      next: (page: any) => this.availableRoles = page.content,
+      error: (err: any) => console.error("Error cargando roles:", err)
+    });
   }
 
   loadUsers(): void {
