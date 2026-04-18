@@ -2,61 +2,63 @@
   display: block;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   min-height: calc(100vh - 64px); 
-  background-color: #f4f4f4; 
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
 }
 
 .login-page {
   width: 100%;
-  max-width: 440px;
-  padding: 20px;
+  max-width: 420px;
+  padding: 0;
   box-sizing: border-box;
   margin: 0 auto;
-  margin-top: -10vh; 
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
 .brand-title {
-  font-size: 48px;
+  font-size: 42px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #ffffff;
   margin: 0;
-  letter-spacing: -1.5px;
+  letter-spacing: -1px;
 }
 
 .page-subtitle {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 400;
-  color: #4a4a4a;
-  margin: 8px 0 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 12px 0 0 0;
 }
 
 /* Material overrides */
 .login-card {
   background-color: #ffffff !important;
-  border: 1px solid #e0e0e0 !important;
-  border-radius: 8px !important;
-  padding: 32px !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+  border: none !important;
+  border-radius: 16px !important;
+  padding: 40px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
 }
 
 .form-group {
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
 }
 
 .form-group label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #4a4a4a;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2d3748;
   margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Override Mat Form Field */
@@ -67,9 +69,9 @@
 ::ng-deep .custom-mat-form-field .mdc-notched-outline__leading,
 ::ng-deep .custom-mat-form-field .mdc-notched-outline__notch,
 ::ng-deep .custom-mat-form-field .mdc-notched-outline__trailing {
-  border-color: #cccccc !important;
-  border-width: 1px !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  border-color: #e2e8f0 !important;
+  border-width: 1.5px !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 ::ng-deep .custom-mat-form-field .mdc-notched-outline__leading {
@@ -85,19 +87,19 @@
 ::ng-deep .custom-mat-form-field.mat-focused .mdc-notched-outline__leading,
 ::ng-deep .custom-mat-form-field.mat-focused .mdc-notched-outline__notch,
 ::ng-deep .custom-mat-form-field.mat-focused .mdc-notched-outline__trailing {
-  border-color: #555555 !important;
-  border-width: 1px !important;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.05) !important;
+  border-color: #667eea !important;
+  border-width: 1.5px !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
 }
 
 /* Avoid padding inside material input */
 ::ng-deep .custom-mat-form-field .mat-mdc-form-field-flex {
-  height: 48px !important;
+  height: 52px !important;
   align-items: center;
 }
 
 ::ng-deep .custom-mat-form-field .mat-mdc-form-field-infix {
-  padding: 0 14px !important;
+  padding: 0 16px !important;
   min-height: auto !important;
   display: flex;
   align-items: center;
@@ -110,7 +112,7 @@
 ::ng-deep .custom-mat-form-field .mat-mdc-input-element {
   font-family: inherit !important;
   font-size: 15px !important;
-  color: #1a1a1a !important;
+  color: #1a202c !important;
   line-height: normal !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -122,86 +124,108 @@
 }
 
 ::ng-deep .custom-mat-form-field .mat-mdc-form-field-error {
-  color: #dc3545 !important;
-  font-size: 13px !important;
+  color: #e53e3e !important;
+  font-size: 12px !important;
+  font-weight: 500;
 }
 
 /* Mat Button Override */
 .custom-btn-submit {
   width: 100%;
-  height: 48px !important;
-  background-color: #2b2b2b !important;
+  height: 52px !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   color: #ffffff !important;
   font-size: 16px !important;
-  font-weight: 500 !important;
-  border-radius: 6px !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease !important;
+  transition: all 0.3s ease !important;
   font-family: inherit !important;
-  box-shadow: none !important; /* Material button un-shadow */
-  margin-top: 16px !important;
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4) !important;
+  margin-top: 24px !important;
+  border: none !important;
 }
 
 .custom-btn-submit:hover {
-  background-color: #1a1a1a !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
 }
 
 .custom-btn-submit:active {
-  transform: scale(0.98) !important;
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
 }
 
 .custom-btn-submit:disabled {
-  background-color: #888888 !important;
+  background: #cbd5e0 !important;
   cursor: not-allowed !important;
   transform: none !important;
+  box-shadow: none !important;
 }
 
 /* Divider block */
 .divider-container {
   display: flex;
   align-items: center;
-  margin: 24px 0;
+  margin: 28px 0;
 }
 
 .divider-line {
   flex: 1;
   height: 1px;
-  background-color: #e0e0e0;
+  background-color: #e2e8f0;
 }
 
 .divider-text {
   margin: 0 16px;
-  font-size: 14px;
-  color: #777777;
+  font-size: 13px;
+  color: #718096;
   font-weight: 500;
 }
 
 /* Google Button */
 .google-btn {
   width: 100%;
-  height: 48px !important;
+  height: 52px !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   background-color: #ffffff !important;
-  color: #3c4043 !important;
-  border: 1px solid #dadce0 !important;
-  border-radius: 6px !important;
+  color: #2d3748 !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 12px !important;
   font-size: 15px !important;
   font-weight: 500 !important;
-  font-family: 'Inter', sans-serif !important;
+  font-family: inherit !important;
   cursor: pointer;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
+  transition: all 0.3s ease !important;
   box-shadow: none !important;
 }
 
 .google-btn:hover {
-  background-color: #f8fcf8 !important;
-  box-shadow: 0 1px 3px rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15) !important;
+  background-color: #f7fafc !important;
+  border-color: #cbd5e0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  transform: translateY(-1px) !important;
 }
 
 .google-logo {
   width: 20px;
   height: 20px;
   margin-right: 12px;
+  vertical-align: middle;
+}
+
+/* Error Snackbar Styles */
+::ng-deep .error-snackbar {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  font-weight: 500 !important;
+  border-left: 4px solid #ef4444 !important;
+  border-radius: 8px !important;
+}
+
+::ng-deep .error-snackbar .mat-mdc-button {
+  color: #991b1b !important;
+  font-weight: 600 !important;
 }

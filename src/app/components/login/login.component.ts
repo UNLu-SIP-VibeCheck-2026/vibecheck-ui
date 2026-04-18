@@ -12,6 +12,7 @@ import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatButtonModule } from "@angular/material/button";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatDialog } from "@angular/material/dialog";
 import { AuthService } from "../../services/auth.service";
 import { LoginRequest } from "../../models/login-request.model";
 
@@ -34,10 +35,11 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   loginForm: FormGroup = this.fb.group({
     username: ["", [Validators.required]],
-    password: ["", [Validators.required, Validators.minLength(6)]],
+    password: ["", [Validators.required]],
   });
 
   isSubmitting = false;
@@ -59,13 +61,20 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isSubmitting = false;
-        this.snackBar.open(
-          "Error al iniciar sesión: " + error.message,
-          "Cerrar",
-          {
-            duration: 5000,
-          },
-        );
+        let errorMessage = "Usuario o contraseña incorrectos";
+        
+        if (error.status === 401) {
+          errorMessage = "La contraseña es incorrecta. Por favor, verifica tus credenciales.";
+        } else if (error.status === 404) {
+          errorMessage = "El usuario no existe. Por favor, verifica tu nombre de usuario.";
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        this.snackBar.open(errorMessage, "Cerrar", {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
       },
     });
   }
