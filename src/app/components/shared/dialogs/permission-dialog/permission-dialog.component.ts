@@ -35,9 +35,20 @@ export class PermissionDialogComponent implements OnInit {
 
   private initForm(): void {
     this.permissionForm = this.fb.group({
-      idp: [this.data?.permission?.idp || '', this.isEditMode ? [] : [Validators.required]],
+      name: [
+        this.data?.permission?.name || '',
+        [
+          Validators.required,
+          Validators.pattern(/^[a-z]+:[a-z]+$/)
+        ]
+      ],
       description: [this.data?.permission?.description || '', [Validators.required]]
     });
+
+    // En edición, el nombre del permiso no debería cambiar (es el identificador)
+    if (this.isEditMode) {
+      this.permissionForm.get('name')?.disable();
+    }
   }
 
   onCancel(): void {
@@ -46,7 +57,8 @@ export class PermissionDialogComponent implements OnInit {
 
   onSubmit(): void {
     if (this.permissionForm.valid) {
-      this.dialogRef.close(this.permissionForm.value);
+      const value = this.permissionForm.getRawValue(); // getRawValue incluye los disabled
+      this.dialogRef.close(value);
     }
   }
 }

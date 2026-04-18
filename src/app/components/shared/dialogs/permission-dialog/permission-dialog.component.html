@@ -1,12 +1,15 @@
 <div class="permission-dialog-container">
     <form [formGroup]="permissionForm" (ngSubmit)="onSubmit()">
         
-        <!-- IDP (Alta only) -->
-        <div class="form-group custom-field-wrapper" *ngIf="!isEditMode">
-            <label for="idp">IDP</label>
+        <!-- Nombre (clave: recurso:accion) -->
+        <div class="form-group custom-field-wrapper">
+            <label for="name">Nombre <span class="hint">(formato: recurso:accion)</span></label>
             <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                <input matInput id="idp" formControlName="idp" placeholder="ID Permiso">
+                <input matInput id="name" formControlName="name" placeholder="ej: user:create">
             </mat-form-field>
+            <mat-error *ngIf="permissionForm.get('name')?.hasError('pattern') && permissionForm.get('name')?.touched">
+                Formato inválido. Debe ser <strong>recurso:accion</strong> en minúsculas (ej: user:create)
+            </mat-error>
         </div>
 
         <!-- Descripción -->

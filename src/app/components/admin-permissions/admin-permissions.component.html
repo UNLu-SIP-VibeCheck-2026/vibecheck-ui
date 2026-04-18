@@ -3,11 +3,11 @@
         <h1 class="main-title">Administrar Permisos</h1>
     </div>
 
-    <!-- Search and Filter Section -->
+    <!-- Search Section -->
     <div class="search-filter-section">
         <div class="search-controls-row">
             <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-                <input matInput placeholder="Buscar" [(ngModel)]="searchQuery">
+                <input matInput placeholder="Buscar por nombre o descripción" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()">
                 <span matSuffix class="search-icon-wrapper">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -15,29 +15,6 @@
                     </svg>
                 </span>
             </mat-form-field>
-
-            <button mat-icon-button class="circle-btn filter-action-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 21V14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M4 10V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 21V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 8V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M20 21V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M20 12V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M1 14H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M9 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M17 12H23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-        </div>
-        
-        <div class="applied-filters">
-            <span class="filters-label">Filtros aplicados:</span>
-            <mat-chip-set>
-                <mat-chip class="custom-chip">Filtro 1</mat-chip>
-                <mat-chip class="custom-chip">Filtro 2</mat-chip>
-                <mat-chip class="custom-chip">Filtro 3</mat-chip>
-            </mat-chip-set>
         </div>
     </div>
 
@@ -46,38 +23,24 @@
         <button mat-raised-button class="btn-add" (click)="addPermission()">
             Agregar Permiso
         </button>
-        <button mat-raised-button class="btn-dark" (click)="importPermissions()">
-            Importar
-        </button>
-        <button mat-raised-button class="btn-dark" (click)="exportPermissions()">
-            Exportar
-        </button>
     </div>
 
     <!-- Permissions Table Section -->
     <div class="table-container mat-elevation-z0">
         <table mat-table [dataSource]="dataSource" class="custom-table">
 
-            <!-- Checkbox Column -->
-            <ng-container matColumnDef="select">
-                <th mat-header-cell *matHeaderCellDef>
-                    <mat-checkbox (change)="$event ? toggleAllRows() : null"
-                                  [checked]="selection.hasValue() && isAllSelected()"
-                                  [indeterminate]="selection.hasValue() && !isAllSelected()">
-                    </mat-checkbox>
-                </th>
-                <td mat-cell *matCellDef="let row">
-                    <mat-checkbox (click)="$event.stopPropagation()"
-                                  (change)="$event ? selection.toggle(row) : null"
-                                  [checked]="selection.isSelected(row)">
-                    </mat-checkbox>
-                </td>
+            <!-- ID Column -->
+            <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef> ID </th>
+                <td mat-cell *matCellDef="let element"> {{element.id}} </td>
             </ng-container>
 
-            <!-- ID Column -->
-            <ng-container matColumnDef="idp">
-                <th mat-header-cell *matHeaderCellDef> ID Permiso </th>
-                <td mat-cell *matCellDef="let element"> {{element.idp}} </td>
+            <!-- Name Column -->
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef> Nombre </th>
+                <td mat-cell *matCellDef="let element">
+                    <span class="permission-name-chip">{{element.name}}</span>
+                </td>
             </ng-container>
 
             <!-- Description Column -->
@@ -110,9 +73,24 @@
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                (click)="selection.toggle(row)">
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- Empty state -->
+            <tr class="mat-row empty-state-row" *matNoDataRow>
+                <td class="mat-cell empty-state-cell" [attr.colspan]="displayedColumns.length">
+                    <div class="empty-state">
+                        <p class="empty-title">No se encontraron permisos</p>
+                    </div>
+                </td>
             </tr>
         </table>
+
+        <mat-paginator [length]="totalElements"
+                       [pageSize]="pageSize"
+                       [pageIndex]="pageIndex"
+                       [pageSizeOptions]="[5, 10, 25, 50]"
+                       (page)="onPageChange($event)"
+                       aria-label="Seleccionar página">
+        </mat-paginator>
     </div>
 </div>

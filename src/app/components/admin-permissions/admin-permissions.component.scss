@@ -219,3 +219,31 @@
   align-items: center;
   justify-content: center;
 }
+
+.permission-name-chip {
+  display: inline-block;
+  background-color: #f0f4ff;
+  border: 1px solid #6366f1;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  border-radius: 6px;
+  padding: 2px 10px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+
+  .empty-title {
+    font-size: 15px;
+    color: #888;
+  }
+}
+
+.hint {
+  font-size: 11px;
+  color: #888;
+  font-weight: 400;
+}
