@@ -1,9 +1,9 @@
 <div class="edit-profile-container">
     <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
-        
+
         <div class="form-group custom-field-wrapper">
             <label for="username">Nombre de Usuario</label>
-            <mat-form-field appearance="outline" class="custom-mat-form-field">
+            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
                 <input matInput type="text" id="username" formControlName="username">
                 <mat-error *ngIf="editForm.get('username')?.hasError('required')">
                     El nombre de usuario es requerido
@@ -13,7 +13,7 @@
 
         <div class="form-group custom-field-wrapper">
             <label for="email">Correo Electrónico</label>
-            <mat-form-field appearance="outline" class="custom-mat-form-field">
+            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
                 <input matInput type="email" id="email" formControlName="email">
                 <mat-error *ngIf="editForm.get('email')?.hasError('required')">
                     El correo es requerido
@@ -26,7 +26,7 @@
 
         <div class="form-group custom-field-wrapper">
             <label for="phoneNumber">Teléfono</label>
-            <mat-form-field appearance="outline" class="custom-mat-form-field">
+            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
                 <input matInput type="tel" id="phoneNumber" formControlName="phoneNumber" placeholder="+54 9 11 1234 5678">
             </mat-form-field>
         </div>
@@ -34,13 +34,13 @@
         <div class="form-group custom-field-wrapper">
             <label>Fecha de Nacimiento</label>
             <div class="multi-input-row">
-                <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
                     <input matInput type="number" formControlName="birthDay" placeholder="DD">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
                     <input matInput type="number" formControlName="birthMonth" placeholder="MM">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
                     <input matInput type="number" formControlName="birthYear" placeholder="AAAA">
                 </mat-form-field>
             </div>
@@ -49,21 +49,53 @@
         <div class="form-group custom-field-wrapper">
             <label>Nombre y Apellido</label>
             <div class="multi-input-row">
-                <mat-form-field appearance="outline" class="custom-mat-form-field half">
+                <mat-form-field appearance="outline" class="custom-mat-form-field half" subscriptSizing="dynamic">
                     <input matInput type="text" formControlName="name" placeholder="Nombre">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="custom-mat-form-field half">
+                <mat-form-field appearance="outline" class="custom-mat-form-field half" subscriptSizing="dynamic">
                     <input matInput type="text" formControlName="lastName" placeholder="Apellido">
                 </mat-form-field>
             </div>
         </div>
 
+        <!-- Separador visual antes de la confirmación -->
+        <div class="password-confirmation-section">
+            <p class="password-confirmation-label">
+                Ingresá tu contraseña para confirmar los cambios
+            </p>
+            <div class="form-group custom-field-wrapper">
+                <label for="password">Contraseña</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                    <input matInput
+                           [type]="showPassword ? 'text' : 'password'"
+                           id="password"
+                           formControlName="password"
+                           placeholder="Tu contraseña actual">
+                    <button mat-icon-button matSuffix type="button"
+                            (click)="togglePasswordVisibility()"
+                            [attr.aria-label]="'Mostrar contraseña'"
+                            [attr.aria-pressed]="showPassword">
+                        <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    </button>
+                    <mat-error *ngIf="editForm.get('password')?.hasError('required')">
+                        La contraseña es requerida para confirmar
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
         <div class="dialog-actions">
-            <button mat-raised-button 
+            <button mat-raised-button
                     type="submit"
                     [disabled]="editForm.invalid"
                     class="custom-btn-submit">
                 Confirmar Modificaciones
+            </button>
+            <button mat-stroked-button
+                    type="button"
+                    (click)="onCancel()"
+                    class="btn-cancel">
+                Cancelar
             </button>
         </div>
 

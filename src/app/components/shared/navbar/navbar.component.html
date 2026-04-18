@@ -17,9 +17,13 @@
           <mat-icon>dashboard</mat-icon>
           <span>Dashboard</span>
         </button>
-        <button mat-menu-item (click)="navigateToPerfilUser()">
+        <button mat-menu-item (click)="navigateToMyPublicProfile()">
+          <mat-icon>person</mat-icon>
+          <span>Ver mi Perfil</span>
+        </button>
+        <button mat-menu-item (click)="navigateToPerfilConfig()">
           <mat-icon>manage_accounts</mat-icon>
-          <span>Administrar Perfil</span>
+          <span>Configuración</span>
         </button>
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="logout()">

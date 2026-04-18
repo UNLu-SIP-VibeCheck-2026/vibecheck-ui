@@ -4,8 +4,8 @@ import { environment } from "../../environments/environment";
 import { Observable } from "rxjs";
 import { Page } from "../models/page.model";
 import { UserSummaryResponse } from "../models/user-summary-response.model";
-
 import { UserUpdateRequest } from "../models/user-update-request.model";
+import { UserPublicResponse } from "../models/user-public-response.model";
 
 @Injectable({
   providedIn: "root",
@@ -24,6 +24,14 @@ export class UsersService {
     if (sortBy) params.sortBy = sortBy;
     if (sortDirection) params.sortDirection = sortDirection;
     return this.http.get<Page<UserSummaryResponse>>(`${this.apiUrl}/users/list-paginated`, { params });
+  }
+
+  getUserByUsername(username: string): Observable<UserSummaryResponse> {
+    return this.http.get<UserSummaryResponse>(`${this.apiUrl}/users/${username}`);
+  }
+
+  getPublicUser(username: string): Observable<UserPublicResponse> {
+    return this.http.get<UserPublicResponse>(`${this.apiUrl}/users/public/${username}`);
   }
 
   updateUser(originalUsername: string, data: UserUpdateRequest): Observable<any> {

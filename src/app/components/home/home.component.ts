@@ -24,7 +24,7 @@ export class HomeComponent {
   }
 
   navigateToUserProfile() {
-    this.router.navigate(['/perfil-user']);
+    this.router.navigate(['/perfil-config']);
   }
 
   navigateToAdminUsers() {

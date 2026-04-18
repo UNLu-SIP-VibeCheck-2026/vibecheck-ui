@@ -1,40 +1,49 @@
 <div class="profile-page">
-    <div class="profile-header">
-        <div class="profile-icon-container">
-            <svg class="profile-icon" width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" fill="currentColor"/>
-                <path d="M12 13C7.58172 13 4 16.5817 4 21H20C20 16.5817 16.4183 13 12 13Z" fill="currentColor"/>
-            </svg>
-        </div>
-        <p class="greeting-subtitle">Bienvenido</p>
-        <h1 class="greeting-title">{{ greeting }}</h1>
+
+  <!-- Estado de carga -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="skeleton-avatar"></div>
+    <div class="skeleton-line wide"></div>
+    <div class="skeleton-line narrow"></div>
+  </div>
+
+  <!-- Estado de error -->
+  <div class="error-state" *ngIf="!isLoading && hasError">
+    <div class="error-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M12 8V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="12" cy="16" r="0.75" fill="currentColor"/>
+      </svg>
+    </div>
+    <p class="error-title">Usuario no encontrado</p>
+    <p class="error-subtitle">El perfil que buscás no existe o no está disponible.</p>
+  </div>
+
+  <!-- Contenido del perfil -->
+  <div class="profile-content" *ngIf="!isLoading && !hasError && profile">
+
+    <!-- Avatar con iniciales -->
+    <div class="avatar-wrapper">
+      <div class="avatar">{{ initials }}</div>
     </div>
 
-    <div class="profile-content">
-        <!-- Common User Actions -->
-        <div class="action-group">
-            <button mat-raised-button class="custom-btn-submit" (click)="openEditProfile()">
-                Editar Perfil
-            </button>
-            <button *ngIf="!isAdmin" mat-raised-button class="custom-btn-submit" (click)="openChangeRole()">
-                Cambiar mi Rol
-            </button>
-            <button mat-raised-button class="custom-btn-submit" (click)="openChangePassword()">
-                Cambiar mi Contraseña
-            </button>
-        </div>
-
-        <!-- Admin Actions (Conditional) -->
-        <div class="action-group admin-group" *ngIf="isAdmin">
-            <button mat-raised-button class="custom-btn-submit" (click)="navigateToAdminUsers()">
-                Administrar Usuarios
-            </button>
-            <button mat-raised-button class="custom-btn-submit" (click)="navigateToAdminRoles()">
-                Administrar Roles
-            </button>
-            <button mat-raised-button class="custom-btn-submit" (click)="navigateToAdminPermissions()">
-                Administrar Permisos
-            </button>
-        </div>
+    <!-- Identidad -->
+    <div class="identity-section">
+      <h1 class="display-name">{{ fullName }}</h1>
+      <p class="username">&#64;{{ profile.username }}</p>
     </div>
+
+    <!-- Datos públicos -->
+    <div class="info-cards">
+
+      <div class="info-card">
+        <span class="info-label">Rol</span>
+        <span class="info-value role-badge">{{ profile.role }}</span>
+      </div>
+
+    </div>
+
+  </div>
+
 </div>

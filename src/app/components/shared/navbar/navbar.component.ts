@@ -36,8 +36,15 @@ export class NavbarComponent {
     this.router.navigate(['/dashboard']);
   }
 
-  navigateToPerfilUser(): void {
-    this.router.navigate(['/perfil-user']);
+  navigateToPerfilConfig(): void {
+    this.router.navigate(['/perfil-config']);
+  }
+
+  navigateToMyPublicProfile(): void {
+    const user = this.authService.getCurrentUserValue();
+    if (user?.username) {
+      this.router.navigate(['/perfil-user', user.username]);
+    }
   }
 
   logout(): void {

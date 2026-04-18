@@ -4,8 +4,9 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { User } from '../../../../models/user.model';
+import { UserSummaryResponse } from '../../../../models/user-summary-response.model';
 
 @Component({
   selector: 'app-edit-profile-dialog',
@@ -16,7 +17,8 @@ import { User } from '../../../../models/user.model';
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './edit-profile-dialog.component.html',
   styleUrls: ['./edit-profile-dialog.component.scss']
@@ -24,33 +26,49 @@ import { User } from '../../../../models/user.model';
 export class EditProfileDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<EditProfileDialogComponent>);
-  public data = inject<User>(MAT_DIALOG_DATA);
+  public data = inject<UserSummaryResponse>(MAT_DIALOG_DATA);
+
+  showPassword = false;
 
   editForm: FormGroup = this.fb.group({
-    username: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
+    username:    ['', [Validators.required]],
+    email:       ['', [Validators.required, Validators.email]],
     phoneNumber: [''],
-    name: ['', [Validators.required]],
-    lastName: ['', [Validators.required]],
-    birthDay: ['', [Validators.required, Validators.min(1), Validators.max(31)]],
-    birthMonth: ['', [Validators.required, Validators.min(1), Validators.max(12)]],
-    birthYear: ['', [Validators.required, Validators.min(1900), Validators.max(2026)]]
+    name:        ['', [Validators.required]],
+    lastName:    ['', [Validators.required]],
+    birthDay:    ['', [Validators.required, Validators.min(1), Validators.max(31)]],
+    birthMonth:  ['', [Validators.required, Validators.min(1), Validators.max(12)]],
+    birthYear:   ['', [Validators.required, Validators.min(1900), Validators.max(2026)]],
+    password:    ['', [Validators.required]]
   });
 
   ngOnInit(): void {
     if (this.data) {
+      // Pre-llenar los campos con los datos actuales del usuario
       this.editForm.patchValue({
-        username: this.data.id || '',
-        email: this.data.email || '',
-        name: this.data.firstName || '',
-        lastName: this.data.lastName || '',
-        // These might need manual mapping if not in the initial model
-        phoneNumber: (this.data as any).phoneNumber || '',
-        birthDay: (this.data as any).birthDay || '',
-        birthMonth: (this.data as any).birthMonth || '',
-        birthYear: (this.data as any).birthYear || ''
+        username:    this.data.username    || '',
+        email:       this.data.email       || '',
+        name:        this.data.name        || '',
+        lastName:    this.data.lastName    || '',
+        phoneNumber: this.data.phoneNumber || ''
       });
+
+      // Pre-llenar la fecha de nacimiento si existe (formato esperado: "YYYY-MM-DD")
+      if (this.data.birthdate) {
+        const parts = this.data.birthdate.split('-');
+        if (parts.length === 3) {
+          this.editForm.patchValue({
+            birthYear:  parseInt(parts[0], 10),
+            birthMonth: parseInt(parts[1], 10),
+            birthDay:   parseInt(parts[2], 10)
+          });
+        }
+      }
     }
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
   onCancel(): void {

@@ -83,4 +83,30 @@
 
 .dialog-actions {
   margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
+
+.btn-cancel {
+  width: 100%;
+  height: 44px !important;
+  border-radius: 8px !important;
+  color: #555 !important;
+  font-size: 15px !important;
+}
+
+/* Separador visual para la sección de contraseña */
+.password-confirmation-section {
+  border-top: 1.5px solid #ebebeb;
+  margin-top: 8px;
+  padding-top: 16px;
+}
+
+.password-confirmation-label {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
