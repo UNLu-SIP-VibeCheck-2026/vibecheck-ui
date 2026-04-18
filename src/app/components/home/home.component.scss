@@ -75,33 +75,3 @@
   }
 }
 
-.dev-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px dashed #e0e0e0;
-}
-
-.dev-btn {
-  height: 40px !important;
-  background-color: #7b1fa2 !important; /* Deep Violet */
-  color: #ffffff !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  border-radius: 6px !important;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease !important;
-  box-shadow: none !important;
-  min-width: 160px;
-}
-
-.dev-btn:hover {
-  background-color: #4a148c !important; /* Darker Violet */
-}
-
-.dev-btn:active {
-  transform: scale(0.95) !important;
-}

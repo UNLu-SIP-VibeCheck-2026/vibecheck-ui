@@ -14,7 +14,7 @@ import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 
 export const routes: Routes = [
-  { path: "home", component: HomeComponent },
+  { path: "", component: HomeComponent, pathMatch: "full" },
   {
     path: "pass-recovery",
     component: PasswordRecoveryComponent,
@@ -57,6 +57,5 @@ export const routes: Routes = [
     component: DashboardComponent,
     canActivate: [authGuard],
   },
-  { path: "", redirectTo: "/home", pathMatch: "full" },
-  { path: "**", redirectTo: "/home" },
+  { path: "**", redirectTo: "" },
 ];

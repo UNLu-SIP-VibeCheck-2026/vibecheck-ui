@@ -86,32 +86,10 @@
                 </div>
             </div>
 
-            <div class="form-group custom-field-wrapper role-selection">
-                <label>En VibeCheck quiero:</label>
-                <div class="role-buttons">
-                    <button type="button" 
-                            class="role-btn" 
-                            [class.active]="registerForm.get('role')?.value === 'comprar'"
-                            (click)="setRole('comprar')">
-                        Comprar entradas
-                    </button>
-                    <button type="button" 
-                            class="role-btn" 
-                            [class.active]="registerForm.get('role')?.value === 'crear'"
-                            (click)="setRole('crear')">
-                        Crear Eventos
-                    </button>
-                    <button type="button" 
-                            class="role-btn" 
-                            [class.active]="registerForm.get('role')?.value === 'validar'"
-                            (click)="setRole('validar')">
-                        Validar entradas en puerta
-                    </button>
-                </div>
-                <mat-error *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('repeatPassword')?.touched" style="margin-top: 8px; font-size: 13px;">
-                    Las contraseñas no coinciden
-                </mat-error>
-            </div>
+
+            <mat-error *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('repeatPassword')?.touched" style="margin-bottom: 8px; font-size: 13px;">
+                Las contraseñas no coinciden
+            </mat-error>
 
             <button mat-raised-button
                     type="submit"
