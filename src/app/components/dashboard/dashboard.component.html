@@ -1,41 +1,96 @@
 <div class="dashboard-container" *ngIf="user$ | async as user; else noUser">
-  <div class="header">
-    <h1>Bienvenido al Dashboard, {{ user.username }}</h1>
-    <p>Rol: {{ user.role }}</p>
+  <!-- Welcome Header -->
+  <div class="welcome-section">
+    <div class="welcome-content">
+      <h1 class="welcome-title">¡Hola, {{ user.username }}!</h1>
+      <p class="welcome-subtitle">Bienvenido de nuevo a VibeCheck</p>
+    </div>
+    <div class="user-badge">
+      <span class="badge-text">{{ user.role }}</span>
+    </div>
   </div>
 
-  <div class="actions-grid">
-    <mat-card class="action-card" (click)="navigateTo('/perfil-user')">
-      <mat-card-header>
-        <mat-icon mat-card-avatar color="primary">person</mat-icon>
-        <mat-card-title>Mi Perfil</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Ver mis datos personales de la cuenta.</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-button color="primary">Ir al perfil</button>
-      </mat-card-actions>
-    </mat-card>
+  <!-- Upcoming Events Carousel -->
+  <div class="events-section">
+    <div class="section-header">
+      <h2 class="section-title">Próximos Eventos</h2>
+      <span class="coming-soon-badge">PROXIMAMENTE</span>
+    </div>
+    
+    <div class="events-carousel">
+      <div class="event-card placeholder">
+        <div class="event-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <h3 class="event-title">Eventos próximos</h3>
+        <p class="event-description">Próximamente podrás ver y unirte a eventos increíbles.</p>
+      </div>
+      
+      <div class="event-card placeholder">
+        <div class="event-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <h3 class="event-title">Comunidad</h3>
+        <p class="event-description">Conecta con otros usuarios y comparte experiencias.</p>
+      </div>
+      
+      <div class="event-card placeholder">
+        <div class="event-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </div>
+        <h3 class="event-title">Experiencias</h3>
+        <p class="event-description">Descubre nuevas actividades y momentos especiales.</p>
+      </div>
+    </div>
+  </div>
 
-    <mat-card class="action-card" *ngIf="user.role !== 'comprar'" (click)="navigateTo('/perfil-config')">
-      <mat-card-header>
-        <mat-icon mat-card-avatar color="accent">settings</mat-icon>
-        <mat-card-title>Configuraciones</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Ajustes avanzados y preferencias.</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-button color="accent">Configurar</button>
-      </mat-card-actions>
-    </mat-card>
+  <!-- Quick Actions -->
+  <div class="actions-section">
+    <h2 class="section-title">Acciones Rápidas</h2>
+    <div class="actions-grid">
+      <mat-card class="action-card" (click)="navigateTo('/perfil-user/' + user.username)">
+        <div class="card-icon">
+          <mat-icon>person</mat-icon>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">Mi Perfil</h3>
+          <p class="card-description">Ver y editar mis datos personales</p>
+        </div>
+        <mat-icon class="card-arrow">arrow_forward</mat-icon>
+      </mat-card>
+
+      <mat-card class="action-card" *ngIf="user.role !== 'comprar'" (click)="navigateTo('/perfil-config')">
+        <div class="card-icon">
+          <mat-icon>settings</mat-icon>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">Configuraciones</h3>
+          <p class="card-description">Ajustes avanzados y preferencias</p>
+        </div>
+        <mat-icon class="card-arrow">arrow_forward</mat-icon>
+      </mat-card>
+    </div>
   </div>
 </div>
 
 <ng-template #noUser>
   <div class="dashboard-container">
-    <h2>Inicia sesión para ver tu contenido.</h2>
+    <div class="no-user-state">
+      <mat-icon class="no-user-icon">lock_outline</mat-icon>
+      <h2>Inicia sesión para ver tu contenido</h2>
+      <button mat-raised-button color="primary" (click)="navigateTo('/login')">Iniciar sesión</button>
+    </div>
   </div>
 </ng-template>
-
