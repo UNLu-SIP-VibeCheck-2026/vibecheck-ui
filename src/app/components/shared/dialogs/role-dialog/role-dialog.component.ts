@@ -7,6 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { PermissionsService } from '../../../../services/permissions.service';
+import { PermissionResponse } from '../../../../models/permission-response.model';
+import { Page } from '../../../../models/page.model';
 
 @Component({
   selector: 'app-role-dialog',
@@ -28,51 +31,34 @@ export class RoleDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<RoleDialogComponent>);
   public data = inject(MAT_DIALOG_DATA);
+  private permissionsService = inject(PermissionsService);
 
   roleForm!: FormGroup;
   isEditMode: boolean = false;
-  addedPermissions: string[] = [];
-
-  availablePermissions = [
-    'Ver Usuarios',
-    'Crear Usuarios',
-    'Editar Usuarios',
-    'Eliminar Usuarios',
-    'Ver Roles',
-    'Crear Roles',
-    'Editar Roles',
-    'Eliminar Roles',
-    'Ver Permisos',
-    'Crear Eventos',
-    'Validar Entradas'
-  ];
+  availablePermissions: PermissionResponse[] = [];
 
   ngOnInit(): void {
     this.isEditMode = !!this.data?.role;
-    if (this.isEditMode && this.data.role.permissions) {
-      // Logic to parse permissions string if necessary, but assuming array for internal management
-      this.addedPermissions = this.data.role.permissions.split(', ');
-    }
+    
+    // Fetch available permissions mapping
+    this.permissionsService.getPermissions(0, 100).subscribe({
+      next: (page: Page<PermissionResponse>) => {
+        this.availablePermissions = page.content;
+      },
+      error: (err: any) => console.error("Error loading permissions", err)
+    });
+
     this.initForm();
   }
 
   private initForm(): void {
+    const existingPermIds = this.isEditMode && this.data.role.permissions ? 
+                             this.data.role.permissions.map((p: any) => p.id) : [];
+                             
     this.roleForm = this.fb.group({
-      roleName: [this.data?.role?.roleName || '', this.isEditMode ? [] : [Validators.required]],
-      tempPermission: ['']
+      roleName: [this.data?.role?.name || '', [Validators.required]],
+      permissionIds: [existingPermIds]
     });
-  }
-
-  addPermission(): void {
-    const permission = this.roleForm.get('tempPermission')?.value;
-    if (permission && !this.addedPermissions.includes(permission)) {
-      this.addedPermissions.push(permission);
-      this.roleForm.get('tempPermission')?.setValue('');
-    }
-  }
-
-  removePermission(index: number): void {
-    this.addedPermissions.splice(index, 1);
   }
 
   onCancel(): void {
@@ -80,10 +66,10 @@ export class RoleDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.roleForm.valid && this.addedPermissions.length > 0) {
+    if (this.roleForm.valid) {
       const result = {
         roleName: this.roleForm.get('roleName')?.value,
-        permissions: this.addedPermissions.join(', ')
+        permissionIds: this.roleForm.get('permissionIds')?.value
       };
       this.dialogRef.close(result);
     }
