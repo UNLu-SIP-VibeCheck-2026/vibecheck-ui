@@ -6,6 +6,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
+import { RolesService } from '../../../../services/roles.service';
+import { RoleResponse } from '../../../../models/role-response.model';
+import { Page } from '../../../../models/page.model';
 
 @Component({
   selector: 'app-user-dialog',
@@ -26,20 +29,29 @@ export class UserDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<UserDialogComponent>);
   public data = inject(MAT_DIALOG_DATA);
+  private rolesService = inject(RolesService);
 
   userForm!: FormGroup;
   isEditMode: boolean = false;
 
-  roles = [
-    { value: 'comprar', label: 'Comprar entradas' },
-    { value: 'crear', label: 'Crear Eventos' },
-    { value: 'validar', label: 'Validar entradas en puerta' },
-    { value: 'admin', label: 'Administrador' }
-  ];
+  roles: RoleResponse[] = [];
 
   ngOnInit(): void {
     this.isEditMode = !!this.data?.user;
     this.initForm();
+    
+    this.rolesService.getRoles(0, 100).subscribe({
+      next: (page: Page<RoleResponse>) => {
+        this.roles = page.content;
+        if (this.isEditMode && this.data.user.role) {
+          const matchingRole = this.roles.find(r => r.name === this.data.user.role);
+          if (matchingRole) {
+            this.userForm.patchValue({ roleId: matchingRole.id });
+          }
+        }
+      },
+      error: (err: any) => console.error("Error cargando roles", err)
+    });
   }
 
   private initForm(): void {
@@ -51,14 +63,14 @@ export class UserDialogComponent implements OnInit {
       birthMonth: ['', [Validators.required, Validators.min(1), Validators.max(12)]],
       birthYear: ['', [Validators.required, Validators.min(1900), Validators.max(2026)]],
       firstName: [this.data?.user?.name || '', [Validators.required]],
-      lastName: [this.data?.user?.lastName || '', [Validators.required]]
+      lastName: [this.data?.user?.lastName || '', [Validators.required]],
+      roleId: ['', [Validators.required]]
     });
 
     if (!this.isEditMode) {
       // Add mode specific fields
       this.userForm.addControl('password', this.fb.control('', [Validators.required, Validators.minLength(8)]));
       this.userForm.addControl('confirmPassword', this.fb.control('', [Validators.required]));
-      this.userForm.addControl('role', this.fb.control('', [Validators.required]));
       this.userForm.setValidators(this.passwordMatchValidator);
     } else {
       // Add active field in edit mode

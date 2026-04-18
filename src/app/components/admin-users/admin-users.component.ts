@@ -118,6 +118,7 @@ export class AdminUsersComponent implements OnInit {
           email: result.email,
           phoneNumber: result.phone,
           active: result.active,
+          roleId: result.roleId,
           birthdate: `${result.birthYear}-${String(result.birthMonth).padStart(2, '0')}-${String(result.birthDay).padStart(2, '0')}`
         };
 

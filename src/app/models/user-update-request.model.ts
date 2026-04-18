@@ -6,4 +6,5 @@ export interface UserUpdateRequest {
   birthdate: string;
   phoneNumber: string;
   active?: boolean;
+  roleId?: number;
 }

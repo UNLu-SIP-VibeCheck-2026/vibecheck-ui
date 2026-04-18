@@ -68,18 +68,16 @@
             </div>
         </div>
 
-        <ng-container *ngIf="!isEditMode">
-            <div class="form-group custom-field-wrapper">
-                <label>Rol:</label>
-                <mat-form-field appearance="fill" class="custom-mat-select" subscriptSizing="dynamic">
-                    <mat-select formControlName="role" placeholder="Roles">
-                        <mat-option *ngFor="let role of roles" [value]="role.value">
-                            {{role.label}}
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-        </ng-container>
+        <div class="form-group custom-field-wrapper">
+            <label>Rol:</label>
+            <mat-form-field appearance="fill" class="custom-mat-select" subscriptSizing="dynamic">
+                <mat-select formControlName="roleId" placeholder="Roles">
+                    <mat-option *ngFor="let role of roles" [value]="role.id">
+                        {{role.name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
 
         <ng-container *ngIf="isEditMode">
             <div class="form-group custom-field-wrapper">
