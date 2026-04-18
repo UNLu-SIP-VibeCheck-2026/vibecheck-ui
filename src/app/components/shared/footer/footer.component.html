@@ -9,9 +9,16 @@
 
     <!-- Links -->
     <nav class="footer-links">
-      <a routerLink="/login">Iniciar sesión</a>
-      <a routerLink="/register">Registrarse</a>
-      <a routerLink="/pass-recovery">Recuperar contraseña</a>
+      <ng-container *ngIf="user$ | async as user; else guestLinks">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/perfil-config">Configuración</a>
+        <a [routerLink]="['/perfil-user', user.username]">Mi perfil</a>
+      </ng-container>
+      <ng-template #guestLinks>
+        <a routerLink="/login">Iniciar sesión</a>
+        <a routerLink="/register">Registrarse</a>
+        <a routerLink="/pass-recovery">Recuperar contraseña</a>
+      </ng-template>
     </nav>
 
     <!-- Redes sociales -->

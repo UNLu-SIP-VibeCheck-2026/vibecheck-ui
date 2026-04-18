@@ -1,8 +1,12 @@
-<!-- TOP DE PAGINA FIJO-->
-<app-navbar></app-navbar>
+<div class="app-wrapper">
+  <!-- TOP DE PAGINA FIJO-->
+  <app-navbar></app-navbar>
 
-<!-- Contenido scrolleable, todas mis pantallas -->
-<router-outlet></router-outlet>
+  <!-- Contenido scrolleable, todas mis pantallas -->
+  <div class="app-content">
+    <router-outlet></router-outlet>
+  </div>
 
-<!-- Footer siempre visible al final de la pantalla -->
-<app-footer></app-footer>
+  <!-- Footer siempre visible al final de la pantalla -->
+  <app-footer></app-footer>
+</div>
