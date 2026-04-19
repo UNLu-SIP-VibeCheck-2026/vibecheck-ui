@@ -19,9 +19,7 @@ RUN npm run build --configuration=production
 FROM nginx:alpine
 
 # Copiamos el build generado en la etapa 1 al directorio de Nginx
-# NOTA: Cambia "nombre-de-tu-proyecto" por el nombre real de tu app en Angular 
-# (puedes verlo en la propiedad "outputPath" de tu angular.json)
-COPY --from=build /app/dist/nombre-de-tu-proyecto/browser /usr/share/nginx/html
+COPY --from=build /app/dist/vibecheck-ui /usr/share/nginx/html
 
 # Copiamos la configuración personalizada de Nginx para el fallback de rutas
 COPY nginx.conf /etc/nginx/conf.d/default.conf
