@@ -1,0 +1,84 @@
+.dialog-container {
+    padding: 10px;
+    font-family: 'Inter', sans-serif;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h2 {
+        margin: 0;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .value {
+        font-size: 14px;
+        color: #1e293b;
+        font-weight: 500;
+    }
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #334155;
+    margin: 20px 0 10px;
+}
+
+.json-content {
+    background-color: #1e293b;
+    color: #f8fafc;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 0;
+
+    code {
+        font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    }
+}
+
+.btn-primary {
+    background-color: #667eea !important;
+    color: white !important;
+    padding: 0 24px !important;
+    border-radius: 8px !important;
+    height: 40px !important;
+}
+
+.close-btn {
+    color: #64748b;
+}
+
+::ng-deep .mat-mdc-dialog-container {
+    border-radius: 12px !important;
+}

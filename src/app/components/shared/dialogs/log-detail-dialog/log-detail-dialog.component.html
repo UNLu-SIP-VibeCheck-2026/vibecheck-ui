@@ -1,0 +1,43 @@
+<div class="dialog-container">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>Detalle del Log #{{data.log.id}}</h2>
+        <button mat-icon-button (click)="dialogRef.close()" class="close-btn">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="label">Fecha</span>
+                <span class="value">{{data.log.fecha | date:'dd/MM/yyyy HH:mm:ss'}}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Usuario DB</span>
+                <span class="value">{{data.log.usuarioDb}}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Tabla</span>
+                <span class="value">{{data.log.tabla}}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Operación</span>
+                <span class="value">{{data.log.operacion}}</span>
+            </div>
+        </div>
+
+        <div class="data-section" *ngIf="data.log.datosAnteriores">
+            <h3 class="section-title">Datos Anteriores</h3>
+            <pre class="json-content"><code>{{formatJson(data.log.datosAnteriores)}}</code></pre>
+        </div>
+
+        <div class="data-section" *ngIf="data.log.datosNuevos">
+            <h3 class="section-title">Datos Nuevos</h3>
+            <pre class="json-content"><code>{{formatJson(data.log.datosNuevos)}}</code></pre>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button (click)="dialogRef.close()" class="btn-primary">Cerrar</button>
+    </mat-dialog-actions>
+</div>
