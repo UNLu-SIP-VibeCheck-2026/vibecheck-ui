@@ -127,6 +127,11 @@
   color: #4a4aaa;
 }
 
+.card-icon.ceo {
+  background-color: #fff8e1;
+  color: #ffa000;
+}
+
 .card-content {
   display: flex;
   flex-direction: column;

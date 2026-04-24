@@ -37,6 +37,13 @@ export class PerfilConfigComponent {
     return user?.role === 'admin' || user?.role === 'ADMIN';
   }
 
+  get isCeo(): boolean {
+    const roleParam = this.route.snapshot.queryParamMap.get('role');
+    if (roleParam === 'ceo') return true;
+    const user = this.authService.getCurrentUserValue();
+    return user?.role === 'ceo' || user?.role === 'CEO';
+  }
+
   get greeting(): string {
     return this.authService.getCurrentUserValue()?.username ?? 'Usuario';
   }
@@ -51,6 +58,10 @@ export class PerfilConfigComponent {
 
   navigateToAdminPermissions() {
     this.router.navigate(['/admin-permissions']);
+  }
+
+  navigateToSystemLogs() {
+    this.router.navigate(['/system-logs']);
   }
 
   openEditProfile() {
