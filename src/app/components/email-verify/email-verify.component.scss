@@ -1,0 +1,119 @@
+:host {
+  display: block;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.verify-page {
+  min-height: calc(100vh - 64px);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.verify-container {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.verify-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.brand-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.verify-card {
+  background-color: #ffffff !important;
+  border-radius: 20px !important;
+  padding: 40px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  border: none !important;
+}
+
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: white;
+  }
+
+  &.success {
+    background-color: #10b981;
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+  }
+
+  &.error {
+    background-color: #ef4444;
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
+  }
+}
+
+.result-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 12px;
+
+  &.error-text {
+    color: #991b1b;
+  }
+}
+
+.status-text {
+  font-size: 16px;
+  color: #4b5563;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.redirect-notice {
+  font-size: 14px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* Animations */
+.animate-in {
+  animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Spinner color override */
+::ng-deep .mat-mdc-progress-spinner .mdc-circular-progress__circle-graphic {
+  stroke: #667eea !important;
+}

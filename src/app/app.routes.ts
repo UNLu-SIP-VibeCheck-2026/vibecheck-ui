@@ -12,6 +12,7 @@ import { AdminUsersComponent } from "./components/admin-users/admin-users.compon
 import { DashboardComponent } from "./components/dashboard/dashboard.component";
 import { OAuthCallbackComponent } from "./components/oauth-callback/oauth-callback.component";
 import { SystemLogsComponent } from "./components/system-logs/system-logs.component";
+import { EmailVerifyComponent } from "./components/email-verify/email-verify.component";
 import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 
@@ -67,6 +68,10 @@ export const routes: Routes = [
     path: "system-logs",
     component: SystemLogsComponent,
     canActivate: [authGuard],
+  },
+  {
+    path: "verify-email",
+    component: EmailVerifyComponent,
   },
   { path: "**", redirectTo: "" },
 ];

@@ -1,0 +1,37 @@
+<div class="verify-page">
+  <div class="verify-container">
+    <div class="verify-header">
+      <h1 class="brand-title">VibeCheck</h1>
+    </div>
+
+    <mat-card class="verify-card">
+      <div class="content-wrapper">
+        <!-- Loading State -->
+        <div *ngIf="status === 'loading'" class="state-container">
+          <mat-spinner diameter="50"></mat-spinner>
+          <p class="status-text">{{ message }}</p>
+        </div>
+
+        <!-- Success State -->
+        <div *ngIf="status === 'success'" class="state-container animate-in">
+          <div class="icon-circle success">
+            <mat-icon>check</mat-icon>
+          </div>
+          <h2 class="result-title">¡Verificación Exitosa!</h2>
+          <p class="status-text">{{ message }}</p>
+          <p class="redirect-notice">Redirigiendo al inicio en unos segundos...</p>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="status === 'error'" class="state-container animate-in">
+          <div class="icon-circle error">
+            <mat-icon>close</mat-icon>
+          </div>
+          <h2 class="result-title error-text">Error de Verificación</h2>
+          <p class="status-text">{{ message }}</p>
+          <p class="redirect-notice">Redirigiendo al inicio en unos segundos...</p>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>

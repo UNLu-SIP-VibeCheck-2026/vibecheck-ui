@@ -45,4 +45,8 @@ export class UsersService {
   changePassword(username: string, payload: any): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/users/${username}/changePassword`, payload);
   }
+
+  verifyEmail(token: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/verify-email`, { params: { token } });
+  }
 }
