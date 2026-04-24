@@ -174,9 +174,15 @@
   font-weight: 500;
 }
 
-/* Google Button */
-.google-btn {
+/* Social Buttons */
+.social-login-container {
+  display: flex;
+  gap: 16px;
   width: 100%;
+}
+
+.social-btn {
+  flex: 1;
   height: 48px !important;
   display: flex !important;
   justify-content: center !important;
@@ -193,12 +199,12 @@
   box-shadow: none !important;
 }
 
-.google-btn:hover {
+.social-btn:hover {
   background-color: #f8fcf8 !important;
   box-shadow: 0 1px 3px rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15) !important;
 }
 
-.google-logo {
+.social-logo {
   width: 20px;
   height: 20px;
   margin-right: 12px;

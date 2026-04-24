@@ -183,9 +183,15 @@
   font-weight: 500;
 }
 
-/* Google Button */
-.google-btn {
+/* Social Buttons */
+.social-login-container {
+  display: flex;
+  gap: 16px;
   width: 100%;
+}
+
+.social-btn {
+  flex: 1;
   height: 52px !important;
   display: flex !important;
   justify-content: center !important;
@@ -202,14 +208,14 @@
   box-shadow: none !important;
 }
 
-.google-btn:hover {
+.social-btn:hover {
   background-color: #f7fafc !important;
   border-color: #cbd5e0 !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
   transform: translateY(-1px) !important;
 }
 
-.google-logo {
+.social-logo {
   width: 20px;
   height: 20px;
   margin-right: 12px;
