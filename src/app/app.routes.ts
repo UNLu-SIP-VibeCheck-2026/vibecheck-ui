@@ -13,6 +13,7 @@ import { DashboardComponent } from "./components/dashboard/dashboard.component";
 import { OAuthCallbackComponent } from "./components/oauth-callback/oauth-callback.component";
 import { SystemLogsComponent } from "./components/system-logs/system-logs.component";
 import { EmailVerifyComponent } from "./components/email-verify/email-verify.component";
+import { WalletComponent } from "./components/wallet/wallet.component";
 import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 
@@ -77,6 +78,11 @@ export const routes: Routes = [
   {
     path: "verify-email",
     component: EmailVerifyComponent,
+  },
+  {
+    path: "wallet",
+    component: WalletComponent,
+    canActivate: [authGuard],
   },
   { path: "**", redirectTo: "" },
 ];
