@@ -83,6 +83,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
+  margin: 1rem 0;
 }
 
 .event-card {
@@ -115,6 +116,16 @@
   background: rgba(102, 126, 234, 0.1);
   border-radius: 50%;
   color: #667eea;
+}
+
+.event-icon mat-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+}
+
+.event-card.clickable {
+  cursor: pointer;
 }
 
 .event-title {

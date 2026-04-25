@@ -75,3 +75,18 @@
   }
 }
 
+.logged-in-message {
+  padding: 24px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  
+  p {
+    font-size: 18px;
+    color: #333;
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+}
+

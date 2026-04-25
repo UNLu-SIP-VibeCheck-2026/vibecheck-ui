@@ -2,24 +2,32 @@
     <div class="hero-section">
         <h1 class="brand-title">VibeCheck</h1>
         
-        <div class="hero-actions">
-            <button mat-raised-button 
-                    class="custom-btn-submit" 
-                    (click)="navigateToLogin()">
-                Iniciar Sesión
-            </button>
-            <button mat-raised-button 
-                    class="custom-btn-submit" 
-                    (click)="navigateToRegister()">
-                Registrarse
-            </button>
+        <div *ngIf="!(isLoggedIn$ | async); else loggedInTemplate">
+            <div class="hero-actions">
+                <button mat-raised-button 
+                        class="custom-btn-submit" 
+                        (click)="navigateToLogin()">
+                    Iniciar Sesión
+                </button>
+                <button mat-raised-button 
+                        class="custom-btn-submit" 
+                        (click)="navigateToRegister()">
+                    Registrarse
+                </button>
+            </div>
+
+            <div class="hero-footer">
+                <a class="recovery-link" (click)="navigateToRecovery()">
+                    Olvidé mi contraseña
+                </a>
+            </div>
         </div>
 
-        <div class="hero-footer">
-            <a class="recovery-link" (click)="navigateToRecovery()">
-                Olvidé mi contraseña
-            </a>
-        </div>
+        <ng-template #loggedInTemplate>
+            <div class="logged-in-message">
+                <p>Gracias por iniciar sesión.<br>Próximamente VibeCheck.</p>
+            </div>
+        </ng-template>
 
     </div>
 </div>

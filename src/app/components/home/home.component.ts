@@ -1,15 +1,23 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../../services/auth.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-home',
-  imports: [MatButtonModule],
+  imports: [MatButtonModule, CommonModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
-  constructor(private router: Router) {}
+  private router = inject(Router);
+  private authService = inject(AuthService);
+
+  isLoggedIn$ = this.authService.currentUser$;
+
+  constructor() {}
 
   navigateToLogin() {
     this.router.navigate(['/login']);
