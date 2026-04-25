@@ -16,6 +16,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
 import { RegisterRequest } from "../../models/register-request.model";
 import { AuthService } from "../../services/auth.service";
+import { environment } from "../../../environments/environment";
 
 @Component({
   selector: "app-register",
@@ -99,7 +100,7 @@ export class RegisterComponent {
       lastName: formValue.lastName,
       phoneNumber: formValue.phoneNumber,
       password: formValue.password,
-      birthdate: `${formValue.birthYear}-${String(formValue.birthMonth).padStart(2, '0')}-${String(formValue.birthDay).padStart(2, '0')}`,
+      birthdate: `${formValue.birthYear}-${String(formValue.birthMonth).padStart(2, "0")}-${String(formValue.birthDay).padStart(2, "0")}`,
       role: formValue.role,
     };
 
@@ -124,6 +125,10 @@ export class RegisterComponent {
   }
 
   loginWithGoogle(): void {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+    window.location.href = `${environment.backendUrl}/oauth2/authorization/google`;
+  }
+
+  loginWithGitHub(): void {
+    window.location.href = `${environment.backendUrl}/oauth2/authorization/github`;
   }
 }

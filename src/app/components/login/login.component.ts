@@ -15,6 +15,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { AuthService } from "../../services/auth.service";
 import { LoginRequest } from "../../models/login-request.model";
+import { environment } from "../../../environments/environment";
 
 @Component({
   selector: "app-login",
@@ -62,18 +63,20 @@ export class LoginComponent {
       error: (error) => {
         this.isSubmitting = false;
         let errorMessage = "Usuario o contraseña incorrectos";
-        
+
         if (error.status === 401) {
-          errorMessage = "La contraseña es incorrecta. Por favor, verifica tus credenciales.";
+          errorMessage =
+            "La contraseña es incorrecta. Por favor, verifica tus credenciales.";
         } else if (error.status === 404) {
-          errorMessage = "El usuario no existe. Por favor, verifica tu nombre de usuario.";
+          errorMessage =
+            "El usuario no existe. Por favor, verifica tu nombre de usuario.";
         } else if (error.message) {
           errorMessage = error.message;
         }
 
         this.snackBar.open(errorMessage, "Cerrar", {
           duration: 5000,
-          panelClass: ['error-snackbar']
+          panelClass: ["error-snackbar"],
         });
       },
     });
@@ -84,6 +87,10 @@ export class LoginComponent {
   }
 
   loginWithGoogle(): void {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+    window.location.href = `${environment.backendUrl}/oauth2/authorization/google`;
+  }
+
+  loginWithGitHub(): void {
+    window.location.href = `${environment.backendUrl}/oauth2/authorization/github`;
   }
 }

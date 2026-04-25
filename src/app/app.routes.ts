@@ -17,7 +17,12 @@ import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 
 export const routes: Routes = [
-  { path: "", component: HomeComponent, pathMatch: "full" },
+  {
+    path: "",
+    component: HomeComponent,
+    pathMatch: "full",
+    canActivate: [guestGuard],
+  },
   {
     path: "pass-recovery",
     component: PasswordRecoveryComponent,
