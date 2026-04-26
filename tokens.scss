@@ -1,0 +1,309 @@
+// =============================================================================
+// tokens.scss
+// Custom design tokens — lo que Angular Material M3 no cubre nativamente
+// Importar DESPUÉS de _theme.scss en styles.scss
+// =============================================================================
+
+// =============================================================================
+// USO EN styles.scss:
+//
+// @use 'theme' as *;
+// @use 'tokens' as *;
+//
+// O con @import (legacy):
+// @import 'theme';
+// @import 'tokens';
+// =============================================================================
+
+:root {
+
+  // ---------------------------------------------------------------------------
+  // GRADIENTES
+  // ---------------------------------------------------------------------------
+
+  --gradient-brand: linear-gradient(
+    90deg,
+    #a855f7 0%,
+    #f97316 60%,
+    #fbbf24 100%
+  );
+
+  --gradient-brand-diagonal: linear-gradient(
+    135deg,
+    #a855f7 0%,
+    #f97316 60%,
+    #fbbf24 100%
+  );
+
+  --gradient-background: radial-gradient(
+    ellipse at 20% 50%,
+    #1a1535 0%,
+    #0d0b1e 70%
+  );
+
+  --gradient-surface-alt: radial-gradient(
+    ellipse at 30% 40%,
+    #1a1535 0%,
+    #0a0918 100%
+  );
+
+  // Para borders con gradiente (usar con pseudo-elemento ::before)
+  // Técnica: background: var(--gradient-brand); padding: 2px; border-radius: inherit;
+  --gradient-border: linear-gradient(
+    145deg,
+    #a855f7 0%,
+    #f97316 50%,
+    #fbbf24 100%
+  );
+
+
+  // ---------------------------------------------------------------------------
+  // TIPOGRAFÍA CUSTOM (display, fuera del sistema M3)
+  // ---------------------------------------------------------------------------
+
+  --font-display:    'Bebas Neue', 'Barlow Condensed', sans-serif;
+  --font-ui:         'Outfit', sans-serif;
+  --font-mono:       'Space Mono', 'JetBrains Mono', monospace;
+
+  // Tamaños
+  --text-display-lg: 72px;
+  --text-display-md: 56px;
+  --text-headline:   32px;
+  --text-title-lg:   24px;
+  --text-title-md:   22px;
+  --text-title-sm:   16px;
+  --text-body-lg:    16px;
+  --text-body-md:    14px;
+  --text-label-lg:   12px;
+  --text-label-md:   11px;
+  --text-label-sm:   13px;   // botón CTA mono
+
+  // Pesos
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  // Letter spacing
+  --tracking-display:  0.02em;
+  --tracking-label:    0.08em;
+  --tracking-label-sm: 0.06em;
+  --tracking-mono:     0.15em;
+
+
+  // ---------------------------------------------------------------------------
+  // ESPACIADO
+  // ---------------------------------------------------------------------------
+
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-8:  48px;
+  --space-10: 64px;
+  --space-12: 80px;
+
+
+  // ---------------------------------------------------------------------------
+  // BREAKPOINTS (como custom properties — usar con JS o @media directo)
+  // En SCSS usar las variables $bp-* de abajo
+  // ---------------------------------------------------------------------------
+
+  --bp-mobile:  600px;
+  --bp-tablet:  1024px;
+  --bp-desktop: 1280px;
+
+
+  // ---------------------------------------------------------------------------
+  // COMPONENTES CUSTOM
+  // ---------------------------------------------------------------------------
+
+  // -- Icon container (app icon con border gradiente) --
+  --icon-container-size:          80px;
+  --icon-container-size-sm:       56px;
+  --icon-container-radius:        24px;
+  --icon-container-bg:            #1a1535;
+  --icon-container-border-width:  2px;
+
+  // -- Botón CTA gradiente (Botón 2 style) --
+  --btn-cta-height:        60px;
+  --btn-cta-radius:        50px;
+  --btn-cta-padding-x:     8px;
+  --btn-cta-icon-size:     44px;
+  --btn-cta-icon-bg:       #1a1535;
+  --btn-cta-font:          var(--font-mono);
+  --btn-cta-font-size:     var(--text-label-sm);
+  --btn-cta-tracking:      var(--tracking-mono);
+  --btn-cta-text-color:    #ffffff;
+
+  // -- Chips sociales outlined --
+  --chip-height:           36px;
+  --chip-padding-x:        var(--space-4);
+  --chip-radius:           50px;
+  --chip-border:           1px solid rgba(255, 255, 255, 0.25);
+  --chip-bg:               transparent;
+  --chip-text-color:       #ffffff;
+  --chip-font-size:        var(--text-label-lg);
+  --chip-tracking:         var(--tracking-label);
+  --chip-font-weight:      var(--weight-bold);
+  --chip-hover-border:     1px solid rgba(255, 255, 255, 0.5);
+
+  // -- Footer bar decorativa --
+  --footer-bar-height:     4px;
+  --footer-bar-bg:         var(--gradient-brand);
+
+  // -- Links --
+  --link-color:            #ffffff;
+  --link-decoration:       underline;
+  --link-hover-opacity:    0.75;
+
+  // -- Divisor/separador --
+  --divider-color:         rgba(255, 255, 255, 0.08);
+  --divider-height:        1px;
+}
+
+
+// =============================================================================
+// BREAKPOINTS SCSS (usar con @media)
+// =============================================================================
+
+$bp-mobile:  600px;
+$bp-tablet:  1024px;
+$bp-desktop: 1280px;
+
+@mixin mobile  { @media (max-width: #{$bp-mobile - 1})                          { @content; } }
+@mixin tablet  { @media (min-width: #{$bp-mobile}) and (max-width: #{$bp-tablet - 1}) { @content; } }
+@mixin desktop { @media (min-width: #{$bp-tablet})                               { @content; } }
+
+
+// =============================================================================
+// MIXINS DE COMPONENTES CUSTOM
+// =============================================================================
+
+// Border con gradiente usando pseudo-elemento
+// Uso: @include gradient-border(24px);
+@mixin gradient-border($radius: 12px) {
+  position: relative;
+  border-radius: $radius;
+  background: var(--icon-container-bg);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--icon-container-border-width) * -1);
+    border-radius: calc(#{$radius} + var(--icon-container-border-width));
+    background: var(--gradient-border);
+    z-index: -1;
+  }
+}
+
+// Texto display con Bebas Neue
+@mixin text-display($size: var(--text-display-lg)) {
+  font-family: var(--font-display);
+  font-size: $size;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+}
+
+// Chip outlined
+@mixin chip-outlined {
+  display: inline-flex;
+  align-items: center;
+  height: var(--chip-height);
+  padding: 0 var(--chip-padding-x);
+  border-radius: var(--chip-radius);
+  border: var(--chip-border);
+  background: var(--chip-bg);
+  color: var(--chip-text-color);
+  font-family: var(--font-ui);
+  font-size: var(--chip-font-size);
+  font-weight: var(--chip-font-weight);
+  letter-spacing: var(--chip-tracking);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 200ms ease;
+
+  &:hover {
+    border: var(--chip-hover-border);
+  }
+}
+
+// Botón CTA con gradiente
+@mixin btn-cta {
+  display: inline-flex;
+  align-items: center;
+  height: var(--btn-cta-height);
+  border-radius: var(--btn-cta-radius);
+  padding: var(--btn-cta-padding-x);
+  background: var(--gradient-brand);
+  border: none;
+  cursor: pointer;
+  gap: var(--space-3);
+
+  .btn-cta__icon {
+    width: var(--btn-cta-icon-size);
+    height: var(--btn-cta-icon-size);
+    border-radius: 50%;
+    background: var(--btn-cta-icon-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .btn-cta__label {
+    font-family: var(--btn-cta-font);
+    font-size: var(--btn-cta-font-size);
+    font-weight: var(--weight-regular);
+    letter-spacing: var(--btn-cta-tracking);
+    text-transform: uppercase;
+    color: var(--btn-cta-text-color);
+    padding-right: var(--space-4);
+  }
+}
+
+
+// =============================================================================
+// CLASES UTILITARIAS GLOBALES
+// =============================================================================
+
+// Texto con gradiente (para headlines especiales)
+.text-gradient {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Footer bar decorativa
+.footer-bar {
+  width: 100%;
+  height: var(--footer-bar-height);
+  background: var(--footer-bar-bg);
+}
+
+// Divisor
+.divider {
+  width: 100%;
+  height: var(--divider-height);
+  background: var(--divider-color);
+}
+
+// Display typography
+.display-lg { @include text-display(var(--text-display-lg)); }
+.display-md { @include text-display(var(--text-display-md)); }
+
+// Link estilo del diseño
+a.app-link {
+  color: var(--link-color);
+  text-decoration: var(--link-decoration);
+  transition: opacity 150ms ease;
+
+  &:hover {
+    opacity: var(--link-hover-opacity);
+  }
+}

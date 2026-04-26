@@ -1,0 +1,150 @@
+// =============================================================================
+// _theme.scss
+// Angular Material 3 — Custom Dark Theme
+// Extraído del diseño visual de la aplicación
+// =============================================================================
+
+@use '@angular/material' as mat;
+
+// -----------------------------------------------------------------------------
+// 1. INCLUIR ESTILOS BASE DE MATERIAL (una sola vez, en styles.scss)
+// -----------------------------------------------------------------------------
+// @include mat.core(); // <- Mover a styles.scss si no está
+
+// -----------------------------------------------------------------------------
+// 2. DEFINICIÓN DEL TEMA M3
+// -----------------------------------------------------------------------------
+
+$app-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$violet-palette,      // #a855f7 range — purple
+    secondary: mat.$orange-palette,    // #f97316 range — orange
+    tertiary: mat.$yellow-palette,     // #fbbf24 range — amber
+    use-system-variables: true,
+  ),
+  typography: (
+    brand-family: 'Outfit, sans-serif',
+    plain-family: 'Outfit, sans-serif',
+    bold-weight: 700,
+    medium-weight: 600,
+    regular-weight: 400,
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+// -----------------------------------------------------------------------------
+// 3. OVERRIDE MANUAL DE CSS SYSTEM VARIABLES (post-theme)
+// Estos overrides ajustan la paleta generada por M3 a los valores exactos
+// del diseño. Aplicar dentro de :root o html.
+// -----------------------------------------------------------------------------
+
+html {
+  // Aplicar todos los temas de componentes
+  @include mat.all-component-themes($app-theme);
+
+  // --- Colores exactos del diseño ---
+  --md-sys-color-primary:                  #a855f7;
+  --md-sys-color-on-primary:               #ffffff;
+  --md-sys-color-primary-container:        #1a1535;
+  --md-sys-color-on-primary-container:     #ffffff;
+
+  --md-sys-color-secondary:                #f97316;
+  --md-sys-color-on-secondary:             #ffffff;
+  --md-sys-color-secondary-container:      #1c1008;
+  --md-sys-color-on-secondary-container:   #fbbf24;
+
+  --md-sys-color-tertiary:                 #fbbf24;
+  --md-sys-color-on-tertiary:              #1a1200;
+  --md-sys-color-tertiary-container:       #1a1535;
+  --md-sys-color-on-tertiary-container:    #fbbf24;
+
+  --md-sys-color-error:                    #f87171;
+  --md-sys-color-on-error:                 #1a0000;
+  --md-sys-color-error-container:          #3b0000;
+  --md-sys-color-on-error-container:       #f87171;
+
+  --md-sys-color-background:               #0d0b1e;
+  --md-sys-color-on-background:            #ffffff;
+
+  --md-sys-color-surface:                  #12102a;
+  --md-sys-color-on-surface:               #ffffff;
+  --md-sys-color-surface-variant:          #1a1535;
+  --md-sys-color-on-surface-variant:       #9ca3af;
+
+  --md-sys-color-outline:                  rgba(255, 255, 255, 0.2);
+  --md-sys-color-outline-variant:          rgba(255, 255, 255, 0.08);
+
+  --md-sys-color-surface-container-lowest: #0a0918;
+  --md-sys-color-surface-container-low:    #0f0d24;
+  --md-sys-color-surface-container:        #12102a;
+  --md-sys-color-surface-container-high:   #1a1535;
+  --md-sys-color-surface-container-highest:#1e1b3a;
+
+  --md-sys-color-inverse-surface:          #e8e4ff;
+  --md-sys-color-inverse-on-surface:       #0d0b1e;
+  --md-sys-color-inverse-primary:          #6d28d9;
+
+  --md-sys-color-scrim:                    #000000;
+  --md-sys-color-shadow:                   #000000;
+
+  // --- Shape (border radius) ---
+  --md-sys-shape-corner-none:              0px;
+  --md-sys-shape-corner-extra-small:       4px;
+  --md-sys-shape-corner-small:             8px;
+  --md-sys-shape-corner-medium:            12px;
+  --md-sys-shape-corner-large:             16px;
+  --md-sys-shape-corner-extra-large:       24px;
+  --md-sys-shape-corner-full:              50px;
+
+  // --- Elevation — flat design, sin sombras ---
+  --md-sys-elevation-level0: none;
+  --md-sys-elevation-level1: none;
+  --md-sys-elevation-level2: none;
+  --md-sys-elevation-level3: none;
+  --md-sys-elevation-level4: none;
+  --md-sys-elevation-level5: none;
+}
+
+// -----------------------------------------------------------------------------
+// 4. BACKGROUND DE PÁGINA
+// Aplicar en body ya que Material no controla el fondo de la página
+// -----------------------------------------------------------------------------
+
+body {
+  background: radial-gradient(ellipse at 20% 50%, #1a1535 0%, #0d0b1e 70%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  color: #ffffff;
+}
+
+// -----------------------------------------------------------------------------
+// 5. TIPOGRAFÍA — DISPLAY (Bebas Neue, no soportada nativamente por M3)
+// Aplicar manualmente en componentes display
+// -----------------------------------------------------------------------------
+
+.mat-display-large,
+.display-large {
+  font-family: 'Bebas Neue', 'Barlow Condensed', sans-serif;
+  font-size: 72px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--md-sys-color-on-background);
+}
+
+.mat-display-medium,
+.display-medium {
+  font-family: 'Bebas Neue', 'Barlow Condensed', sans-serif;
+  font-size: 56px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+  color: var(--md-sys-color-on-background);
+}
