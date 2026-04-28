@@ -18,15 +18,16 @@ export class OAuthCallbackComponent {
 
   private handleOAuthCallback(): void {
     this.route.queryParams.subscribe(params => {
-      const token = params['token'];
+      const accessToken = params['accessToken'];
+      const refreshToken = params['refreshToken'];
       
-      if (token) {
+      if (accessToken && refreshToken) {
         try {
-          // Guardar el token en localStorage
-          this.authService.setToken(token);
+          // Guardar los tokens en localStorage
+          this.authService.setTokens(accessToken, refreshToken);
           
-          // Cargar el usuario desde el token
-          this.authService.loadUserFromToken(token);
+          // Cargar el usuario desde el access token
+          this.authService.loadUserFromToken(accessToken);
           
           // Redirigir al dashboard
           this.router.navigate(['/dashboard']);
@@ -35,7 +36,7 @@ export class OAuthCallbackComponent {
           this.router.navigate(['/login']);
         }
       } else {
-        console.error('No token received in OAuth callback');
+        console.error('No tokens received in OAuth callback');
         this.router.navigate(['/login']);
       }
     });

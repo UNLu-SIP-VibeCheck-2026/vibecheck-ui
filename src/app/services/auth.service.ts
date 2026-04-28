@@ -21,7 +21,8 @@ export class AuthService {
     role: string;
   } | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-  private tokenKey = "auth_token";
+  private accessTokenKey = "auth_access_token";
+  private refreshTokenKey = "auth_refresh_token";
 
   constructor() {
     this.loadUserFromStorage();
@@ -32,7 +33,7 @@ export class AuthService {
       .post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials)
       .pipe(
         tap((response) => {
-          this.setToken(response.token);
+          this.setTokens(response.accessToken, response.refreshToken);
           this.currentUserSubject.next({
             username: response.username,
             role: response.role,
@@ -46,7 +47,22 @@ export class AuthService {
       .post<AuthResponse>(`${this.apiUrl}/users/register`, data)
       .pipe(
         tap((response) => {
-          this.setToken(response.token);
+          this.setTokens(response.accessToken, response.refreshToken);
+          this.currentUserSubject.next({
+            username: response.username,
+            role: response.role,
+          });
+        }),
+      );
+  }
+
+  refreshToken(): Observable<AuthResponse> {
+    const refreshToken = this.getRefreshToken();
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/auth/refresh`, { refreshToken })
+      .pipe(
+        tap((response) => {
+          this.setTokens(response.accessToken, response.refreshToken);
           this.currentUserSubject.next({
             username: response.username,
             role: response.role,
@@ -56,16 +72,34 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.tokenKey);
+    const refreshToken = this.getRefreshToken();
+    if (refreshToken) {
+      this.http.post(`${this.apiUrl}/auth/logout`, { refreshToken }).subscribe({
+        next: () => {},
+        error: (err) =>
+          console.error("Error al hacer logout en el servidor:", err),
+      });
+    }
+    this.clearLocalSession();
+  }
+
+  public clearLocalSession(): void {
+    localStorage.removeItem(this.accessTokenKey);
+    localStorage.removeItem(this.refreshTokenKey);
     this.currentUserSubject.next(null);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return localStorage.getItem(this.accessTokenKey);
   }
 
-  public setToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
+  getRefreshToken(): string | null {
+    return localStorage.getItem(this.refreshTokenKey);
+  }
+
+  public setTokens(accessToken: string, refreshToken: string): void {
+    if (accessToken) localStorage.setItem(this.accessTokenKey, accessToken);
+    if (refreshToken) localStorage.setItem(this.refreshTokenKey, refreshToken);
   }
 
   public loadUserFromToken(token: string): void {
