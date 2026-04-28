@@ -23,6 +23,41 @@ export class WalletService {
       type: 'PAYMENT',
       date: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
       description: 'Compra de entrada VibeFest 2026'
+    },
+    {
+      id: 'tx-3',
+      amount: 1200,
+      type: 'PAYMENT',
+      date: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+      description: 'Consumo en Barra Sector VIP'
+    },
+    {
+      id: 'tx-4',
+      amount: 5000,
+      type: 'DEPOSIT',
+      date: new Date(Date.now() - 1000 * 60 * 60 * 1).toISOString(),
+      description: 'Carga de saldo via MP'
+    },
+    {
+      id: 'tx-5',
+      amount: 850,
+      type: 'PAYMENT',
+      date: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      description: 'Merchandising Oficial - Llavero'
+    },
+    {
+      id: 'tx-6',
+      amount: 2500,
+      type: 'WITHDRAWAL',
+      date: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+      description: 'Retiro a cuenta bancaria'
+    },
+    {
+      id: 'tx-7',
+      amount: 450,
+      type: 'REFUND',
+      date: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+      description: 'Devolución de carga fallida'
     }
   ];
 
@@ -58,6 +93,24 @@ export class WalletService {
     this.calculateBalance();
 
     return of({ success: true, message: 'Saldo cargado exitosamente' }).pipe(delay(800));
+  }
+
+  withdrawMoney(amount: number): Observable<{success: boolean, message: string}> {
+    // Simulamos una latencia de red de 800ms
+    const newTransaction: Transaction = {
+      id: `tx-${Math.random().toString(36).substring(2, 9)}`,
+      amount: amount,
+      type: 'WITHDRAWAL',
+      date: new Date().toISOString(),
+      description: 'Retiro de saldo manual'
+    };
+
+    // Agregamos la transacción al inicio del arreglo
+    this.mockTransactions = [newTransaction, ...this.mockTransactions];
+    this.transactionsSubject.next(this.mockTransactions);
+    this.calculateBalance();
+
+    return of({ success: true, message: 'Saldo retirado exitosamente' }).pipe(delay(800));
   }
 
   private calculateBalance() {

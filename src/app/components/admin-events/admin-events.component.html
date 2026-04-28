@@ -1,0 +1,146 @@
+<div class="admin-container">
+    <div class="header-section">
+        <h1 class="main-title">Administrar Eventos</h1>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="search-filter-section">
+        <div class="search-controls-row">
+            <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+                <input matInput placeholder="Buscar" [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
+                <span matSuffix class="search-icon-wrapper">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+            </mat-form-field>
+
+            <button mat-icon-button class="filter-toggle-btn">
+                <mat-icon>tune</mat-icon>
+            </button>
+        </div>
+
+        <div class="applied-filters" *ngIf="appliedFilters.length > 0">
+            <span class="filters-label">Filtros aplicados:</span>
+            <mat-chip-set>
+                <mat-chip *ngFor="let filter of appliedFilters" (removed)="removeFilter(filter)">
+                    {{filter}}
+                    <button matChipRemove>
+                        <mat-icon>cancel</mat-icon>
+                    </button>
+                </mat-chip>
+            </mat-chip-set>
+        </div>
+    </div>
+
+    <div class="actions-header">
+        <button mat-raised-button class="create-btn" (click)="createEvent()">
+            Crear Evento
+        </button>
+    </div>
+
+    <!-- Selection Bar -->
+    <div class="selection-bar" *ngIf="dataSource.data.length > 0">
+        <div class="selection-controls">
+            <mat-checkbox [checked]="isAllSelected()" 
+                          [indeterminate]="isAtLeastOneSelected() && !isAllSelected()"
+                          (change)="toggleAllSelection($event.checked)">
+                Seleccionar todos
+            </mat-checkbox>
+        </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="table-container mat-elevation-z0">
+        <table mat-table [dataSource]="dataSource" class="custom-table">
+            
+            <ng-container matColumnDef="event">
+                <th mat-header-cell *matHeaderCellDef style="display: none;"> Evento </th>
+                <td mat-cell *matCellDef="let element" class="event-cell">
+                    <div class="event-card-row">
+                        <div class="checkbox-col">
+                            <mat-checkbox [(ngModel)]="element.selected"></mat-checkbox>
+                        </div>
+                        
+                        <div class="image-col">
+                            <div class="image-placeholder">
+                                <span>Portada/Flyer del Evento</span>
+                            </div>
+                        </div>
+
+                        <div class="details-col">
+                            <div class="detail-group">
+                                <label>Título</label>
+                                <span class="detail-value title event-link" (click)="navigateToEvent(element.id)">{{element.title}}</span>
+                            </div>
+                            <div class="detail-group description-group">
+                                <label>Descripción:</label>
+                                <p class="detail-value description">{{element.description}}</p>
+                            </div>
+                        </div>
+
+                        <div class="info-col">
+                            <div class="info-group">
+                                <label>Fecha de Creación:</label>
+                                <span class="info-value">{{element.creationDate}}</span>
+                            </div>
+                            <div class="info-group">
+                                <label>Fecha de Celebración:</label>
+                                <span class="info-value">{{element.celebrationDate}}</span>
+                            </div>
+                        </div>
+
+                        <div class="venue-col">
+                            <div class="info-group">
+                                <label>Venue:</label>
+                                <span class="info-value">{{element.venue}}</span>
+                            </div>
+                        </div>
+
+                        <div class="actions-col">
+                            <div class="action-buttons">
+                                <mat-chip class="custom-chip status-chip" [ngClass]="element.active ? 'active-chip' : 'inactive-chip'">
+                                    {{element.active ? 'Activo' : 'Inactivo'}}
+                                </mat-chip>
+                                
+                                <button mat-icon-button class="circle-btn" (click)="editEvent(element)">
+                                    <mat-icon>edit</mat-icon>
+                                </button>
+                                <button mat-icon-button class="circle-btn" (click)="viewStats(element)">
+                                    <mat-icon>trending_up</mat-icon>
+                                </button>
+                                <button mat-icon-button class="circle-btn" (click)="openSettings(element)">
+                                    <mat-icon>settings</mat-icon>
+                                </button>
+                                <button mat-icon-button class="circle-btn" (click)="viewFinance(element)">
+                                    <mat-icon>attach_money</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </ng-container>
+
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- Row shown when there is no matching data. -->
+            <tr class="mat-row empty-state-row" *matNoDataRow>
+                <td class="mat-cell empty-state-cell">
+                    <div class="empty-state">
+                        <mat-icon class="empty-icon">search_off</mat-icon>
+                        <p class="empty-title">No se encontraron eventos</p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <mat-paginator [length]="totalElements"
+                       [pageSize]="pageSize"
+                       [pageIndex]="pageIndex"
+                       [pageSizeOptions]="[5, 10, 25]"
+                       (page)="onPageChange($event)"
+                       aria-label="Select page">
+        </mat-paginator>
+    </div>
+</div>

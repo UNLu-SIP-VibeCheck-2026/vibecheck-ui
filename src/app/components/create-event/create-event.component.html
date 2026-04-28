@@ -1,0 +1,129 @@
+<div class="create-event-page">
+    <div class="page-header">
+        <h1 class="brand-title">Crea tu próximo Evento</h1>
+    </div>
+
+    <mat-card class="create-event-card">
+        <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+            
+            <div class="form-top-section">
+                <!-- Left: Photo section -->
+                <div class="photo-section">
+                    <div class="photo-header">
+                        <label>Foto del Evento:</label>
+                        <button type="button" class="select-file-btn">Seleccionar Archivo</button>
+                    </div>
+                    <div class="photo-preview">
+                        <mat-icon class="preview-placeholder-icon">image</mat-icon>
+                    </div>
+                </div>
+
+                <!-- Right: Title and Description -->
+                <div class="basic-info-section">
+                    <div class="form-group custom-field-wrapper">
+                        <label for="title">Título del Evento:</label>
+                        <mat-form-field appearance="outline" class="custom-mat-form-field">
+                            <input matInput type="text" id="title" formControlName="title">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-group custom-field-wrapper">
+                        <label for="description">Descripción:</label>
+                        <mat-form-field appearance="outline" class="custom-mat-form-field textarea-field">
+                            <textarea matInput id="description" formControlName="description"></textarea>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="form-group custom-field-wrapper mt-24">
+                <label>Categorías del Evento:</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field grey-bg">
+                    <mat-select formControlName="category" placeholder="Categorías">
+                        <mat-option *ngFor="let cat of categories" [value]="cat.value">
+                            {{cat.viewValue}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <div class="selected-chips">
+                    <mat-chip-set>
+                        <mat-chip *ngFor="let cat of selectedCategories" (removed)="removeCategory(cat)">
+                            {{cat}}
+                            <button matChipRemove>
+                                <mat-icon>cancel</mat-icon>
+                            </button>
+                        </mat-chip>
+                    </mat-chip-set>
+                </div>
+            </div>
+
+            <!-- Start Date and Time -->
+            <div class="form-group custom-field-wrapper mt-24">
+                <label>Fecha y Hora de Inicio del Evento:</label>
+                <div class="multi-input-row">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                        <input matInput type="number" formControlName="startDay" placeholder="DD">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                        <input matInput type="number" formControlName="startMonth" placeholder="MM">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                        <input matInput type="number" formControlName="startYear" placeholder="AAAA">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                        <input matInput type="text" formControlName="startTime" placeholder="HH:MM">
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- End Date and Time -->
+            <div class="form-group custom-field-wrapper mt-24">
+                <label>Fecha y Hora de Finalización del Evento:</label>
+                <div class="multi-input-row">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                        <input matInput type="number" formControlName="endDay" placeholder="DD">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                        <input matInput type="number" formControlName="endMonth" placeholder="MM">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                        <input matInput type="number" formControlName="endYear" placeholder="AAAA">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                        <input matInput type="text" formControlName="endTime" placeholder="HH:MM">
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Venue -->
+            <div class="form-group custom-field-wrapper mt-24">
+                <label>Venue:</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field grey-bg">
+                    <mat-select formControlName="venue" placeholder="Venues">
+                        <mat-option *ngFor="let v of venues" [value]="v.value">
+                            {{v.viewValue}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions-row">
+                <button mat-raised-button
+                        type="submit"
+                        [disabled]="isSubmitting || eventForm.invalid"
+                        class="custom-btn-submit dark">
+                    {{ isSubmitting ? 'Creando...' : 'Crear Evento' }}
+                </button>
+                <button mat-stroked-button
+                        type="button"
+                        (click)="cancel()"
+                        class="custom-btn-cancel">
+                    Cancelar
+                </button>
+            </div>
+
+        </form>
+    </mat-card>
+</div>

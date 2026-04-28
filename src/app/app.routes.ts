@@ -14,6 +14,10 @@ import { OAuthCallbackComponent } from "./components/oauth-callback/oauth-callba
 import { SystemLogsComponent } from "./components/system-logs/system-logs.component";
 import { EmailVerifyComponent } from "./components/email-verify/email-verify.component";
 import { WalletComponent } from "./components/wallet/wallet.component";
+import { EventsComponent } from "./components/events/events.component";
+import { CreateEventComponent } from "./components/create-event/create-event.component";
+import { AdminEventsComponent } from "./components/admin-events/admin-events.component";
+import { EventComponent } from "./components/event/event.component";
 import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 
@@ -82,6 +86,26 @@ export const routes: Routes = [
   {
     path: "wallet",
     component: WalletComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "events",
+    component: EventsComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "create-event",
+    component: CreateEventComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "admin-events",
+    component: AdminEventsComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "event/:id",
+    component: EventComponent,
     canActivate: [authGuard],
   },
   { path: "**", redirectTo: "" },

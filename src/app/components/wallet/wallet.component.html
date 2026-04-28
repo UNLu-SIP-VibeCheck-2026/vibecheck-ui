@@ -7,9 +7,13 @@
       <p class="balance-subtitle">Saldo Disponible</p>
     </div>
     <div class="wallet-actions">
-      <button mat-raised-button class="charge-btn" (click)="toggleChargeForm()">
+      <button mat-raised-button class="wallet-action-btn charge-btn" (click)="toggleChargeForm()">
         <mat-icon>add_circle_outline</mat-icon>
         Cargar Saldo
+      </button>
+      <button mat-raised-button class="wallet-action-btn withdraw-btn" (click)="toggleWithdrawForm()">
+        <mat-icon>file_download</mat-icon>
+        Retirar Saldo
       </button>
     </div>
   </div>
@@ -27,6 +31,23 @@
       </div>
       <button mat-raised-button color="primary" class="submit-charge-btn" [disabled]="!amountToCharge || amountToCharge <= 0 || isLoading" (click)="chargeMoney()">
         {{ isLoading ? 'Procesando...' : 'Confirmar Carga' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Withdraw Money Form -->
+  <div class="charge-form-card" *ngIf="isWithdrawing">
+    <div class="form-header">
+      <h3>Retirar dinero de tu cuenta</h3>
+      <button class="close-btn" (click)="toggleWithdrawForm()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="form-content">
+      <div class="input-group">
+        <span class="currency-symbol">$VC</span>
+        <input type="number" [(ngModel)]="amountToWithdraw" placeholder="0.00" min="1" class="amount-input">
+      </div>
+      <button mat-raised-button color="warn" class="submit-charge-btn" [disabled]="!amountToWithdraw || amountToWithdraw <= 0 || isLoading" (click)="withdrawMoney()">
+        {{ isLoading ? 'Procesando...' : 'Confirmar Retiro' }}
       </button>
     </div>
   </div>

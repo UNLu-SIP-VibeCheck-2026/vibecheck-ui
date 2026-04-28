@@ -20,12 +20,21 @@ export class WalletComponent {
   transactions$ = this.walletService.getTransactionHistory();
   
   isCharging = false;
+  isWithdrawing = false;
   amountToCharge: number | null = null;
+  amountToWithdraw: number | null = null;
   isLoading = false;
 
   toggleChargeForm() {
     this.isCharging = !this.isCharging;
+    this.isWithdrawing = false;
     this.amountToCharge = null;
+  }
+
+  toggleWithdrawForm() {
+    this.isWithdrawing = !this.isWithdrawing;
+    this.isCharging = false;
+    this.amountToWithdraw = null;
   }
 
   chargeMoney() {
@@ -40,6 +49,23 @@ export class WalletComponent {
         error: (err) => {
           this.isLoading = false;
           console.error('Error al cargar dinero', err);
+        }
+      });
+    }
+  }
+
+  withdrawMoney() {
+    if (this.amountToWithdraw && this.amountToWithdraw > 0) {
+      this.isLoading = true;
+      this.walletService.withdrawMoney(this.amountToWithdraw).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.isWithdrawing = false;
+          this.amountToWithdraw = null;
+        },
+        error: (err) => {
+          this.isLoading = false;
+          console.error('Error al retirar dinero', err);
         }
       });
     }
