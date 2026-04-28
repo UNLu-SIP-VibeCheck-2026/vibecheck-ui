@@ -3,7 +3,7 @@
   <div class="balance-section">
     <div class="balance-content">
       <h2 class="wallet-title">Mi Billetera VC</h2>
-      <p class="balance-amount">$VC {{ balance$ | async | number:'1.2-2' }}</p>
+      <p class="balance-amount">$VC {{ (balance$ | async)?.balance | number:'1.2-2' }}</p>
       <p class="balance-subtitle">Saldo Disponible</p>
     </div>
     <div class="wallet-actions">
@@ -17,6 +17,17 @@
       </button>
     </div>
   </div>
+
+  <!-- Zero Balance Alert -->
+  <ng-container *ngIf="(balance$ | async) as wallet">
+    <div class="zero-balance-alert" *ngIf="wallet.balance === 0">
+      <mat-icon>info</mat-icon>
+      <div class="alert-text">
+        <strong>¡Bienvenido a tu billetera!</strong>
+        <span>Tu saldo es $0.00. Carga dinero para poder realizar compras en el evento.</span>
+      </div>
+    </div>
+  </ng-container>
 
   <!-- Charge Money Form -->
   <div class="charge-form-card" *ngIf="isCharging">
@@ -60,9 +71,15 @@
 
     <div class="transactions-list">
       <ng-container *ngIf="(transactions$ | async) as transactions">
-        <div *ngIf="transactions.length === 0" class="no-transactions">
-          <mat-icon>receipt_long</mat-icon>
-          <p>No tienes movimientos recientes.</p>
+        <div *ngIf="transactions.length === 0" class="empty-state">
+          <div class="empty-state-icon">
+            <mat-icon>account_balance_wallet</mat-icon>
+          </div>
+          <h3>Aún no tienes movimientos</h3>
+          <p>Tus cargas, retiros y pagos se mostrarán aquí.</p>
+          <button mat-stroked-button color="primary" class="empty-state-btn" (click)="toggleChargeForm()" *ngIf="!isCharging">
+            Hacer mi primera carga
+          </button>
         </div>
 
         <div class="transaction-item" *ngFor="let tx of transactions">
@@ -70,8 +87,8 @@
             <mat-icon>{{ getIconForType(tx.type) }}</mat-icon>
           </div>
           <div class="tx-details">
-            <h4 class="tx-description">{{ tx.description }}</h4>
-            <span class="tx-date">{{ tx.date | date:'dd MMM yyyy, HH:mm' }}</span>
+            <h4 class="tx-description">{{ tx.concept }}</h4>
+            <span class="tx-date">{{ tx.createdAt | date:'dd MMM yyyy, HH:mm' }}</span>
           </div>
           <div class="tx-amount" [ngClass]="getAmountClass(tx.type)">
             {{ tx.type === 'DEPOSIT' || tx.type === 'REFUND' ? '+' : '-' }} $VC {{ tx.amount | number:'1.2-2' }}

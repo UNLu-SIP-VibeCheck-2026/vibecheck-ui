@@ -3,21 +3,24 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { WalletService } from '../../services/wallet.service';
-import { Transaction } from '../../models/wallet.model';
+import { Transaction, Wallet } from '../../models/wallet.model';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-wallet',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, FormsModule, MatSnackBarModule],
   templateUrl: './wallet.component.html',
   styleUrl: './wallet.component.css'
 })
 export class WalletComponent {
   private walletService = inject(WalletService);
+  private snackBar = inject(MatSnackBar);
 
-  balance$ = this.walletService.getWalletBalance();
-  transactions$ = this.walletService.getTransactionHistory();
+  balance$: Observable<Wallet> = this.walletService.getWalletBalance();
+  transactions$: Observable<Transaction[]> = this.walletService.getTransactionHistory();
   
   isCharging = false;
   isWithdrawing = false;
@@ -39,35 +42,15 @@ export class WalletComponent {
 
   chargeMoney() {
     if (this.amountToCharge && this.amountToCharge > 0) {
-      this.isLoading = true;
-      this.walletService.loadMoney(this.amountToCharge).subscribe({
-        next: () => {
-          this.isLoading = false;
-          this.isCharging = false;
-          this.amountToCharge = null;
-        },
-        error: (err) => {
-          this.isLoading = false;
-          console.error('Error al cargar dinero', err);
-        }
-      });
+      this.snackBar.open('Función en desarrollo', 'Cerrar', { duration: 3000 });
+      this.toggleChargeForm();
     }
   }
 
   withdrawMoney() {
     if (this.amountToWithdraw && this.amountToWithdraw > 0) {
-      this.isLoading = true;
-      this.walletService.withdrawMoney(this.amountToWithdraw).subscribe({
-        next: () => {
-          this.isLoading = false;
-          this.isWithdrawing = false;
-          this.amountToWithdraw = null;
-        },
-        error: (err) => {
-          this.isLoading = false;
-          console.error('Error al retirar dinero', err);
-        }
-      });
+      this.snackBar.open('Función en desarrollo', 'Cerrar', { duration: 3000 });
+      this.toggleWithdrawForm();
     }
   }
 

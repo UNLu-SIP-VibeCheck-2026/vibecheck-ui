@@ -1,15 +1,27 @@
 export interface Wallet {
+  id: number;
+  address: string;
+  network: string;
   balance: number;
 }
 
 export type TransactionType = 'DEPOSIT' | 'WITHDRAWAL' | 'PAYMENT' | 'REFUND';
 
 export interface Transaction {
-  id: string;
-  amount: number;
+  id: number;
   type: TransactionType;
-  date: string;
-  description: string;
+  concept: string;
+  amount: number;
+  balanceAfter: number;
+  createdAt: string;
+}
+
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
 
 export interface LoadMoneyRequest {
