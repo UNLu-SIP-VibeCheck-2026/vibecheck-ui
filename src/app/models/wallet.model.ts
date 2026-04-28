@@ -5,7 +5,7 @@ export interface Wallet {
   balance: number;
 }
 
-export type TransactionType = 'DEPOSIT' | 'WITHDRAWAL' | 'PAYMENT' | 'REFUND';
+export type TransactionType = 'CREDIT' | 'DEBIT';
 
 export interface Transaction {
   id: number;

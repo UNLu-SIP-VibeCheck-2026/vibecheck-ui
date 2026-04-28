@@ -42,8 +42,22 @@ export class WalletComponent {
 
   chargeMoney() {
     if (this.amountToCharge && this.amountToCharge > 0) {
-      this.snackBar.open('Función en desarrollo', 'Cerrar', { duration: 3000 });
-      this.toggleChargeForm();
+      this.isLoading = true;
+      this.walletService.loadMoney(this.amountToCharge).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.snackBar.open('¡Carga realizada con éxito!', 'Cerrar', { duration: 3000 });
+          this.toggleChargeForm();
+          // Refrescar los datos reales
+          this.balance$ = this.walletService.getWalletBalance();
+          this.transactions$ = this.walletService.getTransactionHistory();
+        },
+        error: (err) => {
+          this.isLoading = false;
+          console.error('Error al cargar dinero', err);
+          this.snackBar.open('Ocurrió un error al cargar el saldo.', 'Cerrar', { duration: 3000 });
+        }
+      });
     }
   }
 
@@ -56,15 +70,13 @@ export class WalletComponent {
 
   getIconForType(type: string): string {
     switch(type) {
-      case 'DEPOSIT': return 'arrow_downward';
-      case 'WITHDRAWAL': return 'arrow_upward';
-      case 'PAYMENT': return 'payment';
-      case 'REFUND': return 'replay';
+      case 'CREDIT': return 'arrow_downward';
+      case 'DEBIT': return 'arrow_upward';
       default: return 'attach_money';
     }
   }
 
   getAmountClass(type: string): string {
-    return (type === 'DEPOSIT' || type === 'REFUND') ? 'positive-amount' : 'negative-amount';
+    return (type === 'CREDIT') ? 'positive-amount' : 'negative-amount';
   }
 }

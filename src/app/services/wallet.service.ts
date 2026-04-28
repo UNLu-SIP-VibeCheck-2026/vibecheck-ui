@@ -21,9 +21,8 @@ export class WalletService {
       .pipe(map(response => response.content));
   }
 
-  loadMoney(amount: number): Observable<{success: boolean, message: string}> {
-    // Endpoint no implementado en el backend todavía
-    return throwError(() => new Error('Not implemented'));
+  loadMoney(amount: number): Observable<Transaction> {
+    return this.http.post<Transaction>(`${this.apiUrl}/wallets/me/topup`, { amount });
   }
 
   withdrawMoney(amount: number): Observable<{success: boolean, message: string}> {

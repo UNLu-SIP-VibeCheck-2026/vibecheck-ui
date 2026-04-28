@@ -91,7 +91,7 @@
             <span class="tx-date">{{ tx.createdAt | date:'dd MMM yyyy, HH:mm' }}</span>
           </div>
           <div class="tx-amount" [ngClass]="getAmountClass(tx.type)">
-            {{ tx.type === 'DEPOSIT' || tx.type === 'REFUND' ? '+' : '-' }} $VC {{ tx.amount | number:'1.2-2' }}
+            {{ tx.type === 'CREDIT' ? '+' : '-' }} $VC {{ tx.amount | number:'1.2-2' }}
           </div>
         </div>
       </ng-container>
