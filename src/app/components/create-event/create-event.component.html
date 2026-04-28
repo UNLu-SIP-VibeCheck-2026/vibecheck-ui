@@ -97,15 +97,31 @@
             </div>
 
             <!-- Venue -->
-            <div class="form-group custom-field-wrapper mt-24">
-                <label>Venue:</label>
+            <div class="form-group venue-group custom-field-wrapper mt-24">
+                <label for="venue">Lugar (Venue):</label>
                 <mat-form-field appearance="outline" class="custom-mat-form-field grey-bg">
-                    <mat-select formControlName="venue" placeholder="Venues">
-                        <mat-option *ngFor="let v of venues" [value]="v.value">
-                            {{v.viewValue}}
+                    <mat-select id="venue" formControlName="venue" placeholder="Selecciona un lugar">
+                        <!-- Search Bar inside Select -->
+                        <div class="select-search-header">
+                            <mat-form-field appearance="outline" class="search-inner-field">
+                                <mat-icon matPrefix>search</mat-icon>
+                                <input matInput placeholder="Buscar por nombre o dirección..." 
+                                       [(ngModel)]="venueSearch" 
+                                       (ngModelChange)="filterVenues()"
+                                       [ngModelOptions]="{standalone: true}"
+                                       (keydown)="$event.stopPropagation()">
+                            </mat-form-field>
+                        </div>
+
+                        <mat-option *ngFor="let venue of filteredVenues" [value]="venue.id" class="venue-option">
+                            <div class="venue-item">
+                                <span class="venue-name">{{venue.name}}</span>
+                                <span class="venue-address">{{venue.address}}</span>
+                            </div>
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
+                <a class="new-venue-link" (click)="openNewVenueDialog()">El Venue no se encuentra en la lista</a>
             </div>
 
             <!-- Actions -->

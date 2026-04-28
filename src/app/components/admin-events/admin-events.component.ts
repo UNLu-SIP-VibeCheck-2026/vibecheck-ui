@@ -12,15 +12,18 @@ import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { MatSelectModule } from "@angular/material/select";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { Router } from "@angular/router";
+import { EventDialogComponent } from "../shared/dialogs/event-dialog/event-dialog.component";
+import { ResaleDialogComponent } from "../shared/dialogs/resale-dialog/resale-dialog.component";
 
 export interface EventSummary {
   id: string;
   title: string;
   description: string;
   creationDate: string;
-  celebrationDate: string;
+  startDate: string;
+  endDate: string;
   venue: string;
-  active: boolean;
+  status: 'PROGRAMADO' | 'EN_CURSO' | 'FINALIZADO' | 'CANCELADO';
   imageUrl?: string;
   selected?: boolean;
 }
@@ -82,41 +85,34 @@ export class AdminEventsComponent implements OnInit {
       {
         id: "EVENTO001",
         title: "EVENTO001",
-        description: "Excepteur efficient emerging, minim veniam anim aute carefully curated Ginza conversation exquisite perfect nostrud nisi intricate Content. Qui international first-class nulla ut. Punctual adipisicing, essential lovely queen",
+        description: "Excepteur efficient emerging, minim veniam anim aute carefully curated Ginza conversation exquisite perfect nostrud nisi intricate Content.",
         creationDate: "28/04/2026",
-        celebrationDate: "15/05/2026",
+        startDate: "15/05/2026 21:00",
+        endDate: "16/05/2026 03:00",
         venue: "VENUE01",
-        active: true,
+        status: 'PROGRAMADO',
         selected: false
       },
       {
         id: "EVENTO002",
-        title: "EVENTO002",
-        description: "Excepteur efficient emerging, minim veniam anim aute carefully curated Ginza conversation exquisite perfect nostrud nisi intricate Content. Qui international first-class nulla ut.",
-        creationDate: "28/04/2026",
-        celebrationDate: "20/05/2026",
+        title: "VibeFest 2026",
+        description: "El festival más esperado del año con artistas internacionales.",
+        creationDate: "25/04/2026",
+        startDate: "20/05/2026 18:00",
+        endDate: "21/05/2026 04:00",
         venue: "VENUE02",
-        active: true,
+        status: 'EN_CURSO',
         selected: false
       },
       {
         id: "EVENTO003",
-        title: "EVENTO003",
-        description: "Excepteur efficient emerging, minim veniam anim aute carefully curated Ginza conversation exquisite perfect nostrud nisi intricate Content. Qui international first-class nulla ut.",
-        creationDate: "28/04/2026",
-        celebrationDate: "25/05/2026",
+        title: "Sunset Party",
+        description: "Música electrónica frente al río.",
+        creationDate: "20/04/2026",
+        startDate: "10/05/2026 17:00",
+        endDate: "10/05/2026 23:59",
         venue: "VENUE03",
-        active: false,
-        selected: false
-      },
-      {
-        id: "EVENTO004",
-        title: "EVENTO004",
-        description: "Excepteur efficient emerging, minim veniam anim aute carefully curated Ginza conversation exquisite perfect nostrud nisi intricate Content. Qui international first-class nulla ut.",
-        creationDate: "28/04/2026",
-        celebrationDate: "30/05/2026",
-        venue: "VENUE04",
-        active: true,
+        status: 'FINALIZADO',
         selected: false
       }
     ];
@@ -146,20 +142,53 @@ export class AdminEventsComponent implements OnInit {
     this.router.navigate(['/event', id]);
   }
 
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'PROGRAMADO': return 'scheduled-chip';
+      case 'EN_CURSO': return 'inprogress-chip';
+      case 'FINALIZADO': return 'finished-chip';
+      case 'CANCELADO': return 'cancelled-chip';
+      default: return '';
+    }
+  }
+
   editEvent(event: EventSummary) {
-    console.log("Editing event:", event.id);
+    const dialogRef = this.dialog.open(EventDialogComponent, {
+      width: "600px",
+      data: { event },
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        console.log("Updating event:", event.id, result);
+        // Here we would call a service to update
+        Object.assign(event, result);
+      }
+    });
   }
 
   viewStats(event: EventSummary) {
-    console.log("Viewing stats for:", event.id);
+    this.router.navigate(['/admin-tickets', event.id]);
   }
 
   openSettings(event: EventSummary) {
-    console.log("Opening settings for:", event.id);
+    const dialogRef = this.dialog.open(ResaleDialogComponent, {
+      width: "440px",
+      data: { event },
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        console.log("Resale price updated:", result);
+        // service call
+      }
+    });
   }
 
   viewFinance(event: EventSummary) {
-    console.log("Viewing finance for:", event.id);
+    this.router.navigate(['/advertise-event', event.id]);
   }
 
   removeFilter(filter: string) {

@@ -86,8 +86,12 @@
                                 <span class="info-value">{{element.creationDate}}</span>
                             </div>
                             <div class="info-group">
-                                <label>Fecha de Celebración:</label>
-                                <span class="info-value">{{element.celebrationDate}}</span>
+                                <label>Inicio:</label>
+                                <span class="info-value">{{element.startDate}}</span>
+                            </div>
+                            <div class="info-group">
+                                <label>Fin:</label>
+                                <span class="info-value">{{element.endDate}}</span>
                             </div>
                         </div>
 
@@ -100,21 +104,21 @@
 
                         <div class="actions-col">
                             <div class="action-buttons">
-                                <mat-chip class="custom-chip status-chip" [ngClass]="element.active ? 'active-chip' : 'inactive-chip'">
-                                    {{element.active ? 'Activo' : 'Inactivo'}}
+                                <mat-chip class="custom-chip status-chip" [ngClass]="getStatusClass(element.status)">
+                                    {{element.status}}
                                 </mat-chip>
                                 
                                 <button mat-icon-button class="circle-btn" (click)="editEvent(element)">
                                     <mat-icon>edit</mat-icon>
                                 </button>
                                 <button mat-icon-button class="circle-btn" (click)="viewStats(element)">
-                                    <mat-icon>trending_up</mat-icon>
+                                    <mat-icon>confirmation_number</mat-icon>
                                 </button>
                                 <button mat-icon-button class="circle-btn" (click)="openSettings(element)">
-                                    <mat-icon>settings</mat-icon>
+                                    <mat-icon>sync_alt</mat-icon>
                                 </button>
                                 <button mat-icon-button class="circle-btn" (click)="viewFinance(element)">
-                                    <mat-icon>attach_money</mat-icon>
+                                    <mat-icon>campaign</mat-icon>
                                 </button>
                             </div>
                         </div>

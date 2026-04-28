@@ -1,0 +1,179 @@
+.user-dialog-container {
+  padding: 12px 24px;
+  font-family: 'Inter', sans-serif;
+  max-width: 600px; /* Wider to accommodate side-by-side dates */
+  max-height: 85vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background-color: #cccccc; border-radius: 10px; }
+}
+
+h2 {
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+
+  label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+}
+
+.description-field {
+    ::ng-deep .mat-mdc-form-field-flex {
+        height: auto !important;
+        min-height: 150px !important;
+        overflow: hidden !important;
+    }
+    textarea {
+        resize: none;
+        overflow-y: auto;
+        padding: 8px 0 !important;
+    }
+}
+
+.multi-row {
+    display: flex;
+    gap: 16px;
+    .half { flex: 1; }
+}
+
+.custom-mat-form-field {
+  width: 100%;
+  ::ng-deep .mat-mdc-form-field-flex {
+    height: 48px; /* Remove !important here to let description-field win */
+    border-radius: 8px !important;
+    background-color: #ffffff !important;
+  }
+  ::ng-deep .mdc-notched-outline__leading,
+  ::ng-deep .mdc-notched-outline__notch,
+  ::ng-deep .mdc-notched-outline__trailing {
+    border-color: #e0e0e0 !important;
+  }
+}
+
+.venue-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    .new-venue-link {
+        font-size: 14px;
+        color: #4a4a4a;
+        text-decoration: underline;
+        cursor: pointer;
+        align-self: center; /* Center like in Home */
+        margin-top: 8px;
+        font-weight: 400;
+        transition: color 0.2s ease;
+        &:hover { color: #1a1a1a; }
+    }
+}
+
+.select-search-header {
+    padding: 8px 16px;
+    background: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid #e0e0e0;
+
+    .search-inner-field {
+        width: 100%;
+        ::ng-deep .mat-mdc-form-field-flex {
+            height: 40px !important;
+            background: #f3f4f6 !important;
+        }
+    }
+}
+
+.venue-option {
+    height: auto !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+}
+
+.venue-item {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    .venue-name { font-weight: 600; font-size: 14px; }
+    .venue-address { font-size: 12px; color: #6b7280; }
+}
+
+.custom-mat-select {
+  width: 100%;
+  ::ng-deep .mat-mdc-form-field-flex {
+    background-color: #e0e0e0 !important;
+    height: 48px !important;
+    border-radius: 4px !important;
+    padding: 0 12px !important;
+    align-items: center !important;
+  }
+  ::ng-deep .mat-mdc-select-value { color: #4a4a4a !important; font-weight: 500; }
+  ::ng-deep .mat-mdc-form-field-infix { padding: 0 !important; min-height: auto !important; }
+}
+
+.cancel-section {
+    margin-top: 12px;
+    .btn-cancel-event {
+        width: 100%;
+        height: 40px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px dashed #ef4444;
+        border-radius: 8px;
+    }
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background-color: #fee2e2;
+    border-radius: 8px;
+    color: #b91c1c;
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 0 !important;
+
+  button {
+    flex: 1;
+    height: 48px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+  }
+
+  .btn-submit {
+    background-color: #2b2b2b !important;
+    color: #ffffff !important;
+  }
+
+  .btn-cancel {
+    background-color: transparent !important;
+    color: #4a4a4a !important;
+    border: 1px solid #4a4a4a !important;
+  }
+}
