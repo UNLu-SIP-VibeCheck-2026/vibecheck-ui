@@ -1,19 +1,20 @@
 .user-dialog-container {
   padding: 12px 24px;
   font-family: 'Inter', sans-serif;
-  max-width: 600px; /* Wider to accommodate side-by-side dates */
+  max-width: 600px;
   max-height: 85vh;
   overflow-y: auto;
   scrollbar-width: thin;
+  color: var(--md-sys-color-on-surface);
 
   &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background-color: #cccccc; border-radius: 10px; }
+  &::-webkit-scrollbar-thumb { background-color: var(--md-sys-color-outline-variant); border-radius: 10px; }
 }
 
 h2 {
   font-weight: 700;
   margin-bottom: 24px;
-  color: #1a1a1a;
+  color: var(--md-sys-color-on-background);
 }
 
 .form-group {
@@ -24,7 +25,7 @@ h2 {
   label {
     font-size: 14px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--md-sys-color-on-surface-variant);
     margin-bottom: 8px;
   }
 }
@@ -50,16 +51,6 @@ h2 {
 
 .custom-mat-form-field {
   width: 100%;
-  ::ng-deep .mat-mdc-form-field-flex {
-    height: 48px; /* Remove !important here to let description-field win */
-    border-radius: 8px !important;
-    background-color: #ffffff !important;
-  }
-  ::ng-deep .mdc-notched-outline__leading,
-  ::ng-deep .mdc-notched-outline__notch,
-  ::ng-deep .mdc-notched-outline__trailing {
-    border-color: #e0e0e0 !important;
-  }
 }
 
 .venue-group {
@@ -68,31 +59,27 @@ h2 {
     flex-direction: column;
     .new-venue-link {
         font-size: 14px;
-        color: #4a4a4a;
+        color: var(--md-sys-color-primary);
         text-decoration: underline;
         cursor: pointer;
-        align-self: center; /* Center like in Home */
+        align-self: center;
         margin-top: 8px;
         font-weight: 400;
         transition: color 0.2s ease;
-        &:hover { color: #1a1a1a; }
+        &:hover { color: var(--md-sys-color-on-primary-container); }
     }
 }
 
 .select-search-header {
     padding: 8px 16px;
-    background: #ffffff;
+    background: var(--md-sys-color-surface-container-high);
     position: sticky;
     top: 0;
     z-index: 100;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
 
     .search-inner-field {
         width: 100%;
-        ::ng-deep .mat-mdc-form-field-flex {
-            height: 40px !important;
-            background: #f3f4f6 !important;
-        }
     }
 }
 
@@ -106,21 +93,12 @@ h2 {
     display: flex;
     flex-direction: column;
     line-height: 1.2;
-    .venue-name { font-weight: 600; font-size: 14px; }
-    .venue-address { font-size: 12px; color: #6b7280; }
+    .venue-name { font-weight: 600; font-size: 14px; color: var(--md-sys-color-on-surface); }
+    .venue-address { font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
 }
 
 .custom-mat-select {
   width: 100%;
-  ::ng-deep .mat-mdc-form-field-flex {
-    background-color: #e0e0e0 !important;
-    height: 48px !important;
-    border-radius: 4px !important;
-    padding: 0 12px !important;
-    align-items: center !important;
-  }
-  ::ng-deep .mat-mdc-select-value { color: #4a4a4a !important; font-weight: 500; }
-  ::ng-deep .mat-mdc-form-field-infix { padding: 0 !important; min-height: auto !important; }
 }
 
 .cancel-section {
@@ -134,8 +112,15 @@ h2 {
         align-items: center;
         justify-content: center;
         gap: 8px;
-        border: 1px dashed #ef4444;
+        border: 1px dashed var(--md-sys-color-error);
         border-radius: 8px;
+        color: var(--md-sys-color-error);
+        background-color: transparent;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background-color: rgba(248, 113, 113, 0.1);
+        }
     }
 }
 
@@ -144,9 +129,9 @@ h2 {
     align-items: center;
     gap: 10px;
     padding: 12px;
-    background-color: #fee2e2;
+    background-color: rgba(248, 113, 113, 0.1);
     border-radius: 8px;
-    color: #b91c1c;
+    color: var(--md-sys-color-error);
     font-weight: 600;
     margin-top: 12px;
 }
@@ -167,13 +152,13 @@ h2 {
   }
 
   .btn-submit {
-    background-color: #2b2b2b !important;
-    color: #ffffff !important;
+    background-color: var(--md-sys-color-primary) !important;
+    color: var(--md-sys-color-on-primary) !important;
   }
 
   .btn-cancel {
     background-color: transparent !important;
-    color: #4a4a4a !important;
-    border: 1px solid #4a4a4a !important;
+    color: var(--md-sys-color-on-surface) !important;
+    border: 1px solid var(--md-sys-color-outline) !important;
   }
 }

@@ -1,31 +1,31 @@
 <div class="home-container">
     <div class="hero-section">
-        <h1 class="brand-title">VibeCheck</h1>
+        <h1 class="brand-title text-gradient display-lg">VibeCheck</h1>
         
         <div *ngIf="!(isLoggedIn$ | async); else loggedInTemplate">
             <div class="hero-actions">
-                <button mat-raised-button 
-                        class="custom-btn-submit" 
+                <button type="button" 
+                        class="btn-cta" style="width: 100%; justify-content: center;"
                         (click)="navigateToLogin()">
-                    Iniciar Sesión
+                    <span class="btn-cta__label">INICIAR SESIÓN</span>
                 </button>
-                <button mat-raised-button 
-                        class="custom-btn-submit" 
+                <button type="button" 
+                        class="btn-cta" style="width: 100%; justify-content: center;"
                         (click)="navigateToRegister()">
-                    Registrarse
+                    <span class="btn-cta__label">REGISTRARSE</span>
                 </button>
             </div>
 
             <div class="hero-footer">
-                <a class="recovery-link" (click)="navigateToRecovery()">
+                <a class="app-link" style="cursor: pointer;" (click)="navigateToRecovery()">
                     Olvidé mi contraseña
                 </a>
             </div>
         </div>
 
         <ng-template #loggedInTemplate>
-            <div class="logged-in-message">
-                <p>Gracias por iniciar sesión.<br>Próximamente VibeCheck.</p>
+            <div class="logged-in-message" style="background-color: var(--md-sys-color-surface-variant); border: none; border-radius: var(--md-sys-shape-corner-medium); padding: var(--space-6);">
+                <p style="color: var(--md-sys-color-on-surface-variant); margin: 0; font-size: var(--text-body-lg);">Gracias por iniciar sesión.<br>Próximamente VibeCheck.</p>
             </div>
         </ng-template>
 

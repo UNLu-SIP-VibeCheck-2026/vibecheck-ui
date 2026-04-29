@@ -3,9 +3,10 @@
   justify-content: center;
   align-items: flex-start;
   min-height: calc(100vh - 72px);
-  background-color: #f7f7f7;
+  background-color: transparent;
   padding: 48px 20px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--md-sys-color-on-background);
 }
 
 .config-page {
@@ -28,8 +29,8 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: #1a1a1a;
-  color: #fff;
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
   font-size: 22px;
   font-weight: 700;
   display: flex;
@@ -48,14 +49,14 @@
 .config-title {
   font-size: 22px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--md-sys-color-on-background);
   margin: 0;
   letter-spacing: -0.3px;
 }
 
 .config-role {
   font-size: 13px;
-  color: #888;
+  color: var(--md-sys-color-on-surface-variant);
   font-weight: 500;
   text-transform: capitalize;
 }
@@ -70,7 +71,7 @@
 .section-title {
   font-size: 12px;
   font-weight: 600;
-  color: #aaa;
+  color: var(--md-sys-color-on-surface-variant);
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin: 0 0 2px 4px;
@@ -81,10 +82,10 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  background-color: #e4e4e4;
-  border-radius: 14px;
+  background-color: var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
   overflow: hidden;
-  border: 1px solid #e4e4e4;
+  border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .config-card {
@@ -92,7 +93,7 @@
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-  background-color: #fff;
+  background-color: var(--md-sys-color-surface);
   border: none;
   cursor: pointer;
   text-align: left;
@@ -103,19 +104,19 @@
 }
 
 .config-card:hover {
-  background-color: #fafafa;
+  background-color: var(--md-sys-color-surface-container-high);
 }
 
 .config-card:active {
-  background-color: #f2f2f2;
+  background-color: var(--md-sys-color-surface-container-highest);
 }
 
 .card-icon {
   width: 38px;
   height: 38px;
   border-radius: 9px;
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,13 +124,13 @@
 }
 
 .card-icon.admin {
-  background-color: #f0f0ff;
-  color: #4a4aaa;
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
 }
 
 .card-icon.ceo {
-  background-color: #fff8e1;
-  color: #ffa000;
+  background-color: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
 }
 
 .card-content {
@@ -143,13 +144,13 @@
 .card-title {
   font-size: 15px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--md-sys-color-on-surface);
   line-height: 1.2;
 }
 
 .card-subtitle {
   font-size: 12px;
-  color: #aaa;
+  color: var(--md-sys-color-on-surface-variant);
   font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
@@ -157,6 +158,6 @@
 }
 
 .card-arrow {
-  color: #ccc;
+  color: var(--md-sys-color-outline);
   flex-shrink: 0;
 }

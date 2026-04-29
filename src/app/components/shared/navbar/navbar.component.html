@@ -1,6 +1,6 @@
 <nav class="navbar">
   <div class="logo-container" (click)="navigateToHome()">
-    <div class="logo-icon">VC</div>
+    <div class="logo-icon gradient-border" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 12px; background: var(--md-sys-color-primary-container);">VC</div>
     <span class="logo-text">VibeCheck</span>
   </div>
   
@@ -28,14 +28,16 @@
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="logout()">
           <mat-icon color="warn">exit_to_app</mat-icon>
-          <span style="color: red;">Cerrar sesión</span>
+          <span style="color: var(--md-sys-color-error);">Cerrar sesión</span>
         </button>
       </mat-menu>
     </ng-container>
 
     <ng-template #loggedOut>
-      <button class="btn-outline" (click)="navigateToLogin()">Iniciar sesión</button>
-      <button class="btn-filled" (click)="navigateToRegister()">Registrarse</button>
+      <button class="chip-outlined" (click)="navigateToLogin()">INICIAR SESIÓN</button>
+      <button class="btn-cta" (click)="navigateToRegister()" style="height: 36px; padding: 0 16px; border-radius: 50px;">
+          <span class="btn-cta__label" style="padding: 0; font-size: 13px;">REGISTRARSE</span>
+      </button>
     </ng-template>
   </div>
 </nav>

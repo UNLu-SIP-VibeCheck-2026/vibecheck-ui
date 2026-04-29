@@ -69,19 +69,19 @@ import { ActivatedRoute, Router } from '@angular/router';
     </div>
   `,
   styles: [`
-    .advertise-container { padding: 40px 60px; font-family: 'Inter', sans-serif; max-width: 1200px; margin: 0 auto; }
+    .advertise-container { padding: 40px 60px; font-family: 'Inter', sans-serif; max-width: 1200px; margin: 0 auto; color: var(--md-sys-color-on-background); }
     .header { display: flex; align-items: center; gap: 16px; margin-bottom: 40px; }
-    h1 { font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0; }
+    h1 { font-size: 28px; font-weight: 700; color: var(--md-sys-color-on-background); margin: 0; }
     .info-card { 
-      background: white; border-radius: 16px; padding: 40px; text-align: center; 
-      border: 1px solid #e5e7eb; margin-bottom: 32px;
+      background: var(--md-sys-color-surface-container-high); border-radius: 16px; padding: 40px; text-align: center; 
+      border: 1px solid var(--md-sys-color-outline-variant); margin-bottom: 32px;
     }
-    .big-icon { font-size: 48px; width: 48px; height: 48px; color: #6366f1; margin-bottom: 16px; }
+    .big-icon { font-size: 48px; width: 48px; height: 48px; color: var(--md-sys-color-primary); margin-bottom: 16px; }
     h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-    p { color: #6b7280; max-width: 500px; margin: 0 auto; }
+    p { color: var(--md-sys-color-on-surface-variant); max-width: 500px; margin: 0 auto; }
     .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-    .option-card { padding: 16px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: none !important; }
-    .price { font-size: 1.25rem; font-weight: 700; color: #1a1a1a; margin: 16px 0; }
+    .option-card { padding: 16px; border-radius: 12px; border: 1px solid var(--md-sys-color-outline-variant); box-shadow: none !important; background: var(--md-sys-color-surface); }
+    .price { font-size: 1.25rem; font-weight: 700; color: var(--md-sys-color-on-surface); margin: 16px 0; }
     mat-card-actions { justify-content: flex-end; padding: 16px 0 0; }
   `]
 })

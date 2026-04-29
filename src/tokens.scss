@@ -18,33 +18,31 @@
 :root {
 
   // ---------------------------------------------------------------------------
-  // GRADIENTES
+  // GRADIENTES (Suavizados para ser menos "chillones")
   // ---------------------------------------------------------------------------
 
   --gradient-brand: linear-gradient(
     90deg,
-    #a855f7 0%,
-    #f97316 60%,
-    #fbbf24 100%
+    #7c3aed 0%,
+    #be185d 100%
   );
 
   --gradient-brand-diagonal: linear-gradient(
     135deg,
-    #a855f7 0%,
-    #f97316 60%,
-    #fbbf24 100%
+    #7c3aed 0%,
+    #be185d 100%
   );
 
   --gradient-background: radial-gradient(
-    ellipse at 20% 50%,
-    #1a1535 0%,
-    #0d0b1e 70%
+    ellipse at 50% 0%,
+    #1e1b4b 0%,
+    #0f172a 100%
   );
 
   --gradient-surface-alt: radial-gradient(
     ellipse at 30% 40%,
-    #1a1535 0%,
-    #0a0918 100%
+    #1e1b4b 0%,
+    #0f172a 100%
   );
 
   // Para borders con gradiente (usar con pseudo-elemento ::before)
@@ -296,6 +294,11 @@ $bp-desktop: 1280px;
 // Display typography
 .display-lg { @include text-display(var(--text-display-lg)); }
 .display-md { @include text-display(var(--text-display-md)); }
+
+// Component utility classes
+.btn-cta { @include btn-cta; }
+.chip-outlined { @include chip-outlined; }
+.gradient-border { @include gradient-border(var(--icon-container-radius)); }
 
 // Link estilo del diseño
 a.app-link {

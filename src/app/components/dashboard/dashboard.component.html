@@ -2,7 +2,7 @@
   <!-- Welcome Header -->
   <div class="welcome-section">
     <div class="welcome-content">
-      <h1 class="welcome-title">¡Hola, {{ user.username }}!</h1>
+      <h1 class="welcome-title text-gradient display-md">¡Hola, {{ user.username }}!</h1>
       <p class="welcome-subtitle">Bienvenido de nuevo a VibeCheck</p>
     </div>
     <div class="user-badge">
@@ -185,7 +185,9 @@
     <div class="no-user-state">
       <mat-icon class="no-user-icon">lock_outline</mat-icon>
       <h2>Inicia sesión para ver tu contenido</h2>
-      <button mat-raised-button color="primary" (click)="navigateTo('/login')">Iniciar sesión</button>
+      <button class="btn-cta" (click)="navigateTo('/login')" style="margin-top: 16px;">
+        <span class="btn-cta__label">INICIAR SESIÓN</span>
+      </button>
     </div>
   </div>
 </ng-template>

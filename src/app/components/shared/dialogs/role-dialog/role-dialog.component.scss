@@ -7,9 +7,10 @@
   max-height: 85vh;
   overflow-y: auto;
   scrollbar-width: thin;
+  color: var(--md-sys-color-on-surface);
 
   &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background-color: #cccccc; border-radius: 10px; }
+  &::-webkit-scrollbar-thumb { background-color: var(--md-sys-color-outline-variant); border-radius: 10px; }
 }
 
 .form-group {
@@ -21,37 +22,18 @@
 .form-group label {
   font-size: 14px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--md-sys-color-on-surface-variant);
   margin-bottom: 8px;
 }
 
 /* Custom Mat Form Field Style */
 .custom-mat-form-field {
   width: 100%;
-  ::ng-deep .mat-mdc-form-field-flex {
-    height: 48px !important;
-    border-radius: 8px !important;
-    background-color: #ffffff !important;
-  }
-  ::ng-deep .mdc-notched-outline__leading,
-  ::ng-deep .mdc-notched-outline__notch,
-  ::ng-deep .mdc-notched-outline__trailing {
-    border-color: #e0e0e0 !important;
-  }
 }
 
 /* Selector Styling */
 .custom-mat-select {
   width: 100%;
-  ::ng-deep .mat-mdc-form-field-flex {
-    background-color: #e0e0e0 !important;
-    height: 48px !important;
-    border-radius: 4px !important;
-    padding: 0 12px !important;
-    align-items: center !important;
-  }
-  ::ng-deep .mat-mdc-select-value { color: #4a4a4a !important; font-weight: 500; }
-  ::ng-deep .mat-mdc-form-field-infix { padding: 0 !important; min-height: auto !important; }
 }
 
 /* Permissions List Styling */
@@ -67,18 +49,18 @@
   align-items: center;
   gap: 8px;
   font-size: 16px;
-  color: #1a1a1a;
+  color: var(--md-sys-color-on-surface);
   font-weight: 400;
 
-  .dot { font-weight: bold; font-size: 18px; }
+  .dot { font-weight: bold; font-size: 18px; color: var(--md-sys-color-primary); }
   .perm-text { flex: 1; }
 
   .remove-btn {
     width: 36px;
     height: 36px;
     border-radius: 8px;
-    background-color: #717171;
-    color: white;
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface);
     border: none;
     cursor: pointer;
     display: flex;
@@ -88,7 +70,7 @@
     line-height: 0;
     transition: background-color 0.2s;
 
-    &:hover { background-color: #4a4a4a; }
+    &:hover { background-color: var(--md-sys-color-error); color: var(--md-sys-color-on-error); }
   }
 }
 
@@ -107,8 +89,8 @@
     box-shadow: none !important;
   }
 
-  .btn-submit { background-color: #2b2b2b !important; color: #ffffff !important; }
-  .btn-cancel { background-color: transparent !important; color: #4a4a4a !important; border: 1px solid #4a4a4a !important; }
+  .btn-submit { background-color: var(--md-sys-color-primary) !important; color: var(--md-sys-color-on-primary) !important; }
+  .btn-cancel { background-color: transparent !important; color: var(--md-sys-color-on-surface) !important; border: 1px solid var(--md-sys-color-outline) !important; }
 }
 
-.btn-submit:disabled { background-color: #cccccc !important; }
+.btn-submit:disabled { background-color: var(--md-sys-color-surface-variant) !important; color: var(--md-sys-color-on-surface-variant) !important; }
