@@ -1,9 +1,10 @@
+@use '../../../../tokens' as *;
+
 :host {
   display: block;
   width: 100%;
-  background-color: #ffffff;
-  border-top: 1px solid #ebebeb;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: transparent; // El gradiente de fondo suele estar en el body o root
+  font-family: var(--font-ui);
 }
 
 /* ─── FRANJA PRINCIPAL ─── */
@@ -12,59 +13,67 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: var(--space-5);
   max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 48px;
+  padding: var(--space-8) var(--space-10);
+
+  @include mobile {
+    padding: var(--space-6) var(--space-5);
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
 }
 
 /* ─── MARCA ─── */
 .footer-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   text-decoration: none;
-}
+  cursor: pointer;
 
-.logo-icon {
-  background-color: #1a1a1a;
-  color: #ffffff;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  flex-shrink: 0;
-}
+  .logo-icon {
+    @include gradient-border(var(--icon-container-radius));
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--weight-bold);
+    font-size: 14px;
+    color: #ffffff;
+    flex-shrink: 0;
 
-.logo-text {
-  font-size: 17px;
-  font-weight: 700;
-  color: #1a1a1a;
-  letter-spacing: -0.3px;
+    &::before {
+      background: var(--gradient-brand); // Sobreescribimos el de tokens si es necesario
+    }
+  }
+
+  .logo-text {
+    font-size: var(--text-title-md);
+    font-weight: var(--weight-bold);
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
 }
 
 /* ─── LINKS ─── */
 .footer-links {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: var(--space-6);
   flex-wrap: wrap;
 
-  a {
-    font-size: 13px;
-    color: #888;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
+  @include mobile {
+    justify-content: center;
+    gap: var(--space-4);
+  }
 
-    &:hover {
-      color: #1a1a1a;
-    }
+  a.app-link {
+    font-size: var(--text-body-md);
+    font-weight: var(--weight-medium);
   }
 }
 
@@ -72,44 +81,42 @@
 .footer-social {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
 
-  a {
-    color: #aaa;
-    display: flex;
-    align-items: center;
-    transition: color 0.2s ease, transform 0.15s ease;
+  .social-chip {
+    @include chip-outlined;
+    width: 40px; // Hacerlo circular para iconos
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    color: #ffffff;
 
-    &:hover {
-      color: #1a1a1a;
-      transform: translateY(-1px);
+    svg {
+      transition: transform 0.2s ease;
+    }
+
+    &:hover svg {
+      transform: translateY(-2px);
     }
   }
 }
 
 /* ─── COPYRIGHT ─── */
 .footer-bottom {
-  border-top: 1px solid #f0f0f0;
-  padding: 14px 48px;
+  padding: var(--space-4) var(--space-10);
   text-align: center;
+  border-top: 1px solid var(--divider-color);
 
   span {
-    font-size: 12px;
-    color: #bbb;
-    font-weight: 400;
+    font-size: var(--text-label-lg);
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: var(--weight-regular);
   }
 }
 
-/* ─── RESPONSIVE ─── */
-@media (max-width: 768px) {
-  .footer-inner {
-    padding: 24px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .footer-bottom {
-    padding: 12px 20px;
-  }
+/* ─── BARRA DECORATIVA ─── */
+.footer-bar {
+  width: 100%;
+  height: var(--footer-bar-height);
+  background: var(--footer-bar-bg);
 }
