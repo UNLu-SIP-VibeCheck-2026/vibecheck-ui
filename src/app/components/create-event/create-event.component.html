@@ -10,27 +10,27 @@
                 <!-- Left: Photo section -->
                 <div class="photo-section">
                     <div class="photo-header">
-                        <label>Foto del Evento:</label>
+                        <label>Foto del Evento</label>
                         <button type="button" class="select-file-btn">Seleccionar Archivo</button>
                     </div>
                     <div class="photo-preview">
-                        <mat-icon class="preview-placeholder-icon">image</mat-icon>
+                        <mat-icon class="preview-placeholder-icon">add_a_photo</mat-icon>
                     </div>
                 </div>
 
                 <!-- Right: Title and Description -->
                 <div class="basic-info-section">
                     <div class="form-group custom-field-wrapper">
-                        <label for="title">Título del Evento:</label>
-                        <mat-form-field appearance="outline" class="custom-mat-form-field">
-                            <input matInput type="text" id="title" formControlName="title">
+                        <label for="title">Título del Evento</label>
+                        <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                            <input matInput type="text" id="title" formControlName="title" placeholder="Ej: Festival de Verano 2026">
                         </mat-form-field>
                     </div>
 
                     <div class="form-group custom-field-wrapper">
-                        <label for="description">Descripción:</label>
-                        <mat-form-field appearance="outline" class="custom-mat-form-field textarea-field">
-                            <textarea matInput id="description" formControlName="description"></textarea>
+                        <label for="description">Descripción</label>
+                        <mat-form-field appearance="outline" class="custom-mat-form-field textarea-field" subscriptSizing="dynamic">
+                            <textarea matInput id="description" formControlName="description" placeholder="Cuéntale a la gente de qué trata tu evento..."></textarea>
                         </mat-form-field>
                     </div>
                 </div>
@@ -38,9 +38,9 @@
 
             <!-- Categories -->
             <div class="form-group custom-field-wrapper mt-24">
-                <label>Categorías del Evento:</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field grey-bg">
-                    <mat-select formControlName="category" placeholder="Categorías">
+                <label>Categorías</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                    <mat-select formControlName="category" placeholder="Selecciona una o más categorías">
                         <mat-option *ngFor="let cat of categories" [value]="cat.value">
                             {{cat.viewValue}}
                         </mat-option>
@@ -60,18 +60,18 @@
 
             <!-- Start Date and Time -->
             <div class="form-group custom-field-wrapper mt-24">
-                <label>Fecha y Hora de Inicio del Evento:</label>
+                <label>Inicio del Evento</label>
                 <div class="multi-input-row">
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
                         <input matInput type="number" formControlName="startDay" placeholder="DD">
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
                         <input matInput type="number" formControlName="startMonth" placeholder="MM">
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
                         <input matInput type="number" formControlName="startYear" placeholder="AAAA">
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
                         <input matInput type="text" formControlName="startTime" placeholder="HH:MM">
                     </mat-form-field>
                 </div>
@@ -79,18 +79,18 @@
 
             <!-- End Date and Time -->
             <div class="form-group custom-field-wrapper mt-24">
-                <label>Fecha y Hora de Finalización del Evento:</label>
+                <label>Finalización del Evento</label>
                 <div class="multi-input-row">
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
                         <input matInput type="number" formControlName="endDay" placeholder="DD">
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
                         <input matInput type="number" formControlName="endMonth" placeholder="MM">
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
                         <input matInput type="number" formControlName="endYear" placeholder="AAAA">
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field medium">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
                         <input matInput type="text" formControlName="endTime" placeholder="HH:MM">
                     </mat-form-field>
                 </div>
@@ -98,12 +98,12 @@
 
             <!-- Venue -->
             <div class="form-group venue-group custom-field-wrapper mt-24">
-                <label for="venue">Lugar (Venue):</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field grey-bg">
-                    <mat-select id="venue" formControlName="venue" placeholder="Selecciona un lugar">
+                <label for="venue">Lugar (Venue)</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                    <mat-select id="venue" formControlName="venue" placeholder="Selecciona el recinto del evento">
                         <!-- Search Bar inside Select -->
                         <div class="select-search-header">
-                            <mat-form-field appearance="outline" class="search-inner-field">
+                            <mat-form-field appearance="outline" class="search-inner-field" subscriptSizing="dynamic">
                                 <mat-icon matPrefix>search</mat-icon>
                                 <input matInput placeholder="Buscar por nombre o dirección..." 
                                        [(ngModel)]="venueSearch" 
@@ -121,7 +121,7 @@
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
-                <a class="new-venue-link" (click)="openNewVenueDialog()">El Venue no se encuentra en la lista</a>
+                <a class="new-venue-link" (click)="openNewVenueDialog()">¿El recinto no figura en la lista? Crea uno nuevo</a>
             </div>
 
             <!-- Actions -->
@@ -129,10 +129,10 @@
                 <button mat-raised-button
                         type="submit"
                         [disabled]="isSubmitting || eventForm.invalid"
-                        class="custom-btn-submit dark">
-                    {{ isSubmitting ? 'Creando...' : 'Crear Evento' }}
+                        class="custom-btn-submit">
+                    {{ isSubmitting ? 'Procesando...' : 'Publicar Evento' }}
                 </button>
-                <button mat-stroked-button
+                <button mat-button
                         type="button"
                         (click)="cancel()"
                         class="custom-btn-cancel">
