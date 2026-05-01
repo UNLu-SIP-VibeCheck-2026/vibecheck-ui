@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/auth.service';
 import { UsersService } from '../../services/users.service';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
@@ -16,7 +17,8 @@ import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/
   imports: [
     CommonModule,
     MatButtonModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule
   ],
   templateUrl: './perfil-config.component.html',
   styleUrl: './perfil-config.component.css'
@@ -27,6 +29,7 @@ export class PerfilConfigComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   currentUser$: Observable<{ username: string; role: string } | null> = this.authService.currentUser$;
 
@@ -108,16 +111,52 @@ export class PerfilConfigComponent {
 
   openChangeRole() {
     const user = this.authService.getCurrentUserValue();
-    const dialogRef = this.dialog.open(ChangeRoleDialogComponent, {
-      width: '440px',
-      data: { role: (user as any)?.role || 'comprar' },
-      autoFocus: false
-    });
+    if (!user?.username) return;
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log('Role change data:', result);
-      }
+    this.usersService.getUserByUsername(user.username).subscribe({
+      next: (fullUser) => {
+        const dialogRef = this.dialog.open(ChangeRoleDialogComponent, {
+          width: '440px',
+          data: { user: fullUser },
+          autoFocus: false
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result && result.roleId) {
+            this.snackBar.open('Actualizando rol...', 'Cerrar', { duration: 2000 });
+            
+            const updatePayload: UserUpdateRequest = {
+              username:    fullUser.username,
+              name:        fullUser.name,
+              lastName:    fullUser.lastName,
+              email:       fullUser.email,
+              phoneNumber: fullUser.phoneNumber,
+              birthdate:   fullUser.birthdate,
+              roleId:      result.roleId
+            };
+
+            this.usersService.updateUser(user.username, updatePayload).subscribe({
+              next: () => {
+                // Refresh tokens to get the new role claim without logging out
+                this.authService.refreshToken().subscribe({
+                  next: () => {
+                    this.snackBar.open('Rol actualizado y sesión sincronizada', 'Cerrar', { duration: 3000 });
+                  },
+                  error: (err) => {
+                    console.error('Error al refrescar el token:', err);
+                    this.snackBar.open('Rol actualizado, por favor reinicia sesión para ver los cambios', 'Cerrar', { duration: 5000 });
+                  }
+                });
+              },
+              error: (err) => {
+                console.error('Error al cambiar el rol:', err);
+                this.snackBar.open('Error al actualizar el rol', 'Cerrar', { duration: 5000 });
+              }
+            });
+          }
+        });
+      },
+      error: (err) => console.error('Error al obtener perfil para cambio de rol:', err)
     });
   }
 
