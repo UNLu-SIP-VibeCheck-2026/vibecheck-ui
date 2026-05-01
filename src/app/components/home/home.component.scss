@@ -22,12 +22,48 @@
 
 .brand-title {
   margin: 0;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  
+  // Paddings individuales para ajuste manual del centro visual
+  padding-left: 0px; 
+  padding-right: 20px;
+
+  .vibe-text, .check-text {
+    display: inline-block;
+    vertical-align: baseline;
+  }
+
+  .vibe-text {
+    font-family: var(--font-ui);
+    font-weight: 800;
+    margin-right: var(--space-1);
+  }
+
+  .check-text {
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+  }
+
+  .cap {
+    font-size: 1.3em;
+    display: inline-block;
+    vertical-align: baseline;
+  }
 }
 
 .hero-actions {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+
+  // Corregimos el centrado de los labels en botones sin icono
+  .btn-cta__label {
+    padding-right: 0 !important;
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .hero-footer {

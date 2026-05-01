@@ -1,3 +1,5 @@
+@use '../../../../tokens' as *;
+
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -14,6 +16,29 @@
   align-items: center;
   cursor: pointer;
   gap: var(--space-3);
+
+  .logo-icon {
+    @include gradient-border(var(--icon-container-radius));
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--weight-bold);
+    font-size: 14px;
+    color: #ffffff;
+    flex-shrink: 0;
+
+    &::before {
+      background: var(--gradient-brand); // Sobreescribimos el de tokens si es necesario
+    }
+
+    .nav-logo-img {
+      width: 24px;
+      height: 24px;
+      display: block;
+    }
+  }
 }
 
 .logo-text {

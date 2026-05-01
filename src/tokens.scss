@@ -19,18 +19,26 @@
 
   // ---------------------------------------------------------------------------
   // GRADIENTES (Suavizados para ser menos "chillones")
+
+  //Gradiente 1
+    //#7c3aed 0%,
+    //#be185d 100%    
+
+  //Gradiente 2
+    //#a855f7 0%,
+    //#f97316 100%
   // ---------------------------------------------------------------------------
 
   --gradient-brand: linear-gradient(
     90deg,
     #7c3aed 0%,
-    #be185d 100%
+    #f97316 100%
   );
 
   --gradient-brand-diagonal: linear-gradient(
     135deg,
     #7c3aed 0%,
-    #be185d 100%
+    #f97316 100%
   );
 
   --gradient-background: radial-gradient(

@@ -1,6 +1,9 @@
 <div class="home-container">
     <div class="hero-section">
-        <h1 class="brand-title text-gradient display-lg">VibeCheck</h1>
+        <h1 class="brand-title text-gradient display-lg">
+            <span class="vibe-text"><span class="cap">V</span>ibe</span>
+            <span class="check-text"><span class="cap">C</span>heck</span>
+        </h1>
         
         <div *ngIf="!(isLoggedIn$ | async); else loggedInTemplate">
             <div class="hero-actions">
