@@ -41,7 +41,7 @@ import { Router } from '@angular/router';
       text-align: center;
     }
     .big-icon { font-size: 5rem; width: 5rem; height: 5rem; margin-bottom: 1.5rem; color: #667eea; }
-    h1 { margin: 0; font-weight: 700; color: #1a1a1a; }
+    h1 { margin: 0; font-weight: 700; color: #ffffff; }
     h2 { margin-bottom: 1rem; color: #4b5563; }
     p { margin-bottom: 2rem; color: #6b7280; font-size: 1.1rem; }
   `]
