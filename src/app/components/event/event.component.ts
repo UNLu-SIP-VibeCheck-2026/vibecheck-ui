@@ -82,31 +82,41 @@ import { ActivatedRoute, Router } from '@angular/router';
   `,
   styles: [`
     .event-detail-container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 2rem;
-      font-family: 'Inter', sans-serif;
+      padding: var(--space-8) var(--space-4);
     }
 
     .header {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
       
+      button {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.05);
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+
       .header-title {
-        font-size: 1.25rem;
+        font-family: 'Outfit', sans-serif;
+        font-size: var(--text-title-md);
         font-weight: 600;
-        color: #4b5563;
+        color: rgba(255, 255, 255, 0.7);
+        letter-spacing: 0.02em;
       }
     }
 
     .content-wrapper {
-      background: white;
-      border-radius: 24px;
+      background: var(--md-sys-color-surface-container);
+      border-radius: var(--md-sys-shape-corner-extra-large);
       overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-      border: 1px solid #f3f4f6;
+      box-shadow: var(--shadow-xl);
+      border: 1px solid var(--md-sys-color-outline-variant);
     }
 
     .event-hero {
@@ -117,8 +127,8 @@ import { ActivatedRoute, Router } from '@angular/router';
     .image-container {
       position: relative;
       width: 100%;
-      height: 400px;
-      background: #f9fafb;
+      height: 450px;
+      background: var(--md-sys-color-surface-container-high);
       
       .placeholder-img {
         width: 100%;
@@ -127,121 +137,189 @@ import { ActivatedRoute, Router } from '@angular/router';
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: #9ca3af;
-        gap: 1rem;
+        color: var(--md-sys-color-outline);
+        gap: var(--space-4);
 
-        mat-icon { font-size: 4rem; width: 4rem; height: 4rem; }
-        span { font-size: 1.1rem; font-weight: 500; }
+        mat-icon { 
+          font-size: 80px; 
+          width: 80px; 
+          height: 80px; 
+          opacity: 0.5;
+        }
+        
+        span { 
+          font-family: 'Outfit', sans-serif;
+          font-size: var(--text-title-sm); 
+          font-weight: 500; 
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          opacity: 0.5;
+        }
       }
 
       .status-badge {
         position: absolute;
-        top: 20px;
-        right: 20px;
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.875rem;
-        background: white;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        top: 24px;
+        right: 24px;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: var(--text-label-md);
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
 
-        &.active { color: #10b981; }
-        &:not(.active) { color: #ef4444; }
+        &.active { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
+        &:not(.active) { color: #f87171; border-color: rgba(248, 113, 113, 0.3); }
       }
     }
 
     .event-info-section {
-      padding: 3rem;
+      padding: var(--space-10);
+      background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.2));
     }
 
     .event-title {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: #111827;
-      margin-bottom: 2rem;
-      letter-spacing: -0.025em;
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: var(--space-10);
+      letter-spacing: -0.03em;
+      line-height: 1;
     }
 
     .meta-info {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem;
-      margin-bottom: 3rem;
-      padding: 2rem;
-      background: #f8fafc;
-      border-radius: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-10);
+      padding: var(--space-8);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--md-sys-shape-corner-large);
     }
 
     .meta-item {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-4);
       
-      mat-icon { color: #6366f1; }
+      mat-icon { 
+        color: var(--md-sys-color-primary); 
+        background: rgba(168, 85, 247, 0.1);
+        padding: 12px;
+        border-radius: 12px;
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+        box-sizing: content-box;
+      }
       
       .meta-text {
         display: flex;
         flex-direction: column;
         
         label {
-          font-size: 0.75rem;
-          font-weight: 600;
+          font-size: var(--text-label-sm);
+          font-weight: 700;
           text-transform: uppercase;
-          color: #6b7280;
-          margin-bottom: 0.25rem;
+          color: rgba(255, 255, 255, 0.5);
+          margin-bottom: var(--space-1);
+          letter-spacing: 0.05em;
         }
 
         span {
+          font-family: 'Outfit', sans-serif;
+          font-size: var(--text-body-lg);
           font-weight: 600;
-          color: #1f2937;
+          color: #ffffff;
         }
       }
     }
 
     .description-section {
-      margin-bottom: 3rem;
+      margin-bottom: var(--space-10);
       
       h3 {
-        font-size: 1.25rem;
+        font-family: 'Outfit', sans-serif;
+        font-size: var(--text-title-sm);
         font-weight: 700;
-        color: #111827;
-        margin-bottom: 1rem;
+        color: #ffffff;
+        margin-bottom: var(--space-4);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        opacity: 0.9;
       }
 
       p {
-        font-size: 1.1rem;
-        line-height: 1.7;
-        color: #4b5563;
+        font-family: 'Inter', sans-serif;
+        font-size: 1.15rem;
+        line-height: 1.8;
+        color: rgba(255, 255, 255, 0.7);
         white-space: pre-line;
       }
     }
 
     .actions {
       display: flex;
-      gap: 1.5rem;
+      gap: var(--space-4);
       
       .buy-btn {
-        height: 56px;
-        padding: 0 2.5rem;
-        border-radius: 14px;
-        font-weight: 700;
-        font-size: 1.1rem;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        flex: 2;
+        height: 64px;
+        padding: 0 3rem;
+        border-radius: 16px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 1.25rem;
+        background: var(--gradient-brand) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 32px rgba(168, 85, 247, 0.5);
+          filter: brightness(1.1);
+        }
+        
+        mat-icon { margin-right: 12px; }
       }
 
       .share-btn {
-        height: 56px;
+        flex: 1;
+        height: 64px;
         padding: 0 2rem;
-        border-radius: 14px;
-        font-weight: 600;
+        border-radius: 16px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: transparent !important;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-color: #ffffff !important;
+        }
+
+        mat-icon { margin-right: 8px; }
       }
     }
 
-    @media (max-width: 640px) {
-      .event-detail-container { padding: 1rem; }
-      .event-info-section { padding: 1.5rem; }
-      .event-title { font-size: 1.75rem; }
+    @media (max-width: 768px) {
+      .event-detail-container { padding: var(--space-4); }
+      .image-container { height: 300px; }
+      .event-info-section { padding: var(--space-6); }
+      .event-title { font-size: 2.5rem; }
+      .meta-info { padding: var(--space-4); gap: var(--space-4); }
       .actions { flex-direction: column; }
+      .buy-btn, .share-btn { width: 100%; flex: none; }
     }
   `]
 })
