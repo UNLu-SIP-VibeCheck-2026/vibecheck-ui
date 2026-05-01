@@ -13,8 +13,9 @@ export class RolesService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl;
 
-  getRoles(page: number, size: number): Observable<Page<RoleResponse>> {
-    const params = { page: page.toString(), size: size.toString() };
+  getRoles(page: number, size: number, query: string = ''): Observable<Page<RoleResponse>> {
+    const params: any = { page: page.toString(), size: size.toString() };
+    if (query) params.query = query;
     return this.http.get<Page<RoleResponse>>(`${this.apiUrl}/roles`, { params });
   }
 

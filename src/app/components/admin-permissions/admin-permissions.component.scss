@@ -31,6 +31,21 @@
 
 .search-field {
   flex: 1; 
+
+  .search-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-sys-color-on-surface-variant);
+    height: 48px;
+    margin-right: 12px;
+    
+    svg {
+      display: block;
+      color: var(--md-sys-color-on-surface-variant);
+      opacity: 0.7;
+    }
+  }
 }
 
 .filter-action-btn {
