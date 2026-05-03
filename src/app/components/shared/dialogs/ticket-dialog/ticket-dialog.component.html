@@ -1,0 +1,58 @@
+<div class="dialog-container">
+    <h2 mat-dialog-title>{{ isEditMode ? 'Editar Ticket' : 'Crear Nuevo Ticket' }}</h2>
+    
+    <mat-dialog-content>
+        <form [formGroup]="ticketForm" class="ticket-form">
+            <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Nombre del Ticket</mat-label>
+                    <input matInput formControlName="name" placeholder="Ej: General Early Bird">
+                    <mat-error *ngIf="ticketForm.get('name')?.hasError('required')">El nombre es requerido</mat-error>
+                </mat-form-field>
+            </div>
+
+            <div class="form-grid">
+                <mat-form-field appearance="outline">
+                    <mat-label>Precio ($VBK)</mat-label>
+                    <input matInput type="number" formControlName="price" placeholder="0">
+                    <mat-error *ngIf="ticketForm.get('price')?.hasError('required')">El precio es requerido</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Precio Máximo ($VBK)</mat-label>
+                    <input matInput type="number" formControlName="maxPrice" placeholder="0">
+                    <mat-error *ngIf="ticketForm.get('maxPrice')?.hasError('required')">El precio máximo es requerido</mat-error>
+                </mat-form-field>
+            </div>
+
+            <div class="form-grid">
+                <mat-form-field appearance="outline">
+                    <mat-label>Regalías (%)</mat-label>
+                    <input matInput type="number" formControlName="royalties" placeholder="0">
+                    <mat-error *ngIf="ticketForm.get('royalties')?.hasError('required')">Las regalías son requeridas</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Cantidad Total</mat-label>
+                    <input matInput type="number" formControlName="totalQuantity" placeholder="Ej: 500">
+                    <mat-error *ngIf="ticketForm.get('totalQuantity')?.hasError('required')">La cantidad total es requerida</mat-error>
+                </mat-form-field>
+            </div>
+
+            <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Ubicación / Zona</mat-label>
+                    <input matInput formControlName="venueZone" placeholder="Ej: Campo, Platea A">
+                    <mat-error *ngIf="ticketForm.get('venueZone')?.hasError('required')">La ubicación es requerida</mat-error>
+                </mat-form-field>
+            </div>
+        </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions">
+        <button mat-raised-button (click)="onSubmit()" [disabled]="ticketForm.invalid" class="btn-submit">
+            {{ isEditMode ? 'Guardar Cambios' : 'Crear Ticket' }}
+        </button>
+        <button mat-button (click)="onCancel()" class="btn-cancel">Cancelar</button>
+    </mat-dialog-actions>
+</div>

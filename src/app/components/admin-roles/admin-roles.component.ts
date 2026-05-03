@@ -124,7 +124,7 @@ export class AdminRolesComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: { 
-        message: '¿Confirma eliminación?',
+        message: `¿Eliminar el rol "${role.name}"? Esta acción no se puede deshacer.`,
         confirmText: 'Eliminar',
         cancelText: 'Cancelar'
       },

@@ -152,8 +152,24 @@ h2 {
   }
 
   .btn-submit {
-    background-color: var(--md-sys-color-primary) !important;
-    color: var(--md-sys-color-on-primary) !important;
+    background: linear-gradient(135deg, #a855f7 0%, #f97316 100%) !important; 
+    color: #ffffff !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3) !important;
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      background: var(--md-sys-color-surface-variant) !important;
+      color: var(--md-sys-color-on-surface-variant) !important;
+      transform: none !important;
+      box-shadow: none !important;
+      opacity: 1;
+    }
   }
 
   .btn-cancel {

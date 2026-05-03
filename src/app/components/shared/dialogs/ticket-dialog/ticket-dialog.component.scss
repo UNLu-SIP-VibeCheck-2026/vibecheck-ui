@@ -1,0 +1,87 @@
+.dialog-container {
+  padding: 24px;
+  font-family: 'Inter', sans-serif;
+  min-width: 500px;
+  min-height: 600px; // Added to ensure it's taller
+  color: var(--md-sys-color-on-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 32px !important; // Increased
+  color: var(--md-sys-color-on-surface);
+}
+
+.ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; // Increased
+  padding-top: 12px; // Added to prevent label clipping
+}
+
+.form-row {
+  width: 100%;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 0 !important;
+
+  button {
+    flex: 1;
+    height: 48px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, #a855f7 0%, #f97316 100%) !important; 
+    color: #ffffff !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3) !important;
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      background: var(--md-sys-color-surface-variant) !important;
+      color: var(--md-sys-color-on-surface-variant) !important;
+      transform: none !important;
+      box-shadow: none !important;
+      opacity: 1;
+    }
+  }
+
+  .btn-cancel {
+    background-color: transparent !important;
+    color: var(--md-sys-color-on-surface) !important;
+    border: 1px solid var(--md-sys-color-outline) !important;
+  }
+}
+
+
+mat-error {
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--md-sys-color-error);
+}

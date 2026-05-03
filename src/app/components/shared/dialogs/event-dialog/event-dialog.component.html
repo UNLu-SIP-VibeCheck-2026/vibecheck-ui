@@ -76,11 +76,11 @@
     </mat-dialog-content>
 
     <mat-dialog-actions class="dialog-actions">
-        <button mat-stroked-button class="btn-cancel" (click)="onCancel()">Cancelar</button>
         <button mat-raised-button class="btn-submit" 
                 [disabled]="eventForm.invalid" 
                 (click)="onSubmit()">
             {{ isEditMode ? 'Guardar Cambios' : 'Guardar' }}
         </button>
+        <button mat-stroked-button class="btn-cancel" (click)="onCancel()">Cancelar</button>
     </mat-dialog-actions>
 </div>
