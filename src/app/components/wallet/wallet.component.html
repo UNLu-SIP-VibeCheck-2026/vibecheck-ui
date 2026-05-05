@@ -3,8 +3,12 @@
   <div class="balance-section">
     <div class="balance-content">
       <h2 class="wallet-title">Mi Billetera VC</h2>
-      <p class="balance-amount">$VC {{ (balance$ | async)?.balance | number:'1.2-2' }}</p>
-      <p class="balance-subtitle">Saldo Disponible</p>
+      <ng-container *ngIf="(balance$ | async) as wallet">
+        <div class="balance-item" *ngFor="let bal of wallet.balances">
+          <p class="balance-amount">{{ bal.token === 'VBK' ? '$VC' : bal.token }} {{ bal.balance | number:'1.2-2' }}</p>
+        </div>
+      </ng-container>
+      <p class="balance-subtitle">Saldos Disponibles</p>
     </div>
     <div class="wallet-actions">
       <button mat-raised-button class="wallet-action-btn charge-btn" (click)="toggleChargeForm()">
@@ -20,7 +24,7 @@
 
   <!-- Zero Balance Alert -->
   <ng-container *ngIf="(balance$ | async) as wallet">
-    <div class="zero-balance-alert" *ngIf="wallet.balance === 0">
+    <div class="zero-balance-alert" *ngIf="getMainBalance(wallet) === 0">
       <mat-icon>info</mat-icon>
       <div class="alert-text">
         <strong>¡Bienvenido a tu billetera!</strong>
@@ -52,12 +56,22 @@
       <h3>Retirar dinero de tu cuenta</h3>
       <button class="close-btn" (click)="toggleWithdrawForm()"><mat-icon>close</mat-icon></button>
     </div>
-    <div class="form-content">
+    <div class="form-content withdraw-form-content">
       <div class="input-group">
         <span class="currency-symbol">$VC</span>
         <input type="number" [(ngModel)]="amountToWithdraw" placeholder="0.00" min="1" class="amount-input">
       </div>
-      <button mat-raised-button color="warn" class="submit-charge-btn" [disabled]="!amountToWithdraw || amountToWithdraw <= 0 || isLoading" (click)="withdrawMoney()">
+      <div class="input-group">
+        <select [(ngModel)]="withdrawMethod" class="amount-input select-input" style="width: 100%; border: none; background: transparent; color: inherit; font-family: inherit; font-size: inherit; outline: none; padding: 10px 0;">
+          <option value="mercadopago" style="color: black;">MercadoPago</option>
+          <option value="transferencia" style="color: black;">Transferencia Bancaria</option>
+          <option value="exchange" style="color: black;">Exchange Crypto</option>
+        </select>
+      </div>
+      <div class="input-group" style="margin-top: 15px;">
+        <input type="text" [(ngModel)]="withdrawDestination" placeholder="CBU, Alias o Dirección" class="amount-input" style="width: 100%;">
+      </div>
+      <button mat-raised-button color="warn" class="submit-charge-btn" style="margin-top: 20px;" [disabled]="!amountToWithdraw || amountToWithdraw <= 0 || !withdrawDestination || isLoading" (click)="withdrawMoney()">
         {{ isLoading ? 'Procesando...' : 'Confirmar Retiro' }}
       </button>
     </div>

@@ -25,25 +25,39 @@ export class WalletComponent {
   isCharging = false;
   isWithdrawing = false;
   amountToCharge: number | null = null;
+  chargeToken: string = 'VBK';
   amountToWithdraw: number | null = null;
+  withdrawToken: string = 'VBK';
+  withdrawMethod: string = 'mercadopago';
+  withdrawDestination: string = '';
   isLoading = false;
+
+  getMainBalance(wallet: Wallet | null | undefined): number {
+    if (!wallet || !wallet.balances) return 0;
+    const vbkBalance = wallet.balances.find(b => b.token === 'VBK');
+    return vbkBalance ? vbkBalance.balance : (wallet.balances[0]?.balance || 0);
+  }
 
   toggleChargeForm() {
     this.isCharging = !this.isCharging;
     this.isWithdrawing = false;
     this.amountToCharge = null;
+    this.chargeToken = 'VBK';
   }
 
   toggleWithdrawForm() {
     this.isWithdrawing = !this.isWithdrawing;
     this.isCharging = false;
     this.amountToWithdraw = null;
+    this.withdrawToken = 'VBK';
+    this.withdrawMethod = 'mercadopago';
+    this.withdrawDestination = '';
   }
 
   chargeMoney() {
-    if (this.amountToCharge && this.amountToCharge > 0) {
+    if (this.amountToCharge && this.amountToCharge > 0 && this.chargeToken) {
       this.isLoading = true;
-      this.walletService.loadMoney(this.amountToCharge).subscribe({
+      this.walletService.loadMoney({ amount: this.amountToCharge, token: this.chargeToken }).subscribe({
         next: () => {
           this.isLoading = false;
           this.snackBar.open('¡Carga realizada con éxito!', 'Cerrar', { duration: 3000 });
@@ -62,9 +76,29 @@ export class WalletComponent {
   }
 
   withdrawMoney() {
-    if (this.amountToWithdraw && this.amountToWithdraw > 0) {
-      this.snackBar.open('Función en desarrollo', 'Cerrar', { duration: 3000 });
-      this.toggleWithdrawForm();
+    if (this.amountToWithdraw && this.amountToWithdraw > 0 && this.withdrawToken && this.withdrawMethod && this.withdrawDestination) {
+      this.isLoading = true;
+      this.walletService.withdrawMoney({ 
+        amount: this.amountToWithdraw, 
+        token: this.withdrawToken, 
+        method: this.withdrawMethod, 
+        destination: this.withdrawDestination 
+      }).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.snackBar.open('¡Retiro procesado con éxito!', 'Cerrar', { duration: 3000 });
+          this.toggleWithdrawForm();
+          this.balance$ = this.walletService.getWalletBalance();
+          this.transactions$ = this.walletService.getTransactionHistory();
+        },
+        error: (err) => {
+          this.isLoading = false;
+          console.error('Error al retirar dinero', err);
+          this.snackBar.open('Ocurrió un error al procesar el retiro.', 'Cerrar', { duration: 3000 });
+        }
+      });
+    } else {
+      this.snackBar.open('Por favor completa todos los campos para el retiro', 'Cerrar', { duration: 3000 });
     }
   }
 

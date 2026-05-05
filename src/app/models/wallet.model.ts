@@ -1,8 +1,15 @@
+export interface BalanceEntry {
+  token: string;
+  contract: string;
+  balance: number;
+}
+
 export interface Wallet {
   id: number;
   address: string;
   network: string;
-  balance: number;
+  ownerUsername: string;
+  balances: BalanceEntry[];
 }
 
 export type TransactionType = 'CREDIT' | 'DEBIT';
@@ -26,4 +33,23 @@ export interface Page<T> {
 
 export interface LoadMoneyRequest {
   amount: number;
+  token: string;
+}
+
+export interface WithdrawRequest {
+  amount: number;
+  token: string;
+  method: string;
+  destination: string;
+}
+
+export interface WithdrawResponse {
+  amountRequested: number;
+  fee: number;
+  amountNet: number;
+  balanceAfter: number;
+  token: string;
+  method: string;
+  destination: string;
+  status: string;
 }

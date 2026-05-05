@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Wallet, Transaction, Page } from '../models/wallet.model';
+import { Wallet, Transaction, Page, LoadMoneyRequest, WithdrawRequest, WithdrawResponse } from '../models/wallet.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -21,12 +21,11 @@ export class WalletService {
       .pipe(map(response => response.content));
   }
 
-  loadMoney(amount: number): Observable<Transaction> {
-    return this.http.post<Transaction>(`${this.apiUrl}/wallets/me/topup`, { amount });
+  loadMoney(request: LoadMoneyRequest): Observable<Transaction> {
+    return this.http.post<Transaction>(`${this.apiUrl}/wallets/me/topup`, request);
   }
 
-  withdrawMoney(amount: number): Observable<{success: boolean, message: string}> {
-    // Endpoint no implementado en el backend todavía
-    return throwError(() => new Error('Not implemented'));
+  withdrawMoney(request: WithdrawRequest): Observable<WithdrawResponse> {
+    return this.http.post<WithdrawResponse>(`${this.apiUrl}/wallets/me/withdraw`, request);
   }
 }
