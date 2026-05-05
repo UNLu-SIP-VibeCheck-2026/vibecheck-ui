@@ -1,0 +1,167 @@
+@use '../../../tokens' as *;
+
+.events-container {
+  padding: var(--space-6) var(--space-10);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 100px);
+
+  @include mobile {
+    padding: var(--space-4) var(--space-5);
+  }
+}
+
+.events-header {
+  margin-bottom: var(--space-8);
+
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .pills-container {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .selected-pill-title {
+    color: var(--md-sys-color-on-surface);
+    opacity: 0.9;
+    font-weight: 700;
+  }
+}
+
+.pill-button {
+  @include chip-outlined;
+  border-radius: var(--md-sys-shape-corner-full);
+  height: 40px;
+  padding: 0 var(--space-5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.03);
+  
+  &.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+  }
+
+  &:not(.active):hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &.special {
+    position: relative;
+    border: none;
+    background: var(--md-sys-color-surface-variant);
+    overflow: visible;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: var(--md-sys-shape-corner-full);
+      background: var(--gradient-border);
+      z-index: -1;
+      padding: 2px;
+    }
+
+    &.active {
+      background: var(--gradient-brand);
+      color: white;
+      
+      &::before {
+        display: none;
+      }
+    }
+  }
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.event-card {
+  background: var(--md-sys-color-surface);
+  border-radius: var(--md-sys-shape-corner-medium);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--md-sys-color-outline-variant);
+
+  &:hover {
+    transform: translateY(-8px);
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface-variant);
+    
+    .event-image {
+      transform: scale(1.05);
+    }
+  }
+
+  .event-image-container {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #1a1535;
+  }
+
+  .event-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .event-info {
+    padding: var(--space-4);
+
+    h3 {
+      margin: 0 0 var(--space-3) 0;
+      font-size: var(--text-title-lg);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--md-sys-color-on-surface);
+    }
+  }
+
+  .event-metadata {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+
+    .metadata-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--md-sys-color-on-surface-variant);
+      font-size: var(--text-body-md);
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-6);
+  
+  ::ng-deep .mat-mdc-paginator {
+    background: transparent !important;
+    color: var(--md-sys-color-on-surface) !important;
+  }
+}

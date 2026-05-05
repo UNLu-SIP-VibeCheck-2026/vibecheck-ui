@@ -1,0 +1,65 @@
+<div class="events-container">
+  <div class="events-header">
+    <div class="title-row">
+      <h1 class="display-medium">Eventos</h1>
+      <div class="pills-container">
+        <button 
+          class="pill-button" 
+          [class.active]="selectedPill === 'Próximos eventos'"
+          (click)="selectPill('Próximos eventos')">
+          Próximos eventos
+        </button>
+        <button 
+          class="pill-button" 
+          [class.active]="selectedPill === 'Recomendados'"
+          (click)="selectPill('Recomendados')">
+          Recomendados
+        </button>
+        <button 
+          class="pill-button" 
+          [class.active]="selectedPill === 'Cerca tuyo'"
+          (click)="selectPill('Cerca tuyo')">
+          Cerca tuyo
+        </button>
+        <button 
+          class="pill-button special" 
+          [class.active]="selectedPill === 'Marketplace'"
+          (click)="selectPill('Marketplace')">
+          Marketplace
+        </button>
+      </div>
+    </div>
+    <h2 class="headline-medium selected-pill-title">{{ selectedPill }}</h2>
+  </div>
+
+  <div class="events-grid">
+    <div class="event-card" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)">
+      <div class="event-image-container">
+        <img [src]="event.imageUrl || 'assets/images/placeholder-event.jpg'" [alt]="event.title" class="event-image">
+      </div>
+      <div class="event-info">
+        <h3 class="headline-large">{{ event.title }}</h3>
+        <div class="event-metadata">
+          <div class="metadata-item">
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ event.startDate }}</span>
+          </div>
+          <div class="metadata-item">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ event.venue }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagination-container">
+    <mat-paginator 
+      [length]="totalEvents"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[8, 16, 24]"
+      (page)="onPageChange($event)"
+      aria-label="Seleccionar página">
+    </mat-paginator>
+  </div>
+</div>
