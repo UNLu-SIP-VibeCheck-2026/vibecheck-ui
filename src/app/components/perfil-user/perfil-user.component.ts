@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { UsersService } from '../../services/users.service';
@@ -15,39 +15,41 @@ export class PerfilUserComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private usersService = inject(UsersService);
 
-  profile: UserPublicResponse | null = null;
-  isLoading = true;
-  hasError = false;
+  profile = signal<UserPublicResponse | null>(null);
+  isLoading = signal<boolean>(true);
+  hasError = signal<boolean>(false);
+
+  fullName = computed(() => {
+    const p = this.profile();
+    if (!p) return '';
+    return `${p.name || ''} ${p.lastName || ''}`.trim();
+  });
+
+  initials = computed(() => {
+    const p = this.profile();
+    if (!p) return '?';
+    const n = p.name?.[0] ?? '';
+    const l = p.lastName?.[0] ?? '';
+    return (n + l).toUpperCase() || p.username?.[0]?.toUpperCase() || '?';
+  });
 
   ngOnInit(): void {
     const username = this.route.snapshot.paramMap.get('username');
     if (!username) {
-      this.hasError = true;
-      this.isLoading = false;
+      this.hasError.set(true);
+      this.isLoading.set(false);
       return;
     }
 
     this.usersService.getPublicUser(username).subscribe({
       next: (data) => {
-        this.profile = data;
-        this.isLoading = false;
+        this.profile.set(data);
+        this.isLoading.set(false);
       },
       error: () => {
-        this.hasError = true;
-        this.isLoading = false;
+        this.hasError.set(true);
+        this.isLoading.set(false);
       }
     });
-  }
-
-  get fullName(): string {
-    if (!this.profile) return '';
-    return `${this.profile.name} ${this.profile.lastName}`.trim();
-  }
-
-  get initials(): string {
-    if (!this.profile) return '?';
-    const n = this.profile.name?.[0] ?? '';
-    const l = this.profile.lastName?.[0] ?? '';
-    return (n + l).toUpperCase() || this.profile.username[0].toUpperCase();
   }
 }
