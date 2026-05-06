@@ -38,8 +38,16 @@ import { ActivatedRoute, Router } from '@angular/router';
               <div class="meta-item">
                 <mat-icon>calendar_today</mat-icon>
                 <div class="meta-text">
-                  <label>Fecha de Celebración</label>
-                  <span>{{ event.celebrationDate }}</span>
+                  <label>Fecha de Inicio</label>
+                  <span>{{ event.startDate }}</span>
+                </div>
+              </div>
+
+              <div class="meta-item">
+                <mat-icon>event_available</mat-icon>
+                <div class="meta-text">
+                  <label>Fecha de Fin</label>
+                  <span>{{ event.endDate }}</span>
                 </div>
               </div>
               
@@ -50,14 +58,6 @@ import { ActivatedRoute, Router } from '@angular/router';
                   <span>{{ event.venue }}</span>
                 </div>
               </div>
-
-              <div class="meta-item">
-                <mat-icon>history</mat-icon>
-                <div class="meta-text">
-                  <label>Creado el</label>
-                  <span>{{ event.creationDate }}</span>
-                </div>
-              </div>
             </div>
 
             <div class="description-section">
@@ -66,7 +66,7 @@ import { ActivatedRoute, Router } from '@angular/router';
             </div>
 
             <div class="actions">
-              <button mat-raised-button color="primary" class="buy-btn">
+              <button mat-raised-button color="primary" class="buy-btn" (click)="buyTickets()">
                 <mat-icon>shopping_cart</mat-icon>
                 Adquirir Entradas
               </button>
@@ -335,12 +335,16 @@ export class EventComponent implements OnInit {
     this.event = {
       id: id || 'EVENTO001',
       title: id || 'EVENTO001',
-      description: 'Excepteur efficient emerging, minim veniam anim aute carefully curated Ginza conversation exquisite perfect nostrud nisi intricate Content. Qui international first-class nulla ut. Punctual adipisicing, essential lovely queen\\n\\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-      creationDate: '28/04/2026',
-      celebrationDate: '15/05/2026',
+      description: 'Excepteur efficient emerging, minim veniam anim aute carefully curated Ginza conversation exquisite perfect nostrud nisi intricate Content. Qui international first-class nulla ut. Punctual adipisicing, essential lovely queen\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      startDate: '15/05/2026',
+      endDate: '16/05/2026',
       venue: 'VENUE01',
       active: true
     };
+  }
+
+  buyTickets() {
+    this.router.navigate(['/select-tickets', this.event.id]);
   }
 
   goBack() {

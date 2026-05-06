@@ -1,0 +1,90 @@
+<div class="ticket-detail-container" *ngIf="ticket">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="header-title">Detalle de Reventa</span>
+  </div>
+
+  <div class="content-wrapper">
+    <div class="hero-section">
+      <img [src]="ticket.imageUrl" alt="Event Cover" class="hero-image">
+      <div class="overlay"></div>
+      <div class="hero-content">
+        <div class="marketplace-badge">REVENTA MARKETPLACE</div>
+        <h1 class="event-title">{{ ticket.eventTitle }}</h1>
+        <div class="venue-info">
+          <mat-icon>location_on</mat-icon>
+          <span>{{ ticket.venue }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="info-column">
+        <section class="info-section">
+          <h3>Sobre esta entrada</h3>
+          <p>{{ ticket.description }}</p>
+          <div class="meta-rows">
+            <div class="meta-row">
+              <mat-icon>calendar_today</mat-icon>
+              <div class="meta-text">
+                <label>Fechas</label>
+                <span>{{ ticket.startDate }} al {{ ticket.endDate }}</span>
+              </div>
+            </div>
+            <div class="meta-row">
+              <mat-icon>place</mat-icon>
+              <div class="meta-text">
+                <label>Dirección</label>
+                <span>{{ ticket.address }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-section ticket-data">
+          <h3>Detalles técnicos</h3>
+          <div class="ticket-badge-row">
+            <span class="type-badge">{{ ticket.ticketType }}</span>
+            <span class="id-badge">Original ID: {{ ticket.id }}</span>
+          </div>
+          <div class="location-card">
+            <mat-icon>airline_seat_recline_extra</mat-icon>
+            <div class="location-details">
+              <label>Ubicación</label>
+              <span>{{ ticket.location }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="actions-column">
+        <mat-card class="price-card">
+          <div class="seller-preview">
+            <img [src]="ticket.sellerPhoto" alt="Seller" class="seller-img">
+            <div class="seller-meta">
+              <label>Vendedor</label>
+              <span>{{ ticket.sellerName }}</span>
+            </div>
+          </div>
+          
+          <div class="price-display">
+            <label>Precio de Reventa</label>
+            <span class="amount">{{ ticket.price | currency:'$':'symbol':'1.0-0' }}</span>
+          </div>
+
+          <button mat-raised-button class="buy-btn" (click)="buyTicket()">
+            <mat-icon>shopping_cart</mat-icon>
+            ADQUIRIR ENTRADA
+          </button>
+          
+          <button mat-stroked-button class="share-btn" (click)="shareTicket()">
+            <mat-icon>share</mat-icon>
+            COMPARTIR
+          </button>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

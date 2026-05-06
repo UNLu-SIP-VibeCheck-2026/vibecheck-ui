@@ -1,0 +1,79 @@
+<div class="resell-container">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="display-medium">Revender Entrada</h1>
+  </div>
+
+  <div class="resell-layout">
+    <div class="config-column">
+      <mat-card class="config-card">
+        <h2 class="headline-small">Establecer Precio</h2>
+        <div class="price-config">
+          <div class="price-input-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Precio de reventa ($)</mat-label>
+              <input matInput type="number" [(ngModel)]="resalePrice" [max]="maxResalePrice">
+              <span matPrefix>$&nbsp;</span>
+            </mat-form-field>
+            <div class="info-badge">Max: ${{ maxResalePrice }}</div>
+          </div>
+          <mat-slider [min]="0" [max]="maxResalePrice" step="100">
+            <input matSliderThumb [(ngModel)]="resalePrice">
+          </mat-slider>
+          <p class="price-hint">El precio máximo está limitado por los organizadores del evento.</p>
+        </div>
+
+        <div class="tier-selection">
+          <h2 class="headline-small">Publicidad de la Entrada</h2>
+          <div class="tiers-grid">
+            <div class="tier-card" *ngFor="let tier of tiers" 
+                 [class.active]="selectedTier === tier.id"
+                 [class]="'tier-' + tier.id"
+                 (click)="selectedTier = tier.id">
+              <div class="tier-header">
+                <div class="tier-title-group">
+                  <mat-icon [class]="'vibe-icon ' + tier.id">{{ tier.icon }}</mat-icon>
+                  <span class="tier-name">{{ tier.name }}</span>
+                </div>
+                <span class="tier-fee">{{ tier.fee }}% Fee</span>
+              </div>
+              <p class="tier-desc">{{ tier.description }}</p>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <div class="summary-column">
+      <mat-card class="summary-card">
+        <h2 class="headline-small">Resumen de Venta</h2>
+        <div class="summary-rows">
+          <div class="summary-row">
+            <span>Precio de Venta</span>
+            <span>${{ resalePrice }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Comisión de App ({{ currentFee }}%)</span>
+            <span class="fee-text">-${{ resalePrice * (currentFee / 100) | number:'1.0-0' }}</span>
+          </div>
+          <div class="summary-row total-row">
+            <span>Recibirás</span>
+            <span class="earnings">${{ finalEarnings | number:'1.0-0' }}</span>
+          </div>
+        </div>
+
+        <div class="warning-box">
+          <mat-icon>info</mat-icon>
+          <p>Al publicar, tu entrada original quedará bloqueada hasta que se venda o canceles la publicación.</p>
+        </div>
+
+        <button mat-raised-button class="publish-btn" (click)="publishResale()">
+          <mat-icon>campaign</mat-icon>
+          PUBLICAR REVENTA
+        </button>
+      </mat-card>
+    </div>
+  </div>
+</div>

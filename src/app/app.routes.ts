@@ -20,6 +20,13 @@ import { AdminEventsComponent } from "./components/admin-events/admin-events.com
 import { AdminTicketsComponent } from "./components/admin-tickets/admin-tickets.component";
 import { AdvertiseEventComponent } from "./components/advertise-event/advertise-event.component";
 import { EventComponent } from "./components/event/event.component";
+import { SelectTicketsComponent } from "./components/select-tickets/select-tickets.component";
+import { MyTicketsComponent } from "./components/my-tickets/my-tickets.component";
+import { TicketComponent } from "./components/ticket/ticket.component";
+import { TicketMarketplaceComponent } from "./components/ticket-marketplace/ticket-marketplace.component";
+import { MarketplaceCheckoutComponent } from "./components/marketplace-checkout/marketplace-checkout.component";
+import { GiftTicketComponent } from "./components/gift-ticket/gift-ticket.component";
+import { ResellTicketComponent } from "./components/resell-ticket/resell-ticket.component";
 import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 
@@ -108,6 +115,41 @@ export const routes: Routes = [
   {
     path: "event/:id",
     component: EventComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "select-tickets/:id",
+    component: SelectTicketsComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "my-tickets",
+    component: MyTicketsComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "ticket/:id",
+    component: TicketComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "ticket-marketplace/:id",
+    component: TicketMarketplaceComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "marketplace-checkout/:id",
+    component: MarketplaceCheckoutComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "gift-ticket/:id",
+    component: GiftTicketComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "resell-ticket/:id",
+    component: ResellTicketComponent,
     canActivate: [authGuard],
   },
   {

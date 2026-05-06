@@ -1,0 +1,65 @@
+<div class="gift-container">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="display-medium">Regalar Entrada</h1>
+  </div>
+
+  <div class="gift-layout">
+    <mat-card class="search-card">
+      <h2 class="headline-small">Buscar Destinatario</h2>
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Nombre de usuario o amigo</mat-label>
+        <input matInput [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" placeholder="Ej: juan_perez">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <div class="users-list-section">
+        <h3>Tus Amigos</h3>
+        <mat-selection-list [multiple]="false" (selectionChange)="selectUser($event.options[0].value)">
+          <mat-list-option *ngFor="let friend of filteredFriends" [value]="friend">
+            <div class="user-item">
+              <img [src]="friend.photo" class="user-photo">
+              <div class="user-info">
+                <span class="username">&#64;{{ friend.username }}</span>
+                <span class="fullname">{{ friend.fullName }}</span>
+              </div>
+            </div>
+          </mat-list-option>
+        </mat-selection-list>
+        
+        <div class="empty-state" *ngIf="filteredFriends.length === 0">
+          <mat-icon>person_search</mat-icon>
+          <p>No se encontraron usuarios</p>
+        </div>
+      </div>
+    </mat-card>
+
+    <div class="confirmation-section" *ngIf="selectedUser">
+      <mat-card class="confirm-card">
+        <h2 class="headline-small">Confirmar Envío</h2>
+        <div class="destinatary-preview">
+          <p>Vas a regalar tu entrada a:</p>
+          <div class="selected-user-card">
+            <img [src]="selectedUser.photo" alt="User">
+            <div class="meta">
+              <span class="name">{{ selectedUser.fullName }}</span>
+              <span class="user">&#64;{{ selectedUser.username }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="warning-box">
+          <mat-icon>warning</mat-icon>
+          <p><strong>Atención:</strong> Una vez enviada la entrada, perderás el acceso a la misma y no podrás deshacer esta acción.</p>
+        </div>
+
+        <button mat-raised-button class="gift-btn" (click)="confirmGift()">
+          <mat-icon>card_giftcard</mat-icon>
+          CONFIRMAR Y REGALAR
+        </button>
+      </mat-card>
+    </div>
+  </div>
+</div>

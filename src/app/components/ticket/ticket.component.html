@@ -1,0 +1,110 @@
+<div class="ticket-detail-container" *ngIf="ticket">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="header-title">Detalle de mi Entrada</span>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Hero Image -->
+    <div class="hero-section">
+      <img [src]="ticket.imageUrl" alt="Event Cover" class="hero-image">
+      <div class="overlay"></div>
+      <div class="hero-content">
+        <h1 class="event-title">{{ ticket.eventTitle }}</h1>
+        <div class="venue-info">
+          <mat-icon>location_on</mat-icon>
+          <span>{{ ticket.venue }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <!-- Info Column -->
+      <div class="info-column">
+        <section class="info-section">
+          <h3>Sobre el evento</h3>
+          <p>{{ ticket.description }}</p>
+          <div class="meta-rows">
+            <div class="meta-row">
+              <mat-icon>calendar_today</mat-icon>
+              <div class="meta-text">
+                <label>Fechas</label>
+                <span>{{ ticket.startDate }} al {{ ticket.endDate }}</span>
+              </div>
+            </div>
+            <div class="meta-row">
+              <mat-icon>place</mat-icon>
+              <div class="meta-text">
+                <label>Dirección</label>
+                <span>{{ ticket.address }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-section ticket-data">
+          <h3>Datos de tu entrada</h3>
+          <div class="ticket-badge-row">
+            <span class="type-badge">{{ ticket.ticketType }}</span>
+            <span class="id-badge">ID: {{ ticket.id }}</span>
+          </div>
+          <div class="location-card">
+            <mat-icon>airline_seat_recline_extra</mat-icon>
+            <div class="location-details">
+              <label>Ubicación asignada</label>
+              <span>{{ ticket.location }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Actions Column -->
+      <div class="actions-column">
+        <mat-card class="qr-card">
+          <div class="qr-hidden-state">
+            <mat-icon class="lock-icon">qr_code_2</mat-icon>
+            <p>Tu código está listo</p>
+          </div>
+          <button mat-raised-button class="qr-btn" (click)="toggleQR()">
+            <mat-icon>qr_code_scanner</mat-icon>
+            VER QR DE INGRESO
+          </button>
+        </mat-card>
+
+        <div class="secondary-actions">
+          <button mat-raised-button class="action-btn purple-btn" (click)="giftTicket()">
+            <mat-icon>card_giftcard</mat-icon>
+            Regalar entrada
+          </button>
+          <button mat-raised-button class="action-btn purple-btn" (click)="resellTicket()">
+            <mat-icon>storefront</mat-icon>
+            Revender en Marketplace
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Screen QR Overlay -->
+  <div class="qr-overlay" *ngIf="isQrVisible" (click)="toggleQR()">
+    <div class="qr-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ ticket.eventTitle }}</h2>
+        <button mat-icon-button (click)="toggleQR()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="qr-display">
+        <img [src]="ticket.qrCode" alt="Ticket QR Code" class="large-qr">
+        <div class="ticket-simple-info">
+          <span class="ticket-type">{{ ticket.ticketType }}</span>
+          <span class="ticket-id">ID: {{ ticket.id }}</span>
+        </div>
+      </div>
+      <p class="qr-instructions">Escanea este código en la entrada del evento.</p>
+      <button mat-button (click)="toggleQR()" class="close-btn">CERRAR</button>
+    </div>
+  </div>
+</div>

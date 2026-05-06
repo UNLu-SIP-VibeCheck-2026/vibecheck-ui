@@ -144,35 +144,50 @@
       <h2 class="section-title">Acciones Rápidas</h2>
     </div>
     <div class="actions-grid">
+      <!-- Mi Perfil -->
       <mat-card class="action-card" (click)="navigateTo('/perfil-user/' + user.username)">
         <div class="card-icon">
           <mat-icon>person</mat-icon>
         </div>
         <div class="card-content">
-          <h3 class="card-title">Mi Perfil</h3>
+          <h3 class="card-title text-center">Mi Perfil</h3>
           <p class="card-description">Ver y editar mis datos personales</p>
         </div>
         <mat-icon class="card-arrow">arrow_forward</mat-icon>
       </mat-card>
 
-      <mat-card class="action-card" *ngIf="user.role !== 'comprar'" (click)="navigateTo('/perfil-config')">
+      <!-- Mis Entradas -->
+      <mat-card class="action-card" *ngIf="isCliente" (click)="navigateTo('/my-tickets')">
         <div class="card-icon">
-          <mat-icon>settings</mat-icon>
+          <mat-icon>confirmation_number</mat-icon>
         </div>
         <div class="card-content">
-          <h3 class="card-title">Configuraciones</h3>
-          <p class="card-description">Ajustes avanzados y preferencias</p>
+          <h3 class="card-title text-center">Mis Entradas</h3>
+          <p class="card-description">Ver y administrar tus tickets adquiridos</p>
         </div>
         <mat-icon class="card-arrow">arrow_forward</mat-icon>
       </mat-card>
 
+      <!-- Mi Billetera -->
       <mat-card class="action-card" (click)="navigateTo('/wallet')">
         <div class="card-icon">
           <mat-icon>account_balance_wallet</mat-icon>
         </div>
         <div class="card-content">
-          <h3 class="card-title">Mi Billetera VC</h3>
+          <h3 class="card-title text-center">Mi Billetera VC</h3>
           <p class="card-description">Consultar saldo y movimientos</p>
+        </div>
+        <mat-icon class="card-arrow">arrow_forward</mat-icon>
+      </mat-card>
+
+      <!-- Configuraciones (Not for Cliente) -->
+      <mat-card class="action-card" *ngIf="!isCliente && user.role !== 'comprar'" (click)="navigateTo('/perfil-config')">
+        <div class="card-icon">
+          <mat-icon>settings</mat-icon>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title text-center">Configuraciones</h3>
+          <p class="card-description">Ajustes avanzados y preferencias</p>
         </div>
         <mat-icon class="card-arrow">arrow_forward</mat-icon>
       </mat-card>

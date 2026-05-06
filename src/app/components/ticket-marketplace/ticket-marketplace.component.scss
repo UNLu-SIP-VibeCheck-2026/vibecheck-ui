@@ -1,0 +1,310 @@
+@use '../../../tokens' as *;
+
+.ticket-detail-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+    
+    button {
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .header-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--text-title-md);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}
+
+.content-wrapper {
+  background: var(--md-sys-color-surface-container);
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  overflow: hidden;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.hero-section {
+  position: relative;
+  height: 350px;
+  overflow: hidden;
+
+  .hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(13, 11, 30, 0.9) 0%, transparent 100%);
+  }
+
+  .hero-content {
+    position: absolute;
+    bottom: var(--space-8);
+    left: var(--space-8);
+    right: var(--space-8);
+
+    .marketplace-badge {
+      background: var(--gradient-brand);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      width: fit-content;
+      margin-bottom: var(--space-4);
+    }
+
+    .event-title {
+      font-size: 3rem;
+      font-weight: 900;
+      color: white;
+      margin: 0 0 var(--space-2) 0;
+      line-height: 1;
+    }
+
+    .venue-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--md-sys-color-primary);
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--space-10);
+  padding: var(--space-8);
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    padding: var(--space-6);
+  }
+}
+
+.info-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+
+  .info-section {
+    h3 {
+      font-family: 'Outfit', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+      margin-bottom: var(--space-4);
+      color: var(--md-sys-color-primary);
+    }
+
+    p {
+      color: var(--md-sys-color-on-surface-variant);
+      line-height: 1.6;
+      font-size: 1.1rem;
+      margin-bottom: var(--space-6);
+    }
+  }
+
+  .meta-rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+
+      mat-icon {
+        color: var(--md-sys-color-on-surface-variant);
+        opacity: 0.5;
+      }
+
+      .meta-text {
+        display: flex;
+        flex-direction: column;
+        
+        label {
+          font-size: 0.75rem;
+          color: var(--md-sys-color-on-surface-variant);
+          text-transform: uppercase;
+          font-weight: 700;
+        }
+
+        span {
+          font-weight: 600;
+          color: white;
+        }
+      }
+    }
+  }
+
+  .ticket-badge-row {
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+
+    .type-badge {
+      background: rgba(168, 85, 247, 0.1);
+      color: var(--md-sys-color-primary);
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+    }
+
+    .id-badge {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--md-sys-color-on-surface-variant);
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+    }
+  }
+
+  .location-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    padding: var(--space-4);
+    border-radius: var(--md-sys-shape-corner-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: var(--md-sys-color-primary);
+    }
+
+    .location-details {
+      display: flex;
+      flex-direction: column;
+      
+      label {
+        font-size: 0.75rem;
+        color: var(--md-sys-color-on-surface-variant);
+        text-transform: uppercase;
+      }
+
+      span {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: white;
+      }
+    }
+  }
+}
+
+.actions-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+
+  .price-card {
+    background: var(--md-sys-color-surface-container-high);
+    padding: var(--space-6);
+    border-radius: var(--md-sys-shape-corner-large);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    border: 1px solid var(--md-sys-color-outline-variant);
+
+    .seller-preview {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+
+      .seller-img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--md-sys-color-primary);
+      }
+
+      .seller-meta {
+        display: flex;
+        flex-direction: column;
+        
+        label {
+          font-size: 0.7rem;
+          color: var(--md-sys-color-on-surface-variant);
+          text-transform: uppercase;
+        }
+
+        span {
+          font-weight: 700;
+          color: white;
+        }
+      }
+    }
+
+    .price-display {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      label {
+        font-size: 0.8rem;
+        color: var(--md-sys-color-on-surface-variant);
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      .amount {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: white;
+        line-height: 1;
+      }
+    }
+
+    .buy-btn {
+      width: 100%;
+      height: 64px;
+      border-radius: 12px;
+      font-weight: 800;
+      background: var(--gradient-brand) !important;
+      color: white !important;
+      font-size: 1.1rem;
+
+      mat-icon { margin-right: 12px; }
+    }
+
+    .share-btn {
+      width: 100%;
+      height: 56px;
+      border-radius: 12px;
+      font-weight: 700;
+      color: white !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+
+      mat-icon { margin-right: 8px; }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: white !important;
+      }
+    }
+  }
+}

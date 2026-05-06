@@ -1,0 +1,38 @@
+<div class="my-tickets-container">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="display-medium">Mis Entradas</h1>
+  </div>
+
+  <div class="tickets-grid">
+    <div class="ticket-card" *ngFor="let ticket of tickets" (click)="viewTicket(ticket.id)">
+      <div class="ticket-image-container">
+        <img [src]="ticket.imageUrl" [alt]="ticket.eventTitle" class="ticket-image">
+      </div>
+      <div class="ticket-info">
+        <div class="event-details">
+          <h3 class="headline-large">{{ ticket.eventTitle }}</h3>
+          <div class="ticket-type-info">
+            <span class="type-badge">{{ ticket.ticketType }}</span>
+            <span class="location-text">{{ ticket.location }}</span>
+          </div>
+        </div>
+        <div class="event-metadata">
+          <div class="metadata-item">
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ ticket.startDate }}</span>
+          </div>
+          <div class="metadata-item">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ ticket.venue }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="ticket-action">
+        <mat-icon>chevron_right</mat-icon>
+      </div>
+    </div>
+  </div>
+</div>

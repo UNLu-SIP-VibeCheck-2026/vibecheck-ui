@@ -1,0 +1,87 @@
+<div class="checkout-container" *ngIf="ticket">
+  <div class="checkout-header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="display-medium">Finalizar Compra</h1>
+  </div>
+
+  <div class="checkout-layout">
+    <!-- Left: Payment Selection -->
+    <div class="payment-section">
+      <mat-card class="section-card">
+        <h2 class="headline-small">Método de Pago</h2>
+        <mat-radio-group [(ngModel)]="selectedPaymentMethod" class="payment-group">
+          <div class="payment-option" *ngFor="let method of paymentMethods" [class.disabled]="!method.available">
+            <mat-radio-button [value]="method.id" [disabled]="!method.available">
+              <div class="method-content">
+                <mat-icon>{{ method.icon }}</mat-icon>
+                <div class="method-text">
+                  <span class="method-name">{{ method.name }}</span>
+                  <span class="method-status" *ngIf="!method.available">(Próximamente)</span>
+                </div>
+              </div>
+            </mat-radio-button>
+          </div>
+        </mat-radio-group>
+      </mat-card>
+
+      <mat-card class="section-card summary-card">
+        <h2 class="headline-small">Resumen de Pago</h2>
+        <div class="summary-rows">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>{{ subtotal | currency:'$':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Cargo de Servicio (10%)</span>
+            <span>{{ serviceFee | currency:'$':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <span class="total-amount">{{ total | currency:'$':'symbol':'1.0-0' }}</span>
+          </div>
+        </div>
+
+        <button mat-raised-button class="pay-btn" [disabled]="!selectedPaymentMethod" (click)="processPayment()">
+          CONFIRMAR Y PAGAR
+        </button>
+      </mat-card>
+    </div>
+
+    <!-- Right: Ticket Preview -->
+    <div class="preview-section">
+      <mat-card class="ticket-preview-card">
+        <div class="preview-image-container">
+          <img [src]="ticket.imageUrl" alt="Event" class="preview-image">
+          <div class="preview-overlay">
+            <span class="marketplace-label">COMPRA MARKETPLACE</span>
+          </div>
+        </div>
+        <div class="preview-info">
+          <h2 class="headline-medium">{{ ticket.eventTitle }}</h2>
+          <div class="preview-meta">
+            <div class="meta-item">
+              <mat-icon>calendar_today</mat-icon>
+              <span>{{ ticket.startDate }}</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>location_on</mat-icon>
+              <span>{{ ticket.venue }}</span>
+            </div>
+          </div>
+          <div class="preview-ticket-details">
+            <div class="detail-box">
+              <label>TIPO</label>
+              <span>{{ ticket.ticketType }}</span>
+            </div>
+            <div class="detail-box">
+              <label>UBICACIÓN</label>
+              <span>{{ ticket.location }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</div>

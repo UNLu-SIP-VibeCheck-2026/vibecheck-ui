@@ -1,7 +1,15 @@
 <div class="events-container">
   <div class="events-header">
     <div class="title-row">
-      <h1 class="display-medium">Eventos</h1>
+      <div class="title-search-wrapper">
+        <h1 class="display-medium">Eventos</h1>
+        <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+          <input matInput placeholder="Buscar por evento o locación..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
+          <span matSuffix class="search-icon-wrapper">
+            <mat-icon>search</mat-icon>
+          </span>
+        </mat-form-field>
+      </div>
       <div class="pills-container">
         <button 
           class="pill-button" 
@@ -32,12 +40,14 @@
     <h2 class="headline-medium selected-pill-title">{{ selectedPill }}</h2>
   </div>
 
-  <div class="events-grid">
-    <div class="event-card" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)">
+  <div class="events-grid" [class.marketplace-grid]="selectedPill === 'Marketplace'">
+    <div class="event-card" [class.marketplace-card]="selectedPill === 'Marketplace'" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)">
       <div class="event-image-container">
         <img [src]="event.imageUrl || 'assets/images/placeholder-event.jpg'" [alt]="event.title" class="event-image">
       </div>
-      <div class="event-info">
+      
+      <!-- Regular Info -->
+      <div class="event-info" *ngIf="selectedPill !== 'Marketplace'">
         <h3 class="headline-large">{{ event.title }}</h3>
         <div class="event-metadata">
           <div class="metadata-item">
@@ -47,6 +57,27 @@
           <div class="metadata-item">
             <mat-icon>location_on</mat-icon>
             <span>{{ event.venue }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Marketplace Specific Info -->
+      <div class="event-info marketplace-info" *ngIf="selectedPill === 'Marketplace'">
+        <div class="event-main-details">
+          <h3 class="headline-large">{{ event.title }}</h3>
+          <div class="ticket-details">
+            <span class="ticket-type">{{ event.ticketType }}</span>
+            <span class="ticket-location">{{ event.location }}</span>
+          </div>
+        </div>
+
+        <div class="marketplace-footer">
+          <div class="seller-info">
+            <img [src]="event.sellerPhoto" class="seller-photo" [alt]="event.sellerName">
+            <span class="seller-name">{{ event.sellerName }}</span>
+          </div>
+          <div class="price-tag">
+            {{ event.price | currency:'$':'symbol':'1.0-0' }}
           </div>
         </div>
       </div>

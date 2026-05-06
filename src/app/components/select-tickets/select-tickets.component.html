@@ -1,0 +1,110 @@
+<div class="select-tickets-container" *ngIf="event">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="header-title">Seleccionar Entradas</span>
+  </div>
+
+  <div class="main-layout">
+    <!-- LEFT COLUMN: Ticket Selection -->
+    <div class="selection-column">
+      <div class="ticket-list">
+        <mat-card class="ticket-card" *ngFor="let ticket of ticketTypes" [class.sold-out]="ticket.status === 'SOLD_OUT'">
+          <mat-card-content>
+            <div class="ticket-info">
+              <div class="ticket-details">
+                <span class="ticket-name">{{ ticket.name }}</span>
+                <span class="ticket-location">
+                  <mat-icon>location_on</mat-icon> {{ ticket.location }}
+                </span>
+                <div class="price-info">
+                  <div class="price-item">
+                    <label>Precio</label>
+                    <span class="price-value">{{ ticket.price | currency:'$':'symbol':'1.0-0' }}</span>
+                  </div>
+                  <div class="price-item">
+                    <label>Máx. Reventa</label>
+                    <span class="resale-value">{{ ticket.maxResalePrice | currency:'$':'symbol':'1.0-0' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ticket-actions">
+                <div class="status-tag" *ngIf="ticket.status === 'SOLD_OUT'">AGOTADO</div>
+                <div class="quantity-selector" *ngIf="ticket.status !== 'SOLD_OUT'">
+                  <button mat-icon-button (click)="decrementQuantity(ticket)" [disabled]="ticket.quantity === 0">
+                    <mat-icon>remove_circle_outline</mat-icon>
+                  </button>
+                  <span class="quantity-value">{{ ticket.quantity }}</span>
+                  <button mat-icon-button (click)="incrementQuantity(ticket)">
+                    <mat-icon>add_circle_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="summary-section">
+        <h3 class="section-title">Método de Pago</h3>
+        <mat-radio-group [(ngModel)]="selectedPaymentMethod" class="payment-methods">
+          <mat-radio-button *ngFor="let method of paymentMethods" [value]="method.id" [disabled]="!method.enabled">
+            {{ method.name }} <span *ngIf="!method.enabled" class="coming-soon">(Próximamente)</span>
+          </mat-radio-button>
+        </mat-radio-group>
+
+        <div class="totals-card">
+          <div class="total-row">
+            <span>Subtotal</span>
+            <span>{{ subtotal | currency:'$':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="total-row">
+            <span>Cargo de Servicio (10%)</span>
+            <span>{{ serviceCharge | currency:'$':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="total-row grand-total">
+            <span>Total</span>
+            <span class="total-amount">{{ total | currency:'$':'symbol':'1.0-0' }}</span>
+          </div>
+          
+          <button mat-raised-button color="primary" class="pay-btn" [disabled]="!canPay" (click)="processPayment()">
+            <mat-icon>payments</mat-icon>
+            Pagar {{ total | currency:'$':'symbol':'1.0-0' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Event Summary -->
+    <div class="event-column">
+      <mat-card class="event-summary-card">
+        <div class="event-image-container">
+          <div class="placeholder-img" *ngIf="!event.image">
+            <mat-icon>image</mat-icon>
+          </div>
+          <img *ngIf="event.image" [src]="event.image" alt="Event Cover">
+        </div>
+        <mat-card-content class="event-details">
+          <h1 class="event-title">{{ event.title }}</h1>
+          
+          <div class="event-meta">
+            <div class="meta-item">
+              <mat-icon>calendar_today</mat-icon>
+              <span>{{ event.startDate }} - {{ event.endDate }}</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>location_on</mat-icon>
+              <span>{{ event.venue }}</span>
+            </div>
+          </div>
+
+          <div class="event-description">
+            <p>{{ event.description }}</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
