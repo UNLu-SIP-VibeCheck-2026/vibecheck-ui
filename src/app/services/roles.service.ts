@@ -4,7 +4,10 @@ import { environment } from "../../environments/environment";
 import { Observable } from "rxjs";
 import { Page } from "../models/page.model";
 import { RoleResponse } from "../models/role-response.model";
-import { RoleCreateRequest, RoleUpdateRequest } from "../models/role-requests.model";
+import {
+  RoleCreateRequest,
+  RoleUpdateRequest,
+} from "../models/role-requests.model";
 
 @Injectable({
   providedIn: "root",
@@ -13,10 +16,20 @@ export class RolesService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl;
 
-  getRoles(page: number, size: number, query: string = ''): Observable<Page<RoleResponse>> {
+  getAllRoles(
+    page: number,
+    size: number,
+    query: string = "",
+  ): Observable<Page<RoleResponse>> {
     const params: any = { page: page.toString(), size: size.toString() };
     if (query) params.query = query;
-    return this.http.get<Page<RoleResponse>>(`${this.apiUrl}/roles`, { params });
+    return this.http.get<Page<RoleResponse>>(`${this.apiUrl}/roles`, {
+      params,
+    });
+  }
+
+  getFinalRoles(): Observable<RoleResponse[]> {
+    return this.http.get<RoleResponse[]>(`${this.apiUrl}/roles/end-user`);
   }
 
   createRole(data: RoleCreateRequest): Observable<RoleResponse> {

@@ -1,24 +1,24 @@
 <div class="change-role-container">
-    <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+    <div class="role-selection-wrapper">
         
         <div class="form-group custom-field-wrapper role-selection">
             <label>En VibeCheck quiero:</label>
             <div class="role-buttons">
                 <button type="button" 
                         class="role-btn" 
-                        [class.active]="roleForm.get('role')?.value === 'comprar'"
+                        [class.active]="selectedRole === 'comprar'"
                         (click)="setRole('comprar')">
                     Comprar entradas
                 </button>
                 <button type="button" 
                         class="role-btn" 
-                        [class.active]="roleForm.get('role')?.value === 'crear'"
+                        [class.active]="selectedRole === 'crear'"
                         (click)="setRole('crear')">
                     Crear Eventos
                 </button>
                 <button type="button" 
                         class="role-btn" 
-                        [class.active]="roleForm.get('role')?.value === 'validar'"
+                        [class.active]="selectedRole === 'validar'"
                         (click)="setRole('validar')">
                     Validar entradas en puerta
                 </button>
@@ -27,12 +27,12 @@
 
         <div class="dialog-actions">
             <button mat-raised-button 
-                    type="submit"
-                    [disabled]="roleForm.invalid"
+                    (click)="onSubmit()"
+                    [disabled]="!selectedRole"
                     class="custom-btn-submit">
                 Confirmar Modificación
             </button>
         </div>
 
-    </form>
+    </div>
 </div>

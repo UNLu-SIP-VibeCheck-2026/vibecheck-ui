@@ -124,6 +124,13 @@ export class PerfilConfigComponent {
         dialogRef.afterClosed().subscribe(result => {
           if (result && result.roleId) {
             this.snackBar.open('Actualizando rol...', 'Cerrar', { duration: 2000 });
+
+            // Formatear la fecha de nacimiento de array [YYYY, MM, DD] a string 'YYYY-MM-DD' si es necesario
+            let formattedBirthdate = fullUser.birthdate;
+            if (Array.isArray(fullUser.birthdate)) {
+              const [year, month, day] = fullUser.birthdate;
+              formattedBirthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            }
             
             const updatePayload: UserUpdateRequest = {
               username:    fullUser.username,
@@ -131,7 +138,7 @@ export class PerfilConfigComponent {
               lastName:    fullUser.lastName,
               email:       fullUser.email,
               phoneNumber: fullUser.phoneNumber,
-              birthdate:   fullUser.birthdate,
+              birthdate:   formattedBirthdate,
               roleId:      result.roleId
             };
 
