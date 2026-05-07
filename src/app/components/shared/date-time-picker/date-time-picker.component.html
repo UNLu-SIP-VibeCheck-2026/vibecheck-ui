@@ -1,0 +1,41 @@
+<div class="dtp-wrapper" (blur)="onBlur()">
+  <label class="dtp-label" *ngIf="label">{{ label }}</label>
+
+  <div class="dtp-row">
+    <!-- Date picker -->
+    <mat-form-field appearance="outline" class="custom-mat-form-field dtp-date-field" subscriptSizing="dynamic">
+      <input matInput
+             [matDatepicker]="picker"
+             [matDatepickerFilter]="dateFilter"
+             [min]="minDate"
+             [max]="maxDate"
+             placeholder="Seleccionar fecha"
+             [formControl]="dateCtrl"
+             readonly>
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <!-- Hour selector -->
+    <mat-form-field appearance="outline" class="custom-mat-form-field dtp-time-field" subscriptSizing="dynamic">
+      <mat-select [formControl]="hourCtrl" placeholder="HH">
+        <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <span class="dtp-separator">:</span>
+
+    <!-- Minute selector -->
+    <mat-form-field appearance="outline" class="custom-mat-form-field dtp-time-field" subscriptSizing="dynamic">
+      <mat-select [formControl]="minuteCtrl" placeholder="MM">
+        <mat-option *ngFor="let m of minutes" [value]="m">{{ m }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Validation error -->
+  <div class="dtp-error" *ngIf="errorMessage">
+    <mat-icon class="dtp-error-icon">warning</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+</div>

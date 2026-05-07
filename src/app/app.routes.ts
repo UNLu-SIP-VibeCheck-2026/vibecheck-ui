@@ -17,6 +17,7 @@ import { WalletComponent } from "./components/wallet/wallet.component";
 import { EventsComponent } from "./components/events/events.component";
 import { CreateEventComponent } from "./components/create-event/create-event.component";
 import { AdminEventsComponent } from "./components/admin-events/admin-events.component";
+import { AdminVenuesComponent } from "./components/admin-venues/admin-venues.component";
 import { AdminTicketsComponent } from "./components/admin-tickets/admin-tickets.component";
 import { AdvertiseEventComponent } from "./components/advertise-event/advertise-event.component";
 import { EventComponent } from "./components/event/event.component";
@@ -110,6 +111,11 @@ export const routes: Routes = [
   {
     path: "admin-events",
     component: AdminEventsComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "admin-venues",
+    component: AdminVenuesComponent,
     canActivate: [authGuard],
   },
   {

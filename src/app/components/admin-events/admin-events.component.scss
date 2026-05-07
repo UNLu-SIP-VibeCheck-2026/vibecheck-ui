@@ -10,12 +10,32 @@
   margin: 0 auto;
 }
 
+.header-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+  position: relative;
+
+  .back-btn {
+    position: absolute;
+    left: 0;
+    color: var(--md-sys-color-on-surface-variant) !important;
+
+    &:hover {
+      color: var(--md-sys-color-primary) !important;
+      background-color: rgba(168, 85, 247, 0.08) !important;
+    }
+  }
+}
+
 .main-title {
   font-size: var(--text-headline);
   font-weight: 700;
   color: var(--md-sys-color-on-background);
   text-align: center;
-  margin-bottom: var(--space-8);
+  margin: 0;
 }
 
 /* Search and Filter Section */
@@ -26,25 +46,52 @@
 .search-controls-row {
   display: flex;
   align-items: center;
-  gap: var(--space-4);  
+  gap: var(--space-4);
+}
+
+.stats-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--md-sys-color-surface-container-high);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--text-body-md);
+  font-weight: 600;
+  white-space: nowrap;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
 }
 
 .search-field {
   flex: 1;
 
-  .search-icon-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--md-sys-color-on-surface-variant);
-    height: 48px;
-    margin-right: 12px;
-    
-    svg {
-      display: block;
-      color: var(--md-sys-color-on-surface-variant);
-      opacity: 0.7;
+  ::ng-deep {
+    .mat-mdc-form-field-flex {
+      background-color: var(--md-sys-color-surface-container-high) !important;
+      border-radius: var(--md-sys-shape-corner-small) !important;
+      height: 48px !important;
+      align-items: center !important;
     }
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: var(--md-sys-color-outline-variant) !important;
+    }
+    .mdc-text-field--focused .mdc-notched-outline__leading,
+    .mdc-text-field--focused .mdc-notched-outline__notch,
+    .mdc-text-field--focused .mdc-notched-outline__trailing {
+      border-color: var(--md-sys-color-primary) !important;
+      border-width: 2px !important;
+    }
+    .mat-mdc-input-element { color: var(--md-sys-color-on-surface) !important; }
+    .mat-mdc-form-field-infix {
+      padding: 0 12px !important;
+      min-height: auto !important;
+    }
+    mat-icon { color: var(--md-sys-color-on-surface-variant); }
   }
 }
 
@@ -116,14 +163,32 @@
 }
 
 .create-btn {
-  background-color: var(--md-sys-color-primary) !important;
-  color: var(--md-sys-color-on-primary) !important;
+  background: var(--gradient-brand) !important;
+  color: #ffffff !important;
   font-weight: 600 !important;
   padding: 0 var(--space-8) !important;
   height: 44px !important;
   border-radius: var(--md-sys-shape-corner-small) !important;
   text-transform: none !important;
   border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.3) !important;
+
+  &:hover { filter: brightness(1.1); transform: translateY(-1px); }
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-12) 0;
+  color: var(--md-sys-color-on-surface-variant);
+
+  ::ng-deep .mat-mdc-progress-spinner circle { stroke: var(--md-sys-color-primary); }
 }
 
 /* Custom Card Table */
@@ -223,6 +288,35 @@
   .detail-value, .info-value {
     font-size: var(--text-body-md);
     color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .active-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: var(--md-sys-shape-corner-full);
+    font-size: var(--text-label-md);
+    font-weight: 700;
+    width: fit-content;
+
+    &.active-yes {
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: #4ade80;
+    }
+
+    &.active-no {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      color: #f87171;
+    }
+  }
+
+  .venue-name-val {
+    font-weight: 500;
   }
 
   .title {
@@ -319,7 +413,7 @@
       display: flex !important;
       align-items: center;
       justify-content: center;
-      
+
       mat-icon {
         font-size: 20px;
         width: 20px;
@@ -334,6 +428,20 @@
         color: var(--md-sys-color-on-primary) !important;
         transform: translateY(-2px);
       }
+    }
+
+    .circle-btn-delete {
+      border-color: rgba(248,113,113,0.3) !important;
+      color: var(--md-sys-color-error) !important;
+
+      &:hover:not(:disabled) {
+        background-color: rgba(248,113,113,0.08) !important;
+        border-color: var(--md-sys-color-error) !important;
+      }
+
+      &:disabled { opacity: 0.5; }
+
+      ::ng-deep .mat-mdc-progress-spinner circle { stroke: var(--md-sys-color-error); }
     }
   }
 }

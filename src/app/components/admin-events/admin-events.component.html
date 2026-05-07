@@ -1,49 +1,39 @@
 <div class="admin-container">
     <div class="header-section">
-        <h1 class="main-title">Administrar Eventos</h1>
+        <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h1 class="main-title">Administrar <span class="text-gradient">Eventos</span></h1>
     </div>
 
     <!-- Search and Filter Section -->
     <div class="search-filter-section">
         <div class="search-controls-row">
             <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-                <input matInput placeholder="Buscar" [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
-                <span matSuffix class="search-icon-wrapper">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </span>
+                <mat-icon matPrefix>search</mat-icon>
+                <input matInput placeholder="Buscar por título, descripción, venue o estado..."
+                       [(ngModel)]="searchQuery"
+                       (ngModelChange)="applyFilter()">
             </mat-form-field>
 
-            <button mat-icon-button class="filter-toggle-btn">
-                <mat-icon>tune</mat-icon>
-            </button>
-        </div>
-
-        <div class="applied-filters" *ngIf="appliedFilters.length > 0">
-            <span class="filters-label">Filtros aplicados:</span>
-            <mat-chip-set>
-                <mat-chip *ngFor="let filter of appliedFilters" (removed)="removeFilter(filter)">
-                    {{filter}}
-                    <button matChipRemove>
-                        <mat-icon>cancel</mat-icon>
-                    </button>
-                </mat-chip>
-            </mat-chip-set>
+            <div class="stats-badge" *ngIf="!isLoading">
+                <mat-icon>event</mat-icon>
+                <span>{{ totalElements }} {{ totalElements === 1 ? 'evento' : 'eventos' }}</span>
+            </div>
         </div>
     </div>
 
     <div class="actions-header">
         <button mat-raised-button class="create-btn" (click)="createEvent()">
+            <mat-icon>add_circle_outline</mat-icon>
             Crear Evento
         </button>
     </div>
 
     <!-- Selection Bar -->
-    <div class="selection-bar" *ngIf="dataSource.data.length > 0">
+    <div class="selection-bar" *ngIf="dataSource.data.length > 0 && !isLoading">
         <div class="selection-controls">
-            <mat-checkbox [checked]="isAllSelected()" 
+            <mat-checkbox [checked]="isAllSelected()"
                           [indeterminate]="isAtLeastOneSelected() && !isAllSelected()"
                           (change)="toggleAllSelection($event.checked)">
                 Seleccionar todos
@@ -51,71 +41,121 @@
         </div>
     </div>
 
+    <!-- Loading state -->
+    <div class="loading-container" *ngIf="isLoading">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>Cargando eventos...</p>
+    </div>
+
     <!-- Data Table Section -->
-    <div class="table-container mat-elevation-z0">
+    <div class="table-container mat-elevation-z0" *ngIf="!isLoading">
         <table mat-table [dataSource]="dataSource" class="custom-table">
-            
+
             <ng-container matColumnDef="event">
-                <th mat-header-cell *matHeaderCellDef style="display: none;"> Evento </th>
+                <th mat-header-cell *matHeaderCellDef style="display: none;">Evento</th>
                 <td mat-cell *matCellDef="let element" class="event-cell">
                     <div class="event-card-row">
+                        <!-- Checkbox -->
                         <div class="checkbox-col">
                             <mat-checkbox [(ngModel)]="element.selected"></mat-checkbox>
                         </div>
-                        
+
+                        <!-- Image placeholder -->
                         <div class="image-col">
                             <div class="image-placeholder">
-                                <span>Portada/Flyer del Evento</span>
+                                <mat-icon class="placeholder-icon">image</mat-icon>
+                                <span>Portada del Evento</span>
                             </div>
                         </div>
 
+                        <!-- Title & Description -->
                         <div class="details-col">
                             <div class="detail-group">
                                 <label>Título</label>
-                                <span class="detail-value title event-link" (click)="navigateToEvent(element.id)">{{element.title}}</span>
+                                <span class="detail-value title event-link"
+                                      (click)="navigateToEvent(element.id)">
+                                    {{ element.title }}
+                                </span>
                             </div>
                             <div class="detail-group description-group">
-                                <label>Descripción:</label>
-                                <p class="detail-value description">{{element.description}}</p>
+                                <label>Descripción</label>
+                                <p class="detail-value description">{{ element.description || 'Sin descripción' }}</p>
+                            </div>
+                            <div class="detail-group">
+                                <label>Capacidad</label>
+                                <span class="detail-value">
+                                    <mat-icon class="inline-icon">people</mat-icon>
+                                    {{ element.capacity | number }}
+                                </span>
                             </div>
                         </div>
 
+                        <!-- Dates -->
                         <div class="info-col">
                             <div class="info-group">
-                                <label>Fecha de Creación:</label>
-                                <span class="info-value">{{element.creationDate}}</span>
-                            </div>
-                            <div class="info-group">
                                 <label>Inicio:</label>
-                                <span class="info-value">{{element.startDate}}</span>
+                                <span class="info-value">{{ formatDate(element.startDate) }}</span>
                             </div>
                             <div class="info-group">
                                 <label>Fin:</label>
-                                <span class="info-value">{{element.endDate}}</span>
+                                <span class="info-value">{{ formatDate(element.endDate) }}</span>
+                            </div>
+                            <div class="info-group">
+                                <label>Activo:</label>
+                                <span class="info-value active-badge"
+                                      [class.active-yes]="element.active"
+                                      [class.active-no]="!element.active">
+                                    {{ element.active ? 'Sí' : 'No' }}
+                                </span>
                             </div>
                         </div>
 
+                        <!-- Venue -->
                         <div class="venue-col">
                             <div class="info-group">
                                 <label>Venue:</label>
-                                <span class="info-value">{{element.venue}}</span>
+                                <span class="info-value venue-name-val">
+                                    <mat-icon class="inline-icon">location_on</mat-icon>
+                                    {{ getVenueName(element.venueId) }}
+                                </span>
+                            </div>
+                            <div class="info-group">
+                                <label>Owner ID:</label>
+                                <span class="info-value">{{ element.ownerId }}</span>
                             </div>
                         </div>
 
+                        <!-- Actions -->
                         <div class="actions-col">
+                            <mat-chip class="custom-chip status-chip" [ngClass]="getStatusClass(element.status)">
+                                {{ getStatusLabel(element.status) }}
+                            </mat-chip>
+
                             <div class="action-buttons">
-                                <mat-chip class="custom-chip status-chip" [ngClass]="getStatusClass(element.status)">
-                                    {{element.status}}
-                                </mat-chip>
-                                
-                                <button mat-icon-button class="circle-btn" (click)="editEvent(element)">
+                                <button mat-icon-button class="circle-btn"
+                                        (click)="editEvent(element)"
+                                        matTooltip="Editar evento">
                                     <mat-icon>edit</mat-icon>
                                 </button>
-                                <button mat-icon-button class="circle-btn" (click)="viewStats(element)">
+
+                                <button mat-icon-button class="circle-btn"
+                                        (click)="viewStats(element)"
+                                        matTooltip="Ver tickets">
                                     <mat-icon>confirmation_number</mat-icon>
                                 </button>
-                                <button mat-icon-button class="circle-btn" (click)="viewFinance(element)">
+
+                                <button mat-icon-button class="circle-btn"
+                                        (click)="viewFinance(element)"
+                                        matTooltip="Publicidad / Finanzas">
                                     <mat-icon>campaign</mat-icon>
+                                </button>
+
+                                <button mat-icon-button class="circle-btn circle-btn-delete"
+                                        (click)="deleteEvent(element)"
+                                        [disabled]="deletingId === element.id"
+                                        matTooltip="Eliminar evento">
+                                    <mat-spinner *ngIf="deletingId === element.id" diameter="16"></mat-spinner>
+                                    <mat-icon *ngIf="deletingId !== element.id">delete_outline</mat-icon>
                                 </button>
                             </div>
                         </div>
@@ -125,12 +165,13 @@
 
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
-            <!-- Row shown when there is no matching data. -->
+            <!-- Empty state -->
             <tr class="mat-row empty-state-row" *matNoDataRow>
                 <td class="mat-cell empty-state-cell">
                     <div class="empty-state">
-                        <mat-icon class="empty-icon">search_off</mat-icon>
+                        <mat-icon class="empty-icon">event_busy</mat-icon>
                         <p class="empty-title">No se encontraron eventos</p>
+                        <p class="empty-subtitle" *ngIf="searchQuery">Probá con otro término de búsqueda.</p>
                     </div>
                 </td>
             </tr>
@@ -141,7 +182,7 @@
                        [pageIndex]="pageIndex"
                        [pageSizeOptions]="[5, 10, 25]"
                        (page)="onPageChange($event)"
-                       aria-label="Select page">
+                       aria-label="Paginación de eventos">
         </mat-paginator>
     </div>
 </div>

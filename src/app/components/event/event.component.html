@@ -1,0 +1,148 @@
+<!-- Loading state -->
+<div class="event-detail-container" *ngIf="isLoading">
+  <div class="loading-state">
+    <mat-spinner diameter="56"></mat-spinner>
+    <p>Cargando evento...</p>
+  </div>
+</div>
+
+<!-- Error state -->
+<div class="event-detail-container" *ngIf="!isLoading && errorMessage">
+  <div class="error-state">
+    <mat-icon class="error-icon">event_busy</mat-icon>
+    <h2>Algo salió mal</h2>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button class="btn-back" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver a Eventos
+    </button>
+  </div>
+</div>
+
+<!-- Event content -->
+<div class="event-detail-container" *ngIf="!isLoading && !errorMessage && event">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver a eventos">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="header-breadcrumb">Eventos / <strong>{{ event.title }}</strong></span>
+  </div>
+
+  <!-- Hero card -->
+  <div class="content-wrapper">
+
+    <!-- Cover image area -->
+    <div class="image-container">
+      <div class="placeholder-img">
+        <mat-icon>image</mat-icon>
+        <span>Portada del Evento</span>
+      </div>
+
+      <!-- Gradient overlay -->
+      <div class="image-gradient"></div>
+
+      <!-- Status badge -->
+      <div class="status-badge" [ngClass]="statusClass">
+        <span class="status-dot"></span>
+        {{ statusLabel }}
+      </div>
+
+      <!-- Active badge -->
+      <div class="active-badge" [class.active-yes]="event.active" [class.active-no]="!event.active">
+        <mat-icon>{{ event.active ? 'check_circle' : 'cancel' }}</mat-icon>
+        {{ event.active ? 'Publicado' : 'Inactivo' }}
+      </div>
+    </div>
+
+    <!-- Info section -->
+    <div class="event-info-section">
+
+      <h1 class="event-title">{{ event.title }}</h1>
+
+      <!-- Meta grid -->
+      <div class="meta-info">
+
+        <div class="meta-item">
+          <div class="meta-icon-wrap">
+            <mat-icon>calendar_today</mat-icon>
+          </div>
+          <div class="meta-text">
+            <label>Inicio</label>
+            <span>{{ formatDate(event.startDate) }}</span>
+          </div>
+        </div>
+
+        <div class="meta-item">
+          <div class="meta-icon-wrap">
+            <mat-icon>event_available</mat-icon>
+          </div>
+          <div class="meta-text">
+            <label>Fin</label>
+            <span>{{ formatDate(event.endDate) }}</span>
+          </div>
+        </div>
+
+        <div class="meta-item">
+          <div class="meta-icon-wrap">
+            <mat-icon>location_on</mat-icon>
+          </div>
+          <div class="meta-text">
+            <label>Venue</label>
+            <span>{{ venueName }}</span>
+            <small *ngIf="venueAddress">{{ venueAddress }}</small>
+          </div>
+        </div>
+
+        <div class="meta-item">
+          <div class="meta-icon-wrap">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="meta-text">
+            <label>Capacidad</label>
+            <span>{{ (venueCapacity | number) ?? '—' }} personas</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Description -->
+      <div class="description-section" *ngIf="event.description">
+        <h3>Acerca del Evento</h3>
+        <p>{{ event.description }}</p>
+      </div>
+
+      <!-- Extra details row -->
+      <div class="extra-details">
+        <div class="extra-chip">
+          <mat-icon>tag</mat-icon>
+          ID: {{ event.id }}
+        </div>
+        <div class="extra-chip" *ngIf="event.ownerId">
+          <mat-icon>person</mat-icon>
+          Organizado por usuario #{{ event.ownerId }}
+        </div>
+      </div>
+
+      <!-- CTA Actions -->
+      <div class="actions" *ngIf="event.active">
+        <button mat-raised-button class="buy-btn" (click)="buyTickets()">
+          <mat-icon>confirmation_number</mat-icon>
+          Adquirir Entradas
+        </button>
+        <button mat-stroked-button class="share-btn" (click)="shareEvent()">
+          <mat-icon>share</mat-icon>
+          Compartir
+        </button>
+      </div>
+
+      <!-- Inactive warning -->
+      <div class="inactive-warning" *ngIf="!event.active">
+        <mat-icon>info</mat-icon>
+        <span>Este evento no está disponible para la venta de entradas actualmente.</span>
+      </div>
+
+    </div>
+  </div>
+</div>

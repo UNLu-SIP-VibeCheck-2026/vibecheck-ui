@@ -283,6 +283,37 @@
   }
 }
 
+// Cross-field validation error
+.cross-field-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: var(--md-sys-shape-corner-small);
+  color: var(--md-sys-color-error);
+  font-size: var(--text-body-md);
+  font-weight: 500;
+  animation: cross-shake 0.35s ease;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes cross-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(2px); }
+}
+
 .venue-group {
     display: flex;
     flex-direction: column;

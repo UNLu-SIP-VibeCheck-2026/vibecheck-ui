@@ -6,27 +6,25 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatDialog, MatDialogModule } from "@angular/material/dialog";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
-import { MatPaginator, MatPaginatorModule, PageEvent } from "@angular/material/paginator";
-import { MatSortModule, Sort } from "@angular/material/sort";
+import {
+  MatPaginator,
+  MatPaginatorModule,
+  PageEvent,
+} from "@angular/material/paginator";
+import { MatSortModule } from "@angular/material/sort";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { MatSelectModule } from "@angular/material/select";
 import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatTooltipModule } from "@angular/material/tooltip";
 import { Router } from "@angular/router";
 import { EventDialogComponent } from "../shared/dialogs/event-dialog/event-dialog.component";
 import { ResaleDialogComponent } from "../shared/dialogs/resale-dialog/resale-dialog.component";
-
-export interface EventSummary {
-  id: string;
-  title: string;
-  description: string;
-  creationDate: string;
-  startDate: string;
-  endDate: string;
-  venue: string;
-  status: 'PROGRAMADO' | 'EN_CURSO' | 'FINALIZADO' | 'CANCELADO';
-  imageUrl?: string;
-  selected?: boolean;
-}
+import { EventService } from "../../services/event.service";
+import { VenueService } from "../../services/venue.service";
+import { EventResponse } from "../../models/event.model";
+import { VenueResponse } from "../../models/venue.model";
 
 @Component({
   selector: "app-admin-events",
@@ -44,6 +42,9 @@ export interface EventSummary {
     MatPaginatorModule,
     MatSortModule,
     MatCheckboxModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+    MatTooltipModule,
   ],
   templateUrl: "./admin-events.component.html",
   styleUrl: "./admin-events.component.scss",
@@ -51,128 +52,260 @@ export interface EventSummary {
 export class AdminEventsComponent implements OnInit {
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private eventService = inject(EventService);
+  private venueService = inject(VenueService);
+  private snackBar = inject(MatSnackBar);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  displayedColumns: string[] = ["event"]; // We use a single column to host the custom card layout
-  dataSource = new MatTableDataSource<EventSummary>([]);
-  searchQuery: string = "";
-  
-  appliedFilters: string[] = ["Filtro 1", "Filtro 2", "Filtro 3"];
+  displayedColumns: string[] = ["event"];
+  dataSource = new MatTableDataSource<EventResponse>([]);
 
-  totalElements = 4;
+  /** All events from backend (for client-side search) */
+  private allEvents: EventResponse[] = [];
+
+  /** Venue lookup map id → VenueResponse */
+  venueMap = new Map<number, VenueResponse>();
+
+  searchQuery = "";
+  isLoading = false;
+  deletingId: number | null = null;
+
+  totalElements = 0;
   pageSize = 5;
   pageIndex = 0;
 
-  isAllSelected(): boolean {
-    return this.dataSource.data.length > 0 && this.dataSource.data.every(e => e.selected);
-  }
-
-  isAtLeastOneSelected(): boolean {
-    return this.dataSource.data.some(e => e.selected);
-  }
-
-  toggleAllSelection(checked: boolean) {
-    this.dataSource.data.forEach(e => e.selected = checked);
-  }
+  /** Server-side paging state */
+  private serverPage = 0;
+  private serverSize = 100; // load enough for client-side search
 
   ngOnInit(): void {
-    this.loadMockEvents();
+    this.loadVenues();
+    this.loadEvents();
   }
 
-  loadMockEvents(): void {
-    const mockEvents: EventSummary[] = [
-      {
-        id: "EVENTO001",
-        title: "EVENTO001",
-        description: "Excepteur efficient emerging, minim veniam anim aute carefully curated Ginza conversation exquisite perfect nostrud nisi intricate Content.",
-        creationDate: "28/04/2026",
-        startDate: "15/05/2026 21:00",
-        endDate: "16/05/2026 03:00",
-        venue: "VENUE01",
-        status: 'PROGRAMADO',
-        selected: false
+  // -------------------------------------------------------------------------
+  // Data loading
+  // -------------------------------------------------------------------------
+
+  loadVenues(): void {
+    this.venueService.findAllVenues(0, 500).subscribe({
+      next: (page) => {
+        this.venueMap.clear();
+        page.content.forEach((v) => this.venueMap.set(v.id, v));
       },
-      {
-        id: "EVENTO002",
-        title: "VibeFest 2026",
-        description: "El festival más esperado del año con artistas internacionales.",
-        creationDate: "25/04/2026",
-        startDate: "20/05/2026 18:00",
-        endDate: "21/05/2026 04:00",
-        venue: "VENUE02",
-        status: 'EN_CURSO',
-        selected: false
-      },
-      {
-        id: "EVENTO003",
-        title: "Sunset Party",
-        description: "Música electrónica frente al río.",
-        creationDate: "20/04/2026",
-        startDate: "10/05/2026 17:00",
-        endDate: "10/05/2026 23:59",
-        venue: "VENUE03",
-        status: 'FINALIZADO',
-        selected: false
-      }
-    ];
-    this.dataSource.data = mockEvents;
-    this.totalElements = mockEvents.length;
+      error: (err) => console.error("Error cargando venues:", err),
+    });
   }
 
-  goBack() {
-    this.router.navigate(['/dashboard']);
+  loadEvents(): void {
+    this.isLoading = true;
+    this.eventService.findAllEvents(this.serverPage, this.serverSize).subscribe({
+      next: (page) => {
+        this.allEvents = page.content;
+        this.applyFilter();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error("Error cargando eventos:", err);
+        this.isLoading = false;
+        this.showSnack("Error al cargar los eventos", "error");
+      },
+    });
   }
+
+  // -------------------------------------------------------------------------
+  // Filtering & Pagination (client-side after full load)
+  // -------------------------------------------------------------------------
 
   applyFilter(): void {
-    // Mock filter logic
-    console.log("Filtering by:", this.searchQuery);
+    const q = this.searchQuery.toLowerCase().trim();
+    const filtered = q
+      ? this.allEvents.filter(
+          (e) =>
+            e.title.toLowerCase().includes(q) ||
+            (e.description ?? "").toLowerCase().includes(q) ||
+            this.getVenueName(e.venueId).toLowerCase().includes(q) ||
+            e.status.toLowerCase().includes(q)
+        )
+      : [...this.allEvents];
+
+    this.totalElements = filtered.length;
+    this.pageIndex = 0;
+
+    const start = this.pageIndex * this.pageSize;
+    this.dataSource.data = filtered.slice(start, start + this.pageSize);
+    this._filtered = filtered;
   }
+
+  private _filtered: EventResponse[] = [];
 
   onPageChange(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
+    const start = this.pageIndex * this.pageSize;
+    this.dataSource.data = this._filtered.slice(start, start + this.pageSize);
   }
 
-  createEvent() {
-    this.router.navigate(['/create-event']);
+  // -------------------------------------------------------------------------
+  // Selection helpers
+  // -------------------------------------------------------------------------
+
+  isAllSelected(): boolean {
+    return (
+      this.dataSource.data.length > 0 &&
+      this.dataSource.data.every((e: any) => e.selected)
+    );
   }
 
-  navigateToEvent(id: string) {
-    this.router.navigate(['/event', id]);
+  isAtLeastOneSelected(): boolean {
+    return this.dataSource.data.some((e: any) => e.selected);
   }
+
+  toggleAllSelection(checked: boolean): void {
+    this.dataSource.data.forEach((e: any) => (e.selected = checked));
+  }
+
+  // -------------------------------------------------------------------------
+  // Venue helper
+  // -------------------------------------------------------------------------
+
+  getVenueName(venueId: number | null | undefined): string {
+    if (!venueId) return "Sin venue";
+    const v = this.venueMap.get(venueId);
+    return v ? v.title : `Venue #${venueId}`;
+  }
+
+  // -------------------------------------------------------------------------
+  // Status helpers
+  // -------------------------------------------------------------------------
 
   getStatusClass(status: string): string {
-    switch (status) {
-      case 'PROGRAMADO': return 'scheduled-chip';
-      case 'EN_CURSO': return 'inprogress-chip';
-      case 'FINALIZADO': return 'finished-chip';
-      case 'CANCELADO': return 'cancelled-chip';
-      default: return '';
+    switch (status?.toUpperCase()) {
+      case "SCHEDULED":
+      case "PROGRAMADO":
+        return "scheduled-chip";
+      case "IN_PROGRESS":
+      case "EN_CURSO":
+        return "inprogress-chip";
+      case "FINISHED":
+      case "FINALIZADO":
+        return "finished-chip";
+      case "CANCELLED":
+      case "CANCELADO":
+        return "cancelled-chip";
+      default:
+        return "";
     }
   }
 
-  editEvent(event: EventSummary) {
+  getStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      SCHEDULED: "PROGRAMADO",
+      IN_PROGRESS: "EN CURSO",
+      FINISHED: "FINALIZADO",
+      CANCELLED: "CANCELADO",
+      PROGRAMADO: "PROGRAMADO",
+      EN_CURSO: "EN CURSO",
+      FINALIZADO: "FINALIZADO",
+      CANCELADO: "CANCELADO",
+    };
+    return map[status?.toUpperCase()] ?? status ?? "—";
+  }
+
+  formatDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return "—";
+    try {
+      return new Date(dateStr).toLocaleString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateStr;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Navigation
+  // -------------------------------------------------------------------------
+
+  goBack(): void {
+    this.router.navigate(["/dashboard"]);
+  }
+
+  createEvent(): void {
+    this.router.navigate(["/create-event"]);
+  }
+
+  navigateToEvent(id: number): void {
+    this.router.navigate(["/event", id]);
+  }
+
+  viewStats(event: EventResponse): void {
+    this.router.navigate(["/admin-tickets", event.id]);
+  }
+
+  viewFinance(event: EventResponse): void {
+    this.router.navigate(["/advertise-event", event.id]);
+  }
+
+  // -------------------------------------------------------------------------
+  // Edit dialog
+  // -------------------------------------------------------------------------
+
+  editEvent(event: EventResponse): void {
     const dialogRef = this.dialog.open(EventDialogComponent, {
-      width: "600px",
-      data: { event },
+      width: "660px",
+      data: { event, venues: Array.from(this.venueMap.values()) },
       autoFocus: false,
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        console.log("Updating event:", event.id, result);
-        // Here we would call a service to update
-        Object.assign(event, result);
+    dialogRef.afterClosed().subscribe((updated: EventResponse | undefined) => {
+      if (updated) {
+        const idx = this.allEvents.findIndex((e) => e.id === updated.id);
+        if (idx !== -1) this.allEvents[idx] = updated;
+        this.applyFilter();
+        this.showSnack(`Evento "${updated.title}" actualizado`);
       }
     });
   }
 
-  viewStats(event: EventSummary) {
-    this.router.navigate(['/admin-tickets', event.id]);
+  // -------------------------------------------------------------------------
+  // Delete
+  // -------------------------------------------------------------------------
+
+  deleteEvent(event: EventResponse): void {
+    if (
+      !confirm(
+        `¿Eliminar el evento "${event.title}"? Esta acción no se puede deshacer.`
+      )
+    )
+      return;
+
+    this.deletingId = event.id;
+    this.eventService.deleteEvent(event.id).subscribe({
+      next: () => {
+        this.allEvents = this.allEvents.filter((e) => e.id !== event.id);
+        this.applyFilter();
+        this.deletingId = null;
+        this.showSnack(`Evento "${event.title}" eliminado`);
+      },
+      error: (err) => {
+        this.deletingId = null;
+        this.showSnack("Error al eliminar el evento", "error");
+        console.error(err);
+      },
+    });
   }
 
-  openSettings(event: EventSummary) {
+  // -------------------------------------------------------------------------
+  // Resale dialog (unchanged from original)
+  // -------------------------------------------------------------------------
+
+  openSettings(event: EventResponse): void {
     const dialogRef = this.dialog.open(ResaleDialogComponent, {
       width: "440px",
       data: { event },
@@ -181,17 +314,21 @@ export class AdminEventsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        console.log("Resale price updated:", result);
-        // service call
+        this.showSnack("Configuración de reventa actualizada");
       }
     });
   }
 
-  viewFinance(event: EventSummary) {
-    this.router.navigate(['/advertise-event', event.id]);
-  }
+  // -------------------------------------------------------------------------
+  // Snackbar
+  // -------------------------------------------------------------------------
 
-  removeFilter(filter: string) {
-    this.appliedFilters = this.appliedFilters.filter(f => f !== filter);
+  private showSnack(msg: string, type: "success" | "error" = "success"): void {
+    this.snackBar.open(msg, "✕", {
+      duration: 4000,
+      panelClass: type === "error" ? ["snack-error"] : ["snack-success"],
+      horizontalPosition: "end",
+      verticalPosition: "top",
+    });
   }
 }

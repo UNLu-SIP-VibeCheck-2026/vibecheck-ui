@@ -1,0 +1,160 @@
+// =============================================================================
+// DateTimePickerComponent — Styles
+// Reutiliza tokens del design system (tokens.scss / _theme.scss)
+// =============================================================================
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.dtp-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.dtp-label {
+  font-size: var(--text-label-md);
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+.dtp-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.dtp-date-field {
+  flex: 2.5;
+}
+
+.dtp-time-field {
+  flex: 1;
+}
+
+.dtp-separator {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface-variant);
+  user-select: none;
+  padding-bottom: 2px;
+}
+
+// ---------------------------------------------------------------------------
+// Material form-field overrides (matching create-event styles)
+// ---------------------------------------------------------------------------
+.custom-mat-form-field {
+  width: 100%;
+
+  ::ng-deep {
+    .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
+    .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
+    .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
+      border-color: var(--md-sys-color-outline-variant) !important;
+    }
+
+    .mdc-text-field--outlined:not(.mdc-text-field--disabled):hover .mdc-notched-outline__leading,
+    .mdc-text-field--outlined:not(.mdc-text-field--disabled):hover .mdc-notched-outline__notch,
+    .mdc-text-field--outlined:not(.mdc-text-field--disabled):hover .mdc-notched-outline__trailing {
+      border-color: var(--md-sys-color-outline) !important;
+    }
+
+    .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,
+    .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__notch,
+    .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing {
+      border-color: var(--md-sys-color-primary) !important;
+      border-width: 2px !important;
+    }
+
+    .mat-mdc-form-field-flex {
+      background-color: rgba(255, 255, 255, 0.03) !important;
+      border-radius: var(--md-sys-shape-corner-extra-small) !important;
+      align-items: center !important;
+      display: flex !important;
+      height: 52px !important;
+    }
+
+    .mat-mdc-input-element,
+    .mat-mdc-select-value {
+      color: var(--md-sys-color-on-surface) !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    .mat-mdc-form-field-infix {
+      display: flex !important;
+      align-items: center !important;
+      padding: 0 12px !important;
+      min-height: auto !important;
+    }
+
+    .mat-mdc-select-arrow-wrapper {
+      transform: none !important;
+      align-self: center !important;
+    }
+
+    // Datepicker toggle icon colour
+    .mat-datepicker-toggle {
+      color: var(--md-sys-color-primary);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Validation error
+// ---------------------------------------------------------------------------
+.dtp-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: var(--md-sys-shape-corner-small);
+  color: var(--md-sys-color-error);
+  font-size: var(--text-body-md);
+  font-weight: 500;
+  animation: dtp-shake 0.35s ease;
+}
+
+.dtp-error-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+@keyframes dtp-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(2px); }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive
+// ---------------------------------------------------------------------------
+@media (max-width: 600px) {
+  .dtp-row {
+    flex-wrap: wrap;
+  }
+
+  .dtp-date-field {
+    flex: 1 1 100%;
+  }
+
+  .dtp-time-field {
+    flex: 1 1 40%;
+  }
+
+  .dtp-separator {
+    display: none;
+  }
+}

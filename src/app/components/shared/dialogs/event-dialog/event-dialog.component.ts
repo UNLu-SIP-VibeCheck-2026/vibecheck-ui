@@ -1,106 +1,183 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { VenueDialogComponent } from '../venue-dialog/venue-dialog.component';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, OnInit } from "@angular/core";
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+} from "@angular/forms";
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialog,
+} from "@angular/material/dialog";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatButtonModule } from "@angular/material/button";
+import { MatSelectModule } from "@angular/material/select";
+import { MatIconModule } from "@angular/material/icon";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { ConfirmDialogComponent } from "../confirm-dialog/confirm-dialog.component";
+import { DateTimePickerComponent } from "../../date-time-picker/date-time-picker.component";
+import { EventService } from "../../../../services/event.service";
+import { VenueService } from "../../../../services/venue.service";
+import { EventResponse, EventUpdateRequest } from "../../../../models/event.model";
+import { VenueResponse } from "../../../../models/venue.model";
+
+export interface EventDialogData {
+  event: EventResponse;
+  venues?: VenueResponse[];
+}
 
 @Component({
-  selector: 'app-event-dialog',
+  selector: "app-event-dialog",
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
     MatIconModule,
-    FormsModule
+    MatProgressSpinnerModule,
+    DateTimePickerComponent,
   ],
-  templateUrl: './event-dialog.component.html',
-  styleUrls: ['./event-dialog.component.scss']
+  templateUrl: "./event-dialog.component.html",
+  styleUrls: ["./event-dialog.component.scss"],
 })
 export class EventDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<EventDialogComponent>);
-  public data = inject(MAT_DIALOG_DATA);
+  public data: EventDialogData = inject(MAT_DIALOG_DATA);
   private dialog = inject(MatDialog);
+  private eventService = inject(EventService);
+  private venueService = inject(VenueService);
 
   eventForm!: FormGroup;
-  isEditMode: boolean = false;
+  isSubmitting = false;
+  isCancelling = false;
+  errorMessage = "";
 
-  venues = [
-    { id: 'VENUE01', name: 'Estadio Obras', address: 'Av. del Libertador 7395' },
-    { id: 'VENUE02', name: 'Luna Park', address: 'Av. Eduardo Madero 420' },
-    { id: 'VENUE03', name: 'Teatro Colón', address: 'Cerrito 628' }
-  ];
-  filteredVenues = [...this.venues];
-  venueSearch: string = "";
+  venues: VenueResponse[] = [];
+  filteredVenues: VenueResponse[] = [];
+  venueSearch = "";
+
+  get isEditMode(): boolean {
+    return !!this.data?.event;
+  }
+
+  get startDateCtrl(): FormControl {
+    return this.eventForm.get("startDate") as FormControl;
+  }
+  get endDateCtrl(): FormControl {
+    return this.eventForm.get("endDate") as FormControl;
+  }
+
+  get startDateValue(): string {
+    return this.eventForm.get("startDate")?.value || "";
+  }
+
+  today = new Date();
 
   ngOnInit(): void {
-    this.isEditMode = !!this.data?.event;
     this.initForm();
+
+    // Prefer venues passed from the parent (already loaded), else fetch
+    if (this.data?.venues?.length) {
+      this.venues = this.data.venues;
+      this.filteredVenues = [...this.venues];
+    } else {
+      this.venueService.findAllVenues(0, 200).subscribe({
+        next: (page) => {
+          this.venues = page.content;
+          this.filteredVenues = [...this.venues];
+        },
+      });
+    }
   }
 
   private initForm(): void {
-    this.eventForm = this.fb.group({
-      title: [this.data?.event?.title || '', [Validators.required, Validators.minLength(5)]],
-      description: [this.data?.event?.description || '', [Validators.required, Validators.minLength(20)]],
-      startDate: [this.data?.event?.startDate || '', [Validators.required]],
-      endDate: [this.data?.event?.endDate || '', [Validators.required]],
-      venue: [this.data?.event?.venue || '', [Validators.required]],
-      status: [this.data?.event?.status || 'PROGRAMADO']
-    });
-  }
-
-  filterVenues() {
-    const search = this.venueSearch.toLowerCase();
-    this.filteredVenues = this.venues.filter(v => 
-      v.name.toLowerCase().includes(search) || 
-      v.address.toLowerCase().includes(search)
+    const e = this.data?.event;
+    this.eventForm = this.fb.group(
+      {
+        title: [
+          e?.title ?? "",
+          [Validators.required, Validators.minLength(5)],
+        ],
+        description: [
+          e?.description ?? "",
+          [Validators.required, Validators.minLength(20)],
+        ],
+        startDate: [e?.startDate ?? "", [Validators.required]],
+        endDate: [e?.endDate ?? "", [Validators.required]],
+        capacity: [e?.capacity ?? 1000, [Validators.required, Validators.min(1)]],
+        active: [e?.active ?? true],
+        venueId: [e?.venueId ?? null],
+      },
+      { validators: [this.endAfterStartValidator] }
     );
   }
 
-  openNewVenueDialog() {
-    const dialogRef = this.dialog.open(VenueDialogComponent, {
-      width: '450px'
-    });
+  endAfterStartValidator(group: AbstractControl): ValidationErrors | null {
+    const start = group.get("startDate")?.value;
+    const end = group.get("endDate")?.value;
+    if (!start || !end) return null;
+    return new Date(end) > new Date(start) ? null : { endBeforeStart: true };
+  }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        const newVenue = {
-          id: 'NEW_' + Math.random().toString(36).substr(2, 9),
-          name: result.name,
-          address: result.address
-        };
-        this.venues.push(newVenue);
-        this.filterVenues();
-        this.eventForm.patchValue({ venue: newVenue.id });
-      }
-    });
+  filterVenues(): void {
+    const q = this.venueSearch.toLowerCase();
+    this.filteredVenues = this.venues.filter(
+      (v) =>
+        v.title.toLowerCase().includes(q) ||
+        v.coordinates.toLowerCase().includes(q)
+    );
   }
 
   cancelEvent(): void {
     const confirmRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
-        title: 'Cancelar Evento',
-        message: '¿Estás seguro de que deseas cancelar este evento? Esta acción no se puede deshacer.'
-      }
+        title: "Cancelar Evento",
+        message:
+          "¿Estás seguro de que deseas cancelar este evento? Esta acción no se puede deshacer.",
+      },
     });
 
-    confirmRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.eventForm.patchValue({ status: 'CANCELADO' });
-        this.onSubmit(); // Save the cancellation
-      }
+    confirmRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (!confirmed || !this.data?.event) return;
+      this.isCancelling = true;
+      // Build an update that preserves current data but marks it to cancel
+      // The backend will set status based on business logic.
+      // We disable the event to signal cancellation.
+      const req: EventUpdateRequest = {
+        title: this.eventForm.value.title,
+        description: this.eventForm.value.description,
+        startDate: this.eventForm.value.startDate,
+        endDate: this.eventForm.value.endDate,
+        capacity: Number(this.eventForm.value.capacity),
+        active: false,
+        venueId: this.eventForm.value.venueId ?? null,
+      };
+
+      this.eventService.updateEvent(this.data.event.id, req).subscribe({
+        next: (updated) => {
+          this.isCancelling = false;
+          this.dialogRef.close(updated);
+        },
+        error: (err) => {
+          this.isCancelling = false;
+          this.errorMessage =
+            err?.error?.message ?? "Error al cancelar el evento.";
+        },
+      });
     });
   }
 
@@ -109,8 +186,30 @@ export class EventDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.eventForm.valid) {
-      this.dialogRef.close(this.eventForm.value);
-    }
+    if (this.eventForm.invalid || !this.data?.event) return;
+    this.isSubmitting = true;
+    this.errorMessage = "";
+
+    const req: EventUpdateRequest = {
+      title: this.eventForm.value.title,
+      description: this.eventForm.value.description,
+      startDate: this.eventForm.value.startDate,
+      endDate: this.eventForm.value.endDate,
+      capacity: Number(this.eventForm.value.capacity),
+      active: this.eventForm.value.active,
+      venueId: this.eventForm.value.venueId ?? null,
+    };
+
+    this.eventService.updateEvent(this.data.event.id, req).subscribe({
+      next: (updated) => {
+        this.isSubmitting = false;
+        this.dialogRef.close(updated);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorMessage =
+          err?.error?.message ?? "Error al guardar. Intentá de nuevo.";
+      },
+    });
   }
 }

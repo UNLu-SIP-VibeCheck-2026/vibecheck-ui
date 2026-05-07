@@ -1,85 +1,135 @@
 <div class="user-dialog-container">
-    <h2 mat-dialog-title>{{ isEditMode ? 'Modificar Evento' : 'Crear Evento' }}</h2>
-    
+    <h2 mat-dialog-title>
+        <mat-icon class="title-icon">{{ isEditMode ? 'edit_calendar' : 'add_circle' }}</mat-icon>
+        {{ isEditMode ? 'Modificar Evento' : 'Crear Evento' }}
+    </h2>
+
     <mat-dialog-content>
-        <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
-            
+        <form [formGroup]="eventForm">
+
+            <!-- Title -->
             <div class="form-group">
-                <label for="title">Título del Evento</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field">
-                    <input matInput id="title" formControlName="title">
+                <label for="dlg-title">Título del Evento</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                    <input matInput id="dlg-title" formControlName="title" placeholder="Ej: Festival de Verano 2026">
                 </mat-form-field>
             </div>
 
+            <!-- Description -->
             <div class="form-group description-field">
-                <label for="description">Descripción</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field">
-                    <textarea matInput id="description" formControlName="description" rows="6"></textarea>
+                <label for="dlg-desc">Descripción</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                    <textarea matInput id="dlg-desc" formControlName="description" rows="4"
+                              placeholder="Descripción del evento..."></textarea>
                 </mat-form-field>
             </div>
 
+            <!-- Start date -->
+            <div class="form-group">
+                <app-date-time-picker
+                    formControlName="startDate"
+                    label="Fecha y Hora de Inicio"
+                    [minDate]="today">
+                </app-date-time-picker>
+            </div>
+
+            <!-- End date -->
+            <div class="form-group">
+                <app-date-time-picker
+                    formControlName="endDate"
+                    label="Fecha y Hora de Fin"
+                    [minDate]="today"
+                    [afterDate]="startDateValue">
+                </app-date-time-picker>
+            </div>
+
+            <!-- Cross-field error -->
+            <div class="cross-error" *ngIf="eventForm.hasError('endBeforeStart') && eventForm.get('endDate')?.touched">
+                <mat-icon>error_outline</mat-icon>
+                <span>La fecha de fin debe ser posterior a la de inicio.</span>
+            </div>
+
+            <!-- Capacity & Active row -->
             <div class="multi-row">
                 <div class="form-group half">
-                    <label for="startDate">Fecha y Hora de Inicio</label>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field">
-                        <input matInput id="startDate" formControlName="startDate" placeholder="DD/MM/AAAA HH:MM">
+                    <label for="dlg-capacity">Capacidad</label>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                        <mat-icon matPrefix style="margin-right:6px;font-size:18px">people</mat-icon>
+                        <input matInput type="number" id="dlg-capacity" formControlName="capacity" placeholder="0">
                     </mat-form-field>
                 </div>
+
                 <div class="form-group half">
-                    <label for="endDate">Fecha y Hora de Fin</label>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field">
-                        <input matInput id="endDate" formControlName="endDate" placeholder="DD/MM/AAAA HH:MM">
+                    <label>Estado de Publicación</label>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                        <mat-select formControlName="active">
+                            <mat-option [value]="true">✅ Activo</mat-option>
+                            <mat-option [value]="false">⛔ Inactivo</mat-option>
+                        </mat-select>
                     </mat-form-field>
                 </div>
             </div>
 
+            <!-- Venue selector -->
             <div class="form-group venue-group">
-                <label for="venue">Venue</label>
-                <mat-form-field appearance="outline" class="custom-mat-select">
-                    <mat-select id="venue" formControlName="venue">
-                        <!-- Search Bar inside Select -->
+                <label for="dlg-venue">Venue</label>
+                <mat-form-field appearance="outline" class="custom-mat-select" subscriptSizing="dynamic">
+                    <mat-select id="dlg-venue" formControlName="venueId" placeholder="Seleccionar venue...">
+                        <!-- Search inside select -->
                         <div class="select-search-header">
-                            <mat-form-field appearance="outline" class="search-inner-field">
+                            <mat-form-field appearance="outline" class="search-inner-field" subscriptSizing="dynamic">
                                 <mat-icon matPrefix>search</mat-icon>
-                                <input matInput placeholder="Buscar por nombre o dirección..." 
-                                       [(ngModel)]="venueSearch" 
+                                <input matInput placeholder="Buscar venue..."
+                                       [(ngModel)]="venueSearch"
                                        (ngModelChange)="filterVenues()"
                                        [ngModelOptions]="{standalone: true}"
                                        (keydown)="$event.stopPropagation()">
                             </mat-form-field>
                         </div>
-                        
+
+                        <mat-option [value]="null">— Sin venue —</mat-option>
                         <mat-option *ngFor="let v of filteredVenues" [value]="v.id" class="venue-option">
                             <div class="venue-item">
-                                <span class="venue-name">{{v.name}}</span>
-                                <span class="venue-address">{{v.address}}</span>
+                                <span class="venue-name">{{ v.title }}</span>
+                                <span class="venue-address">{{ v.coordinates }} &bull; Cap: {{ v.capacity | number }}</span>
                             </div>
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
-                <a class="new-venue-link" (click)="openNewVenueDialog()">El Venue no se encuentra en la lista</a>
             </div>
 
-            <div class="form-group cancel-section" *ngIf="isEditMode && eventForm.get('status')?.value !== 'CANCELADO'">
-                <button type="button" mat-button color="warn" class="btn-cancel-event" (click)="cancelEvent()">
-                    <mat-icon>cancel</mat-icon>
-                    CANCELAR ESTE EVENTO
+            <!-- Cancel event -->
+            <div class="form-group cancel-section"
+                 *ngIf="isEditMode && data.event.active">
+                <button type="button" mat-button class="btn-cancel-event"
+                        [disabled]="isCancelling"
+                        (click)="cancelEvent()">
+                    <mat-spinner *ngIf="isCancelling" diameter="16"></mat-spinner>
+                    <mat-icon *ngIf="!isCancelling">cancel</mat-icon>
+                    {{ isCancelling ? 'Cancelando...' : 'CANCELAR ESTE EVENTO' }}
                 </button>
             </div>
 
-            <div class="status-indicator" *ngIf="isEditMode && eventForm.get('status')?.value === 'CANCELADO'">
-                <mat-icon color="warn">error</mat-icon>
-                <span>Este evento ha sido CANCELADO</span>
+            <div class="status-indicator" *ngIf="isEditMode && !data.event.active">
+                <mat-icon>error</mat-icon>
+                <span>Este evento está <strong>inactivo / cancelado</strong></span>
+            </div>
+
+            <!-- API Error -->
+            <div class="api-error" *ngIf="errorMessage">
+                <mat-icon>warning</mat-icon>
+                <span>{{ errorMessage }}</span>
             </div>
 
         </form>
     </mat-dialog-content>
 
     <mat-dialog-actions class="dialog-actions">
-        <button mat-raised-button class="btn-submit" 
-                [disabled]="eventForm.invalid" 
+        <button mat-raised-button class="btn-submit"
+                [disabled]="eventForm.invalid || isSubmitting"
                 (click)="onSubmit()">
-            {{ isEditMode ? 'Guardar Cambios' : 'Guardar' }}
+            <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
+            <span *ngIf="!isSubmitting">{{ isEditMode ? 'Guardar Cambios' : 'Guardar' }}</span>
         </button>
         <button mat-stroked-button class="btn-cancel" (click)="onCancel()">Cancelar</button>
     </mat-dialog-actions>

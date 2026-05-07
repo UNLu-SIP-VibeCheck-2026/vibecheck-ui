@@ -60,40 +60,27 @@
 
             <!-- Start Date and Time -->
             <div class="form-group custom-field-wrapper mt-24">
-                <label>Inicio del Evento</label>
-                <div class="multi-input-row">
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
-                        <input matInput type="number" formControlName="startDay" placeholder="DD">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
-                        <input matInput type="number" formControlName="startMonth" placeholder="MM">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
-                        <input matInput type="number" formControlName="startYear" placeholder="AAAA">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
-                        <input matInput type="text" formControlName="startTime" placeholder="HH:MM">
-                    </mat-form-field>
-                </div>
+                <app-date-time-picker
+                    formControlName="startDate"
+                    label="Inicio del Evento"
+                    [minDate]="today">
+                </app-date-time-picker>
             </div>
 
             <!-- End Date and Time -->
             <div class="form-group custom-field-wrapper mt-24">
-                <label>Finalización del Evento</label>
-                <div class="multi-input-row">
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
-                        <input matInput type="number" formControlName="endDay" placeholder="DD">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
-                        <input matInput type="number" formControlName="endMonth" placeholder="MM">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
-                        <input matInput type="number" formControlName="endYear" placeholder="AAAA">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
-                        <input matInput type="text" formControlName="endTime" placeholder="HH:MM">
-                    </mat-form-field>
-                </div>
+                <app-date-time-picker
+                    formControlName="endDate"
+                    label="Finalización del Evento"
+                    [minDate]="today"
+                    [afterDate]="startDateValue">
+                </app-date-time-picker>
+            </div>
+
+            <!-- Cross-field validation error -->
+            <div class="cross-field-error" *ngIf="eventForm.hasError('endBeforeStart') && eventForm.get('endDate')?.touched">
+                <mat-icon>error_outline</mat-icon>
+                <span>La fecha de finalización debe ser posterior a la fecha de inicio.</span>
             </div>
 
             <!-- Venue -->
@@ -105,18 +92,22 @@
                         <div class="select-search-header">
                             <mat-form-field appearance="outline" class="search-inner-field" subscriptSizing="dynamic">
                                 <mat-icon matPrefix>search</mat-icon>
-                                <input matInput placeholder="Buscar por nombre o dirección..." 
-                                       [(ngModel)]="venueSearch" 
+                                <input matInput placeholder="Buscar por nombre o dirección..."
+                                       [(ngModel)]="venueSearch"
                                        (ngModelChange)="filterVenues()"
                                        [ngModelOptions]="{standalone: true}"
                                        (keydown)="$event.stopPropagation()">
                             </mat-form-field>
                         </div>
 
+                        <mat-option *ngIf="isLoadingVenues" disabled>
+                            <span style="color:var(--md-sys-color-on-surface-variant)">Cargando venues...</span>
+                        </mat-option>
+
                         <mat-option *ngFor="let venue of filteredVenues" [value]="venue.id" class="venue-option">
                             <div class="venue-item">
-                                <span class="venue-name">{{venue.name}}</span>
-                                <span class="venue-address">{{venue.address}}</span>
+                                <span class="venue-name">{{venue.title}}</span>
+                                <span class="venue-address">{{venue.coordinates}} &bull; Cap: {{venue.capacity | number}}</span>
                             </div>
                         </mat-option>
                     </mat-select>

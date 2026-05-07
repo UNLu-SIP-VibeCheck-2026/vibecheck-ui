@@ -1,16 +1,32 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject } from "@angular/core";
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import { Component, inject, OnInit } from "@angular/core";
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatSelectModule } from "@angular/material/select";
 import { MatChipsModule } from "@angular/material/chips";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { Router } from "@angular/router";
 import { MatDialog } from "@angular/material/dialog";
-import { VenueDialogComponent } from "../shared/dialogs/venue-dialog/venue-dialog.component";
 import { FormsModule } from "@angular/forms";
+import { EventService } from "../../services/event.service";
+import { VenueService } from "../../services/venue.service";
+import { EventCreateRequest } from "../../models/event.model";
+import { VenueResponse } from "../../models/venue.model";
+import { DateTimePickerComponent } from "../shared/date-time-picker/date-time-picker.component";
+import {
+  VenueDialogComponent,
+  VenueDialogData,
+} from "../shared/dialogs/venue-dialog/venue-dialog.component";
 
 @Component({
   selector: "app-create-event",
@@ -24,74 +40,102 @@ import { FormsModule } from "@angular/forms";
     MatIconModule,
     MatSelectModule,
     MatChipsModule,
-    FormsModule
+    MatProgressSpinnerModule,
+    FormsModule,
+    DateTimePickerComponent,
   ],
-  templateUrl: './create-event.component.html',
-  styleUrl: './create-event.component.scss',
+  templateUrl: "./create-event.component.html",
+  styleUrl: "./create-event.component.scss",
 })
-export class CreateEventComponent {
+export class CreateEventComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private eventService = inject(EventService);
+  private venueService = inject(VenueService);
 
-  eventForm: FormGroup = this.fb.group({
-    title: ["", [Validators.required, Validators.minLength(5)]],
-    description: ["", [Validators.required, Validators.minLength(20)]],
-    startDay: ["", [Validators.required, Validators.min(1), Validators.max(31)]],
-    startMonth: ["", [Validators.required, Validators.min(1), Validators.max(12)]],
-    startYear: ["", [Validators.required, Validators.min(2024)]],
-    startTime: ["", Validators.required],
-    endDay: ["", [Validators.required, Validators.min(1), Validators.max(31)]],
-    endMonth: ["", [Validators.required, Validators.min(1), Validators.max(12)]],
-    endYear: ["", [Validators.required, Validators.min(2024)]],
-    endTime: ["", Validators.required],
-    venue: ["", Validators.required],
-    category: ["", Validators.required],
-  });
+  today = new Date();
+
+  eventForm: FormGroup = this.fb.group(
+    {
+      title: ["", [Validators.required, Validators.minLength(5)]],
+      description: ["", [Validators.required, Validators.minLength(20)]],
+      startDate: ["", Validators.required],
+      endDate: ["", Validators.required],
+      venue: [null, Validators.required],
+      category: ["", Validators.required],
+    },
+    { validators: [this.endAfterStartValidator] }
+  );
 
   isSubmitting = false;
-  selectedCategories: string[] = ["Categoría 1", "Categoría 2", "Categoría 3"];
+  isLoadingVenues = false;
+  selectedCategories: string[] = [];
 
   categories = [
-    { value: 'musica', viewValue: 'Música' },
-    { value: 'teatro', viewValue: 'Teatro' },
-    { value: 'deportes', viewValue: 'Deportes' },
-    { value: 'conferencia', viewValue: 'Conferencia' },
-    { value: 'otros', viewValue: 'Otros' }
+    { value: "musica", viewValue: "Música" },
+    { value: "teatro", viewValue: "Teatro" },
+    { value: "deportes", viewValue: "Deportes" },
+    { value: "conferencia", viewValue: "Conferencia" },
+    { value: "otros", viewValue: "Otros" },
   ];
 
-  venues = [
-    { id: 'venue1', name: 'Estadio Obras', address: 'Av. del Libertador 7395' },
-    { id: 'venue2', name: 'Luna Park', address: 'Av. Eduardo Madero 420' },
-    { id: 'venue3', name: 'Teatro Colón', address: 'Cerrito 628' },
-    { id: 'venue4', name: 'Movistar Arena', address: 'Humboldt 450' }
-  ];
-  filteredVenues = [...this.venues];
+  venues: VenueResponse[] = [];
+  filteredVenues: VenueResponse[] = [];
   venueSearch: string = "";
 
-  filterVenues() {
+  ngOnInit(): void {
+    this.loadVenues();
+  }
+
+  loadVenues(): void {
+    this.isLoadingVenues = true;
+    this.venueService.findAllVenues(0, 200).subscribe({
+      next: (page) => {
+        this.venues = page.content;
+        this.filteredVenues = [...this.venues];
+        this.isLoadingVenues = false;
+      },
+      error: (err) => {
+        console.error("Error cargando venues:", err);
+        this.isLoadingVenues = false;
+      },
+    });
+  }
+
+  /** Cross-field validator: endDate must be after startDate */
+  endAfterStartValidator(group: AbstractControl): ValidationErrors | null {
+    const start = group.get("startDate")?.value;
+    const end = group.get("endDate")?.value;
+    if (!start || !end) return null;
+    return new Date(end) > new Date(start) ? null : { endBeforeStart: true };
+  }
+
+  /** Helper — returns startDate value for the end picker's afterDate input */
+  get startDateValue(): string {
+    return this.eventForm.get("startDate")?.value || "";
+  }
+
+  filterVenues(): void {
     const search = this.venueSearch.toLowerCase();
-    this.filteredVenues = this.venues.filter(v => 
-      v.name.toLowerCase().includes(search) || 
-      v.address.toLowerCase().includes(search)
+    this.filteredVenues = this.venues.filter(
+      (v) =>
+        v.title.toLowerCase().includes(search) ||
+        v.coordinates.toLowerCase().includes(search)
     );
   }
 
-  openNewVenueDialog() {
+  openNewVenueDialog(): void {
     const dialogRef = this.dialog.open(VenueDialogComponent, {
-      width: '450px'
+      width: "500px",
+      data: {} as VenueDialogData,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        const newVenue = {
-          id: 'NEW_' + Math.random().toString(36).substr(2, 9),
-          name: result.name,
-          address: result.address
-        };
-        this.venues.push(newVenue);
-        this.filterVenues();
-        this.eventForm.patchValue({ venue: newVenue.id });
+    dialogRef.afterClosed().subscribe((venue: VenueResponse | undefined) => {
+      if (venue) {
+        this.venues.push(venue);
+        this.filteredVenues = [...this.venues];
+        this.eventForm.patchValue({ venue: venue.id });
       }
     });
   }
@@ -99,21 +143,37 @@ export class CreateEventComponent {
   onSubmit(): void {
     if (this.eventForm.valid) {
       this.isSubmitting = true;
-      console.log("Creating event:", this.eventForm.value);
-      
-      setTimeout(() => {
-        this.isSubmitting = false;
-        this.router.navigate(['/admin-events']);
-      }, 1500);
+      const formValue = this.eventForm.value;
+
+      const request: EventCreateRequest = {
+        title: formValue.title,
+        description: formValue.description,
+        startDate: formValue.startDate,
+        endDate: formValue.endDate,
+        capacity: 1000,
+        active: true,
+        ownerId: 1,
+        venueId: formValue.venue ?? null,
+      };
+
+      this.eventService.createEvent(request).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.router.navigate(["/admin-events"]);
+        },
+        error: (err) => {
+          console.error("Error creating event:", err);
+          this.isSubmitting = false;
+        },
+      });
     }
   }
 
   cancel(): void {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(["/dashboard"]);
   }
 
   removeCategory(cat: string): void {
-    this.selectedCategories = this.selectedCategories.filter(c => c !== cat);
+    this.selectedCategories = this.selectedCategories.filter((c) => c !== cat);
   }
 }
-// Force rebuild

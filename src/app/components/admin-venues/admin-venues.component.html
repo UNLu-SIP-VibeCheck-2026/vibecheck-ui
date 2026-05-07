@@ -1,0 +1,114 @@
+<div class="admin-venues-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="brand-title">Gestión de <span class="text-gradient">Venues</span></h1>
+        <p class="header-subtitle">Administrá los recintos disponibles para eventos</p>
+      </div>
+    </div>
+    <button mat-raised-button class="btn-new" (click)="openCreateDialog()">
+      <mat-icon>add_location_alt</mat-icon>
+      Nuevo Venue
+    </button>
+  </div>
+
+  <!-- Search + Stats bar -->
+  <div class="toolbar-row">
+    <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput
+             placeholder="Buscar por nombre o ubicación..."
+             [(ngModel)]="searchQuery"
+             (ngModelChange)="applyFilter()">
+    </mat-form-field>
+
+    <div class="stats-badge">
+      <mat-icon>place</mat-icon>
+      <span>{{ totalVenues }} {{ totalVenues === 1 ? 'venue' : 'venues' }}</span>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando venues...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && filteredVenues.length === 0">
+    <mat-icon class="empty-icon">location_off</mat-icon>
+    <h3>Sin venues encontrados</h3>
+    <p *ngIf="searchQuery">Probá con otro término de búsqueda.</p>
+    <p *ngIf="!searchQuery">Todavía no hay venues registrados.</p>
+    <button mat-raised-button class="btn-new" (click)="openCreateDialog()" *ngIf="!searchQuery">
+      <mat-icon>add_location_alt</mat-icon>
+      Crear primer Venue
+    </button>
+  </div>
+
+  <!-- Venues grid -->
+  <div class="venues-grid" *ngIf="!isLoading && pagedVenues.length > 0">
+    <mat-card class="venue-card" *ngFor="let venue of pagedVenues">
+
+      <!-- Visibility badge -->
+      <div class="visibility-badge"
+           [class.badge-public]="venue.visibility === 'PUBLIC'"
+           [class.badge-private]="venue.visibility === 'PRIVATE'">
+        <mat-icon>{{ venue.visibility === 'PUBLIC' ? 'public' : 'lock' }}</mat-icon>
+        {{ visibilityLabel(venue.visibility) }}
+      </div>
+
+      <div class="venue-card-body">
+        <div class="venue-icon-wrapper">
+          <mat-icon class="venue-icon">stadium</mat-icon>
+        </div>
+
+        <div class="venue-info">
+          <h3 class="venue-title">{{ venue.title }}</h3>
+          <p class="venue-coord">
+            <mat-icon class="inline-icon">location_on</mat-icon>
+            {{ venue.coordinates }}
+          </p>
+          <p class="venue-capacity">
+            <mat-icon class="inline-icon">people</mat-icon>
+            Capacidad: <strong>{{ venue.capacity | number }}</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="venue-card-actions">
+        <button mat-stroked-button class="btn-edit" (click)="openEditDialog(venue)" matTooltip="Editar">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </button>
+
+        <button mat-stroked-button class="btn-delete"
+                (click)="deleteVenue(venue)"
+                [disabled]="deletingId === venue.id"
+                matTooltip="Eliminar">
+          <mat-spinner *ngIf="deletingId === venue.id" diameter="16"></mat-spinner>
+          <mat-icon *ngIf="deletingId !== venue.id">delete_outline</mat-icon>
+          Eliminar
+        </button>
+      </div>
+
+    </mat-card>
+  </div>
+
+  <!-- Paginator -->
+  <mat-paginator
+    *ngIf="!isLoading && totalVenues > pageSize"
+    [length]="totalVenues"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 20]"
+    [pageIndex]="pageIndex"
+    (page)="onPageChange($event)"
+    class="custom-paginator">
+  </mat-paginator>
+
+</div>
