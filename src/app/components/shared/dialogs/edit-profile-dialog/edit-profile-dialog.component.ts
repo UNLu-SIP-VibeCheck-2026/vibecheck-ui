@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { UserSummaryResponse } from '../../../../models/user-summary-response.model';
+import { BirthdatePickerComponent } from '../../birthdate-picker/birthdate-picker.component';
 
 @Component({
   selector: 'app-edit-profile-dialog',
@@ -18,7 +19,8 @@ import { UserSummaryResponse } from '../../../../models/user-summary-response.mo
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    BirthdatePickerComponent
   ],
   templateUrl: './edit-profile-dialog.component.html',
   styleUrls: ['./edit-profile-dialog.component.scss']
@@ -36,34 +38,20 @@ export class EditProfileDialogComponent implements OnInit {
     phoneNumber: [''],
     name:        ['', [Validators.required]],
     lastName:    ['', [Validators.required]],
-    birthDay:    ['', [Validators.required, Validators.min(1), Validators.max(31)]],
-    birthMonth:  ['', [Validators.required, Validators.min(1), Validators.max(12)]],
-    birthYear:   ['', [Validators.required, Validators.min(1900), Validators.max(2026)]],
+    birthdate:   [null, [Validators.required]],
     password:    ['', [Validators.required]]
   });
 
   ngOnInit(): void {
     if (this.data) {
-      // Pre-llenar los campos con los datos actuales del usuario
       this.editForm.patchValue({
         username:    this.data.username    || '',
         email:       this.data.email       || '',
         name:        this.data.name        || '',
         lastName:    this.data.lastName    || '',
-        phoneNumber: this.data.phoneNumber || ''
+        phoneNumber: this.data.phoneNumber || '',
+        birthdate:   this.data.birthdate   || null
       });
-
-      // Pre-llenar la fecha de nacimiento si existe (formato esperado: "YYYY-MM-DD")
-      if (this.data.birthdate) {
-        const parts = this.data.birthdate.split('-');
-        if (parts.length === 3) {
-          this.editForm.patchValue({
-            birthYear:  parseInt(parts[0], 10),
-            birthMonth: parseInt(parts[1], 10),
-            birthDay:   parseInt(parts[2], 10)
-          });
-        }
-      }
     }
   }
 

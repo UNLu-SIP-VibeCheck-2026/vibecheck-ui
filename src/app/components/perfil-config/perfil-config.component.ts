@@ -88,7 +88,7 @@ export class PerfilConfigComponent {
             lastName:    result.lastName,
             email:       result.email,
             phoneNumber: result.phoneNumber,
-            birthdate:   `${result.birthYear}-${String(result.birthMonth).padStart(2, '0')}-${String(result.birthDay).padStart(2, '0')}`
+            birthdate:   result.birthdate   // BirthdatePicker emits 'YYYY-MM-DD'
           };
 
           this.usersService.updateUser(currentUser.username, updatePayload).pipe(

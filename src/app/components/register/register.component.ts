@@ -3,6 +3,7 @@ import { Component, inject } from "@angular/core";
 import {
   AbstractControl,
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
   ValidationErrors,
@@ -12,11 +13,14 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { Router } from "@angular/router";
+import { MatIconModule } from "@angular/material/icon";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { Router, RouterModule } from "@angular/router";
 import { RegisterRequest } from "../../models/register-request.model";
 import { AuthService } from "../../services/auth.service";
 import { environment } from "../../../environments/environment";
+import { BirthdatePickerComponent } from "../shared/birthdate-picker/birthdate-picker.component";
 
 @Component({
   selector: "app-register",
@@ -24,10 +28,15 @@ import { environment } from "../../../environments/environment";
   imports: [
     ReactiveFormsModule,
     CommonModule,
+    RouterModule,
     MatCardModule,
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
+    MatIconModule,
+    MatSnackBarModule,
+    MatTooltipModule,
+    BirthdatePickerComponent,
   ],
   templateUrl: "./register.component.html",
   styleUrls: ["./register.component.scss"],
@@ -38,40 +47,58 @@ export class RegisterComponent {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
 
+  showPassword = false;
+  showRepeatPassword = false;
+  isSubmitting = false;
+  apiError = "";
+
   registerForm: FormGroup = this.fb.group(
     {
-      username: ["", [Validators.required]],
+      username: ["", [Validators.required, Validators.minLength(3), Validators.pattern(/^[a-zA-Z0-9_.\-]+$/)]],
       email: ["", [Validators.required, Validators.email]],
       name: ["", [Validators.required]],
       lastName: ["", [Validators.required]],
       phoneNumber: [""],
       password: ["", [Validators.required, Validators.minLength(8)]],
       repeatPassword: ["", [Validators.required]],
-      birthDay: [
-        "",
-        [Validators.required, Validators.min(1), Validators.max(31)],
-      ],
-      birthMonth: [
-        "",
-        [Validators.required, Validators.min(1), Validators.max(12)],
-      ],
-      birthYear: [
-        "",
-        [Validators.required, Validators.min(1900), Validators.max(2026)],
-      ],
+      birthdate: [null, [Validators.required]],
       role: ["comprar", [Validators.required]],
     },
-    { validators: this.passwordMatchValidator },
+    { validators: this.passwordMatchValidator }
   );
 
-  isSubmitting = false;
+  // Typed control getters for the template
+  get usernameCtrl(): FormControl { return this.registerForm.get("username") as FormControl; }
+  get emailCtrl(): FormControl { return this.registerForm.get("email") as FormControl; }
+  get nameCtrl(): FormControl { return this.registerForm.get("name") as FormControl; }
+  get lastNameCtrl(): FormControl { return this.registerForm.get("lastName") as FormControl; }
+  get passwordCtrl(): FormControl { return this.registerForm.get("password") as FormControl; }
+  get repeatPasswordCtrl(): FormControl { return this.registerForm.get("repeatPassword") as FormControl; }
+  get birthdateCtrl(): FormControl { return this.registerForm.get("birthdate") as FormControl; }
+
+  get passwordMismatch(): boolean {
+    return (
+      this.registerForm.hasError("passwordMismatch") &&
+      (this.repeatPasswordCtrl.dirty || this.repeatPasswordCtrl.touched)
+    );
+  }
+
+  get passwordStrength(): "weak" | "medium" | "strong" | null {
+    const v = this.passwordCtrl.value as string;
+    if (!v) return null;
+    const hasUpper = /[A-Z]/.test(v);
+    const hasNumber = /\d/.test(v);
+    const hasSpecial = /[^a-zA-Z0-9]/.test(v);
+    const score = [v.length >= 8, hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
+    if (score <= 2) return "weak";
+    if (score === 3) return "medium";
+    return "strong";
+  }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get("password");
-    const repeatPassword = control.get("repeatPassword");
-    if (password && repeatPassword && password.value !== repeatPassword.value) {
-      return { passwordMismatch: true };
-    }
+    const pw = control.get("password");
+    const rp = control.get("repeatPassword");
+    if (pw && rp && pw.value !== rp.value) return { passwordMismatch: true };
     return null;
   }
 
@@ -79,43 +106,39 @@ export class RegisterComponent {
     this.registerForm.get("role")?.setValue(role);
   }
 
+  togglePassword(): void { this.showPassword = !this.showPassword; }
+  toggleRepeatPassword(): void { this.showRepeatPassword = !this.showRepeatPassword; }
+
   onSubmit(): void {
-    if (this.registerForm.invalid) {
-      this.snackBar.open(
-        "Por favor, revisa los campos obligatorios",
-        "Cerrar",
-        { duration: 3000 },
-      );
-      return;
-    }
+    this.registerForm.markAllAsTouched();
+    if (this.registerForm.invalid) return;
 
     this.isSubmitting = true;
+    this.apiError = "";
 
-    // Combine fields for the mapping if needed, though we keep existing RegisterRequest structure
-    const formValue = this.registerForm.value;
+    const fv = this.registerForm.value;
     const data: RegisterRequest = {
-      username: formValue.username,
-      email: formValue.email,
-      name: formValue.name,
-      lastName: formValue.lastName,
-      phoneNumber: formValue.phoneNumber,
-      password: formValue.password,
-      birthdate: `${formValue.birthYear}-${String(formValue.birthMonth).padStart(2, "0")}-${String(formValue.birthDay).padStart(2, "0")}`,
-      role: formValue.role,
+      username: fv.username,
+      email: fv.email,
+      name: fv.name,
+      lastName: fv.lastName,
+      phoneNumber: fv.phoneNumber,
+      password: fv.password,
+      birthdate: fv.birthdate,
+      role: fv.role,
     };
 
     this.authService.register(data).subscribe({
       next: () => {
-        this.snackBar.open("Registro exitoso", "Cerrar", {
-          duration: 3000,
+        this.snackBar.open("¡Bienvenido a VibeCheck!", "✕", {
+          duration: 4000,
+          panelClass: ["snack-success"],
         });
         this.router.navigate(["/dashboard"]);
       },
-      error: (error) => {
+      error: (err) => {
         this.isSubmitting = false;
-        this.snackBar.open("Error al registrarse: " + error.message, "Cerrar", {
-          duration: 5000,
-        });
+        this.apiError = err?.error?.message ?? "Error al registrarse. Intentá de nuevo.";
       },
     });
   }

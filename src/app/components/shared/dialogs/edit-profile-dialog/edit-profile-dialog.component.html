@@ -1,103 +1,107 @@
 <div class="edit-profile-container">
-    <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
 
-        <div class="form-group custom-field-wrapper">
-            <label for="username">Nombre de Usuario</label>
-            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                <input matInput type="text" id="username" formControlName="username">
-                <mat-error *ngIf="editForm.get('username')?.hasError('required')">
-                    El nombre de usuario es requerido
-                </mat-error>
-            </mat-form-field>
-        </div>
+    <h2 mat-dialog-title>
+        <mat-icon style="vertical-align:middle;margin-right:8px;font-size:22px;color:var(--md-sys-color-primary)">manage_accounts</mat-icon>
+        Editar Perfil
+    </h2>
 
-        <div class="form-group custom-field-wrapper">
-            <label for="email">Correo Electrónico</label>
-            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                <input matInput type="email" id="email" formControlName="email">
-                <mat-error *ngIf="editForm.get('email')?.hasError('required')">
-                    El correo es requerido
-                </mat-error>
-                <mat-error *ngIf="editForm.get('email')?.hasError('email')">
-                    Email inválido
-                </mat-error>
-            </mat-form-field>
-        </div>
+    <mat-dialog-content>
+        <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
 
-        <div class="form-group custom-field-wrapper">
-            <label for="phoneNumber">Teléfono</label>
-            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                <input matInput type="tel" id="phoneNumber" formControlName="phoneNumber" placeholder="+54 9 11 1234 5678">
-            </mat-form-field>
-        </div>
-
-        <div class="form-group custom-field-wrapper">
-            <label>Fecha de Nacimiento</label>
-            <div class="multi-input-row">
-                <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
-                    <input matInput type="number" formControlName="birthDay" placeholder="DD">
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="custom-mat-form-field small" subscriptSizing="dynamic">
-                    <input matInput type="number" formControlName="birthMonth" placeholder="MM">
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="custom-mat-form-field medium" subscriptSizing="dynamic">
-                    <input matInput type="number" formControlName="birthYear" placeholder="AAAA">
-                </mat-form-field>
-            </div>
-        </div>
-
-        <div class="form-group custom-field-wrapper">
-            <label>Nombre y Apellido</label>
-            <div class="multi-input-row">
-                <mat-form-field appearance="outline" class="custom-mat-form-field half" subscriptSizing="dynamic">
-                    <input matInput type="text" formControlName="name" placeholder="Nombre">
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="custom-mat-form-field half" subscriptSizing="dynamic">
-                    <input matInput type="text" formControlName="lastName" placeholder="Apellido">
-                </mat-form-field>
-            </div>
-        </div>
-
-        <!-- Separador visual antes de la confirmación -->
-        <div class="password-confirmation-section">
-            <p class="password-confirmation-label">
-                Ingresá tu contraseña para confirmar los cambios
-            </p>
+            <!-- Username -->
             <div class="form-group custom-field-wrapper">
-                <label for="password">Contraseña</label>
+                <label for="dlg-username">Nombre de Usuario</label>
                 <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                    <input matInput
-                           [type]="showPassword ? 'text' : 'password'"
-                           id="password"
-                           formControlName="password"
-                           placeholder="Tu contraseña actual">
-                    <button mat-icon-button matSuffix type="button"
-                            (click)="togglePasswordVisibility()"
-                            [attr.aria-label]="'Mostrar contraseña'"
-                            [attr.aria-pressed]="showPassword">
-                        <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-                    </button>
-                    <mat-error *ngIf="editForm.get('password')?.hasError('required')">
-                        La contraseña es requerida para confirmar
-                    </mat-error>
+                    <mat-icon matPrefix style="font-size:18px;margin-right:6px;color:rgba(255,255,255,0.4)">alternate_email</mat-icon>
+                    <input matInput type="text" id="dlg-username" formControlName="username">
+                    <mat-error *ngIf="editForm.get('username')?.hasError('required')">Requerido</mat-error>
                 </mat-form-field>
             </div>
-        </div>
 
-        <div class="dialog-actions">
-            <button mat-raised-button
-                    type="submit"
-                    [disabled]="editForm.invalid"
-                    class="custom-btn-submit">
-                Confirmar Modificaciones
-            </button>
-            <button mat-stroked-button
-                    type="button"
-                    (click)="onCancel()"
-                    class="btn-cancel">
-                Cancelar
-            </button>
-        </div>
+            <!-- Email -->
+            <div class="form-group custom-field-wrapper">
+                <label for="dlg-email">Correo Electrónico</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                    <mat-icon matPrefix style="font-size:18px;margin-right:6px;color:rgba(255,255,255,0.4)">mail_outline</mat-icon>
+                    <input matInput type="email" id="dlg-email" formControlName="email">
+                    <mat-error *ngIf="editForm.get('email')?.hasError('required')">Requerido</mat-error>
+                    <mat-error *ngIf="editForm.get('email')?.hasError('email')">Email inválido</mat-error>
+                </mat-form-field>
+            </div>
 
-    </form>
+            <!-- Phone -->
+            <div class="form-group custom-field-wrapper">
+                <label for="dlg-phone">Teléfono</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                    <mat-icon matPrefix style="font-size:18px;margin-right:6px;color:rgba(255,255,255,0.4)">phone</mat-icon>
+                    <input matInput type="tel" id="dlg-phone" formControlName="phoneNumber" placeholder="+54 9 11 1234 5678">
+                </mat-form-field>
+            </div>
+
+            <!-- Name & Lastname -->
+            <div class="form-group custom-field-wrapper">
+                <label>Nombre y Apellido</label>
+                <div class="multi-input-row">
+                    <mat-form-field appearance="outline" class="custom-mat-form-field half" subscriptSizing="dynamic">
+                        <input matInput type="text" formControlName="name" placeholder="Nombre">
+                        <mat-error *ngIf="editForm.get('name')?.hasError('required')">Requerido</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field half" subscriptSizing="dynamic">
+                        <input matInput type="text" formControlName="lastName" placeholder="Apellido">
+                        <mat-error *ngIf="editForm.get('lastName')?.hasError('required')">Requerido</mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Birthdate -->
+            <div class="form-group custom-field-wrapper">
+                <app-birthdate-picker formControlName="birthdate" label="Fecha de Nacimiento">
+                </app-birthdate-picker>
+            </div>
+
+            <!-- Password confirmation -->
+            <div class="password-confirmation-section">
+                <p class="password-confirmation-label">
+                    Ingresá tu contraseña actual para confirmar los cambios
+                </p>
+                <div class="form-group custom-field-wrapper">
+                    <label for="dlg-password">Contraseña actual</label>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                        <input matInput
+                               [type]="showPassword ? 'text' : 'password'"
+                               id="dlg-password"
+                               formControlName="password"
+                               placeholder="••••••••">
+                        <button mat-icon-button matSuffix type="button"
+                                (click)="togglePasswordVisibility()"
+                                [attr.aria-label]="'Mostrar contraseña'"
+                                [attr.aria-pressed]="showPassword">
+                            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                        </button>
+                        <mat-error *ngIf="editForm.get('password')?.hasError('required')">
+                            La contraseña es requerida para confirmar
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+
+        </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions">
+        <button mat-raised-button
+                type="submit"
+                [disabled]="editForm.invalid"
+                class="custom-btn-submit"
+                (click)="onSubmit()">
+            Confirmar Modificaciones
+        </button>
+        <button mat-stroked-button
+                type="button"
+                (click)="onCancel()"
+                class="btn-cancel">
+            Cancelar
+        </button>
+    </mat-dialog-actions>
+
 </div>

@@ -1,0 +1,88 @@
+// =============================================================================
+// BirthdatePickerComponent — Styles (dark theme, design system tokens)
+// =============================================================================
+
+.birthdate-picker-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.bdp-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bdp-field {
+  width: 100%;
+
+  ::ng-deep {
+    .mat-mdc-form-field-flex {
+      height: 48px !important;
+      align-items: center !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      border-radius: 8px !important;
+    }
+
+    .mat-mdc-form-field-infix {
+      padding: 0 8px !important;
+      min-height: auto !important;
+    }
+
+    // Borde en reposo
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    // Borde en foco
+    .mdc-text-field--focused .mdc-notched-outline__leading,
+    .mdc-text-field--focused .mdc-notched-outline__notch,
+    .mdc-text-field--focused .mdc-notched-outline__trailing {
+      border-color: var(--md-sys-color-primary, #a855f7) !important;
+      border-width: 2px !important;
+    }
+
+    // Texto del input
+    .mat-mdc-input-element {
+      color: #ffffff !important;
+      cursor: pointer !important;
+    }
+
+    // Placeholder
+    .mat-mdc-input-element::placeholder {
+      color: rgba(255, 255, 255, 0.28) !important;
+    }
+
+    // Ícono de prefix
+    .mat-icon.bdp-prefix-icon {
+      color: rgba(255, 255, 255, 0.4) !important;
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+      margin-right: 6px !important;
+    }
+
+    // Toggle de apertura
+    .mat-datepicker-toggle button {
+      color: rgba(255, 255, 255, 0.5) !important;
+
+      &:hover {
+        color: var(--md-sys-color-primary) !important;
+        background: rgba(168, 85, 247, 0.08) !important;
+      }
+    }
+  }
+}
+
+.bdp-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+  margin-top: -4px;
+}

@@ -21,11 +21,26 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import {
+  MatNativeDateModule,
+  MAT_DATE_LOCALE,
+  MAT_DATE_FORMATS,
+} from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
+/** Display format: dd/MM/yyyy — the emitted ISO string is built manually. */
+const AR_DATE_FORMATS = {
+  parse:   { dateInput: ['dd/MM/yyyy', 'dd/MM/yy'] },
+  display: {
+    dateInput:          'dd/MM/yyyy',
+    monthYearLabel:     'MMM yyyy',
+    dateA11yLabel:      'dd/MM/yyyy',
+    monthYearA11yLabel: 'MMMM yyyy',
+  },
+};
 
 /**
  * Reusable date-time picker component.
@@ -61,6 +76,8 @@ import { takeUntil } from 'rxjs/operators';
       useExisting: forwardRef(() => DateTimePickerComponent),
       multi: true,
     },
+    { provide: MAT_DATE_LOCALE, useValue: 'es-AR' },
+    { provide: MAT_DATE_FORMATS, useValue: AR_DATE_FORMATS },
   ],
 })
 export class DateTimePickerComponent

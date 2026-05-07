@@ -1,124 +1,211 @@
 <div class="register-page">
-    <div class="register-header">
-        <h1 class="brand-title text-gradient display-md">Registrate</h1>
+
+  <!-- Left panel: branding -->
+  <div class="brand-panel" aria-hidden="true">
+    <div class="brand-panel-content">
+      <div class="brand-logo">
+        <span class="brand-icon">🎶</span>
+        <h2 class="brand-name text-gradient">VibeCheck</h2>
+      </div>
+      <p class="brand-tagline">
+        Descubrí eventos, comprá entradas y viví la experiencia.<br>
+        Todo en un solo lugar.
+      </p>
+      <ul class="brand-features">
+        <li><span class="feat-icon">🎟️</span> Comprá entradas al instante</li>
+        <li><span class="feat-icon">📍</span> Encontrá eventos cerca tuyo</li>
+        <li><span class="feat-icon">🎤</span> Publicá tus propios eventos</li>
+        <li><span class="feat-icon">🔒</span> Pagos seguros y protegidos</li>
+      </ul>
     </div>
+  </div>
 
-    <mat-card class="register-card">
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-            
-            <div class="form-group custom-field-wrapper">
-                <label for="username">Nombre de Usuario</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field">
-                    <input matInput type="text" id="username" formControlName="username">
-                    <mat-error *ngIf="registerForm.get('username')?.hasError('required')">
-                        El nombre de usuario es requerido
-                    </mat-error>
-                </mat-form-field>
+  <!-- Right panel: form -->
+  <div class="form-panel">
+    <div class="form-panel-inner">
+
+      <div class="form-header">
+        <h1 class="brand-title text-gradient">Crear cuenta</h1>
+        <p class="form-subtitle">Completá tus datos para empezar</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate autocomplete="off">
+
+        <!-- Row 1: username + email -->
+        <div class="field-row">
+
+          <div class="field-group">
+            <label for="reg-username">Usuario *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>alternate_email</mat-icon>
+              <input matInput id="reg-username" formControlName="username"
+                     placeholder="mi_usuario" autocomplete="username">
+            </mat-form-field>
+            <div class="field-errors" *ngIf="usernameCtrl.touched && usernameCtrl.invalid">
+              <span *ngIf="usernameCtrl.hasError('required')">⚠ Requerido</span>
+              <span *ngIf="usernameCtrl.hasError('minlength')">⚠ Mínimo 3 caracteres</span>
+              <span *ngIf="usernameCtrl.hasError('pattern')">⚠ Solo letras, números, _ . -</span>
             </div>
+          </div>
 
-            <div class="form-group custom-field-wrapper">
-                <label for="password">Contraseña</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field">
-                    <input matInput type="password" id="password" formControlName="password">
-                    <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
-                        La contraseña es requerida
-                    </mat-error>
-                    <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
-                        Mínimo 8 caracteres
-                    </mat-error>
-                </mat-form-field>
+          <div class="field-group">
+            <label for="reg-email">Email *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>mail_outline</mat-icon>
+              <input matInput type="email" id="reg-email" formControlName="email"
+                     placeholder="vos@ejemplo.com" autocomplete="email">
+            </mat-form-field>
+            <div class="field-errors" *ngIf="emailCtrl.touched && emailCtrl.invalid">
+              <span *ngIf="emailCtrl.hasError('required')">⚠ Requerido</span>
+              <span *ngIf="emailCtrl.hasError('email')">⚠ Email inválido</span>
             </div>
+          </div>
 
-            <div class="form-group custom-field-wrapper">
-                <label for="repeatPassword">Repetir Contraseña</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field">
-                    <input matInput type="password" id="repeatPassword" formControlName="repeatPassword">
-                    <mat-error *ngIf="registerForm.get('repeatPassword')?.hasError('required')">
-                        Debe repetir la contraseña
-                    </mat-error>
-                </mat-form-field>
+        </div>
+
+        <!-- Row 2: name + lastName -->
+        <div class="field-row">
+
+          <div class="field-group">
+            <label for="reg-name">Nombre *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>person_outline</mat-icon>
+              <input matInput id="reg-name" formControlName="name" placeholder="Nombre">
+            </mat-form-field>
+            <div class="field-errors" *ngIf="nameCtrl.touched && nameCtrl.invalid">
+              <span>⚠ Requerido</span>
             </div>
+          </div>
 
-            <div class="form-group custom-field-wrapper">
-                <label for="email">Correo Electrónico</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field">
-                    <input matInput type="email" id="email" formControlName="email">
-                    <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
-                        El correo es requerido
-                    </mat-error>
-                    <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
-                        Email inválido
-                    </mat-error>
-                </mat-form-field>
+          <div class="field-group">
+            <label for="reg-lastname">Apellido *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>badge</mat-icon>
+              <input matInput id="reg-lastname" formControlName="lastName" placeholder="Apellido">
+            </mat-form-field>
+            <div class="field-errors" *ngIf="lastNameCtrl.touched && lastNameCtrl.invalid">
+              <span>⚠ Requerido</span>
             </div>
+          </div>
 
-            <div class="form-group custom-field-wrapper">
-                <label for="phoneNumber">Teléfono</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field">
-                    <input matInput type="tel" id="phoneNumber" formControlName="phoneNumber" placeholder="+54 9 11 1234 5678">
-                </mat-form-field>
+        </div>
+
+        <!-- Row 3: phone + birthdate -->
+        <div class="field-row">
+
+          <div class="field-group">
+            <label for="reg-phone">Teléfono</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>phone</mat-icon>
+              <input matInput type="tel" id="reg-phone" formControlName="phoneNumber"
+                     placeholder="+54 9 11 1234 5678">
+            </mat-form-field>
+          </div>
+
+          <div class="field-group">
+            <app-birthdate-picker formControlName="birthdate" label="Fecha de Nacimiento *">
+            </app-birthdate-picker>
+            <div class="field-errors" *ngIf="birthdateCtrl.touched && birthdateCtrl.invalid">
+              <span>⚠ Seleccioná tu fecha de nacimiento</span>
             </div>
+          </div>
 
-            <div class="form-group custom-field-wrapper">
-                <label>Fecha de Nacimiento</label>
-                <div class="multi-input-row">
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
-                        <input matInput type="number" formControlName="birthDay" placeholder="DD">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field small">
-                        <input matInput type="number" formControlName="birthMonth" placeholder="MM">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field medium">
-                        <input matInput type="number" formControlName="birthYear" placeholder="AAAA">
-                    </mat-form-field>
-                </div>
+        </div>
+
+        <!-- Row 4: passwords -->
+        <div class="field-row">
+
+          <div class="field-group">
+            <label for="reg-password">Contraseña *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>lock_outline</mat-icon>
+              <input matInput [type]="showPassword ? 'text' : 'password'"
+                     id="reg-password" formControlName="password"
+                     placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+              <button mat-icon-button matSuffix type="button" (click)="togglePassword()"
+                      [matTooltip]="showPassword ? 'Ocultar' : 'Mostrar'">
+                <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+            <div class="field-errors" *ngIf="passwordCtrl.touched && passwordCtrl.invalid">
+              <span *ngIf="passwordCtrl.hasError('required')">⚠ Requerida</span>
+              <span *ngIf="passwordCtrl.hasError('minlength')">⚠ Mínimo 8 caracteres</span>
             </div>
-
-            <div class="form-group custom-field-wrapper">
-                <label>Nombre y Apellido</label>
-                <div class="multi-input-row">
-                    <mat-form-field appearance="outline" class="custom-mat-form-field half">
-                        <input matInput type="text" formControlName="name" placeholder="Nombre">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="custom-mat-form-field half">
-                        <input matInput type="text" formControlName="lastName" placeholder="Apellido">
-                    </mat-form-field>
-                </div>
+            <!-- Strength bar -->
+            <div class="strength-bar-wrapper" *ngIf="passwordCtrl.value">
+              <div class="strength-bar" [attr.data-strength]="passwordStrength">
+                <div class="strength-bar-fill"></div>
+              </div>
+              <span class="strength-label" [attr.data-strength]="passwordStrength">
+                {{ passwordStrength === 'weak' ? 'Débil' : passwordStrength === 'medium' ? 'Media' : 'Fuerte' }}
+              </span>
             </div>
+          </div>
 
-
-            <mat-error *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('repeatPassword')?.touched" style="margin-bottom: 8px; font-size: 13px;">
-                Las contraseñas no coinciden
-            </mat-error>
-
-            <button type="submit"
-                    [disabled]="isSubmitting || registerForm.invalid"
-                    class="btn-cta" style="width: 100%; justify-content: center; margin-top: 16px;">
-                <span class="btn-cta__label">{{ isSubmitting ? 'REGISTRANDO...' : 'REGISTRARSE' }}</span>
-            </button>
-
-            <div class="divider-container">
-                <div class="divider"></div>
-                <span class="divider-text">o registrarte con</span>
-                <div class="divider"></div>
+          <div class="field-group">
+            <label for="reg-repeat">Repetir Contraseña *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic"
+                            [class.field-mismatch]="passwordMismatch">
+              <mat-icon matPrefix>lock_reset</mat-icon>
+              <input matInput [type]="showRepeatPassword ? 'text' : 'password'"
+                     id="reg-repeat" formControlName="repeatPassword"
+                     placeholder="Repetí la contraseña" autocomplete="new-password">
+              <button mat-icon-button matSuffix type="button" (click)="toggleRepeatPassword()">
+                <mat-icon>{{ showRepeatPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+            <div class="field-errors mismatch" *ngIf="passwordMismatch">
+              ⚠ Las contraseñas no coinciden
             </div>
+          </div>
 
-            <div class="social-login-container">
-                <button type="button"
-                        (click)="loginWithGoogle()"
-                        class="chip-outlined">
-                    <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google Logo" class="social-logo" style="margin-right: 8px;">
-                    GOOGLE
-                </button>
-                
-                <button type="button"
-                        (click)="loginWithGitHub()"
-                        class="chip-outlined">
-                    <svg class="social-logo" height="24" viewBox="0 0 16 16" version="1.1" width="24" aria-hidden="true" style="margin-right: 8px; fill: white;"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
-                    GITHUB
-                </button>
-            </div>
+        </div>
 
-        </form>
-    </mat-card>
+        <!-- API Error -->
+        <div class="api-error" *ngIf="apiError">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ apiError }}</span>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit"
+                [disabled]="isSubmitting"
+                class="btn-cta btn-submit">
+          <span class="btn-cta__label">
+            {{ isSubmitting ? 'CREANDO CUENTA...' : 'CREAR CUENTA' }}
+          </span>
+        </button>
+
+        <!-- Divider -->
+        <div class="divider-container">
+          <div class="divider"></div>
+          <span class="divider-text">o registrarte con</span>
+          <div class="divider"></div>
+        </div>
+
+        <!-- Social -->
+        <div class="social-login-container">
+          <button type="button" (click)="loginWithGoogle()" class="chip-outlined">
+            <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg"
+                 alt="Google" class="social-logo">
+            GOOGLE
+          </button>
+          <button type="button" (click)="loginWithGitHub()" class="chip-outlined">
+            <svg class="social-logo" height="20" viewBox="0 0 16 16" aria-hidden="true" style="fill:white">
+              <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            GITHUB
+          </button>
+        </div>
+
+        <!-- Login link -->
+        <p class="login-link">
+          ¿Ya tenés cuenta?
+          <a (click)="navigateToLogin()" class="link-accent">Iniciá sesión</a>
+        </p>
+
+      </form>
+    </div>
+  </div>
+
 </div>

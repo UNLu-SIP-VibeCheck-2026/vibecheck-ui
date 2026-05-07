@@ -1,0 +1,28 @@
+<div class="birthdate-picker-wrapper" (blur)="onBlur()">
+  <label class="bdp-label">{{ label }}</label>
+
+  <form [formGroup]="form">
+    <mat-form-field appearance="outline" class="bdp-field" subscriptSizing="dynamic">
+      <mat-icon matPrefix class="bdp-prefix-icon">cake</mat-icon>
+      <input matInput
+             [matDatepicker]="picker"
+             [matDatepickerFilter]="dateFilter"
+             [min]="minDate"
+             [max]="maxDate"
+             [formControl]="dateCtrl"
+             placeholder="DD/MM/AAAA"
+             readonly>
+      <mat-datepicker-toggle matSuffix [for]="picker">
+        <mat-icon matDatepickerToggleIcon>calendar_month</mat-icon>
+      </mat-datepicker-toggle>
+      <mat-datepicker #picker
+                      startView="multi-year"
+                      panelClass="birthdate-calendar-panel">
+      </mat-datepicker>
+    </mat-form-field>
+  </form>
+
+  <span class="bdp-hint" *ngIf="!dateCtrl.value">
+    Seleccioná tu fecha de nacimiento
+  </span>
+</div>
