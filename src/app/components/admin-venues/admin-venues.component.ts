@@ -14,7 +14,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { VenueService } from "../../services/venue.service";
-import { VenueResponse } from "../../models/venue.model";
+import { VenueResponse, VenueVisibility } from "../../models/venue.model";
 import {
   VenueDialogComponent,
   VenueDialogData,
@@ -64,7 +64,7 @@ export class AdminVenuesComponent implements OnInit {
 
   loadVenues(): void {
     this.isLoading = true;
-    this.venueService.findAllVenues(0, 500).subscribe({
+    this.venueService.findMyVenues(0, 500).subscribe({
       next: (page) => {
         this.venues = page.content;
         this.applyFilter();

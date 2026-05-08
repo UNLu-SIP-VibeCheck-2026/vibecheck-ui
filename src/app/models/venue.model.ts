@@ -1,15 +1,20 @@
+export enum VenueVisibility {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE"
+}
+
 export interface VenueCreateRequest {
   title: string;
   coordinates: string;
   capacity: number;
-  visibility: string; // e.g. "PUBLIC" | "PRIVATE"
+  visibility: VenueVisibility;
 }
 
 export interface VenueUpdateRequest {
   title: string;
   coordinates: string;
   capacity: number;
-  visibility: string;
+  visibility: VenueVisibility;
 }
 
 export interface VenueResponse {
@@ -17,6 +22,6 @@ export interface VenueResponse {
   title: string;
   coordinates: string;
   capacity: number;
-  visibility: string;
+  visibility: VenueVisibility;
   ownerId: number;
 }

@@ -100,7 +100,7 @@ export class AdminEventsComponent implements OnInit {
 
   loadEvents(): void {
     this.isLoading = true;
-    this.eventService.findAllEvents(this.serverPage, this.serverSize).subscribe({
+    this.eventService.findMyEvents(this.serverPage, this.serverSize).subscribe({
       next: (page) => {
         this.allEvents = page.content;
         this.applyFilter();

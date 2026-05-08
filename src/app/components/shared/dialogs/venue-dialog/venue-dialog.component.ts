@@ -23,6 +23,7 @@ import {
   VenueCreateRequest,
   VenueUpdateRequest,
   VenueResponse,
+  VenueVisibility,
 } from "../../../../models/venue.model";
 
 export interface VenueDialogData {
@@ -82,8 +83,8 @@ export interface VenueDialogData {
             <label>Visibilidad</label>
             <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
               <mat-select formControlName="visibility" placeholder="Seleccionar...">
-                <mat-option value="PUBLIC">🌍 Público — visible para todos</mat-option>
-                <mat-option value="PRIVATE">🔒 Privado — solo para ti</mat-option>
+                <mat-option [value]="VenueVisibility.PUBLIC">🌍 Público — visible para todos</mat-option>
+                <mat-option [value]="VenueVisibility.PRIVATE">🔒 Privado — solo para ti</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -250,6 +251,7 @@ export class VenueDialogComponent implements OnInit {
   venueForm!: FormGroup;
   isSubmitting = false;
   errorMessage = "";
+  VenueVisibility = VenueVisibility;
 
   get isEditMode(): boolean {
     return !!this.data?.venue;
@@ -261,7 +263,7 @@ export class VenueDialogComponent implements OnInit {
       title: [v?.title ?? "", [Validators.required]],
       coordinates: [v?.coordinates ?? "", [Validators.required]],
       capacity: [v?.capacity ?? "", [Validators.required, Validators.min(1)]],
-      visibility: [v?.visibility ?? "PUBLIC", [Validators.required]],
+      visibility: [v?.visibility ?? VenueVisibility.PUBLIC, [Validators.required]],
     });
   }
 

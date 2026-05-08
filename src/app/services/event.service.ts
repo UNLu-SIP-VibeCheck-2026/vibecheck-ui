@@ -38,6 +38,13 @@ export class EventService {
     return this.http.get<Page<EventResponse>>(this.apiUrl, { params });
   }
 
+  findMyEvents(page: number, size: number): Observable<Page<EventResponse>> {
+    let params = new HttpParams()
+      .set("page", page.toString())
+      .set("size", size.toString());
+    return this.http.get<Page<EventResponse>>(`${this.apiUrl}/me`, { params });
+  }
+
   findByIdEvent(id: number): Observable<EventResponse> {
     return this.http.get<EventResponse>(`${this.apiUrl}/${id}`);
   }
