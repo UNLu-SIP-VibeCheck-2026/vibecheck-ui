@@ -107,9 +107,15 @@ export class EventComponent implements OnInit {
   }
 
   private loadOwner(ownerId: number): void {
+    console.log("Fetching owner for ID:", ownerId);
     this.usersService.getPublicUserById(ownerId).subscribe({
-      next: (user: UserPublicResponse) => (this.owner = user),
-      error: (err: any) => console.warn("Usuario no encontrado:", err),
+      next: (user: UserPublicResponse) => {
+        console.log("Owner response received:", user);
+        this.owner = user;
+      },
+      error: (err: any) => {
+        console.error("Error fetching owner:", err);
+      },
     });
   }
 

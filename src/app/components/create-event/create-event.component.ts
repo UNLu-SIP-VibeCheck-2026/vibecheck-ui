@@ -60,8 +60,8 @@ export class CreateEventComponent implements OnInit {
 
   eventForm: FormGroup = this.fb.group(
     {
-      title: ["", [Validators.required, Validators.minLength(5)]],
-      description: ["", [Validators.required, Validators.minLength(20)]],
+      title: ["", [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
+      description: ["", [Validators.required, Validators.minLength(20), Validators.maxLength(500)]],
       startDate: ["", Validators.required],
       endDate: ["", Validators.required],
       venue: [null, Validators.required],
@@ -145,6 +145,13 @@ export class CreateEventComponent implements OnInit {
         this.eventForm.patchValue({ venue: venue.id });
       }
     });
+  }
+
+  getSelectedVenueDisplay(): string {
+    const venueId = this.eventForm.get("venue")?.value;
+    const venue = this.venues.find((v) => v.id === venueId);
+    if (!venue) return "";
+    return `${venue.title} - ${venue.coordinates} - Cap: ${venue.capacity.toLocaleString()}`;
   }
 
   onSubmit(): void {

@@ -52,7 +52,7 @@
         <table mat-table [dataSource]="dataSource" class="custom-table">
 
             <ng-container matColumnDef="image">
-                <th mat-header-cell *matHeaderCellDef style="width: 80px;">Imagen</th>
+                <th mat-header-cell *matHeaderCellDef>Imagen</th>
                 <td mat-cell *matCellDef="let element" class="image-cell">
                     <div class="event-image-wrapper">
                         <img *ngIf="getEventImage(element.id)"
@@ -128,17 +128,22 @@
                                 </span>
                             </div>
                             <div class="info-group">
-                                <label>Owner ID:</label>
-                                <span class="info-value">{{ element.ownerId }}</span>
+                                <label>Creador:</label>
+                                <span class="info-value">
+                                    <mat-icon class="inline-icon">person</mat-icon>
+                                    {{ ownerMap.get(element.ownerId) ? '@' + ownerMap.get(element.ownerId) : 'usuario #' + element.ownerId }}
+                                </span>
+                            </div>
+                            <div class="info-group">
+                                <label>Estado:</label>
+                                <mat-chip class="custom-chip status-chip-inline" [ngClass]="getStatusClass(element.status)">
+                                    {{ getStatusLabel(element.status) }}
+                                </mat-chip>
                             </div>
                         </div>
 
                         <!-- Actions -->
                         <div class="actions-col">
-                            <mat-chip class="custom-chip status-chip" [ngClass]="getStatusClass(element.status)">
-                                {{ getStatusLabel(element.status) }}
-                            </mat-chip>
-
                             <div class="action-buttons">
                                 <button mat-icon-button class="circle-btn"
                                         (click)="editEvent(element)"
@@ -170,9 +175,19 @@
                                 <button mat-icon-button class="circle-btn circle-btn-delete"
                                         (click)="deleteEvent(element)"
                                         [disabled]="deletingId === element.id"
-                                        matTooltip="Eliminar evento">
+                                        matTooltip="Eliminar evento"
+                                        *ngIf="element.status === 'DRAFT'">
                                     <mat-spinner *ngIf="deletingId === element.id" diameter="16"></mat-spinner>
                                     <mat-icon *ngIf="deletingId !== element.id">delete_outline</mat-icon>
+                                </button>
+
+                                <button mat-icon-button class="circle-btn circle-btn-cancel"
+                                        (click)="cancelEvent(element)"
+                                        [disabled]="cancellingId === element.id"
+                                        matTooltip="Cancelar evento"
+                                        *ngIf="element.status !== 'DRAFT' && element.status !== 'CANCELLED' && element.status !== 'FINISHED' && element.active">
+                                    <mat-spinner *ngIf="cancellingId === element.id" diameter="16"></mat-spinner>
+                                    <mat-icon *ngIf="cancellingId !== element.id">block</mat-icon>
                                 </button>
                             </div>
                         </div>

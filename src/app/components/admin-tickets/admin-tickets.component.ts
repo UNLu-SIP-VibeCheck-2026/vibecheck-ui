@@ -91,7 +91,8 @@ export class AdminTicketsComponent implements OnInit {
 
   addTicket() {
     const dialogRef = this.dialog.open(TicketDialogComponent, {
-      width: "550px",
+      width: "900px",
+      maxWidth: "95vw",
       data: { eventId: this.eventId },
       autoFocus: false,
     });
@@ -106,7 +107,8 @@ export class AdminTicketsComponent implements OnInit {
 
   editTicket(ticket: TicketTypeResponse) {
     const dialogRef = this.dialog.open(TicketDialogComponent, {
-      width: "550px",
+      width: "1000px",
+      maxWidth: "95vw",
       data: { ticket },
       autoFocus: false,
     });

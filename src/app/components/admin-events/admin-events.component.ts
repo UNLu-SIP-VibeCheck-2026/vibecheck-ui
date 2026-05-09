@@ -26,6 +26,7 @@ import { VenueService } from "../../services/venue.service";
 import { EventResponse } from "../../models/event.model";
 import { VenueResponse } from "../../models/venue.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { UsersService } from "../../services/users.service";
 
 @Component({
   selector: "app-admin-events",
@@ -55,6 +56,7 @@ export class AdminEventsComponent implements OnInit {
   private dialog = inject(MatDialog);
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
+  private usersService = inject(UsersService);
   private snackBar = inject(MatSnackBar);
   private sanitizer = inject(DomSanitizer);
 
@@ -69,13 +71,17 @@ export class AdminEventsComponent implements OnInit {
   /** Venue lookup map id → VenueResponse */
   venueMap = new Map<number, VenueResponse>();
 
-  /** Image lookup map id → SafeUrl */
+  // Image lookup map id → SafeUrl
   imageMap = new Map<number, SafeUrl>();
+
+  // Owner lookup map id → username
+  ownerMap = new Map<number, string>();
 
   searchQuery = "";
   isLoading = false;
   deletingId: number | null = null;
   publishingId: number | null = null;
+  cancellingId: number | null = null;
 
   totalElements = 0;
   pageSize = 5;
@@ -110,6 +116,7 @@ export class AdminEventsComponent implements OnInit {
       next: (page) => {
         this.allEvents = page.content;
         this.loadEventImages(page.content);
+        this.loadOwners(page.content);
         this.applyFilter();
         this.isLoading = false;
       },
@@ -130,6 +137,18 @@ export class AdminEventsComponent implements OnInit {
             this.imageMap.set(event.id, url);
           },
           error: (err) => console.warn(`Error loading image for event ${event.id}:`, err),
+        });
+      }
+    });
+  }
+
+  loadOwners(events: EventResponse[]): void {
+    const ownerIds = new Set(events.map((e) => e.ownerId));
+    ownerIds.forEach((id) => {
+      if (id && !this.ownerMap.has(id)) {
+        this.usersService.getPublicUserById(id).subscribe({
+          next: (user) => this.ownerMap.set(id, user.username),
+          error: () => this.ownerMap.set(id, "Usuario"),
         });
       }
     });
@@ -313,10 +332,14 @@ export class AdminEventsComponent implements OnInit {
     this.deletingId = event.id;
     this.eventService.deleteEvent(event.id).subscribe({
       next: () => {
-        this.allEvents = this.allEvents.filter((e) => e.id !== event.id);
+        // Find the event and mark it as inactive (logical delete)
+        const idx = this.allEvents.findIndex((e) => e.id === event.id);
+        if (idx !== -1) {
+          this.allEvents[idx] = { ...this.allEvents[idx], active: false };
+        }
         this.applyFilter();
         this.deletingId = null;
-        this.showSnack(`Evento "${event.title}" eliminado`);
+        this.showSnack(`Evento "${event.title}" dado de baja`);
       },
       error: (err) => {
         this.deletingId = null;
@@ -350,6 +373,47 @@ export class AdminEventsComponent implements OnInit {
       error: (err) => {
         this.publishingId = null;
         const errorMsg = err?.error?.message || err?.message || 'Error al publicar el evento';
+        this.showSnack(errorMsg, "error");
+        console.error(err);
+      },
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Cancel
+  // -------------------------------------------------------------------------
+
+  cancelEvent(event: EventResponse): void {
+    if (
+      !confirm(
+        `¿Estás seguro de que deseas cancelar el evento "${event.title}"? Esta acción no se puede deshacer.`
+      )
+    )
+      return;
+
+    this.cancellingId = event.id;
+    const req = {
+      title: event.title,
+      description: event.description,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      capacity: event.capacity,
+      active: false,
+      venueId: event.venueId,
+    };
+
+    this.eventService.updateEvent(event.id, req).subscribe({
+      next: (updated) => {
+        const idx = this.allEvents.findIndex((e) => e.id === updated.id);
+        if (idx !== -1) this.allEvents[idx] = updated;
+        this.applyFilter();
+        this.cancellingId = null;
+        this.showSnack(`Evento "${event.title}" cancelado correctamente`);
+      },
+      error: (err) => {
+        this.cancellingId = null;
+        const errorMsg =
+          err?.error?.message || err?.message || "Error al cancelar el evento";
         this.showSnack(errorMsg, "error");
         console.error(err);
       },
