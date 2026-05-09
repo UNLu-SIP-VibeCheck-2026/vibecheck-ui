@@ -12,6 +12,7 @@ import { VenueService } from "../../services/venue.service";
 import { UsersService } from "../../services/users.service";
 import { EventResponse } from "../../models/event.model";
 import { VenueResponse } from "../../models/venue.model";
+import { UserPublicResponse } from "../../models/user-public-response.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 
 @Component({
@@ -34,10 +35,12 @@ export class EventComponent implements OnInit {
   private router = inject(Router);
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
+  private usersService = inject(UsersService);
   private sanitizer = inject(DomSanitizer);
 
   event: EventResponse | null = null;
   venue: VenueResponse | null = null;
+  owner: UserPublicResponse | null = null;
   eventImage: SafeUrl | null = null;
 
   isLoading = false;
@@ -105,8 +108,8 @@ export class EventComponent implements OnInit {
 
   private loadOwner(ownerId: number): void {
     this.usersService.getPublicUserById(ownerId).subscribe({
-      next: (user) => (this.owner = user),
-      error: (err) => console.warn("Usuario no encontrado:", err),
+      next: (user: UserPublicResponse) => (this.owner = user),
+      error: (err: any) => console.warn("Usuario no encontrado:", err),
     });
   }
 
