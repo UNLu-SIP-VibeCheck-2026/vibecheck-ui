@@ -4,67 +4,69 @@
             <button mat-icon-button (click)="goBack()" class="back-btn">
                 <mat-icon>arrow_back</mat-icon>
             </button>
-            <h1 class="main-title">Administrar Tickets - Evento: {{eventId}}</h1>
+            <h1 class="main-title">Administrar Categorías de Entrada - Evento: {{eventId}}</h1>
         </div>
     </div>
 
     <div class="actions-header">
         <button mat-raised-button class="create-btn" (click)="addTicket()">
-            Agregar Ticket
+            Agregar Categoría de Entrada
         </button>
     </div>
 
-    <div class="table-container mat-elevation-z0">
+    <div class="table-container mat-elevation-z0" *ngIf="!isLoading; else loading">
         <table mat-table [dataSource]="dataSource" class="custom-table">
-            
+
             <ng-container matColumnDef="id">
-                <th mat-header-cell *matHeaderCellDef> ID Ticket </th>
+                <th mat-header-cell *matHeaderCellDef> ID </th>
                 <td mat-cell *matCellDef="let element"> {{element.id}} </td>
             </ng-container>
 
             <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef> Nombre de Ticket </th>
+                <th mat-header-cell *matHeaderCellDef> Nombre </th>
                 <td mat-cell *matCellDef="let element"> {{element.name}} </td>
             </ng-container>
 
-            <ng-container matColumnDef="price">
-                <th mat-header-cell *matHeaderCellDef> Precio $VBK </th>
-                <td mat-cell *matCellDef="let element"> {{element.price}} </td>
+            <ng-container matColumnDef="priceUsdt">
+                <th mat-header-cell *matHeaderCellDef> Precio USDT </th>
+                <td mat-cell *matCellDef="let element"> {{element.priceUsdt}} </td>
             </ng-container>
+
             <ng-container matColumnDef="maxPrice">
-                <th mat-header-cell *matHeaderCellDef> Precio Máximo </th>
+                <th mat-header-cell *matHeaderCellDef> Precio Máx </th>
                 <td mat-cell *matCellDef="let element"> {{element.maxPrice}} </td>
             </ng-container>
+
             <ng-container matColumnDef="royalties">
                 <th mat-header-cell *matHeaderCellDef> Regalías % </th>
                 <td mat-cell *matCellDef="let element"> {{element.royalties}}% </td>
             </ng-container>
 
-            <ng-container matColumnDef="totalQuantity">
-                <th mat-header-cell *matHeaderCellDef> Cant. Total </th>
-                <td mat-cell *matCellDef="let element"> {{element.totalQuantity}} </td>
+            <ng-container matColumnDef="maxQuantity">
+                <th mat-header-cell *matHeaderCellDef> Cant. Máx </th>
+                <td mat-cell *matCellDef="let element"> {{element.maxQuantity}} </td>
             </ng-container>
 
-            <ng-container matColumnDef="soldQuantity">
-                <th mat-header-cell *matHeaderCellDef> Vendidos </th>
-                <td mat-cell *matCellDef="let element"> {{element.soldQuantity}} </td>
+            <ng-container matColumnDef="maxPerUser">
+                <th mat-header-cell *matHeaderCellDef> Máx/Usuario </th>
+                <td mat-cell *matCellDef="let element"> {{element.maxPerUser}} </td>
             </ng-container>
 
-            <ng-container matColumnDef="remainingQuantity">
-                <th mat-header-cell *matHeaderCellDef> Remanentes </th>
-                <td mat-cell *matCellDef="let element"> {{element.remainingQuantity}} </td>
+            <ng-container matColumnDef="saleStartDate">
+                <th mat-header-cell *matHeaderCellDef> Inicio Venta </th>
+                <td mat-cell *matCellDef="let element"> {{formatDate(element.saleStartDate)}} </td>
             </ng-container>
 
-            <ng-container matColumnDef="venueZone">
-                <th mat-header-cell *matHeaderCellDef> Ubicación </th>
-                <td mat-cell *matCellDef="let element"> {{element.venueZone}} </td>
+            <ng-container matColumnDef="saleEndDate">
+                <th mat-header-cell *matHeaderCellDef> Fin Venta </th>
+                <td mat-cell *matCellDef="let element"> {{formatDate(element.saleEndDate)}} </td>
             </ng-container>
 
-            <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef> Estado </th>
+            <ng-container matColumnDef="active">
+                <th mat-header-cell *matHeaderCellDef> Activo </th>
                 <td mat-cell *matCellDef="let element">
-                    <mat-chip class="custom-chip" [ngClass]="element.status === 'DISPONIBLE' ? 'active-chip' : 'inactive-chip'">
-                        {{element.status}}
+                    <mat-chip class="custom-chip" [ngClass]="element.active ? 'active-chip' : 'inactive-chip'">
+                        {{element.active ? 'Sí' : 'No'}}
                     </mat-chip>
                 </td>
             </ng-container>
@@ -73,14 +75,12 @@
                 <th mat-header-cell *matHeaderCellDef> </th>
                 <td mat-cell *matCellDef="let element" class="action-cell">
                     <div class="action-buttons-wrapper">
-                        <button mat-icon-button class="circle-btn" (click)="editTicket(element)" title="Editar Ticket">
+                        <button mat-icon-button class="circle-btn" (click)="editTicket(element)" title="Editar Categoría">
                             <mat-icon>edit</mat-icon>
                         </button>
-                        <button mat-icon-button class="circle-btn" (click)="openResaleConfig(element)" title="Configurar Reventa">
-                            <mat-icon>sync_alt</mat-icon>
-                        </button>
-                        <button mat-icon-button class="circle-btn delete" (click)="deleteTicket(element)" title="Eliminar Ticket">
-                            <mat-icon>delete</mat-icon>
+                        <button mat-icon-button class="circle-btn delete" (click)="deleteTicket(element)" title="Eliminar Categoría" [disabled]="deletingId === element.id">
+                            <mat-icon *ngIf="deletingId !== element.id">delete</mat-icon>
+                            <mat-spinner *ngIf="deletingId === element.id" diameter="18"></mat-spinner>
                         </button>
                     </div>
                 </td>
@@ -94,11 +94,18 @@
                 <td class="mat-cell empty-state-cell" [attr.colspan]="displayedColumns.length">
                     <div class="empty-state">
                         <mat-icon class="empty-icon">search_off</mat-icon>
-                        <p class="empty-title">No se encontraron tickets</p>
-                        <p class="empty-subtitle">Este evento no tiene tickets configurados aún.</p>
+                        <p class="empty-title">No se encontraron categorías</p>
+                        <p class="empty-subtitle">Este evento no tiene categorías de entrada configuradas aún.</p>
                     </div>
                 </td>
             </tr>
         </table>
     </div>
+
+    <ng-template #loading>
+        <div class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>Cargando categorías...</p>
+        </div>
+    </ng-template>
 </div>

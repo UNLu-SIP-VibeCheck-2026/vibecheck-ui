@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, inject, OnInit, ViewChild, ElementRef } from "@angular/core";
 import {
   FormBuilder,
   FormGroup,
@@ -18,6 +18,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { Router } from "@angular/router";
 import { MatDialog } from "@angular/material/dialog";
 import { FormsModule } from "@angular/forms";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { EventService } from "../../services/event.service";
 import { VenueService } from "../../services/venue.service";
 import { EventCreateRequest } from "../../models/event.model";
@@ -53,6 +54,7 @@ export class CreateEventComponent implements OnInit {
   private dialog = inject(MatDialog);
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
+  private snackBar = inject(MatSnackBar);
 
   today = new Date();
 
@@ -71,6 +73,11 @@ export class CreateEventComponent implements OnInit {
   isSubmitting = false;
   isLoadingVenues = false;
   selectedCategories: string[] = [];
+  selectedImage: File | null = null;
+  imagePreview: string | null = null;
+  imageError: string = "";
+
+  @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
 
   categories = [
     { value: "musica", viewValue: "Música" },
@@ -156,17 +163,63 @@ export class CreateEventComponent implements OnInit {
         venueId: formValue.venue ?? null,
       };
 
-      this.eventService.createEvent(request).subscribe({
+      this.eventService.createEventWithImage(request, this.selectedImage || undefined).subscribe({
         next: () => {
           this.isSubmitting = false;
+          this.showSnack("Evento creado correctamente");
           this.router.navigate(["/admin-events"]);
         },
         error: (err) => {
           console.error("Error creating event:", err);
           this.isSubmitting = false;
+          this.showSnack("Error al crear el evento", "error");
         },
       });
     }
+  }
+
+  triggerImageInput(): void {
+    this.imageInput?.nativeElement.click();
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      // Validar tamaño: máximo 2MB
+      if (file.size < 2 * 1024 * 1024) {
+        this.selectedImage = file;
+        this.imageError = "";
+
+        // Crear preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imagePreview = e.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        this.selectedImage = null;
+        this.imagePreview = null;
+        this.imageError = "La imagen no puede superar los 2MB";
+        input.value = ""; // Limpiar el input
+      }
+    }
+  }
+
+  removeImage(): void {
+    this.selectedImage = null;
+    this.imagePreview = null;
+    this.imageError = "";
+  }
+
+  private showSnack(msg: string, type: "success" | "error" = "success"): void {
+    this.snackBar.open(msg, "✕", {
+      duration: 4000,
+      panelClass: type === "error" ? ["snack-error"] : ["snack-success"],
+      horizontalPosition: "end",
+      verticalPosition: "top",
+    });
   }
 
   cancel(): void {

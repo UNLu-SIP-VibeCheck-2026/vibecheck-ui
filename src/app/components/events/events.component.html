@@ -43,7 +43,10 @@
   <div class="events-grid" [class.marketplace-grid]="selectedPill === 'Marketplace'">
     <div class="event-card" [class.marketplace-card]="selectedPill === 'Marketplace'" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)">
       <div class="event-image-container">
-        <img [src]="event.imageUrl || 'assets/images/placeholder-event.jpg'" [alt]="event.title" class="event-image">
+        <img *ngIf="getEventImage(event.id)" [src]="getEventImage(event.id)" [alt]="event.title" class="event-image">
+        <div *ngIf="!getEventImage(event.id)" class="no-image-placeholder">
+          <mat-icon>image_not_supported</mat-icon>
+        </div>
       </div>
       
       <!-- Regular Info -->

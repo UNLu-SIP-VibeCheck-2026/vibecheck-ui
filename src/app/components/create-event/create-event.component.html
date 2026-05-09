@@ -11,10 +11,34 @@
                 <div class="photo-section">
                     <div class="photo-header">
                         <label>Foto del Evento</label>
-                        <button type="button" class="select-file-btn">Seleccionar Archivo</button>
+                        <button type="button" class="select-file-btn" (click)="triggerImageInput()">
+                            Seleccionar Archivo
+                        </button>
+                        <input
+                            #imageInput
+                            type="file"
+                            accept="image/*"
+                            style="display: none"
+                            (change)="onImageSelected($event)">
                     </div>
-                    <div class="photo-preview">
-                        <mat-icon class="preview-placeholder-icon">add_a_photo</mat-icon>
+                    <div class="photo-preview" [class.has-image]="imagePreview">
+                        <img *ngIf="imagePreview" [src]="imagePreview" alt="Preview del evento">
+                        <mat-icon *ngIf="!imagePreview" class="preview-placeholder-icon">add_a_photo</mat-icon>
+                        <button
+                            *ngIf="imagePreview"
+                            type="button"
+                            class="remove-image-btn"
+                            (click)="removeImage()"
+                            mat-icon-button>
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </div>
+                    <div class="image-error" *ngIf="imageError">
+                        <mat-icon>error_outline</mat-icon>
+                        <span>{{ imageError }}</span>
+                    </div>
+                    <div class="image-hint" *ngIf="!imagePreview && !imageError">
+                        <span>Máximo 2MB</span>
                     </div>
                 </div>
 
