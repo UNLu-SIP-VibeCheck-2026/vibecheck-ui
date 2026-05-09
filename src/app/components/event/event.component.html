@@ -119,9 +119,9 @@
           <mat-icon>tag</mat-icon>
           ID: {{ event.id }}
         </div>
-        <div class="extra-chip" *ngIf="event.ownerId">
+        <div class="extra-chip" *ngIf="owner || event.ownerId">
           <mat-icon>person</mat-icon>
-          Organizado por usuario #{{ event.ownerId }}
+          Organizado por {{ owner ? '@' + owner.username : 'usuario #' + event.ownerId }}
         </div>
       </div>
 

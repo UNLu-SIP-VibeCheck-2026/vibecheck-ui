@@ -9,8 +9,10 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { ActivatedRoute, Router } from "@angular/router";
 import { EventService } from "../../services/event.service";
 import { VenueService } from "../../services/venue.service";
+import { UsersService } from "../../services/users.service";
 import { EventResponse } from "../../models/event.model";
 import { VenueResponse } from "../../models/venue.model";
+import { UserPublicResponse } from "../../models/user-public-response.model";
 
 @Component({
   selector: "app-event",
@@ -32,9 +34,11 @@ export class EventComponent implements OnInit {
   private router = inject(Router);
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
+  private usersService = inject(UsersService);
 
   event: EventResponse | null = null;
   venue: VenueResponse | null = null;
+  owner: UserPublicResponse | null = null;
 
   isLoading = false;
   errorMessage = "";
@@ -63,6 +67,9 @@ export class EventComponent implements OnInit {
         if (event.venueId) {
           this.loadVenue(event.venueId);
         }
+        if (event.ownerId) {
+          this.loadOwner(event.ownerId);
+        }
       },
       error: (err) => {
         this.isLoading = false;
@@ -80,6 +87,13 @@ export class EventComponent implements OnInit {
     this.venueService.findVenueById(venueId).subscribe({
       next: (v) => (this.venue = v),
       error: (err) => console.warn("Venue no encontrado:", err),
+    });
+  }
+
+  private loadOwner(ownerId: number): void {
+    this.usersService.getPublicUserById(ownerId).subscribe({
+      next: (user) => (this.owner = user),
+      error: (err) => console.warn("Usuario no encontrado:", err),
     });
   }
 

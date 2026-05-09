@@ -34,6 +34,10 @@ export class UsersService {
     return this.http.get<UserPublicResponse>(`${this.apiUrl}/users/public/${username}`);
   }
 
+  getPublicUserById(id: number): Observable<UserPublicResponse> {
+    return this.http.get<UserPublicResponse>(`${this.apiUrl}/users/public/${id}`);
+  }
+
   updateUser(originalUsername: string, data: UserUpdateRequest): Observable<any> {
     return this.http.put(`${this.apiUrl}/users/${originalUsername}`, data);
   }
