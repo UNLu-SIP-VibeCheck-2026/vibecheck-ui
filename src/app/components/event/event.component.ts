@@ -11,6 +11,7 @@ import { EventService } from "../../services/event.service";
 import { VenueService } from "../../services/venue.service";
 import { EventResponse } from "../../models/event.model";
 import { VenueResponse } from "../../models/venue.model";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 
 @Component({
   selector: "app-event",
@@ -32,9 +33,11 @@ export class EventComponent implements OnInit {
   private router = inject(Router);
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
+  private sanitizer = inject(DomSanitizer);
 
   event: EventResponse | null = null;
   venue: VenueResponse | null = null;
+  eventImage: SafeUrl | null = null;
 
   isLoading = false;
   errorMessage = "";
@@ -60,6 +63,10 @@ export class EventComponent implements OnInit {
         this.event = event;
         this.isLoading = false;
 
+        if (event.hasImage) {
+          this.loadEventImage(id);
+        }
+
         if (event.venueId) {
           this.loadVenue(event.venueId);
         }
@@ -73,6 +80,15 @@ export class EventComponent implements OnInit {
         }
         console.error("Error loading event:", err);
       },
+    });
+  }
+
+  private loadEventImage(id: number): void {
+    this.eventService.getEventImage(id).subscribe({
+      next: (blob) => {
+        this.eventImage = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+      },
+      error: (err) => console.warn(`Error loading image for event ${id}:`, err),
     });
   }
 

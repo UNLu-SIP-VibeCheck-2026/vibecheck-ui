@@ -8,22 +8,14 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatDialog, MatDialogModule } from "@angular/material/dialog";
 import { Router, ActivatedRoute } from "@angular/router";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatNativeDateModule } from "@angular/material/core";
 import { TicketDialogComponent } from "../shared/dialogs/ticket-dialog/ticket-dialog.component";
 import { ResaleDialogComponent } from "../shared/dialogs/resale-dialog/resale-dialog.component";
 import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
-
-export interface TicketSummary {
-  id: string;
-  name: string;
-  price: number;
-  maxPrice: number;
-  royalties: number;
-  venueZone: string;
-  totalQuantity: number;
-  soldQuantity: number;
-  remainingQuantity: number;
-  status: 'DISPONIBLE' | 'AGOTADO';
-}
+import { TicketTypeService } from "../../services/ticket-type.service";
+import { TicketTypeResponse } from "../../models/ticket-type.model";
 
 @Component({
   selector: "app-admin-tickets",
@@ -36,7 +28,10 @@ export interface TicketSummary {
     MatChipsModule,
     MatPaginatorModule,
     MatDialogModule,
-    FormsModule
+    FormsModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule,
+    MatNativeDateModule
   ],
   templateUrl: "./admin-tickets.component.html",
   styleUrl: "./admin-tickets.component.scss",
@@ -45,107 +40,71 @@ export class AdminTicketsComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private dialog = inject(MatDialog);
+  private ticketTypeService = inject(TicketTypeService);
+  private snackBar = inject(MatSnackBar);
 
-  eventId: string = "";
-  dataSource = new MatTableDataSource<TicketSummary>([]);
+  eventId: number = 0;
+  dataSource = new MatTableDataSource<TicketTypeResponse>([]);
   displayedColumns: string[] = [
-    "id", 
-    "name", 
-    "price",
+    "id",
+    "name",
+    "priceUsdt",
     "maxPrice",
     "royalties",
-    "totalQuantity", 
-    "soldQuantity", 
-    "remainingQuantity", 
-    "venueZone", 
-    "status", 
+    "maxQuantity",
+    "maxPerUser",
+    "saleStartDate",
+    "saleEndDate",
+    "active",
     "actions"
   ];
 
+  isLoading = false;
+  deletingId: number | null = null;
+
   ngOnInit(): void {
-    this.eventId = this.route.snapshot.paramMap.get('id') || "";
-    this.loadMockTickets();
+    const eventIdParam = this.route.snapshot.paramMap.get('id');
+    this.eventId = eventIdParam ? +eventIdParam : 0;
+    if (this.eventId) {
+      this.loadTicketTypes();
+    }
   }
 
-  loadMockTickets(): void {
-    const mockTickets: TicketSummary[] = [
-      { 
-        id: "TKT-001", 
-        name: "General Early Bird", 
-        price: 50, 
-        maxPrice: 75, 
-        royalties: 5, 
-        venueZone: "Campo", 
-        totalQuantity: 1000, 
-        soldQuantity: 450, 
-        remainingQuantity: 550, 
-        status: 'DISPONIBLE' 
+  loadTicketTypes(): void {
+    this.isLoading = true;
+    this.ticketTypeService.findTicketTypesByEvent(this.eventId).subscribe({
+      next: (ticketTypes) => {
+        this.dataSource.data = ticketTypes;
+        this.isLoading = false;
       },
-      { 
-        id: "TKT-002", 
-        name: "VIP Experience", 
-        price: 150, 
-        maxPrice: 200, 
-        royalties: 10, 
-        venueZone: "VIP Box", 
-        totalQuantity: 200, 
-        soldQuantity: 180, 
-        remainingQuantity: 20, 
-        status: 'DISPONIBLE' 
+      error: (err) => {
+        console.error("Error cargando categorías:", err);
+        this.isLoading = false;
+        this.showSnack("Error al cargar categorías", "error");
       },
-      { 
-        id: "TKT-003", 
-        name: "Platea Preferencial", 
-        price: 80, 
-        maxPrice: 120, 
-        royalties: 8, 
-        venueZone: "Platea A", 
-        totalQuantity: 500, 
-        soldQuantity: 500, 
-        remainingQuantity: 0, 
-        status: 'AGOTADO' 
-      }
-    ];
-    this.dataSource.data = mockTickets;
+    });
   }
 
   goBack() {
     this.router.navigate(['/admin-events']);
   }
 
-  private updateStatus(ticket: Partial<TicketSummary>): 'DISPONIBLE' | 'AGOTADO' {
-    if (ticket.totalQuantity !== undefined && ticket.soldQuantity !== undefined) {
-      return (ticket.totalQuantity - ticket.soldQuantity) <= 0 ? 'AGOTADO' : 'DISPONIBLE';
-    }
-    return 'DISPONIBLE';
-  }
-
   addTicket() {
     const dialogRef = this.dialog.open(TicketDialogComponent, {
       width: "550px",
-      data: {},
+      data: { eventId: this.eventId },
       autoFocus: false,
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        const totalQuantity = result.totalQuantity || 0;
-        const soldQuantity = 0; // Default for new tickets
-        const remainingQuantity = totalQuantity;
-        
-        const newTicket: TicketSummary = {
-          id: `TKT-00${this.dataSource.data.length + 1}`,
-          ...result,
-          soldQuantity,
-          remainingQuantity,
-          status: this.updateStatus({ totalQuantity, soldQuantity })
-        };
-        this.dataSource.data = [...this.dataSource.data, newTicket];
+        this.dataSource.data = [...this.dataSource.data, result];
+        this.showSnack(`Categoría "${result.name}" creada correctamente`);
       }
     });
   }
 
-  editTicket(ticket: TicketSummary) {
+  editTicket(ticket: TicketTypeResponse) {
     const dialogRef = this.dialog.open(TicketDialogComponent, {
       width: "550px",
       data: { ticket },
@@ -157,27 +116,19 @@ export class AdminTicketsComponent implements OnInit {
         const index = this.dataSource.data.findIndex(t => t.id === ticket.id);
         if (index !== -1) {
           const updatedData = [...this.dataSource.data];
-          const totalQuantity = result.totalQuantity;
-          const soldQuantity = ticket.soldQuantity; // Keep current sales
-          const remainingQuantity = Math.max(0, totalQuantity - soldQuantity);
-          
-          updatedData[index] = { 
-            ...ticket, 
-            ...result, 
-            remainingQuantity,
-            status: this.updateStatus({ totalQuantity, soldQuantity })
-          };
+          updatedData[index] = result;
           this.dataSource.data = updatedData;
+          this.showSnack(`Categoría "${result.name}" actualizada`);
         }
       }
     });
   }
 
-  deleteTicket(ticket: TicketSummary) {
+  deleteTicket(ticket: TicketTypeResponse) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
-        title: "Eliminar Ticket",
-        message: `¿Estás seguro que deseas eliminar el ticket "${ticket.name}"?`,
+        title: "Eliminar Categoría",
+        message: `¿Estás seguro que deseas eliminar la categoría "${ticket.name}"?`,
         confirmText: "Eliminar",
         cancelText: "Cancelar"
       }
@@ -185,19 +136,31 @@ export class AdminTicketsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.dataSource.data = this.dataSource.data.filter(t => t.id !== ticket.id);
+        this.deletingId = ticket.id;
+        this.ticketTypeService.deleteTicketType(ticket.id).subscribe({
+          next: () => {
+            this.dataSource.data = this.dataSource.data.filter(t => t.id !== ticket.id);
+            this.deletingId = null;
+            this.showSnack(`Categoría "${ticket.name}" eliminada`);
+          },
+          error: (err) => {
+            this.deletingId = null;
+            this.showSnack("Error al eliminar la categoría", "error");
+            console.error(err);
+          },
+        });
       }
     });
   }
 
-  openResaleConfig(ticket: TicketSummary) {
+  openResaleConfig(ticket: TicketTypeResponse) {
     const dialogRef = this.dialog.open(ResaleDialogComponent, {
       width: "440px",
-      data: { 
-        event: { 
-          title: ticket.name, 
-          maxResalePrice: ticket.maxPrice 
-        } 
+      data: {
+        event: {
+          title: ticket.name,
+          maxResalePrice: ticket.maxPrice
+        }
       },
       autoFocus: false,
     });
@@ -209,8 +172,30 @@ export class AdminTicketsComponent implements OnInit {
           const updatedData = [...this.dataSource.data];
           updatedData[index].maxPrice = result.maxResalePrice;
           this.dataSource.data = updatedData;
+          this.showSnack(`Precio de reventa actualizado para "${ticket.name}"`);
         }
       }
+    });
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  private showSnack(msg: string, type: "success" | "error" = "success"): void {
+    this.snackBar.open(msg, "✕", {
+      duration: 4000,
+      panelClass: type === "error" ? ["snack-error"] : ["snack-success"],
+      horizontalPosition: "end",
+      verticalPosition: "top",
     });
   }
 }

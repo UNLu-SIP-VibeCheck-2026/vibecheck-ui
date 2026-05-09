@@ -9,6 +9,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { Router } from "@angular/router";
 import { EventService } from "../../services/event.service";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 
 export interface EventSummary {
   id: string;
@@ -45,12 +46,16 @@ export interface EventSummary {
 export class EventsComponent implements OnInit {
   private router = inject(Router);
   private eventService = inject(EventService);
+  private sanitizer = inject(DomSanitizer);
 
   selectedPill: string = "Próximos eventos";
   searchQuery: string = "";
   allEvents: EventSummary[] = [];
   filteredEvents: EventSummary[] = [];
   pagedEvents: EventSummary[] = [];
+
+  /** Image lookup map id → SafeUrl */
+  imageMap = new Map<number, SafeUrl>();
 
   totalEvents = 0;
   pageSize = 8;
@@ -87,7 +92,7 @@ export class EventsComponent implements OnInit {
             startDate: new Date(backendEvent.startDate).toLocaleDateString(),
             venue: `Venue ${backendEvent.venueId || "Desconocido"}`,
             category: category,
-            imageUrl: `https://picsum.photos/seed/${backendEvent.id + 100}/600/600`,
+            imageUrl: undefined, // Se cargará dinámicamente
           };
 
           if (category === "Marketplace") {
@@ -101,10 +106,30 @@ export class EventsComponent implements OnInit {
           return event;
         });
 
+        // Cargar imágenes de eventos que tienen imagen
+        this.loadEventImages(page.content);
         this.applyFilter();
       },
       error: (err) => console.error("Error fetching events:", err),
     });
+  }
+
+  loadEventImages(events: any[]): void {
+    events.forEach((event) => {
+      if (event.hasImage) {
+        this.eventService.getEventImage(event.id).subscribe({
+          next: (blob) => {
+            const url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+            this.imageMap.set(event.id, url);
+          },
+          error: (err) => console.warn(`Error loading image for event ${event.id}:`, err),
+        });
+      }
+    });
+  }
+
+  getEventImage(eventId: string): SafeUrl | null {
+    return this.imageMap.get(Number(eventId)) || null;
   }
 
   selectPill(pill: string): void {

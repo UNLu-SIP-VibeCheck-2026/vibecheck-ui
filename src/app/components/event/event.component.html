@@ -35,7 +35,8 @@
 
     <!-- Cover image area -->
     <div class="image-container">
-      <div class="placeholder-img">
+      <img *ngIf="eventImage" [src]="eventImage" [alt]="event.title" class="event-cover-image">
+      <div *ngIf="!eventImage" class="placeholder-img">
         <mat-icon>image</mat-icon>
         <span>Portada del Evento</span>
       </div>

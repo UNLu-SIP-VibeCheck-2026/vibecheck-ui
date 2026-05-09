@@ -25,6 +25,7 @@ import { EventService } from "../../services/event.service";
 import { VenueService } from "../../services/venue.service";
 import { EventResponse } from "../../models/event.model";
 import { VenueResponse } from "../../models/venue.model";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 
 @Component({
   selector: "app-admin-events",
@@ -55,10 +56,11 @@ export class AdminEventsComponent implements OnInit {
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
   private snackBar = inject(MatSnackBar);
+  private sanitizer = inject(DomSanitizer);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  displayedColumns: string[] = ["event"];
+  displayedColumns: string[] = ["image", "event"];
   dataSource = new MatTableDataSource<EventResponse>([]);
 
   /** All events from backend (for client-side search) */
@@ -66,6 +68,9 @@ export class AdminEventsComponent implements OnInit {
 
   /** Venue lookup map id → VenueResponse */
   venueMap = new Map<number, VenueResponse>();
+
+  /** Image lookup map id → SafeUrl */
+  imageMap = new Map<number, SafeUrl>();
 
   searchQuery = "";
   isLoading = false;
@@ -103,6 +108,7 @@ export class AdminEventsComponent implements OnInit {
     this.eventService.findMyEvents(this.serverPage, this.serverSize).subscribe({
       next: (page) => {
         this.allEvents = page.content;
+        this.loadEventImages(page.content);
         this.applyFilter();
         this.isLoading = false;
       },
@@ -111,6 +117,20 @@ export class AdminEventsComponent implements OnInit {
         this.isLoading = false;
         this.showSnack("Error al cargar los eventos", "error");
       },
+    });
+  }
+
+  loadEventImages(events: EventResponse[]): void {
+    events.forEach((event) => {
+      if (event.hasImage) {
+        this.eventService.getEventImage(event.id).subscribe({
+          next: (blob) => {
+            const url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+            this.imageMap.set(event.id, url);
+          },
+          error: (err) => console.warn(`Error loading image for event ${event.id}:`, err),
+        });
+      }
     });
   }
 
@@ -174,6 +194,10 @@ export class AdminEventsComponent implements OnInit {
     if (!venueId) return "Sin venue";
     const v = this.venueMap.get(venueId);
     return v ? v.title : `Venue #${venueId}`;
+  }
+
+  getEventImage(eventId: number): SafeUrl | null {
+    return this.imageMap.get(eventId) || null;
   }
 
   // -------------------------------------------------------------------------

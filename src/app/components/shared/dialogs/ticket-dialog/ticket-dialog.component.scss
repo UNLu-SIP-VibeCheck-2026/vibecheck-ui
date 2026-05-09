@@ -1,7 +1,7 @@
 .dialog-container {
   padding: 24px;
   font-family: 'Inter', sans-serif;
-  min-width: 500px;
+  min-width: 550px;
   min-height: 600px; // Added to ensure it's taller
   color: var(--md-sys-color-on-surface);
   display: flex;
@@ -18,8 +18,18 @@ h2 {
 .ticket-form {
   display: flex;
   flex-direction: column;
-  gap: 20px; // Increased
+  gap: 16px; // Increased
   padding-top: 12px; // Added to prevent label clipping
+}
+
+.form-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--md-sys-color-primary);
+  margin-top: 8px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .form-row {
@@ -52,7 +62,7 @@ h2 {
   }
 
   .btn-submit {
-    background: linear-gradient(135deg, #a855f7 0%, #f97316 100%) !important; 
+    background: linear-gradient(135deg, #a855f7 0%, #f97316 100%) !important;
     color: #ffffff !important;
     border: none !important;
     transition: all 0.2s ease !important;

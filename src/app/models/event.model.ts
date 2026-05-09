@@ -32,4 +32,5 @@ export interface EventResponse {
   status: string;
   ownerId: number;
   venueId: number;
+  hasImage: boolean;
 }

@@ -5,7 +5,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
+import { TicketTypeService } from '../../../../services/ticket-type.service';
+import {
+  TicketTypeCreateRequest,
+  TicketTypeUpdateRequest,
+  TicketTypeResponse,
+} from '../../../../models/ticket-type.model';
+import { DateTimePickerComponent } from '../../date-time-picker/date-time-picker.component';
+
+export interface TicketDialogData {
+  ticket?: TicketTypeResponse;
+  eventId?: number;
+}
 
 @Component({
   selector: 'app-ticket-dialog',
@@ -17,7 +33,12 @@ import { CommonModule } from '@angular/common';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatSelectModule
+    MatSelectModule,
+    MatNativeDateModule,
+    MatCheckboxModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    DateTimePickerComponent
   ],
   templateUrl: './ticket-dialog.component.html',
   styleUrls: ['./ticket-dialog.component.scss']
@@ -25,10 +46,14 @@ import { CommonModule } from '@angular/common';
 export class TicketDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<TicketDialogComponent>);
-  public data = inject(MAT_DIALOG_DATA);
+  private ticketTypeService = inject(TicketTypeService);
+  public data: TicketDialogData = inject(MAT_DIALOG_DATA);
 
   ticketForm!: FormGroup;
   isEditMode: boolean = false;
+  isSubmitting: boolean = false;
+  errorMessage: string = '';
+  minDate: Date = new Date();
 
   ngOnInit(): void {
     this.isEditMode = !!this.data?.ticket;
@@ -36,13 +61,18 @@ export class TicketDialogComponent implements OnInit {
   }
 
   private initForm(): void {
+    const ticket = this.data?.ticket;
     this.ticketForm = this.fb.group({
-      name: [this.data?.ticket?.name || '', [Validators.required]],
-      price: [this.data?.ticket?.price || '', [Validators.required, Validators.min(0)]],
-      maxPrice: [this.data?.ticket?.maxPrice || '', [Validators.required, Validators.min(0)]],
-      royalties: [this.data?.ticket?.royalties || '', [Validators.required, Validators.min(0), Validators.max(100)]],
-      venueZone: [this.data?.ticket?.venueZone || '', [Validators.required]],
-      totalQuantity: [this.data?.ticket?.totalQuantity || '', [Validators.required, Validators.min(1)]]
+      name: [ticket?.name || '', [Validators.required]],
+      description: [ticket?.description || '', []],
+      priceUsdt: [ticket?.priceUsdt || '', [Validators.required, Validators.min(0)]],
+      maxPrice: [ticket?.maxPrice || '', [Validators.required, Validators.min(0)]],
+      royalties: [ticket?.royalties || '', [Validators.required, Validators.min(0), Validators.max(100)]],
+      maxQuantity: [ticket?.maxQuantity || '', [Validators.required, Validators.min(1)]],
+      maxPerUser: [ticket?.maxPerUser || '', [Validators.required, Validators.min(1)]],
+      saleStartDate: [ticket?.saleStartDate || '', [Validators.required]],
+      saleEndDate: [ticket?.saleEndDate || '', [Validators.required]],
+      active: [ticket?.active !== undefined ? ticket.active : true, [Validators.required]]
     });
   }
 
@@ -51,8 +81,42 @@ export class TicketDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.ticketForm.valid) {
-      this.dialogRef.close(this.ticketForm.value);
+    if (this.ticketForm.invalid || this.isSubmitting) {
+      return;
     }
+
+    this.isSubmitting = true;
+    this.errorMessage = '';
+
+    const formValue = this.ticketForm.value;
+
+    const request: TicketTypeCreateRequest | TicketTypeUpdateRequest = {
+      name: formValue.name,
+      description: formValue.description || '',
+      priceUsdt: Number(formValue.priceUsdt),
+      maxPrice: Number(formValue.maxPrice),
+      royalties: Number(formValue.royalties),
+      maxQuantity: Number(formValue.maxQuantity),
+      maxPerUser: Number(formValue.maxPerUser),
+      saleStartDate: formValue.saleStartDate, // DateTimePicker ya emite string ISO
+      saleEndDate: formValue.saleEndDate, // DateTimePicker ya emite string ISO
+      active: formValue.active,
+      ...(this.isEditMode ? {} : { eventId: this.data.eventId })
+    };
+
+    const call$ = this.isEditMode
+      ? this.ticketTypeService.updateTicketType(this.data.ticket!.id, request as TicketTypeUpdateRequest)
+      : this.ticketTypeService.createTicketType(request as TicketTypeCreateRequest);
+
+    call$.subscribe({
+      next: (ticket: TicketTypeResponse) => {
+        this.isSubmitting = false;
+        this.dialogRef.close(ticket);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorMessage = err?.error?.message || 'Ocurrió un error. Intentá de nuevo.';
+      }
+    });
   }
 }

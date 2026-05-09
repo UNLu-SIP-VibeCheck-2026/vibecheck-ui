@@ -1,5 +1,5 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpClient, HttpParams, HttpHeaders } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "../../environments/environment";
 import {
@@ -15,6 +15,20 @@ import { Page } from "../models/page.model";
 export class EventService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiBaseUrl}/events`;
+
+  createEventWithImage(
+    request: EventCreateRequest,
+    image?: File
+  ): Observable<EventResponse> {
+    const formData = new FormData();
+    const eventBlob = new Blob([JSON.stringify(request)], { type: 'application/json' });
+    formData.append("event", eventBlob);
+    if (image) {
+      formData.append("image", image);
+    }
+    // Angular detecta FormData y establece automáticamente Content-Type como multipart/form-data con el boundary correcto
+    return this.http.post<EventResponse>(this.apiUrl, formData);
+  }
 
   createEvent(request: EventCreateRequest): Observable<EventResponse> {
     return this.http.post<EventResponse>(this.apiUrl, request);
@@ -47,5 +61,15 @@ export class EventService {
 
   findByIdEvent(id: number): Observable<EventResponse> {
     return this.http.get<EventResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  uploadEventImage(id: number, image: File): Observable<EventResponse> {
+    const formData = new FormData();
+    formData.append("image", image);
+    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/image`, formData);
+  }
+
+  getEventImage(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/image`, { responseType: 'blob' });
   }
 }
