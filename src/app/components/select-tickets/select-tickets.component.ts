@@ -72,6 +72,7 @@ export class SelectTicketsComponent implements OnInit {
   serviceChargeRate = 0.10; // 10%
 
   ngOnInit() {
+    window.scrollTo(0, 0);
     const id = this.route.snapshot.paramMap.get('id');
     // Mock event data (reduced version)
     this.event = {

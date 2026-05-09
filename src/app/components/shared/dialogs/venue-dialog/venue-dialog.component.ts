@@ -134,6 +134,8 @@ export interface VenueDialogData {
       -webkit-text-fill-color: transparent;
       background-clip: text;
       font-size: 28px;
+      width: 28px;
+      height: 28px;
     }
 
     .form-group {

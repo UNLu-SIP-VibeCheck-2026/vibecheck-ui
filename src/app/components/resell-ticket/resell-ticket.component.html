@@ -15,7 +15,7 @@
             <mat-form-field appearance="outline">
               <mat-label>Precio de reventa ($)</mat-label>
               <input matInput type="number" [(ngModel)]="resalePrice" [max]="maxResalePrice">
-              <span matPrefix>$&nbsp;</span>
+              <span matPrefix class="prefix-pad">$&nbsp;</span>
             </mat-form-field>
             <div class="info-badge">Max: ${{ maxResalePrice }}</div>
           </div>

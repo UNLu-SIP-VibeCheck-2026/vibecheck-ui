@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-6);
 
     h1 {
       margin: 0;
@@ -41,6 +41,7 @@
   border: 1px solid var(--md-sys-color-outline-variant) !important;
   padding: var(--space-6);
   border-radius: var(--md-sys-shape-corner-large) !important;
+  min-height: 533.16px;
 
   h2 {
     color: var(--md-sys-color-primary);
@@ -150,6 +151,51 @@
   color: white !important;
   font-weight: 900;
   font-size: 1.1rem;
+  margin-top: auto;
 
   mat-icon { margin-right: 8px; }
+}
+
+.confirm-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+
+  &.is-empty {
+    opacity: 0.6;
+    border-style: dashed !important;
+  }
+}
+
+.search-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.empty-confirm-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0.7;
+  padding: var(--space-8);
+  gap: var(--space-4);
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  p {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 1.1rem;
+    max-width: 250px;
+  }
 }

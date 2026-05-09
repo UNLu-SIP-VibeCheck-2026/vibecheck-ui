@@ -36,9 +36,10 @@
       </div>
     </mat-card>
 
-    <div class="confirmation-section" *ngIf="selectedUser">
-      <mat-card class="confirm-card">
-        <h2 class="headline-small">Confirmar Envío</h2>
+    <mat-card class="confirm-card" [class.is-empty]="!selectedUser">
+      <h2 class="headline-small">Confirmar Envío</h2>
+      
+      <ng-container *ngIf="selectedUser; else emptyConfirm">
         <div class="destinatary-preview">
           <p>Vas a regalar tu entrada a:</p>
           <div class="selected-user-card">
@@ -59,7 +60,14 @@
           <mat-icon>card_giftcard</mat-icon>
           CONFIRMAR Y REGALAR
         </button>
-      </mat-card>
-    </div>
+      </ng-container>
+
+      <ng-template #emptyConfirm>
+        <div class="empty-confirm-state">
+          <mat-icon>person_add</mat-icon>
+          <p>Seleccioná un destinatario de tu lista de amigos para regalar tu entrada.</p>
+        </div>
+      </ng-template>
+    </mat-card>
   </div>
 </div>

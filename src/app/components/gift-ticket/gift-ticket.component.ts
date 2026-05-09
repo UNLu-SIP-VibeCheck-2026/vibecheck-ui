@@ -44,6 +44,7 @@ export class GiftTicketComponent implements OnInit {
   filteredFriends = this.friends;
 
   ngOnInit(): void {
+    window.scrollTo(0, 0);
     this.ticketId = this.route.snapshot.paramMap.get('id');
   }
 
