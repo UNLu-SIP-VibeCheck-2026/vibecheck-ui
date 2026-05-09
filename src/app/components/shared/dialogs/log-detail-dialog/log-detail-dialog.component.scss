@@ -1,84 +1,95 @@
 .dialog-container {
-    padding: 10px;
-    font-family: 'Inter', sans-serif;
+    padding: var(--space-3);
+    font-family: var(--font-ui);
 }
 
 .dialog-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5);
 
     h2 {
         margin: 0;
         font-weight: 700;
-        color: #1a1a1a;
+        color: var(--md-sys-color-on-surface);
     }
 }
 
 .info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-    padding: 16px;
-    background-color: #f8fafc;
-    border-radius: 8px;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    padding: var(--space-4);
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-corner-small);
+    border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .info-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
 
     .label {
-        font-size: 12px;
+        font-size: var(--text-label-md);
         text-transform: uppercase;
-        color: #64748b;
+        color: var(--md-sys-color-on-surface-variant);
         font-weight: 600;
+        letter-spacing: var(--tracking-label);
     }
 
     .value {
-        font-size: 14px;
-        color: #1e293b;
+        font-size: var(--text-body-md);
+        color: var(--md-sys-color-on-surface);
         font-weight: 500;
     }
 }
 
 .section-title {
-    font-size: 16px;
+    font-size: var(--text-title-sm);
     font-weight: 600;
-    color: #334155;
-    margin: 20px 0 10px;
+    color: var(--md-sys-color-on-surface);
+    margin: var(--space-5) 0 var(--space-2);
 }
 
 .json-content {
-    background-color: #1e293b;
-    color: #f8fafc;
-    padding: 16px;
-    border-radius: 8px;
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface);
+    padding: var(--space-4);
+    border-radius: var(--md-sys-shape-corner-small);
     font-size: 13px;
     line-height: 1.5;
     overflow-x: auto;
     margin: 0;
+    border: 1px solid var(--md-sys-color-outline-variant);
 
     code {
-        font-family: 'Fira Code', 'Courier New', Courier, monospace;
+        font-family: var(--font-mono);
     }
 }
 
 .btn-primary {
-    background-color: #667eea !important;
-    color: white !important;
-    padding: 0 24px !important;
-    border-radius: 8px !important;
+    background-color: var(--md-sys-color-primary) !important;
+    color: var(--md-sys-color-on-primary) !important;
+    padding: 0 var(--space-5) !important;
+    border-radius: var(--btn-cta-radius) !important;
     height: 40px !important;
+    font-weight: 600 !important;
 }
 
 .close-btn {
-    color: #64748b;
+    color: var(--md-sys-color-primary);
+    background-color: transparent !important;
+    border: none;
+    cursor: pointer;
+    
+    mat-icon {
+        color: var(--md-sys-color-primary);
+    }
 }
 
 ::ng-deep .mat-mdc-dialog-container {
-    border-radius: 12px !important;
+    border-radius: var(--md-sys-shape-corner-extra-large) !important;
 }

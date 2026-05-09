@@ -14,28 +14,28 @@
 
             <ng-container matColumnDef="fecha">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha </th>
-                <td mat-cell *matCellDef="let element"> {{element.fecha | date:'dd/MM/yyyy HH:mm:ss'}} </td>
+                <td mat-cell *matCellDef="let element"> {{element.createdAt | date:'dd/MM/yyyy HH:mm:ss'}} </td>
             </ng-container>
 
             <ng-container matColumnDef="usuarioDb">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Usuario DB </th>
-                <td mat-cell *matCellDef="let element"> {{element.usuarioDb}} </td>
+                <td mat-cell *matCellDef="let element"> {{element.dbUser}} </td>
             </ng-container>
 
             <ng-container matColumnDef="tabla">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Tabla </th>
-                <td mat-cell *matCellDef="let element"> {{element.tabla}} </td>
+                <td mat-cell *matCellDef="let element"> {{element.tableName}} </td>
             </ng-container>
 
             <ng-container matColumnDef="operacion">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Operación </th>
                 <td mat-cell *matCellDef="let element">
                     <mat-chip class="custom-chip" [ngClass]="{
-                        'insert-chip': element.operacion === 'INSERT',
-                        'update-chip': element.operacion === 'UPDATE',
-                        'delete-chip': element.operacion === 'DELETE'
+                        'insert-chip': element.operation === 'INSERT',
+                        'update-chip': element.operation === 'UPDATE',
+                        'delete-chip': element.operation === 'DELETE'
                     }">
-                        {{element.operacion}}
+                        {{element.operation}}
                     </mat-chip>
                 </td>
             </ng-container>

@@ -1,9 +1,10 @@
 export interface AuditLogResponse {
   id: number;
-  tabla: string;
-  operacion: string;
-  usuarioDb: string;
-  fecha: string;
-  datosAnteriores: string;
-  datosNuevos: string;
+  tableName: string;
+  operation: string;
+  dbUser: string;
+  recordId: number;
+  oldData: string;
+  newData: string;
+  createdAt: string;
 }

@@ -169,7 +169,7 @@
       </mat-card>
 
       <!-- Mi Billetera -->
-      <mat-card class="action-card" (click)="navigateTo('/wallet')">
+      <mat-card class="action-card" *ngIf="!isCeo && !isAdmin" (click)="navigateTo('/wallet')">
         <div class="card-icon">
           <mat-icon>account_balance_wallet</mat-icon>
         </div>

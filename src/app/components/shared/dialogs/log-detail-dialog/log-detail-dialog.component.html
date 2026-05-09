@@ -10,30 +10,30 @@
         <div class="info-grid">
             <div class="info-item">
                 <span class="label">Fecha</span>
-                <span class="value">{{data.log.fecha | date:'dd/MM/yyyy HH:mm:ss'}}</span>
+                <span class="value">{{data.log.createdAt | date:'dd/MM/yyyy HH:mm:ss'}}</span>
             </div>
             <div class="info-item">
                 <span class="label">Usuario DB</span>
-                <span class="value">{{data.log.usuarioDb}}</span>
+                <span class="value">{{data.log.dbUser}}</span>
             </div>
             <div class="info-item">
                 <span class="label">Tabla</span>
-                <span class="value">{{data.log.tabla}}</span>
+                <span class="value">{{data.log.tableName}}</span>
             </div>
             <div class="info-item">
                 <span class="label">Operación</span>
-                <span class="value">{{data.log.operacion}}</span>
+                <span class="value">{{data.log.operation}}</span>
             </div>
         </div>
 
-        <div class="data-section" *ngIf="data.log.datosAnteriores">
+        <div class="data-section" *ngIf="data.log.oldData">
             <h3 class="section-title">Datos Anteriores</h3>
-            <pre class="json-content"><code>{{formatJson(data.log.datosAnteriores)}}</code></pre>
+            <pre class="json-content"><code>{{formatJson(data.log.oldData)}}</code></pre>
         </div>
 
-        <div class="data-section" *ngIf="data.log.datosNuevos">
+        <div class="data-section" *ngIf="data.log.newData">
             <h3 class="section-title">Datos Nuevos</h3>
-            <pre class="json-content"><code>{{formatJson(data.log.datosNuevos)}}</code></pre>
+            <pre class="json-content"><code>{{formatJson(data.log.newData)}}</code></pre>
         </div>
     </mat-dialog-content>
 
