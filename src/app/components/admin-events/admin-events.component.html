@@ -158,6 +158,15 @@
                                     <mat-icon>campaign</mat-icon>
                                 </button>
 
+                                <button mat-icon-button class="circle-btn publish-btn"
+                                        (click)="publishEvent(element)"
+                                        [disabled]="publishingId === element.id"
+                                        matTooltip="Publicar evento"
+                                        *ngIf="element.status === 'DRAFT'">
+                                    <mat-spinner *ngIf="publishingId === element.id" diameter="16"></mat-spinner>
+                                    <mat-icon *ngIf="publishingId !== element.id">publish</mat-icon>
+                                </button>
+
                                 <button mat-icon-button class="circle-btn circle-btn-delete"
                                         (click)="deleteEvent(element)"
                                         [disabled]="deletingId === element.id"

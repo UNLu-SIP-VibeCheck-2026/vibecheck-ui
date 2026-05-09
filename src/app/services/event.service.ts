@@ -72,4 +72,8 @@ export class EventService {
   getEventImage(id: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${id}/image`, { responseType: 'blob' });
   }
+
+  publishEvent(id: number): Observable<EventResponse> {
+    return this.http.patch<EventResponse>(`${this.apiUrl}/${id}/publish`, {});
+  }
 }

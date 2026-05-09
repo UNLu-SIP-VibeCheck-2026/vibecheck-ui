@@ -75,6 +75,7 @@ export class AdminEventsComponent implements OnInit {
   searchQuery = "";
   isLoading = false;
   deletingId: number | null = null;
+  publishingId: number | null = null;
 
   totalElements = 0;
   pageSize = 5;
@@ -320,6 +321,36 @@ export class AdminEventsComponent implements OnInit {
       error: (err) => {
         this.deletingId = null;
         this.showSnack("Error al eliminar el evento", "error");
+        console.error(err);
+      },
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Publish
+  // -------------------------------------------------------------------------
+
+  publishEvent(event: EventResponse): void {
+    if (
+      !confirm(
+        `¿Publicar el evento "${event.title}"? Esta acción hará visible el evento a los usuarios.`
+      )
+    )
+      return;
+
+    this.publishingId = event.id;
+    this.eventService.publishEvent(event.id).subscribe({
+      next: (updated) => {
+        const idx = this.allEvents.findIndex((e) => e.id === updated.id);
+        if (idx !== -1) this.allEvents[idx] = updated;
+        this.applyFilter();
+        this.publishingId = null;
+        this.showSnack(`Evento "${event.title}" publicado correctamente`);
+      },
+      error: (err) => {
+        this.publishingId = null;
+        const errorMsg = err?.error?.message || err?.message || 'Error al publicar el evento';
+        this.showSnack(errorMsg, "error");
         console.error(err);
       },
     });
