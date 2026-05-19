@@ -1,0 +1,265 @@
+@use '../../../../tokens' as *;
+
+// Animación Shimmer (Brillo móvil)
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Animación de Rotación para el Spinner
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Animación de Latido suave para el pulso del Glow
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.6);
+  }
+}
+
+.loading-state-wrapper {
+  width: 100%;
+  
+  &.spinner-mode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-8) 0;
+    min-height: 200px;
+  }
+}
+
+// SPINNER
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+
+  .glow-spinner {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    padding: 3px;
+    background: var(--gradient-brand);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: spin 1s linear infinite, pulseGlow 2s infinite ease-in-out;
+  }
+
+  .loading-text {
+    font-family: 'Space Mono', monospace;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: var(--text-label-large);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: opacityPulse 1.5s infinite ease-in-out;
+  }
+}
+
+@keyframes opacityPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+// SHIMMER PLACEHOLDERS
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(26, 21, 53, 0.6) 25%,
+    rgba(46, 42, 117, 0.8) 37%,
+    rgba(26, 21, 53, 0.6) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite linear;
+}
+
+// 1. CARD SKELETON (Emula .event-card)
+.skeleton-card {
+  background: var(--md-sys-color-surface);
+  border-radius: var(--md-sys-shape-corner-medium);
+  overflow: hidden;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+
+  .skeleton-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #1a1535;
+  }
+
+  .skeleton-info {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+  }
+
+  .skeleton-title {
+    height: 24px;
+    border-radius: 4px;
+    width: 85%;
+  }
+
+  .skeleton-line {
+    height: 16px;
+    border-radius: 4px;
+    
+    &.short { width: 40%; }
+    &.medium { width: 60%; }
+  }
+
+  // Estilo footer si está en marketplace layout
+  .skeleton-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+
+    .skeleton-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+    }
+
+    .skeleton-price {
+      width: 70px;
+      height: 28px;
+      border-radius: 8px;
+    }
+  }
+}
+
+// Si la grilla usa clase marketplace-grid
+::ng-deep .marketplace-grid {
+  .skeleton-card {
+    .skeleton-image {
+      aspect-ratio: 16 / 9 !important;
+    }
+  }
+}
+
+// 2. LIST SKELETON
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  padding: var(--space-4);
+  background: var(--md-sys-color-surface);
+  border-radius: var(--md-sys-shape-corner-medium);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+
+  .skeleton-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .skeleton-list-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .skeleton-title {
+      height: 18px;
+      border-radius: 4px;
+      width: 40%;
+    }
+
+    .skeleton-line {
+      height: 14px;
+      border-radius: 4px;
+      
+      &.medium { width: 25%; }
+    }
+  }
+
+  .skeleton-action {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+}
+
+// 3. DETAIL SKELETON
+.skeleton-detail {
+  background: var(--md-sys-color-surface);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .skeleton-banner {
+    width: 100%;
+    height: 350px;
+    
+    @include mobile {
+      height: 200px;
+    }
+  }
+
+  .skeleton-detail-content {
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+
+    .skeleton-title {
+      height: 36px;
+      border-radius: 6px;
+      
+      &.long { width: 70%; }
+    }
+
+    .skeleton-line {
+      height: 18px;
+      border-radius: 4px;
+      
+      &.medium { width: 45%; }
+      &.short { width: 30%; }
+    }
+
+    .skeleton-divider {
+      height: 1px;
+      margin: var(--space-2) 0;
+      opacity: 0.5;
+    }
+
+    .skeleton-block {
+      height: 14px;
+      border-radius: 4px;
+      width: 100%;
+      margin-bottom: 6px;
+      
+      &:last-child {
+        width: 85%;
+      }
+    }
+  }
+}

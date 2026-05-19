@@ -30,8 +30,27 @@
         </button>
     </div>
 
+    <!-- Loading State -->
+    <app-loading-state
+        *ngIf="isLoading"
+        [mode]="'skeleton'"
+        [skeletonType]="'list'"
+        [count]="pageSize"
+        [gridClass]="'table-container'">
+    </app-loading-state>
+
+    <!-- Empty State -->
+    <app-empty-state
+        *ngIf="!isLoading && totalElements === 0"
+        [icon]="'event_busy'"
+        [title]="'No se encontraron eventos'"
+        [description]="searchQuery ? 'Prueba con otro término de búsqueda o filtro.' : 'Todavía no hay eventos registrados.'"
+        [actionText]="searchQuery ? 'Limpiar búsqueda' : 'Crear Evento'"
+        (actionClick)="searchQuery ? clearSearch() : createEvent()">
+    </app-empty-state>
+
     <!-- Selection Bar -->
-    <div class="selection-bar" *ngIf="dataSource.data.length > 0 && !isLoading">
+    <div class="selection-bar" *ngIf="!isLoading && totalElements > 0">
         <div class="selection-controls">
             <mat-checkbox [checked]="isAllSelected()"
                           [indeterminate]="isAtLeastOneSelected() && !isAllSelected()"
@@ -41,14 +60,8 @@
         </div>
     </div>
 
-    <!-- Loading state -->
-    <div class="loading-container" *ngIf="isLoading">
-        <mat-spinner diameter="48"></mat-spinner>
-        <p>Cargando eventos...</p>
-    </div>
-
     <!-- Data Table Section -->
-    <div class="table-container mat-elevation-z0" *ngIf="!isLoading">
+    <div class="table-container mat-elevation-z0" *ngIf="!isLoading && totalElements > 0">
         <table mat-table [dataSource]="dataSource" class="custom-table">
 
             <ng-container matColumnDef="image">
@@ -75,7 +88,6 @@
                             <mat-checkbox [(ngModel)]="element.selected"></mat-checkbox>
                         </div>
 
-                        <!-- Image placeholder (removed - now in separate column) -->
                         <!-- Title & Description -->
                         <div class="details-col">
                             <div class="detail-group">
@@ -196,17 +208,6 @@
             </ng-container>
 
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-            <!-- Empty state -->
-            <tr class="mat-row empty-state-row" *matNoDataRow>
-                <td class="mat-cell empty-state-cell">
-                    <div class="empty-state">
-                        <mat-icon class="empty-icon">event_busy</mat-icon>
-                        <p class="empty-title">No se encontraron eventos</p>
-                        <p class="empty-subtitle" *ngIf="searchQuery">Probá con otro término de búsqueda.</p>
-                    </div>
-                </td>
-            </tr>
         </table>
 
         <mat-paginator [length]="totalElements"

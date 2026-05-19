@@ -17,6 +17,9 @@ import { ConfirmDialogComponent } from '../shared/dialogs/confirm-dialog/confirm
 import { PermissionDialogComponent } from '../shared/dialogs/permission-dialog/permission-dialog.component';
 import { PermissionsService } from '../../services/permissions.service';
 import { PermissionResponse } from '../../models/permission-response.model';
+import { LoadingStateComponent } from '../shared/loading-state/loading-state.component';
+import { EmptyStateComponent } from '../shared/empty-state/empty-state.component';
+import { trackLoading } from '../../utils/loading.operator';
 
 @Component({
   selector: 'app-admin-permissions',
@@ -32,7 +35,9 @@ import { PermissionResponse } from '../../models/permission-response.model';
     MatPaginatorModule,
     MatSnackBarModule,
     FormsModule,
-    MatDialogModule
+    MatDialogModule,
+    LoadingStateComponent,
+    EmptyStateComponent
   ],
   templateUrl: './admin-permissions.component.html',
   styleUrl: './admin-permissions.component.scss'
@@ -48,6 +53,7 @@ export class AdminPermissionsComponent implements OnInit {
   dataSource = new MatTableDataSource<PermissionResponse>([]);
   selection = new SelectionModel<PermissionResponse>(true, []);
   searchQuery: string = '';
+  isLoading: boolean = false;
 
   totalElements = 0;
   pageSize = 10;
@@ -71,22 +77,29 @@ export class AdminPermissionsComponent implements OnInit {
   }
 
   loadPermissions(): void {
-    this.permissionsService.getPermissions(this.pageIndex, this.pageSize, this.searchQuery).subscribe({
-      next: (page) => {
-        this.dataSource.data = page.content;
-        this.totalElements = page.totalElements;
-      },
-      error: (err: any) => {
-        console.error('Error cargando permisos:', err);
-        this.snackBar.open('Error al cargar permisos', 'Cerrar', { duration: 3000 });
-      }
-    });
+    this.permissionsService.getPermissions(this.pageIndex, this.pageSize, this.searchQuery)
+      .pipe(trackLoading(loading => this.isLoading = loading))
+      .subscribe({
+        next: (page) => {
+          this.dataSource.data = page.content;
+          this.totalElements = page.totalElements;
+        },
+        error: (err: any) => {
+          console.error('Error cargando permisos:', err);
+          this.snackBar.open('Error al cargar permisos', 'Cerrar', { duration: 3000 });
+        }
+      });
   }
 
   onPageChange(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
     this.loadPermissions();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.onSearchChange();
   }
 
   isAllSelected() {

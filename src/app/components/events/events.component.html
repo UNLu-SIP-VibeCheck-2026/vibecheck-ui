@@ -40,7 +40,27 @@
     <h2 class="headline-medium selected-pill-title">{{ selectedPill }}</h2>
   </div>
 
-  <div class="events-grid" [class.marketplace-grid]="selectedPill === 'Marketplace'">
+  <!-- Loading State -->
+  <app-loading-state 
+    *ngIf="isLoading" 
+    [mode]="'skeleton'" 
+    [skeletonType]="'card'" 
+    [count]="8"
+    [gridClass]="selectedPill === 'Marketplace' ? 'events-grid marketplace-grid' : 'events-grid'">
+  </app-loading-state>
+
+  <!-- Empty State -->
+  <app-empty-state 
+    *ngIf="!isLoading && pagedEvents.length === 0" 
+    [icon]="selectedPill === 'Marketplace' ? 'storefront' : 'event_busy'" 
+    [title]="'No se encontraron eventos'" 
+    [description]="searchQuery ? 'No encontramos eventos que coincidan con tu búsqueda: \'' + searchQuery + '\'.' : 'Por el momento no hay eventos disponibles en la categoría: ' + selectedPill + '.'"
+    [actionText]="searchQuery ? 'Limpiar búsqueda' : ''"
+    (actionClick)="searchQuery = ''; applyFilter()">
+  </app-empty-state>
+
+  <!-- Events Grid -->
+  <div *ngIf="!isLoading && pagedEvents.length > 0" class="events-grid" [class.marketplace-grid]="selectedPill === 'Marketplace'">
     <div class="event-card" [class.marketplace-card]="selectedPill === 'Marketplace'" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)">
       <div class="event-image-container">
         <img *ngIf="getEventImage(event.id)" [src]="getEventImage(event.id)" [alt]="event.title" class="event-image">
@@ -87,7 +107,7 @@
     </div>
   </div>
 
-  <div class="pagination-container">
+  <div *ngIf="!isLoading && pagedEvents.length > 0" class="pagination-container">
     <mat-paginator 
       [length]="totalEvents"
       [pageSize]="pageSize"

@@ -11,21 +11,56 @@
 
   .header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: var(--space-4);
     margin-bottom: var(--space-8);
+    flex-wrap: wrap;
+    gap: var(--space-4);
 
-    h1 {
-      margin: 0;
-      background: var(--gradient-brand);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 900;
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+
+      h1 {
+        margin: 0;
+        background: var(--gradient-brand);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 900;
+      }
+
+      button {
+        color: white;
+        background: rgba(255, 255, 255, 0.05);
+      }
     }
 
-    button {
-      color: white;
-      background: rgba(255, 255, 255, 0.05);
+    .header-actions {
+      display: flex;
+      gap: var(--space-3);
+
+      .text-btn {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        color: var(--md-sys-color-on-surface);
+        border-radius: var(--md-sys-shape-corner-full);
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: var(--md-sys-color-primary);
+        }
+      }
     }
   }
 }

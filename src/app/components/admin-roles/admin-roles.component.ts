@@ -21,6 +21,9 @@ import {
   PageEvent,
 } from "@angular/material/paginator";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
+import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
+import { trackLoading } from "../../utils/loading.operator";
 
 @Component({
   selector: "app-admin-roles",
@@ -36,6 +39,8 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
     MatDialogModule,
     MatPaginatorModule,
     MatSnackBarModule,
+    LoadingStateComponent,
+    EmptyStateComponent
   ],
   templateUrl: "./admin-roles.component.html",
   styleUrl: "./admin-roles.component.scss",
@@ -50,6 +55,7 @@ export class AdminRolesComponent implements OnInit {
   displayedColumns: string[] = ["roleName", "permissions", "actions"];
   dataSource = new MatTableDataSource<RoleResponse>([]);
   searchQuery: string = "";
+  isLoading: boolean = false;
 
   totalElements = 0;
   pageSize = 10;
@@ -60,13 +66,15 @@ export class AdminRolesComponent implements OnInit {
   }
 
   loadRoles(): void {
-    this.rolesService.getAllRoles(this.pageIndex, this.pageSize).subscribe({
-      next: (page) => {
-        this.dataSource.data = page.content;
-        this.totalElements = page.totalElements;
-      },
-      error: (err) => console.error("Error cargando roles:", err),
-    });
+    this.rolesService.getAllRoles(this.pageIndex, this.pageSize)
+      .pipe(trackLoading((loading) => (this.isLoading = loading)))
+      .subscribe({
+        next: (page) => {
+          this.dataSource.data = page.content;
+          this.totalElements = page.totalElements;
+        },
+        error: (err) => console.error("Error cargando roles:", err),
+      });
   }
 
   onPageChange(event: PageEvent): void {

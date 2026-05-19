@@ -4,6 +4,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
+import { LoadingStateComponent } from '../shared/loading-state/loading-state.component';
+import { EmptyStateComponent } from '../shared/empty-state/empty-state.component';
 
 export interface UserTicket {
   id: string;
@@ -18,16 +20,33 @@ export interface UserTicket {
 @Component({
   selector: 'app-my-tickets',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule],
+  imports: [
+    CommonModule, 
+    MatCardModule, 
+    MatIconModule, 
+    MatButtonModule,
+    LoadingStateComponent,
+    EmptyStateComponent
+  ],
   templateUrl: './my-tickets.component.html',
   styleUrl: './my-tickets.component.scss'
 })
 export class MyTicketsComponent implements OnInit {
   private router = inject(Router);
+  
   tickets: UserTicket[] = [];
+  isLoading: boolean = false;
 
   ngOnInit(): void {
-    this.loadMockTickets();
+    this.loadTicketsWithDelay();
+  }
+
+  loadTicketsWithDelay(): void {
+    this.isLoading = true;
+    setTimeout(() => {
+      this.loadMockTickets();
+      this.isLoading = false;
+    }, 1500);
   }
 
   loadMockTickets(): void {
@@ -60,6 +79,10 @@ export class MyTicketsComponent implements OnInit {
         imageUrl: 'https://picsum.photos/seed/techno/600/300'
       }
     ];
+  }
+
+  exploreEvents(): void {
+    this.router.navigate(['/events']);
   }
 
   viewTicket(id: string): void {

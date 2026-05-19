@@ -27,6 +27,9 @@ import { EventResponse } from "../../models/event.model";
 import { VenueResponse } from "../../models/venue.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { UsersService } from "../../services/users.service";
+import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
+import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
+import { trackLoading } from "../../utils/loading.operator";
 
 @Component({
   selector: "app-admin-events",
@@ -47,6 +50,8 @@ import { UsersService } from "../../services/users.service";
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule,
+    LoadingStateComponent,
+    EmptyStateComponent,
   ],
   templateUrl: "./admin-events.component.html",
   styleUrl: "./admin-events.component.scss",
@@ -88,8 +93,8 @@ export class AdminEventsComponent implements OnInit {
   pageIndex = 0;
 
   /** Server-side paging state */
-  private serverPage = 0;
-  private serverSize = 100; // load enough for client-side search
+  serverPage = 0;
+  serverSize = 500;
 
   ngOnInit(): void {
     this.loadVenues();
@@ -111,21 +116,20 @@ export class AdminEventsComponent implements OnInit {
   }
 
   loadEvents(): void {
-    this.isLoading = true;
-    this.eventService.findMyEvents(this.serverPage, this.serverSize).subscribe({
-      next: (page) => {
-        this.allEvents = page.content;
-        this.loadEventImages(page.content);
-        this.loadOwners(page.content);
-        this.applyFilter();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error("Error cargando eventos:", err);
-        this.isLoading = false;
-        this.showSnack("Error al cargar los eventos", "error");
-      },
-    });
+    this.eventService.findMyEvents(this.serverPage, this.serverSize)
+      .pipe(trackLoading(loading => this.isLoading = loading))
+      .subscribe({
+        next: (page) => {
+          this.allEvents = page.content;
+          this.loadEventImages(page.content);
+          this.loadOwners(page.content);
+          this.applyFilter();
+        },
+        error: (err) => {
+          console.error("Error cargando eventos:", err);
+          this.showSnack("Error al cargar los eventos", "error");
+        },
+      });
   }
 
   loadEventImages(events: EventResponse[]): void {
@@ -176,6 +180,11 @@ export class AdminEventsComponent implements OnInit {
     const start = this.pageIndex * this.pageSize;
     this.dataSource.data = filtered.slice(start, start + this.pageSize);
     this._filtered = filtered;
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.applyFilter();
   }
 
   private _filtered: EventResponse[] = [];

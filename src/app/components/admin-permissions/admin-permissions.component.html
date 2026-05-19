@@ -25,8 +25,27 @@
         </button>
     </div>
 
+    <!-- Loading State -->
+    <app-loading-state
+        *ngIf="isLoading"
+        [mode]="'skeleton'"
+        [skeletonType]="'list'"
+        [count]="pageSize"
+        [gridClass]="'table-container'">
+    </app-loading-state>
+
+    <!-- Empty State -->
+    <app-empty-state
+        *ngIf="!isLoading && totalElements === 0"
+        [icon]="'lock'"
+        [title]="'No se encontraron permisos'"
+        [description]="searchQuery ? 'Prueba con otro término de búsqueda.' : 'Todavía no hay permisos registrados.'"
+        [actionText]="searchQuery ? 'Limpiar búsqueda' : 'Crear permiso'"
+        (actionClick)="searchQuery ? clearSearch() : addPermission()">
+    </app-empty-state>
+
     <!-- Permissions Table Section -->
-    <div class="table-container mat-elevation-z0">
+    <div class="table-container mat-elevation-z0" *ngIf="!isLoading && totalElements > 0">
         <table mat-table [dataSource]="dataSource" class="custom-table">
 
             <!-- ID Column -->
@@ -74,15 +93,6 @@
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-            <!-- Empty state -->
-            <tr class="mat-row empty-state-row" *matNoDataRow>
-                <td class="mat-cell empty-state-cell" [attr.colspan]="displayedColumns.length">
-                    <div class="empty-state">
-                        <p class="empty-title">No se encontraron permisos</p>
-                    </div>
-                </td>
-            </tr>
         </table>
 
         <mat-paginator [length]="totalElements"

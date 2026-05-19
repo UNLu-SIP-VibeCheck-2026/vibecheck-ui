@@ -1,0 +1,19 @@
+<div class="empty-state-container">
+  <div class="empty-state-icon-container">
+    <mat-icon class="empty-state-icon">{{ icon }}</mat-icon>
+  </div>
+  
+  <div class="empty-state-content">
+    <h2 class="headline-medium empty-state-title">{{ title }}</h2>
+    <p class="body-large empty-state-description">{{ description }}</p>
+  </div>
+
+  <div class="empty-state-action" *ngIf="actionText">
+    <button class="cta-button" (click)="onActionClick()">
+      <div class="cta-icon-circle">
+        <mat-icon>chevron_right</mat-icon>
+      </div>
+      <span class="cta-text">{{ actionText }}</span>
+    </button>
+  </div>
+</div>

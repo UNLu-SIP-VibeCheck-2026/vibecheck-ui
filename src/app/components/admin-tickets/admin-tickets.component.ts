@@ -16,6 +16,9 @@ import { ResaleDialogComponent } from "../shared/dialogs/resale-dialog/resale-di
 import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
 import { TicketTypeService } from "../../services/ticket-type.service";
 import { TicketTypeResponse } from "../../models/ticket-type.model";
+import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
+import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
+import { trackLoading } from "../../utils/loading.operator";
 
 @Component({
   selector: "app-admin-tickets",
@@ -31,7 +34,9 @@ import { TicketTypeResponse } from "../../models/ticket-type.model";
     FormsModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    LoadingStateComponent,
+    EmptyStateComponent
   ],
   templateUrl: "./admin-tickets.component.html",
   styleUrl: "./admin-tickets.component.scss",
@@ -71,18 +76,17 @@ export class AdminTicketsComponent implements OnInit {
   }
 
   loadTicketTypes(): void {
-    this.isLoading = true;
-    this.ticketTypeService.findTicketTypesByEvent(this.eventId).subscribe({
-      next: (ticketTypes) => {
-        this.dataSource.data = ticketTypes;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error("Error cargando categorías:", err);
-        this.isLoading = false;
-        this.showSnack("Error al cargar categorías", "error");
-      },
-    });
+    this.ticketTypeService.findTicketTypesByEvent(this.eventId)
+      .pipe(trackLoading(loading => this.isLoading = loading))
+      .subscribe({
+        next: (ticketTypes) => {
+          this.dataSource.data = ticketTypes;
+        },
+        error: (err) => {
+          console.error("Error cargando categorías:", err);
+          this.showSnack("Error al cargar categorías", "error");
+        },
+      });
   }
 
   goBack() {

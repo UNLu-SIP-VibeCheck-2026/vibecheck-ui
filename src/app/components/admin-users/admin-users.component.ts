@@ -21,6 +21,9 @@ import { UserUpdateRequest } from "../../models/user-update-request.model";
 import { UsersService } from "../../services/users.service";
 import { RolesService } from "../../services/roles.service";
 import { RoleResponse } from "../../models/role-response.model";
+import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
+import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
+import { trackLoading } from "../../utils/loading.operator";
 
 @Component({
   selector: "app-admin-users",
@@ -37,6 +40,8 @@ import { RoleResponse } from "../../models/role-response.model";
     MatDialogModule,
     MatPaginatorModule,
     MatSortModule,
+    LoadingStateComponent,
+    EmptyStateComponent
   ],
   templateUrl: "./admin-users.component.html",
   styleUrl: "./admin-users.component.scss",
@@ -61,6 +66,7 @@ export class AdminUsersComponent implements OnInit {
   ];
   dataSource = new MatTableDataSource<UserSummaryResponse>([]);
   searchQuery: string = "";
+  isLoading: boolean = false;
 
   filterRole: string = "";
   filterActive: string = "";
@@ -98,6 +104,7 @@ export class AdminUsersComponent implements OnInit {
         this.sortBy,
         this.sortDirection,
       )
+      .pipe(trackLoading((loading) => (this.isLoading = loading)))
       .subscribe({
         next: (page) => {
           this.dataSource.data = page.content;
@@ -119,6 +126,13 @@ export class AdminUsersComponent implements OnInit {
       this.paginator.firstPage();
     }
     this.loadUsers();
+  }
+
+  clearFilters(): void {
+    this.searchQuery = '';
+    this.filterRole = '';
+    this.filterActive = '';
+    this.applyFilter();
   }
 
   onSortChange(sortState: Sort) {

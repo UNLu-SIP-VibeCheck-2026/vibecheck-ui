@@ -1,0 +1,56 @@
+<div class="loading-state-wrapper" [class.spinner-mode]="mode === 'spinner'">
+  
+  <!-- SPINNER MODE -->
+  <div *ngIf="mode === 'spinner'" class="spinner-container">
+    <div class="glow-spinner"></div>
+    <span class="loading-text">Cargando...</span>
+  </div>
+
+  <!-- SKELETON MODE -->
+  <div *ngIf="mode === 'skeleton'" [class]="gridClass">
+    
+    <!-- CARD SKELETON -->
+    <ng-container *ngIf="skeletonType === 'card'">
+      <div class="skeleton-card" *ngFor="let _ of skeletonsArray">
+        <div class="skeleton-image shimmer"></div>
+        <div class="skeleton-info">
+          <div class="skeleton-title shimmer"></div>
+          <div class="skeleton-line shimmer short"></div>
+          <div class="skeleton-line shimmer medium"></div>
+          <div class="skeleton-footer" *ngIf="gridClass.includes('marketplace-grid')">
+            <div class="skeleton-avatar shimmer"></div>
+            <div class="skeleton-price shimmer"></div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- LIST SKELETON -->
+    <ng-container *ngIf="skeletonType === 'list'">
+      <div class="skeleton-list-item" *ngFor="let _ of skeletonsArray">
+        <div class="skeleton-avatar shimmer"></div>
+        <div class="skeleton-list-content">
+          <div class="skeleton-title shimmer"></div>
+          <div class="skeleton-line shimmer medium"></div>
+        </div>
+        <div class="skeleton-action shimmer"></div>
+      </div>
+    </ng-container>
+
+    <!-- DETAIL SKELETON -->
+    <ng-container *ngIf="skeletonType === 'detail'">
+      <div class="skeleton-detail">
+        <div class="skeleton-banner shimmer"></div>
+        <div class="skeleton-detail-content">
+          <div class="skeleton-title shimmer long"></div>
+          <div class="skeleton-line shimmer medium"></div>
+          <div class="skeleton-line shimmer short"></div>
+          <div class="skeleton-divider shimmer"></div>
+          <div class="skeleton-block shimmer"></div>
+          <div class="skeleton-block shimmer"></div>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

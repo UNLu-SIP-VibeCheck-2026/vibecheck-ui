@@ -10,6 +10,9 @@ import { MatInputModule } from "@angular/material/input";
 import { Router } from "@angular/router";
 import { EventService } from "../../services/event.service";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
+import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
+import { trackLoading } from "../../utils/loading.operator";
 
 export interface EventSummary {
   id: string;
@@ -39,6 +42,8 @@ export interface EventSummary {
     MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
+    LoadingStateComponent,
+    EmptyStateComponent,
   ],
   templateUrl: "./events.component.html",
   styleUrl: "./events.component.scss",
@@ -48,6 +53,7 @@ export class EventsComponent implements OnInit {
   private eventService = inject(EventService);
   private sanitizer = inject(DomSanitizer);
 
+  isLoading: boolean = false;
   selectedPill: string = "Próximos eventos";
   searchQuery: string = "";
   allEvents: EventSummary[] = [];
@@ -66,52 +72,54 @@ export class EventsComponent implements OnInit {
   }
 
   loadEvents(): void {
-    this.eventService.findAllEvents(0, 100).subscribe({
-      next: (page) => {
-        console.log("Eventos cargados:", page);
-        const categories: (
-          | "Próximos eventos"
-          | "Recomendados"
-          | "Cerca tuyo"
-          | "Marketplace"
-        )[] = ["Próximos eventos", "Recomendados", "Cerca tuyo", "Marketplace"];
-        const sellers = [
-          "Juan Perez",
-          "Maria Garcia",
-          "Carlos Lopez",
-          "Ana Martinez",
-        ];
-        const ticketTypes = ["General", "VIP", "Platea Alta", "Campo"];
+    this.eventService.findAllEvents(0, 100)
+      .pipe(trackLoading((loading) => (this.isLoading = loading)))
+      .subscribe({
+        next: (page) => {
+          console.log("Eventos cargados:", page);
+          const categories: (
+            | "Próximos eventos"
+            | "Recomendados"
+            | "Cerca tuyo"
+            | "Marketplace"
+          )[] = ["Próximos eventos", "Recomendados", "Cerca tuyo", "Marketplace"];
+          const sellers = [
+            "Juan Perez",
+            "Maria Garcia",
+            "Carlos Lopez",
+            "Ana Martinez",
+          ];
+          const ticketTypes = ["General", "VIP", "Platea Alta", "Campo"];
 
-        this.allEvents = page.content.map((backendEvent, i) => {
-          const category = categories[i % categories.length];
-          const event: EventSummary = {
-            id: backendEvent.id.toString(),
-            title: backendEvent.title,
-            description: backendEvent.description || "Sin descripción",
-            startDate: new Date(backendEvent.startDate).toLocaleDateString(),
-            venue: `Venue ${backendEvent.venueId || "Desconocido"}`,
-            category: category,
-            imageUrl: undefined, // Se cargará dinámicamente
-          };
+          this.allEvents = page.content.map((backendEvent, i) => {
+            const category = categories[i % categories.length];
+            const event: EventSummary = {
+              id: backendEvent.id.toString(),
+              title: backendEvent.title,
+              description: backendEvent.description || "Sin descripción",
+              startDate: new Date(backendEvent.startDate).toLocaleDateString(),
+              venue: `Venue ${backendEvent.venueId || "Desconocido"}`,
+              category: category,
+              imageUrl: undefined, // Se cargará dinámicamente
+            };
 
-          if (category === "Marketplace") {
-            event.sellerName = sellers[i % sellers.length];
-            event.sellerPhoto = `https://i.pravatar.cc/150?u=${event.sellerName}`;
-            event.price = 5000 + i * 100;
-            event.ticketType = ticketTypes[i % ticketTypes.length];
-            event.location = event.venue;
-          }
+            if (category === "Marketplace") {
+              event.sellerName = sellers[i % sellers.length];
+              event.sellerPhoto = `https://i.pravatar.cc/150?u=${event.sellerName}`;
+              event.price = 5000 + i * 100;
+              event.ticketType = ticketTypes[i % ticketTypes.length];
+              event.location = event.venue;
+            }
 
-          return event;
-        });
+            return event;
+          });
 
-        // Cargar imágenes de eventos que tienen imagen
-        this.loadEventImages(page.content);
-        this.applyFilter();
-      },
-      error: (err) => console.error("Error fetching events:", err),
-    });
+          // Cargar imágenes de eventos que tienen imagen
+          this.loadEventImages(page.content);
+          this.applyFilter();
+        },
+        error: (err) => console.error("Error fetching events:", err),
+      });
   }
 
   loadEventImages(events: any[]): void {

@@ -1,12 +1,34 @@
 <div class="my-tickets-container">
   <div class="header">
-    <button mat-icon-button (click)="goBack()">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <h1 class="display-medium">Mis Entradas</h1>
+    <div class="header-left">
+      <button mat-icon-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1 class="display-medium">Mis Entradas</h1>
+    </div>
   </div>
 
-  <div class="tickets-grid">
+  <!-- Loading State -->
+  <app-loading-state
+    *ngIf="isLoading"
+    [mode]="'skeleton'"
+    [skeletonType]="'card'"
+    [count]="3"
+    [gridClass]="'tickets-grid'">
+  </app-loading-state>
+
+  <!-- Empty State -->
+  <app-empty-state
+    *ngIf="!isLoading && tickets.length === 0"
+    [icon]="'receipt_long'"
+    [title]="'Aún no tienes entradas'"
+    [description]="'Encuentra tus eventos favoritos y adquiere entradas para verlas aquí.'"
+    [actionText]="'Explorar Eventos'"
+    (actionClick)="exploreEvents()">
+  </app-empty-state>
+
+  <!-- Tickets Grid -->
+  <div *ngIf="!isLoading && tickets.length > 0" class="tickets-grid">
     <div class="ticket-card" *ngFor="let ticket of tickets" (click)="viewTicket(ticket.id)">
       <div class="ticket-image-container">
         <img [src]="ticket.imageUrl" [alt]="ticket.eventTitle" class="ticket-image">

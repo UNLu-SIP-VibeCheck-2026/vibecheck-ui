@@ -10,8 +10,27 @@
         </button>
     </div>
 
+    <!-- Loading State -->
+    <app-loading-state
+        *ngIf="isLoading"
+        [mode]="'skeleton'"
+        [skeletonType]="'list'"
+        [count]="pageSize"
+        [gridClass]="'table-container'">
+    </app-loading-state>
+
+    <!-- Empty State -->
+    <app-empty-state
+        *ngIf="!isLoading && totalElements === 0"
+        [icon]="'admin_panel_settings'"
+        [title]="'No se encontraron roles'"
+        [description]="'Todavía no hay roles registrados.'"
+        [actionText]="'Agregar Rol'"
+        (actionClick)="addRole()">
+    </app-empty-state>
+
     <!-- Roles Table Section -->
-    <div class="table-container mat-elevation-z0">
+    <div class="table-container mat-elevation-z0" *ngIf="!isLoading && totalElements > 0">
         <table mat-table [dataSource]="dataSource" class="custom-table">
 
             <!-- Role Column -->
