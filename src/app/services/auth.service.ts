@@ -1,7 +1,7 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, BehaviorSubject } from "rxjs";
-import { map, tap } from "rxjs/operators";
+import { Observable, BehaviorSubject, throwError } from "rxjs";
+import { map, tap, shareReplay, finalize } from "rxjs/operators";
 import { environment } from "../../environments/environment";
 import { LoginRequest } from "../models/login-request.model";
 import { RegisterRequest } from "../models/register-request.model";
@@ -23,6 +23,7 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   private accessTokenKey = "auth_access_token";
   private refreshTokenKey = "auth_refresh_token";
+  private refreshTokenObservable: Observable<AuthResponse> | null = null;
 
   constructor() {
     this.loadUserFromStorage();
@@ -57,8 +58,16 @@ export class AuthService {
   }
 
   refreshToken(): Observable<AuthResponse> {
+    if (this.refreshTokenObservable) {
+      return this.refreshTokenObservable;
+    }
+
     const refreshToken = this.getRefreshToken();
-    return this.http
+    if (!refreshToken) {
+      return throwError(() => new Error("No hay token de refresco disponible"));
+    }
+
+    this.refreshTokenObservable = this.http
       .post<AuthResponse>(`${this.apiUrl}/auth/refresh`, { refreshToken })
       .pipe(
         tap((response) => {
@@ -68,7 +77,13 @@ export class AuthService {
             role: response.role,
           });
         }),
+        shareReplay(1),
+        finalize(() => {
+          this.refreshTokenObservable = null;
+        })
       );
+
+    return this.refreshTokenObservable;
   }
 
   logout(): void {

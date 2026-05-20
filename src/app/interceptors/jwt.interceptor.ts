@@ -28,6 +28,18 @@ export const jwtInterceptor: HttpInterceptorFn = (
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !isAuthRequest) {
+        const currentToken = authService.getToken();
+        const sentToken = req.headers.get('Authorization')?.replace('Bearer ', '');
+
+        if (currentToken && currentToken !== sentToken) {
+          const retryReq = req.clone({
+            setHeaders: {
+              Authorization: `Bearer ${currentToken}`
+            }
+          });
+          return next(retryReq);
+        }
+
         return authService.refreshToken().pipe(
           switchMap((response) => {
             const authReq = req.clone({
