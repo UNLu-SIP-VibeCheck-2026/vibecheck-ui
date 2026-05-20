@@ -1,0 +1,106 @@
+<div class="web3-container">
+  <div class="web3-header">
+    <div class="web3-title-group">
+      <h2 class="web3-title">Billetera Web3 (MetaMask)</h2>
+      <span class="web3-tagline">Pagos en Blockchain y Tickets NFT</span>
+    </div>
+    
+    <!-- Estado de conexión -->
+    <div class="status-tag" [class.connected]="isConnected$ | async" [class.disconnected]="!(isConnected$ | async)">
+      <span class="status-dot"></span>
+      {{ (isConnected$ | async) ? 'Conectado' : 'Desconectado' }}
+    </div>
+  </div>
+
+  <!-- MetaMask NO INSTALADO -->
+  <div class="web3-card info-card" *ngIf="!isInstalled">
+    <mat-icon class="card-icon warning-icon">report_problem</mat-icon>
+    <div class="card-details">
+      <h3>MetaMask no detectado</h3>
+      <p>Necesitas tener instalada la extensión MetaMask en tu navegador Google Chrome para realizar pagos descentralizados y gestionar tus tickets.</p>
+      <a href="https://metamask.io/download/" target="_blank" mat-raised-button class="install-btn">
+        <mat-icon>open_in_new</mat-icon> Instalar MetaMask
+      </a>
+    </div>
+  </div>
+
+  <!-- MetaMask INSTALADO PERO NO CONECTADO -->
+  <div class="web3-card connect-card" *ngIf="isInstalled && !(isConnected$ | async)">
+    <div class="connect-visual">
+      <div class="metamask-logo-container">
+        <span class="logo-fox">🦊</span>
+      </div>
+    </div>
+    <div class="connect-action">
+      <h3>Conecta tu Billetera</h3>
+      <p>Accede con tu MetaMask para interactuar con los contratos de VibeCheck (VBK y tickets NFT) en la red Sepolia.</p>
+      <button mat-raised-button class="connect-btn" (click)="connect()">
+        <mat-icon>account_balance_wallet</mat-icon> Conectar con MetaMask
+      </button>
+    </div>
+  </div>
+
+  <!-- CONECTADO PERO EN RED INCORRECTA -->
+  <div class="web3-card network-warning-card" *ngIf="isInstalled && (isConnected$ | async) && !(isSepolia$ | async)">
+    <mat-icon class="card-icon warning-icon">wifi_tethering_error</mat-icon>
+    <div class="card-details">
+      <h3>Red incorrecta en MetaMask</h3>
+      <p>VibeCheck opera sobre la red de pruebas **Sepolia**. Por favor cambia de red para ver tus saldos y tickets.</p>
+      <button mat-raised-button class="switch-network-btn" (click)="forceSwitchNetwork()">
+        <mat-icon>swap_horiz</mat-icon> Cambiar a Red Sepolia
+      </button>
+    </div>
+  </div>
+
+  <!-- CONECTADO Y EN LA RED CORRECTA (SEPOLIA) -->
+  <div class="web3-balance-card" *ngIf="isInstalled && (isConnected$ | async) && (isSepolia$ | async)">
+    <div class="wallet-info">
+      <div class="address-group">
+        <span class="network-badge">Sepolia Testnet</span>
+        <h3 class="address-text">{{ truncateAddress(connectedAddress$ | async) }}</h3>
+      </div>
+      <div class="provider-logo">
+        <span class="logo-fox">🦊</span>
+      </div>
+    </div>
+
+    <!-- Grilla de Balances -->
+    <div class="balances-grid">
+      <!-- VBK Balance -->
+      <div class="balance-item-web3 vbk-balance">
+        <span class="balance-label">Moneda Interna ($VC)</span>
+        <div class="balance-value-container">
+          <span class="balance-amount">{{ vbkBalance$ | async }}</span>
+          <span class="balance-token-symbol">VBK</span>
+        </div>
+        <span class="balance-description">VibeCheck Token (ERC-20)</span>
+      </div>
+
+      <!-- USDC Balance -->
+      <div class="balance-item-web3 usdc-balance">
+        <span class="balance-label">Dólar Digital</span>
+        <div class="balance-value-container">
+          <span class="balance-amount">{{ usdcBalance$ | async }}</span>
+          <span class="balance-token-symbol">USDC</span>
+        </div>
+        <span class="balance-description">Moneda de Pago (ERC-20)</span>
+      </div>
+
+      <!-- ETH Sepolia Balance -->
+      <div class="balance-item-web3 eth-balance">
+        <span class="balance-label">Fondos para Transacciones</span>
+        <div class="balance-value-container">
+          <span class="balance-amount">{{ ethBalance$ | async }}</span>
+          <span class="balance-token-symbol">SepoliaETH</span>
+        </div>
+        <span class="balance-description">Gas de la Blockchain</span>
+      </div>
+    </div>
+
+    <div class="web3-actions">
+      <a href="https://sepolia.etherscan.io/address/{{ connectedAddress$ | async }}" target="_blank" mat-button class="etherscan-link">
+        <mat-icon>launch</mat-icon> Ver cuenta en Etherscan
+      </a>
+    </div>
+  </div>
+</div>

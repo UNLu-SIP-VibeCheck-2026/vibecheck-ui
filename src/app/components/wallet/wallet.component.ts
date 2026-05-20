@@ -7,11 +7,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { WalletService } from '../../services/wallet.service';
 import { Transaction, Wallet } from '../../models/wallet.model';
 import { Observable } from 'rxjs';
+import { Web3WalletComponent } from './web3-wallet/web3-wallet.component';
 
 @Component({
   selector: 'app-wallet',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, FormsModule, MatSnackBarModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, FormsModule, MatSnackBarModule, Web3WalletComponent],
   templateUrl: './wallet.component.html',
   styleUrl: './wallet.component.css'
 })

@@ -22,6 +22,9 @@
     </div>
   </div>
 
+  <!-- Billetera Web3 (MetaMask) -->
+  <app-web3-wallet></app-web3-wallet>
+
   <!-- Zero Balance Alert -->
   <ng-container *ngIf="(balance$ | async) as wallet">
     <div class="zero-balance-alert" *ngIf="getMainBalance(wallet) === 0">
