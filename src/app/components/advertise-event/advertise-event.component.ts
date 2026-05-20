@@ -4,13 +4,40 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { EventService } from '../../services/event.service';
+import { VenueService } from '../../services/venue.service';
+import { AdvertisementService } from '../../services/advertisement.service';
+
+interface AdvertiseTier {
+  id: string; // 'cool' | 'super' | 'mega'
+  planId: number;
+  name: string;
+  displayName: string;
+  pricePerDayVbk: number;
+  pricePerDayUsdt: number;
+  icon: string;
+  description: string;
+  availableSlots: number | null;
+}
 
 @Component({
   selector: 'app-advertise-event',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    FormsModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule
+  ],
   template: `
-    <div class="advertise-container" *ngIf="event">
+    <div class="advertise-container" *ngIf="!isLoadingGlobal; else loading">
       <div class="header">
         <button mat-icon-button (click)="goBack()">
           <mat-icon>arrow_back</mat-icon>
@@ -23,12 +50,15 @@ import { ActivatedRoute, Router } from '@angular/router';
           <!-- Event Info & Ads Integrated Panel -->
           <mat-card class="integrated-card">
             <div class="event-mini-hero">
-              <img [src]="event.imageUrl" alt="Event" class="event-thumb">
+              <img *ngIf="eventImageUrl" [src]="eventImageUrl" alt="Event" class="event-thumb">
+              <div *ngIf="!eventImageUrl" class="no-image-placeholder">
+                <mat-icon>image_not_supported</mat-icon>
+              </div>
               <div class="event-meta">
-                <h2 class="event-name">{{ event.name }}</h2>
+                <h2 class="event-name">{{ event?.title }}</h2>
                 <div class="event-details">
-                  <span><mat-icon>calendar_today</mat-icon> {{ event.date }}</span>
-                  <span><mat-icon>location_on</mat-icon> {{ event.venue }}</span>
+                  <span><mat-icon>calendar_today</mat-icon> {{ formatDate(event?.startDate) }}</span>
+                  <span><mat-icon>location_on</mat-icon> {{ venueName }}</span>
                 </div>
               </div>
             </div>
@@ -41,15 +71,18 @@ import { ActivatedRoute, Router } from '@angular/router';
               <p class="section-desc">Selecciona el nivel de vibración para tu publicidad. A mayor nivel, más presencia en la plataforma.</p>
               
               <div class="tiers-grid">
-                <div class="tier-card" *ngFor="let tier of tiers" 
-                     [class.active]="selectedTier?.id === tier.id"
+                <div class="tier-card" *ngFor="let tier of plans" 
+                     [class.active]="selectedTier?.planId === tier.planId"
                      (click)="selectTier(tier)">
                   <div class="tier-icon-wrapper">
                     <mat-icon [class]="'vibe-icon ' + tier.id">{{ tier.icon }}</mat-icon>
                   </div>
                   <div class="tier-info">
-                    <span class="tier-name">{{ tier.name }}</span>
-                    <span class="tier-price">{{ tier.price }} $VBK</span>
+                    <span class="tier-name">{{ tier.displayName }}</span>
+                    <span class="tier-price">{{ tier.pricePerDayVbk | number }} $VBK / día</span>
+                    <span class="tier-slots" *ngIf="tier.availableSlots !== null">
+                      Slots: {{ tier.availableSlots }} disponibles
+                    </span>
                   </div>
                   <p class="tier-description">{{ tier.description }}</p>
                 </div>
@@ -64,21 +97,27 @@ import { ActivatedRoute, Router } from '@angular/router';
             <div class="summary-content" *ngIf="selectedTier; else noSelection">
               <div class="summary-row">
                 <span>Estrategia</span>
-                <span class="highlight">{{ selectedTier.name }}</span>
+                <span class="highlight">{{ selectedTier.displayName }}</span>
+              </div>
+              <div class="summary-row duration-row">
+                <span>Duración</span>
+                <span class="highlight-input">
+                  <input type="number" min="1" max="90" [(ngModel)]="durationDays" (ngModelChange)="onDurationChange()" class="duration-input"> días
+                </span>
               </div>
               <div class="summary-row">
-                <span>Costo</span>
-                <span class="highlight">{{ selectedTier.price }} $VBK</span>
+                <span>Costo por día</span>
+                <span class="highlight">{{ selectedTier.pricePerDayVbk | number }} $VBK</span>
               </div>
               <div class="summary-divider"></div>
               <div class="summary-total">
                 <span>Total a pagar</span>
-                <span class="total-price">{{ selectedTier.price }} $VBK</span>
+                <span class="total-price">{{ totalVbk | number }} $VBK</span>
               </div>
               
               <div class="disclaimer">
                 <mat-icon>info</mat-icon>
-                <p>La campaña se activará automáticamente tras confirmar el pago.</p>
+                <p>La campaña se activará automáticamente tras confirmar el pago con tu billetera interna.</p>
               </div>
 
               <button mat-raised-button class="pay-btn" (click)="confirmAd()">
@@ -95,6 +134,13 @@ import { ActivatedRoute, Router } from '@angular/router';
         </div>
       </div>
     </div>
+
+    <ng-template #loading>
+      <div class="global-loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Cargando información de publicidad...</p>
+      </div>
+    </ng-template>
   `,
   styles: [`
     .advertise-container {
@@ -143,12 +189,26 @@ import { ActivatedRoute, Router } from '@angular/router';
       padding: var(--space-6);
       background: rgba(255, 255, 255, 0.03);
       border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      align-items: center;
 
       .event-thumb {
         width: 120px;
         height: 120px;
         border-radius: 16px;
         object-fit: cover;
+      }
+
+      .no-image-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed var(--md-sys-color-outline-variant);
+        color: var(--md-sys-color-on-surface-variant);
+        mat-icon { font-size: 32px; width: 32px; height: 32px; }
       }
 
       .event-meta {
@@ -244,6 +304,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 
         .tier-name { font-weight: 800; font-size: 1.1rem; color: white; }
         .tier-price { color: var(--md-sys-color-primary); font-weight: 700; font-size: 0.9rem; }
+        
+        .tier-slots {
+          font-size: 0.75rem;
+          color: var(--md-sys-color-outline);
+          margin-top: 2px;
+        }
       }
 
       .tier-description {
@@ -273,6 +339,34 @@ import { ActivatedRoute, Router } from '@angular/router';
       color: var(--md-sys-color-on-surface-variant);
 
       .highlight { color: white; font-weight: 700; }
+    }
+
+    .duration-row {
+      align-items: center;
+    }
+
+    .highlight-input {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: white;
+    }
+
+    .duration-input {
+      width: 60px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: 6px;
+      color: white;
+      text-align: center;
+      padding: 4px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      
+      &:focus {
+        border-color: var(--md-sys-color-primary);
+      }
     }
 
     .summary-divider {
@@ -321,6 +415,16 @@ import { ActivatedRoute, Router } from '@angular/router';
       mat-icon { font-size: 48px; width: 48px; height: 48px; margin-bottom: 12px; }
     }
 
+    .global-loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-20) 0;
+      color: var(--md-sys-color-on-surface-variant);
+      gap: var(--space-4);
+    }
+
     @media (max-width: 992px) {
       .layout { grid-template-columns: 1fr; }
       .tiers-grid { grid-template-columns: 1fr; }
@@ -330,40 +434,190 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class AdvertiseEventComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private eventService = inject(EventService);
+  private venueService = inject(VenueService);
+  private advertisementService = inject(AdvertisementService);
+  private snackBar = inject(MatSnackBar);
+  private sanitizer = inject(DomSanitizer);
 
-  eventId: string = "";
+  eventId = 0;
   event: any = null;
-  selectedTier: any = null;
+  eventImageUrl: SafeUrl | null = null;
+  venueName = 'Cargando ubicación...';
 
-  tiers = [
-    { id: 'cool', name: 'Cool-Vibe', price: 100, icon: 'waves', description: 'Posicionamiento básico en categorías recomendadas.' },
-    { id: 'super', name: 'Super-Vibe', price: 250, icon: 'vibration', description: 'Destacado en búsquedas y 1 notificación push dirigida.' },
-    { id: 'mega', name: 'MEGA-Vibe', price: 500, icon: 'graphic_eq', description: 'Presencia total: Home carousel, Redes y Notificaciones globales.' }
-  ];
+  plans: AdvertiseTier[] = [];
+  selectedTier: AdvertiseTier | null = null;
+
+  durationDays = 7;
+  totalVbk = 0;
+  isLoadingGlobal = true;
 
   ngOnInit() {
-    this.eventId = this.route.snapshot.paramMap.get('id') || "";
-    this.loadEvent();
+    this.eventId = Number(this.route.snapshot.paramMap.get('id')) || 0;
+    this.loadData();
   }
 
-  loadEvent() {
-    // Mock event info
-    this.event = {
-      id: this.eventId,
-      name: 'Festival de Primavera 2026',
-      date: '21 de Septiembre, 2026',
-      venue: 'Parque de la Ciudad, Buenos Aires',
-      imageUrl: 'https://picsum.photos/seed/spring/400/400'
+  loadData() {
+    let eventLoaded = false;
+    let plansLoaded = false;
+
+    const checkLoaded = () => {
+      if (eventLoaded && plansLoaded) {
+        this.isLoadingGlobal = false;
+      }
     };
+
+    // 1. Fetch Event
+    this.eventService.findByIdEvent(this.eventId).subscribe({
+      next: (event) => {
+        this.event = event;
+        
+        // Fetch Venue details
+        if (event.venueId) {
+          this.venueService.findVenueById(event.venueId).subscribe({
+            next: (venue) => {
+              this.venueName = venue.title;
+              eventLoaded = true;
+              checkLoaded();
+            },
+            error: (err) => {
+              console.error("Error loading venue:", err);
+              this.venueName = 'Ubicación no disponible';
+              eventLoaded = true;
+              checkLoaded();
+            }
+          });
+        } else {
+          this.venueName = 'Sin ubicación asignada';
+          eventLoaded = true;
+          checkLoaded();
+        }
+
+        // Fetch Event image if exists
+        if (event.hasImage) {
+          this.eventService.getEventImage(event.id).subscribe({
+            next: (blob) => {
+              this.eventImageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+            },
+            error: (err) => {
+              console.warn("Error fetching event image:", err);
+              this.eventImageUrl = null;
+            }
+          });
+        }
+      },
+      error: (err) => {
+        console.error("Error loading event:", err);
+        this.snackBar.open("Error al cargar la información del evento", "Cerrar", { duration: 3000 });
+        this.isLoadingGlobal = false;
+      }
+    });
+
+    // 2. Fetch Plans
+    this.advertisementService.getActivePlans().subscribe({
+      next: (plans) => {
+        this.plans = plans.map(p => {
+          let id = 'cool';
+          let icon = 'waves';
+          let description = 'Posicionamiento básico en categorías recomendadas.';
+
+          const nameUpper = p.name.toUpperCase();
+          if (nameUpper.includes('MEDIUM') || nameUpper.includes('DESTACADO')) {
+            id = 'super';
+            icon = 'vibration';
+            description = 'Destacado en búsquedas y 1 notificación push dirigida.';
+          } else if (nameUpper.includes('HIGH') || nameUpper.includes('PREMIUM') || nameUpper.includes('MEGA')) {
+            id = 'mega';
+            icon = 'graphic_eq';
+            description = 'Presencia total: Home carousel, Redes y Notificaciones globales.';
+          }
+
+          return {
+            id,
+            planId: p.id,
+            name: p.name,
+            displayName: p.displayName,
+            pricePerDayVbk: p.pricePerDayVbk,
+            pricePerDayUsdt: p.pricePerDayUsdt,
+            icon,
+            description,
+            availableSlots: p.availableSlots
+          };
+        });
+
+        if (this.plans.length > 0) {
+          this.selectTier(this.plans[0]);
+        }
+
+        plansLoaded = true;
+        checkLoaded();
+      },
+      error: (err) => {
+        console.error("Error loading plans:", err);
+        this.snackBar.open("Error al cargar planes de publicidad", "Cerrar", { duration: 3000 });
+        this.isLoadingGlobal = false;
+      }
+    });
   }
 
-  selectTier(tier: any) {
+  selectTier(tier: AdvertiseTier) {
     this.selectedTier = tier;
+    this.calculateTotal();
+  }
+
+  onDurationChange() {
+    if (this.durationDays < 1) {
+      this.durationDays = 1;
+    } else if (this.durationDays > 365) {
+      this.durationDays = 365;
+    }
+    this.calculateTotal();
+  }
+
+  calculateTotal() {
+    if (this.selectedTier) {
+      this.totalVbk = this.selectedTier.pricePerDayVbk * this.durationDays;
+    } else {
+      this.totalVbk = 0;
+    }
+  }
+
+  formatDate(dateStr: string | undefined): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-AR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   confirmAd() {
-    alert(`Contratando plan ${this.selectedTier.name} para el evento ${this.event.name}.`);
-    this.goBack();
+    if (!this.selectedTier) {
+      this.snackBar.open("Por favor, selecciona una estrategia de publicidad", "Cerrar", { duration: 3000 });
+      return;
+    }
+
+    const request = {
+      planId: this.selectedTier.planId,
+      durationDays: this.durationDays
+    };
+
+    this.advertisementService.promoteEvent(this.eventId, request).subscribe({
+      next: (response) => {
+        this.snackBar.open(`¡Campaña contratada con éxito! Nivel: ${response.planName}`, "Cerrar", {
+          duration: 4000
+        });
+        this.goBack();
+      },
+      error: (err) => {
+        console.error("Error promoting event:", err);
+        const errMsg = err.error?.message || "Ocurrió un error al procesar el pago o la promoción.";
+        this.snackBar.open(`Error: ${errMsg}`, "Cerrar", { duration: 5000 });
+      }
+    });
   }
 
   goBack() {
