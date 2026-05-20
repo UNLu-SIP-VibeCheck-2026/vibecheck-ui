@@ -9,7 +9,7 @@
         <button mat-raised-button class="btn-dark" (click)="onConfirm()">
             {{ data.confirmText || 'Eliminar' }}
         </button>
-        <button mat-stroked-button class="btn-outline" (click)="onCancel()">
+        <button mat-stroked-button *ngIf="!data.hideCancel" class="btn-outline" (click)="onCancel()">
             {{ data.cancelText || 'Cancelar' }}
         </button>
     </mat-dialog-actions>

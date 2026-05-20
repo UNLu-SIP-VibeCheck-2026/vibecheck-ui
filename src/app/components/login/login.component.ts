@@ -16,6 +16,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { AuthService } from "../../services/auth.service";
 import { LoginRequest } from "../../models/login-request.model";
 import { environment } from "../../../environments/environment";
+import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
 
 @Component({
   selector: "app-login",
@@ -58,13 +59,15 @@ export class LoginComponent implements OnInit {
         );
       }
       if (params["passwordReset"] === "true") {
-        this.snackBar.open(
-          "¡Tu contraseña ha sido restablecida con éxito! Ya podés iniciar sesión.",
-          "Cerrar",
-          {
-            duration: 6000,
-          }
-        );
+        this.dialog.open(ConfirmDialogComponent, {
+          data: {
+            title: "¡Contraseña restablecida!",
+            message: "Tu contraseña ha sido restablecida con éxito. Ya podés iniciar sesión con tu nueva contraseña.",
+            confirmText: "Aceptar",
+            hideCancel: true
+          },
+          width: "400px"
+        });
       }
     });
   }
