@@ -1,11 +1,11 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { Router } from "@angular/router";
+import { Router, ActivatedRoute } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatInputModule } from "@angular/material/input";
@@ -31,10 +31,11 @@ import { environment } from "../../../environments/environment";
   templateUrl: "./login.component.html",
   styleUrls: ["./login.component.scss"],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
 
@@ -44,6 +45,29 @@ export class LoginComponent {
   });
 
   isSubmitting = false;
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      if (params["verified"] === "true") {
+        this.snackBar.open(
+          "¡Tu correo ha sido verificado con éxito! Ya podés iniciar sesión.",
+          "Cerrar",
+          {
+            duration: 6000,
+          }
+        );
+      }
+      if (params["passwordReset"] === "true") {
+        this.snackBar.open(
+          "¡Tu contraseña ha sido restablecida con éxito! Ya podés iniciar sesión.",
+          "Cerrar",
+          {
+            duration: 6000,
+          }
+        );
+      }
+    });
+  }
 
   onSubmit(): void {
     if (this.loginForm.invalid) {

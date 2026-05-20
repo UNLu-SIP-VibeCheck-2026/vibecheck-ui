@@ -30,6 +30,7 @@ import { GiftTicketComponent } from "./components/gift-ticket/gift-ticket.compon
 import { ResellTicketComponent } from "./components/resell-ticket/resell-ticket.component";
 import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
+import { ResetPasswordComponent } from "./components/reset-password/reset-password.component";
 
 export const routes: Routes = [
   {
@@ -41,6 +42,11 @@ export const routes: Routes = [
   {
     path: "pass-recovery",
     component: PasswordRecoveryComponent,
+    canActivate: [guestGuard],
+  },
+  {
+    path: "reset-password",
+    component: ResetPasswordComponent,
     canActivate: [guestGuard],
   },
   {

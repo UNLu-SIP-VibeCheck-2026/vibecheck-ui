@@ -43,18 +43,8 @@ export class AuthService {
       );
   }
 
-  register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/users/register`, data)
-      .pipe(
-        tap((response) => {
-          this.setTokens(response.accessToken, response.refreshToken);
-          this.currentUserSubject.next({
-            username: response.username,
-            role: response.role,
-          });
-        }),
-      );
+  register(data: RegisterRequest): Observable<string> {
+    return this.http.post(`${this.apiUrl}/users/register`, data, { responseType: 'text' });
   }
 
   refreshToken(): Observable<AuthResponse> {

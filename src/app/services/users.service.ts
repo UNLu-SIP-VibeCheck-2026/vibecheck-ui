@@ -53,4 +53,14 @@ export class UsersService {
   verifyEmail(token: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/verify-email`, { params: { token } });
   }
+
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/users/forgot-password`, null, {
+      params: { email }
+    });
+  }
+
+  resetPassword(payload: { token: string; newPassword: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/users/reset-password`, payload, { responseType: 'text' });
+  }
 }

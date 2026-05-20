@@ -130,11 +130,12 @@ export class RegisterComponent {
 
     this.authService.register(data).subscribe({
       next: () => {
-        this.snackBar.open("¡Bienvenido a VibeCheck!", "✕", {
-          duration: 4000,
+        this.authService.clearLocalSession();
+        this.snackBar.open("¡Registro exitoso! Por favor, verifica tu correo electrónico.", "✕", {
+          duration: 6000,
           panelClass: ["snack-success"],
         });
-        this.router.navigate(["/dashboard"]);
+        this.router.navigate(["/verify-email"]);
       },
       error: (err) => {
         this.isSubmitting = false;

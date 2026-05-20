@@ -31,6 +31,16 @@
           <p class="status-text">{{ message }}</p>
           <p class="redirect-notice">Redirigiendo al inicio en unos segundos...</p>
         </div>
+
+        <!-- Pending Check State -->
+        <div *ngIf="status === 'pending-check'" class="state-container animate-in">
+          <div class="icon-circle info">
+            <mat-icon>mail_outline</mat-icon>
+          </div>
+          <h2 class="result-title">Revisá tu Correo</h2>
+          <p class="status-text">{{ message }}</p>
+          <button mat-raised-button class="custom-btn-submit" (click)="goBackToLogin()">Volver al Login</button>
+        </div>
       </div>
     </mat-card>
   </div>
