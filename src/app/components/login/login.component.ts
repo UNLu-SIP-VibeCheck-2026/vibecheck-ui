@@ -49,15 +49,21 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
+      let openedDialog = false;
+
       if (params["verified"] === "true") {
-        this.snackBar.open(
-          "¡Tu correo ha sido verificado con éxito! Ya podés iniciar sesión.",
-          "Cerrar",
-          {
-            duration: 6000,
-          }
-        );
+        this.dialog.open(ConfirmDialogComponent, {
+          data: {
+            title: "¡Cuenta verificada!",
+            message: "Tu cuenta ha sido verificada con éxito. Ya podés iniciar sesión.",
+            confirmText: "Aceptar",
+            hideCancel: true
+          },
+          width: "400px"
+        });
+        openedDialog = true;
       }
+
       if (params["passwordReset"] === "true") {
         this.dialog.open(ConfirmDialogComponent, {
           data: {
@@ -67,6 +73,17 @@ export class LoginComponent implements OnInit {
             hideCancel: true
           },
           width: "400px"
+        });
+        openedDialog = true;
+      }
+
+      if (openedDialog) {
+        // Limpiar los parámetros de la URL para evitar que vuelvan a aparecer al recargar la página
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { verified: null, passwordReset: null },
+          queryParamsHandling: "merge",
+          replaceUrl: true
         });
       }
     });
