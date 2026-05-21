@@ -31,7 +31,7 @@ export class Web3Service {
   // Smart Contract Addresses
   private readonly VBK_ADDRESS = '0x68ec4adD5D3D615a86D56615DDED79B2326037aB';
   // Standard Sepolia USDC contract address (Circle official / widely used Sepolia Aave)
-  private readonly USDC_ADDRESS = '0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8';
+  private readonly USDC_ADDRESS = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
 
   private readonly SEPOLIA_CHAIN_ID = '0xaa36a7'; // Chain ID 11155111 en hexadecimal
 
@@ -80,7 +80,7 @@ export class Web3Service {
     try {
       const chainId = await this.ethereum.request({ method: 'eth_chainId' });
       const isSepolia = chainId === this.SEPOLIA_CHAIN_ID;
-      
+
       this.zone.run(() => {
         this.isSepoliaSubject.next(isSepolia);
       });
@@ -216,7 +216,7 @@ export class Web3Service {
       const address = accounts[0];
       this.connectedAddressSubject.next(address);
       this.isConnectedSubject.next(true);
-      
+
       const isSepolia = await this.checkNetwork();
       if (isSepolia) {
         await this.updateBalances(address);

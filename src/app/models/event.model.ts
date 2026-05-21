@@ -33,4 +33,5 @@ export interface EventResponse {
   ownerId: number;
   venueId: number;
   hasImage: boolean;
+  advertisementPlanId?: number;
 }

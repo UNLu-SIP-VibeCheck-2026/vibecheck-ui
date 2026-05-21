@@ -73,12 +73,16 @@ interface AdvertiseTier {
               <div class="tiers-grid">
                 <div class="tier-card" *ngFor="let tier of plans" 
                      [class.active]="selectedTier?.planId === tier.planId"
+                     [class.current-active]="event?.advertisementPlanId === tier.planId"
                      (click)="selectTier(tier)">
                   <div class="tier-icon-wrapper">
                     <mat-icon [class]="'vibe-icon ' + tier.id">{{ tier.icon }}</mat-icon>
                   </div>
                   <div class="tier-info">
                     <span class="tier-name">{{ tier.displayName }}</span>
+                    <span class="active-badge" *ngIf="event?.advertisementPlanId === tier.planId">
+                      Plan Actual
+                    </span>
                     <span class="tier-price">{{ tier.pricePerDayVbk | number }} $VBK / día</span>
                     <span class="tier-slots" *ngIf="tier.availableSlots !== null">
                       Slots: {{ tier.availableSlots }} disponibles
@@ -286,6 +290,12 @@ interface AdvertiseTier {
         box-shadow: 0 0 20px rgba(168, 85, 247, 0.1);
       }
 
+      &.current-active {
+        border-color: var(--md-sys-color-tertiary, #00d2ff);
+        background: rgba(0, 210, 255, 0.05);
+        box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
+      }
+
       .tier-icon-wrapper {
         margin-bottom: var(--space-4);
         
@@ -304,6 +314,21 @@ interface AdvertiseTier {
 
         .tier-name { font-weight: 800; font-size: 1.1rem; color: white; }
         .tier-price { color: var(--md-sys-color-primary); font-weight: 700; font-size: 0.9rem; }
+        
+        .active-badge {
+          background: rgba(0, 210, 255, 0.15);
+          color: #00d2ff;
+          font-size: 0.7rem;
+          font-weight: 800;
+          padding: 2px 8px;
+          border-radius: 20px;
+          margin-top: 4px;
+          margin-bottom: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          align-self: center;
+          border: 1px solid rgba(0, 210, 255, 0.3);
+        }
         
         .tier-slots {
           font-size: 0.75rem;
@@ -464,6 +489,10 @@ export class AdvertiseEventComponent implements OnInit {
     const checkLoaded = () => {
       if (eventLoaded && plansLoaded) {
         this.isLoadingGlobal = false;
+        if (this.plans.length > 0) {
+          const currentPlan = this.plans.find(p => p.planId === this.event?.advertisementPlanId);
+          this.selectTier(currentPlan || this.plans[0]);
+        }
       }
     };
 
@@ -544,10 +573,6 @@ export class AdvertiseEventComponent implements OnInit {
             availableSlots: p.availableSlots
           };
         });
-
-        if (this.plans.length > 0) {
-          this.selectTier(this.plans[0]);
-        }
 
         plansLoaded = true;
         checkLoaded();
