@@ -70,7 +70,8 @@ export class WalletComponent {
         error: (err) => {
           this.isLoading = false;
           console.error('Error al cargar dinero', err);
-          this.snackBar.open('Ocurrió un error al cargar el saldo.', 'Cerrar', { duration: 3000 });
+          const errMsg = err.error?.message || 'Ocurrió un error al cargar el saldo.';
+          this.snackBar.open(errMsg, 'Cerrar', { duration: 3000 });
         }
       });
     }
@@ -95,7 +96,8 @@ export class WalletComponent {
         error: (err) => {
           this.isLoading = false;
           console.error('Error al retirar dinero', err);
-          this.snackBar.open('Ocurrió un error al procesar el retiro.', 'Cerrar', { duration: 3000 });
+          const errMsg = err.error?.message || 'Ocurrió un error al procesar el retiro.';
+          this.snackBar.open(errMsg, 'Cerrar', { duration: 3000 });
         }
       });
     } else {

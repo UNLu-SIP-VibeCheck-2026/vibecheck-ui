@@ -28,6 +28,7 @@ import { EventService } from "../../../../services/event.service";
 import { VenueService } from "../../../../services/venue.service";
 import { EventResponse, EventUpdateRequest } from "../../../../models/event.model";
 import { VenueResponse } from "../../../../models/venue.model";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 export interface EventDialogData {
   event: EventResponse;
@@ -54,6 +55,7 @@ export interface EventDialogData {
   styleUrls: ["./event-dialog.component.scss"],
 })
 export class EventDialogComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<EventDialogComponent>);
   public data: EventDialogData = inject(MAT_DIALOG_DATA);

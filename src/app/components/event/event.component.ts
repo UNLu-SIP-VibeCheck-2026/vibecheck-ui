@@ -14,6 +14,7 @@ import { EventResponse } from "../../models/event.model";
 import { VenueResponse } from "../../models/venue.model";
 import { UserPublicResponse } from "../../models/user-public-response.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-event",
@@ -31,6 +32,7 @@ import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
   styleUrl: "./event.component.scss",
 })
 export class EventComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private eventService = inject(EventService);
@@ -95,14 +97,14 @@ export class EventComponent implements OnInit {
       next: (blob) => {
         this.eventImage = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
       },
-      error: (err) => console.warn(`Error loading image for event ${id}:`, err),
+      error: (err) =>  this.snackBar.open(err?.error?.message || "Ocurrió un error", "Cerrar", { duration: 4000 }),
     });
   }
 
   private loadVenue(venueId: number): void {
     this.venueService.findVenueById(venueId).subscribe({
       next: (v) => (this.venue = v),
-      error: (err) => console.warn("Venue no encontrado:", err),
+      error: (err) =>  this.snackBar.open(err?.error?.message || "Ocurrió un error", "Cerrar", { duration: 4000 }),
     });
   }
 

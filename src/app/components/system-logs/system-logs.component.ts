@@ -13,6 +13,7 @@ import { MatSelectModule } from "@angular/material/select";
 import { AuditLogsService } from "../../services/audit-logs.service";
 import { AuditLogResponse } from "../../models/audit-log-response.model";
 import { LogDetailDialogComponent } from '../shared/dialogs/log-detail-dialog/log-detail-dialog.component';
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-system-logs",
@@ -34,6 +35,7 @@ import { LogDetailDialogComponent } from '../shared/dialogs/log-detail-dialog/lo
   styleUrl: "./system-logs.component.scss",
 })
 export class SystemLogsComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private auditLogsService = inject(AuditLogsService);
 
@@ -66,8 +68,7 @@ export class SystemLogsComponent implements OnInit {
         this.dataSource.data = page.content;
         this.totalElements = page.totalElements;
       },
-      error: (err) => console.error("Error cargando logs:", err)
-    });
+      error: (err) =>  this.snackBar.open(err?.error?.message || "Error cargando logs:", "Cerrar", { duration: 4000 }),});
   }
 
   onPageChange(event: PageEvent): void {

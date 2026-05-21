@@ -73,7 +73,7 @@ export class AdminRolesComponent implements OnInit {
           this.dataSource.data = page.content;
           this.totalElements = page.totalElements;
         },
-        error: (err) => console.error("Error cargando roles:", err),
+        error: (err) =>  this.snackBar.open(err?.error?.message || "Error cargando roles:", "Cerrar", { duration: 4000 }),
       });
   }
 
@@ -108,7 +108,7 @@ export class AdminRolesComponent implements OnInit {
             });
             this.loadRoles();
           },
-          error: (err) => console.error("Error al crear rol", err),
+          error: (err) =>  this.snackBar.open(err?.error?.message || "Error al crear rol", "Cerrar", { duration: 4000 }),
         });
       }
     });
@@ -134,7 +134,7 @@ export class AdminRolesComponent implements OnInit {
             });
             this.loadRoles();
           },
-          error: (err) => console.error("Error al actualizar rol", err),
+          error: (err) =>  this.snackBar.open(err?.error?.message || "Error al actualizar rol", "Cerrar", { duration: 4000 }),
         });
       }
     });

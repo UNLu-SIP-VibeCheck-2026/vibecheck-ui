@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
 import { RolesService } from "../../../../services/roles.service";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-change-role-dialog",
@@ -16,6 +17,7 @@ import { RolesService } from "../../../../services/roles.service";
   styleUrls: ["./change-role-dialog.component.scss"],
 })
 export class ChangeRoleDialogComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private rolesService = inject(RolesService);
   private dialogRef = inject(MatDialogRef<ChangeRoleDialogComponent>);
   public data = inject<any>(MAT_DIALOG_DATA);

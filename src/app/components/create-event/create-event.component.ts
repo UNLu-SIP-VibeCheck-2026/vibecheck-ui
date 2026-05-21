@@ -179,7 +179,8 @@ export class CreateEventComponent implements OnInit {
         error: (err) => {
           console.error("Error creating event:", err);
           this.isSubmitting = false;
-          this.showSnack("Error al crear el evento", "error");
+          const errMsg = err.error?.message || "Error al crear el evento";
+          this.showSnack(errMsg, "error");
         },
       });
     }

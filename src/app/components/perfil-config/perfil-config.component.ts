@@ -101,12 +101,10 @@ export class PerfilConfigComponent {
             })
           ).subscribe({
             next: () => this.router.navigate(['/perfil-config']),
-            error: (err) => console.error('Error al renovar la sesión:', err)
-          });
+            error: (err) =>  this.snackBar.open(err?.error?.message || "Error al renovar la sesión:", "Cerrar", { duration: 4000 }),});
         });
       },
-      error: (err) => console.error('Error al obtener el perfil del usuario:', err)
-    });
+      error: (err) =>  this.snackBar.open(err?.error?.message || "Error al obtener el perfil del usuario:", "Cerrar", { duration: 4000 }),});
   }
 
   openChangeRole() {
@@ -163,8 +161,7 @@ export class PerfilConfigComponent {
           }
         });
       },
-      error: (err) => console.error('Error al obtener perfil para cambio de rol:', err)
-    });
+      error: (err) =>  this.snackBar.open(err?.error?.message || "Error al obtener perfil para cambio de rol:", "Cerrar", { duration: 4000 }),});
   }
 
   openChangePassword() {

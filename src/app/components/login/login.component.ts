@@ -11,7 +11,7 @@ import { MatCardModule } from "@angular/material/card";
 import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatButtonModule } from "@angular/material/button";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { AuthService } from "../../services/auth.service";
 import { LoginRequest } from "../../models/login-request.model";
@@ -28,7 +28,8 @@ import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
-  ],
+  
+    MatSnackBarModule],
   templateUrl: "./login.component.html",
   styleUrls: ["./login.component.scss"],
 })

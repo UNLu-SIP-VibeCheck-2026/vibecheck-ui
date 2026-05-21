@@ -17,6 +17,7 @@ import {
   TicketTypeResponse,
 } from '../../../../models/ticket-type.model';
 import { DateTimePickerComponent } from '../../date-time-picker/date-time-picker.component';
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 export interface TicketDialogData {
   ticket?: TicketTypeResponse;
@@ -44,6 +45,7 @@ export interface TicketDialogData {
   styleUrls: ['./ticket-dialog.component.scss']
 })
 export class TicketDialogComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<TicketDialogComponent>);
   private ticketTypeService = inject(TicketTypeService);

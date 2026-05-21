@@ -13,6 +13,7 @@ import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
 import { trackLoading } from "../../utils/loading.operator";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 export interface EventSummary {
   id: string;
@@ -49,6 +50,7 @@ export interface EventSummary {
   styleUrl: "./events.component.scss",
 })
 export class EventsComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private eventService = inject(EventService);
   private sanitizer = inject(DomSanitizer);
@@ -118,7 +120,7 @@ export class EventsComponent implements OnInit {
           this.loadEventImages(page.content);
           this.applyFilter();
         },
-        error: (err) => console.error("Error fetching events:", err),
+        error: (err) =>  this.snackBar.open(err?.error?.message || "Error fetching events:", "Cerrar", { duration: 4000 }),
       });
   }
 
@@ -130,7 +132,7 @@ export class EventsComponent implements OnInit {
             const url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
             this.imageMap.set(event.id, url);
           },
-          error: (err) => console.warn(`Error loading image for event ${event.id}:`, err),
+          error: (err) =>  this.snackBar.open(err?.error?.message || "Ocurrió un error", "Cerrar", { duration: 4000 }),
         });
       }
     });

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { UsersService } from '../../services/users.service';
 import { UserPublicResponse } from '../../models/user-public-response.model';
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-perfil-user',
@@ -12,6 +13,7 @@ import { UserPublicResponse } from '../../models/user-public-response.model';
   styleUrl: './perfil-user.component.scss'
 })
 export class PerfilUserComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private route = inject(ActivatedRoute);
   private usersService = inject(UsersService);
 

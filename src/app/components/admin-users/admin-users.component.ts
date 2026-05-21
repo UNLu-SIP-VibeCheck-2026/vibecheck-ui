@@ -24,6 +24,7 @@ import { RoleResponse } from "../../models/role-response.model";
 import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
 import { trackLoading } from "../../utils/loading.operator";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-admin-users",
@@ -47,6 +48,7 @@ import { trackLoading } from "../../utils/loading.operator";
   styleUrl: "./admin-users.component.scss",
 })
 export class AdminUsersComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private usersService = inject(UsersService);
   private rolesService = inject(RolesService);
@@ -83,7 +85,7 @@ export class AdminUsersComponent implements OnInit {
     this.loadUsers();
     this.rolesService.getAllRoles(0, 100).subscribe({
       next: (page: any) => (this.availableRoles = page.content),
-      error: (err: any) => console.error("Error cargando roles:", err),
+      error: (err: any) =>  this.snackBar.open(err?.error?.message || "Error cargando roles:", "Cerrar", { duration: 4000 }),
     });
   }
 
@@ -110,7 +112,7 @@ export class AdminUsersComponent implements OnInit {
           this.dataSource.data = page.content;
           this.totalElements = page.totalElements;
         },
-        error: (err) => console.error("Error cargando usuarios:", err),
+        error: (err) =>  this.snackBar.open(err?.error?.message || "Error cargando usuarios:", "Cerrar", { duration: 4000 }),
       });
   }
 
@@ -168,7 +170,7 @@ export class AdminUsersComponent implements OnInit {
             console.log("Usuario actualizado con éxito");
             this.loadUsers();
           },
-          error: (err) => console.error("Error al actualizar usuario:", err),
+          error: (err) =>  this.snackBar.open(err?.error?.message || "Error al actualizar usuario:", "Cerrar", { duration: 4000 }),
         });
       }
     });

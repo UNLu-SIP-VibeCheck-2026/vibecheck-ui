@@ -20,6 +20,7 @@ import { CommonModule } from "@angular/common";
 import { RolesService } from "../../../../services/roles.service";
 import { RoleResponse } from "../../../../models/role-response.model";
 import { Page } from "../../../../models/page.model";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-user-dialog",
@@ -37,6 +38,7 @@ import { Page } from "../../../../models/page.model";
   styleUrls: ["./user-dialog.component.scss"],
 })
 export class UserDialogComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<UserDialogComponent>);
   public data = inject(MAT_DIALOG_DATA);
@@ -63,7 +65,7 @@ export class UserDialogComponent implements OnInit {
           }
         }
       },
-      error: (err: any) => console.error("Error cargando roles", err),
+      error: (err: any) =>  this.snackBar.open(err?.error?.message || "Error cargando roles", "Cerrar", { duration: 4000 }),
     });
   }
 

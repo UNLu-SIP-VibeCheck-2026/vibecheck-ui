@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { PermissionsService } from '../../../../services/permissions.service';
 import { PermissionResponse } from '../../../../models/permission-response.model';
 import { Page } from '../../../../models/page.model';
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-role-dialog',
@@ -28,6 +29,7 @@ import { Page } from '../../../../models/page.model';
   styleUrls: ['./role-dialog.component.scss']
 })
 export class RoleDialogComponent implements OnInit {
+  private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<RoleDialogComponent>);
   public data = inject(MAT_DIALOG_DATA);
@@ -45,8 +47,7 @@ export class RoleDialogComponent implements OnInit {
       next: (page: Page<PermissionResponse>) => {
         this.availablePermissions = page.content;
       },
-      error: (err: any) => console.error("Error loading permissions", err)
-    });
+      error: (err: any) =>  this.snackBar.open(err?.error?.message || "Error loading permissions", "Cerrar", { duration: 4000 }),});
 
     this.initForm();
   }

@@ -111,7 +111,7 @@ export class AdminEventsComponent implements OnInit {
         this.venueMap.clear();
         page.content.forEach((v) => this.venueMap.set(v.id, v));
       },
-      error: (err) => console.error("Error cargando venues:", err),
+      error: (err) =>  this.snackBar.open(err?.error?.message || "Error cargando venues:", "Cerrar", { duration: 4000 }),
     });
   }
 
@@ -140,7 +140,7 @@ export class AdminEventsComponent implements OnInit {
             const url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
             this.imageMap.set(event.id, url);
           },
-          error: (err) => console.warn(`Error loading image for event ${event.id}:`, err),
+          error: (err) =>  this.snackBar.open(err?.error?.message || "Ocurrió un error", "Cerrar", { duration: 4000 }),
         });
       }
     });
@@ -352,7 +352,8 @@ export class AdminEventsComponent implements OnInit {
       },
       error: (err) => {
         this.deletingId = null;
-        this.showSnack("Error al eliminar el evento", "error");
+        const msg = err?.error?.message || "Error al eliminar el evento";
+        this.showSnack(msg, "error");
         console.error(err);
       },
     });
