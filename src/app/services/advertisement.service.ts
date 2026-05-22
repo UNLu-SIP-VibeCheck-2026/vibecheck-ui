@@ -22,4 +22,13 @@ export class AdvertisementService {
   promoteEvent(eventId: number, request: PromoteEventRequest): Observable<PromoteEventResponse> {
     return this.http.post<PromoteEventResponse>(`${this.apiUrl}/events/${eventId}/promote`, request);
   }
+
+  previewPromotion(eventId: number, planId: number, durationDays: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/events/${eventId}/preview-promotion`, {
+      params: {
+        planId: planId.toString(),
+        durationDays: durationDays.toString()
+      }
+    });
+  }
 }

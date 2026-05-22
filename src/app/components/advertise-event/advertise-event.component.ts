@@ -113,19 +113,32 @@ interface AdvertiseTier {
                 <span>Costo por día</span>
                 <span class="highlight">{{ selectedTier.pricePerDayVbk | number }} $VBK</span>
               </div>
+              <div class="summary-row" *ngIf="discountVbk > 0" style="color: var(--md-sys-color-tertiary);">
+                <span>Descuento aplicado</span>
+                <span class="highlight">-{{ discountVbk | number }} $VBK</span>
+              </div>
               <div class="summary-divider"></div>
               <div class="summary-total">
                 <span>Total a pagar</span>
-                <span class="total-price">{{ totalVbk | number }} $VBK</span>
+                <span class="total-price">{{ finalTotalVbk | number }} $VBK</span>
               </div>
               
-              <div class="disclaimer">
+              <div class="disclaimer" *ngIf="previewError">
+                <mat-icon style="color: var(--md-sys-color-error)">error</mat-icon>
+                <p style="color: var(--md-sys-color-error)">{{ previewError }}</p>
+              </div>
+              <div class="disclaimer" *ngIf="!previewError && discountVbk > 0">
+                <mat-icon style="color: var(--md-sys-color-tertiary)">loyalty</mat-icon>
+                <p>¡Se ha aplicado un descuento por los días no usados de tu plan actual!</p>
+              </div>
+              <div class="disclaimer" *ngIf="!previewError && discountVbk === 0">
                 <mat-icon>info</mat-icon>
                 <p>La campaña se activará automáticamente tras confirmar el pago con tu billetera interna.</p>
               </div>
 
-              <button mat-raised-button class="pay-btn" (click)="confirmAd()">
-                CONTRATAR PUBLICIDAD
+              <button mat-raised-button class="pay-btn" (click)="confirmAd()" [disabled]="!!previewError || isPreviewing">
+                <span *ngIf="!isPreviewing">CONTRATAR PUBLICIDAD</span>
+                <mat-spinner *ngIf="isPreviewing" diameter="24" color="accent"></mat-spinner>
               </button>
             </div>
             <ng-template #noSelection>
@@ -474,8 +487,13 @@ export class AdvertiseEventComponent implements OnInit {
   selectedTier: AdvertiseTier | null = null;
 
   durationDays = 7;
-  totalVbk = 0;
+  originalTotalVbk = 0;
+  discountVbk = 0;
+  finalTotalVbk = 0;
   isLoadingGlobal = true;
+  isPreviewing = false;
+  previewError: string | null = null;
+  private previewTimeout: any;
 
   ngOnInit() {
     this.eventId = Number(this.route.snapshot.paramMap.get('id')) || 0;
@@ -600,11 +618,38 @@ export class AdvertiseEventComponent implements OnInit {
   }
 
   calculateTotal() {
-    if (this.selectedTier) {
-      this.totalVbk = this.selectedTier.pricePerDayVbk * this.durationDays;
-    } else {
-      this.totalVbk = 0;
+    if (!this.selectedTier) {
+      this.originalTotalVbk = 0;
+      this.finalTotalVbk = 0;
+      this.discountVbk = 0;
+      return;
     }
+
+    this.isPreviewing = true;
+    this.previewError = null;
+
+    if (this.previewTimeout) {
+      clearTimeout(this.previewTimeout);
+    }
+
+    this.previewTimeout = setTimeout(() => {
+      this.advertisementService.previewPromotion(this.eventId, this.selectedTier!.planId, this.durationDays)
+        .subscribe({
+          next: (res) => {
+            this.originalTotalVbk = res.originalTotalVbk;
+            this.discountVbk = res.discountVbk;
+            this.finalTotalVbk = res.finalTotalVbk;
+            this.isPreviewing = false;
+          },
+          error: (err) => {
+            this.originalTotalVbk = 0;
+            this.discountVbk = 0;
+            this.finalTotalVbk = 0;
+            this.previewError = err.error?.message || 'Error al calcular el precio.';
+            this.isPreviewing = false;
+          }
+        });
+    }, 500);
   }
 
   formatDate(dateStr: string | undefined): string {
