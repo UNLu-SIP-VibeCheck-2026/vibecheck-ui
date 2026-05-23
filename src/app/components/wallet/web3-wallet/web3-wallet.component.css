@@ -324,4 +324,142 @@
   .balances-grid {
     grid-template-columns: 1fr;
   }
+
+  .form-row {
+    flex-direction: column;
+  }
+}
+
+/* Send Funds Card */
+.send-funds-card {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.send-funds-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  padding-bottom: 1rem;
+}
+
+.send-icon {
+  color: #3b82f6;
+}
+
+.send-funds-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.flex-1 { flex: 1; }
+.flex-2 { flex: 2; }
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.web3-input {
+  background: var(--md-sys-color-surface-container-high);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface);
+  padding: 0.75rem 1rem;
+  border-radius: var(--md-sys-shape-corner-medium);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.web3-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.web3-input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.send-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.send-btn {
+  background: #3b82f6 !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0 2rem !important;
+  height: 44px;
+  border-radius: 22px !important;
+}
+
+.send-btn:disabled {
+  background: #94a3b8 !important;
+  color: #f1f5f9 !important;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* Feedback Messages */
+.feedback-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--md-sys-shape-corner-medium);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.success-message {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.success-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tx-link {
+  color: #10b981;
+  text-decoration: underline;
+  font-weight: 600;
 }

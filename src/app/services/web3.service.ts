@@ -38,7 +38,8 @@ export class Web3Service {
   private readonly ERC20_ABI = [
     'function balanceOf(address owner) view returns (uint256)',
     'function decimals() view returns (uint8)',
-    'function symbol() view returns (string)'
+    'function symbol() view returns (string)',
+    'function transfer(address to, uint256 amount) returns (bool)'
   ];
 
   constructor() {
@@ -172,6 +173,38 @@ export class Web3Service {
       });
     } catch (error) {
       console.error('Error actualizando balances:', error);
+    }
+  }
+
+  async sendFunds(to: string, amount: string, asset: 'ETH' | 'VBK' | 'USDC'): Promise<string> {
+    if (!this.provider) {
+      throw new Error('No hay proveedor de Web3 conectado.');
+    }
+
+    const signer = await this.provider.getSigner();
+
+    if (asset === 'ETH') {
+      const tx = await signer.sendTransaction({
+        to,
+        value: ethers.parseEther(amount)
+      });
+      return tx.hash;
+    } else {
+      let contractAddress = '';
+      let decimals = 18;
+
+      if (asset === 'VBK') {
+        contractAddress = this.VBK_ADDRESS;
+        decimals = 18; // VBK is 18 decimals
+      } else if (asset === 'USDC') {
+        contractAddress = this.USDC_ADDRESS;
+        decimals = 6; // USDC is typically 6 decimals
+      }
+
+      const tokenContract = new ethers.Contract(contractAddress, this.ERC20_ABI, signer);
+      const amountInWei = ethers.parseUnits(amount, decimals);
+      const tx = await tokenContract['transfer'](to, amountInWei);
+      return tx.hash;
     }
   }
 
