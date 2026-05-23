@@ -8,7 +8,19 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
+
+import { EventService } from '../../services/event.service';
+import { TicketTypeService } from '../../services/ticket-type.service';
+import { EventResponse } from '../../models/event.model';
+import { TicketTypeResponse } from '../../models/ticket-type.model';
+import { environment } from '../../../environments/environment';
+
+export interface TicketTypeUI extends TicketTypeResponse {
+  quantity: number;
+  status: string;
+}
 
 @Component({
   selector: 'app-select-tickets',
@@ -22,7 +34,8 @@ import { ActivatedRoute, Router } from '@angular/router';
     MatFormFieldModule, 
     MatSelectModule, 
     MatInputModule,
-    MatRadioModule
+    MatRadioModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './select-tickets.component.html',
   styleUrls: ['./select-tickets.component.scss']
@@ -30,37 +43,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class SelectTicketsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private eventService = inject(EventService);
+  private ticketTypeService = inject(TicketTypeService);
 
-  event: any = null;
-  ticketTypes = [
-    { 
-      id: 1, 
-      name: 'General', 
-      price: 5000, 
-      maxResalePrice: 6000, 
-      location: 'Campo General', 
-      status: 'AVAILABLE', 
-      quantity: 0 
-    },
-    { 
-      id: 2, 
-      name: 'VIP Platino', 
-      price: 15000, 
-      maxResalePrice: 18000, 
-      location: 'Sector VIP Front', 
-      status: 'AVAILABLE', 
-      quantity: 0 
-    },
-    { 
-      id: 3, 
-      name: 'Palco Preferencial', 
-      price: 25000, 
-      maxResalePrice: 30000, 
-      location: 'Palcos Nivel 1', 
-      status: 'SOLD_OUT', 
-      quantity: 0 
-    }
-  ];
+  event: (EventResponse & { image?: string | null }) | null = null;
+  ticketTypes: TicketTypeUI[] = [];
+  
+  isLoading = true;
+  errorMessage = '';
 
   paymentMethods = [
     { id: 'vbk', name: '$VBK', enabled: true },
@@ -73,21 +63,58 @@ export class SelectTicketsComponent implements OnInit {
 
   ngOnInit() {
     window.scrollTo(0, 0);
-    const id = this.route.snapshot.paramMap.get('id');
-    // Mock event data (reduced version)
-    this.event = {
-      id: id || 'EVENTO001',
-      title: 'VibeCheck Festival 2026',
-      description: 'El evento más esperado del año llega a Buenos Aires. Una noche llena de música, arte y tecnología.',
-      startDate: '15/05/2026',
-      endDate: '16/05/2026',
-      venue: 'Estadio Vibe',
-      image: null // Placeholder handled in template
-    };
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const eventId = idParam ? parseInt(idParam, 10) : null;
+
+    if (!eventId || isNaN(eventId)) {
+      this.errorMessage = 'ID de evento inválido.';
+      this.isLoading = false;
+      return;
+    }
+
+    this.loadEventData(eventId);
+  }
+
+  loadEventData(eventId: number) {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.eventService.findByIdEvent(eventId).subscribe({
+      next: (eventData) => {
+        this.event = {
+          ...eventData,
+          image: eventData.hasImage ? `${environment.apiBaseUrl}/events/${eventId}/image` : null
+        };
+        this.loadTicketTypes(eventId);
+      },
+      error: (err) => {
+        console.error('Error fetching event', err);
+        this.errorMessage = 'No se pudo cargar la información del evento.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadTicketTypes(eventId: number) {
+    this.ticketTypeService.findTicketTypesByEvent(eventId).subscribe({
+      next: (tickets) => {
+        this.ticketTypes = tickets.map(ticket => ({
+          ...ticket,
+          quantity: 0,
+          status: ticket.active ? 'AVAILABLE' : 'SOLD_OUT'
+        }));
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching ticket types', err);
+        this.errorMessage = 'No se pudieron cargar los tipos de tickets.';
+        this.isLoading = false;
+      }
+    });
   }
 
   get subtotal() {
-    return this.ticketTypes.reduce((sum, ticket) => sum + (ticket.price * ticket.quantity), 0);
+    return this.ticketTypes.reduce((sum, ticket) => sum + (ticket.priceUsdt * ticket.quantity), 0);
   }
 
   get serviceCharge() {
@@ -102,13 +129,17 @@ export class SelectTicketsComponent implements OnInit {
     return this.subtotal > 0 && this.selectedPaymentMethod === 'vbk';
   }
 
-  incrementQuantity(ticket: any) {
+  incrementQuantity(ticket: TicketTypeUI) {
     if (ticket.status === 'AVAILABLE') {
+      if (ticket.maxPerUser && ticket.quantity >= ticket.maxPerUser) {
+          // Maximum tickets per user reached
+          return;
+      }
       ticket.quantity++;
     }
   }
 
-  decrementQuantity(ticket: any) {
+  decrementQuantity(ticket: TicketTypeUI) {
     if (ticket.quantity > 0) {
       ticket.quantity--;
     }
@@ -124,6 +155,10 @@ export class SelectTicketsComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/event', this.event.id]);
+    if (this.event) {
+      this.router.navigate(['/event', this.event.id]);
+    } else {
+      this.router.navigate(['/events']);
+    }
   }
 }

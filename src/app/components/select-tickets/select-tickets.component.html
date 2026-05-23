@@ -1,4 +1,15 @@
-<div class="select-tickets-container" *ngIf="event">
+<div class="loading-state" *ngIf="isLoading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh;">
+  <mat-spinner diameter="50"></mat-spinner>
+  <p style="margin-top: 20px; color: #aaa;">Cargando información del evento...</p>
+</div>
+
+<div class="error-state" *ngIf="errorMessage" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh;">
+  <mat-icon color="warn" style="font-size: 48px; width: 48px; height: 48px;">error</mat-icon>
+  <p style="margin-top: 20px; color: #ff5252; font-size: 1.2rem;">{{ errorMessage }}</p>
+  <button mat-stroked-button color="primary" style="margin-top: 20px;" (click)="goBack()">Volver</button>
+</div>
+
+<div class="select-tickets-container" *ngIf="!isLoading && !errorMessage && event">
   <div class="header">
     <button mat-icon-button (click)="goBack()">
       <mat-icon>arrow_back</mat-icon>
@@ -16,16 +27,16 @@
               <div class="ticket-details">
                 <span class="ticket-name">{{ ticket.name }}</span>
                 <span class="ticket-location">
-                  <mat-icon>location_on</mat-icon> {{ ticket.location }}
+                  <mat-icon>info</mat-icon> {{ ticket.description }}
                 </span>
                 <div class="price-info">
                   <div class="price-item">
                     <label>Precio</label>
-                    <span class="price-value">{{ ticket.price | currency:'$':'symbol':'1.0-0' }}</span>
+                    <span class="price-value">{{ ticket.priceUsdt | currency:'$':'symbol':'1.0-0' }}</span>
                   </div>
                   <div class="price-item">
                     <label>Máx. Reventa</label>
-                    <span class="resale-value">{{ ticket.maxResalePrice | currency:'$':'symbol':'1.0-0' }}</span>
+                    <span class="resale-value">{{ ticket.maxPrice | currency:'$':'symbol':'1.0-0' }}</span>
                   </div>
                 </div>
               </div>
@@ -96,7 +107,7 @@
             </div>
             <div class="meta-item">
               <mat-icon>location_on</mat-icon>
-              <span>{{ event.venue }}</span>
+              <span>{{ event.venueId ? 'Sede ID: ' + event.venueId : 'Sede a confirmar' }}</span>
             </div>
           </div>
 

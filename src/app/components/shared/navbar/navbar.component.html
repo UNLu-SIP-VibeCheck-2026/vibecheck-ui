@@ -1,11 +1,11 @@
 <nav class="navbar">
   <div class="logo-container" (click)="navigateToHome()">
     <div class="logo-icon gradient-border">
-      <img src="assets/VC Logo SQUARE.png" alt="VibeCheck Logo" class="nav-logo-img">
+      <img src="assets/VC.png" alt="VibeCheck Logo" class="nav-logo-img">
     </div>
     <span class="logo-text">VibeCheck</span>
   </div>
-  
+
   <div class="nav-actions">
     <ng-container *ngIf="user$ | async as user; else loggedOut">
       <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
@@ -37,8 +37,9 @@
 
     <ng-template #loggedOut>
       <button class="chip-outlined" (click)="navigateToLogin()">INICIAR SESIÓN</button>
-      <button class="btn-cta" (click)="navigateToRegister()" style="height: 36px; padding: 0 16px; border-radius: 50px;">
-          <span class="btn-cta__label" style="padding: 0; font-size: 13px;">REGISTRARSE</span>
+      <button class="btn-cta" (click)="navigateToRegister()"
+        style="height: 36px; padding: 0 16px; border-radius: 50px;">
+        <span class="btn-cta__label" style="padding: 0; font-size: 13px;">REGISTRARSE</span>
       </button>
     </ng-template>
   </div>
