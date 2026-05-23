@@ -1,160 +1,180 @@
-<div class="web3-container">
-  <div class="web3-header">
-    <div class="web3-title-group">
-      <h2 class="web3-title">Billetera Web3 (MetaMask)</h2>
-      <span class="web3-tagline">Pagos en Blockchain y Tickets NFT</span>
-    </div>
-    
-    <!-- Estado de conexión -->
-    <div class="status-tag" [class.connected]="isConnected$ | async" [class.disconnected]="!(isConnected$ | async)">
-      <span class="status-dot"></span>
-      {{ (isConnected$ | async) ? 'Conectado' : 'Desconectado' }}
-    </div>
-  </div>
+<div class="web3-premium-container">
+  
+  <div class="glass-orb orb-1"></div>
+  <div class="glass-orb orb-2"></div>
 
   <!-- MetaMask NO INSTALADO -->
-  <div class="web3-card info-card" *ngIf="!isInstalled">
-    <mat-icon class="card-icon warning-icon">report_problem</mat-icon>
-    <div class="card-details">
-      <h3>MetaMask no detectado</h3>
-      <p>Necesitas tener instalada la extensión MetaMask en tu navegador Google Chrome para realizar pagos descentralizados y gestionar tus tickets.</p>
-      <a href="https://metamask.io/download/" target="_blank" mat-raised-button class="install-btn">
-        <mat-icon>open_in_new</mat-icon> Instalar MetaMask
-      </a>
+  <div class="luxury-card center-content" *ngIf="!isInstalled">
+    <div class="logo-wrapper">
+      <img src="assets/metamask.png" alt="MetaMask" class="mm-logo-large grayscale">
     </div>
+    <h2>Integración Web3 Requerida</h2>
+    <p>Para acceder a la plataforma financiera y pagos descentralizados, necesitas instalar MetaMask en tu navegador.</p>
+    <a href="https://metamask.io/download/" target="_blank" class="luxury-btn primary-btn">
+      <mat-icon>download</mat-icon> Instalar MetaMask
+    </a>
   </div>
 
   <!-- MetaMask INSTALADO PERO NO CONECTADO -->
-  <div class="web3-card connect-card" *ngIf="isInstalled && !(isConnected$ | async)">
-    <div class="connect-visual">
-      <div class="metamask-logo-container">
-        <span class="logo-fox">🦊</span>
-      </div>
+  <div class="luxury-card center-content" *ngIf="isInstalled && !(isConnected$ | async)">
+    <div class="logo-wrapper pulse-glow">
+      <img src="assets/metamask.png" alt="MetaMask" class="mm-logo-large">
     </div>
-    <div class="connect-action">
-      <h3>Conecta tu Billetera</h3>
-      <p>Accede con tu MetaMask para interactuar con los contratos de VibeCheck (VBK y tickets NFT) en la red Sepolia.</p>
-      <button mat-raised-button class="connect-btn" (click)="connect()">
-        <mat-icon>account_balance_wallet</mat-icon> Conectar con MetaMask
-      </button>
-    </div>
+    <h2>Billetera Virtual</h2>
+    <p class="subtitle">Conecta tu cuenta de MetaMask para gestionar tus activos y realizar pagos seguros dentro del ecosistema VibeCheck.</p>
+    
+    <button class="luxury-btn primary-btn" (click)="connect()">
+      <mat-icon>account_balance_wallet</mat-icon> Conectar Billetera
+    </button>
   </div>
 
   <!-- CONECTADO PERO EN RED INCORRECTA -->
-  <div class="web3-card network-warning-card" *ngIf="isInstalled && (isConnected$ | async) && !(isSepolia$ | async)">
-    <mat-icon class="card-icon warning-icon">wifi_tethering_error</mat-icon>
-    <div class="card-details">
-      <h3>Red incorrecta en MetaMask</h3>
-      <p>VibeCheck opera sobre la red de pruebas **Sepolia**. Por favor cambia de red para ver tus saldos y tickets.</p>
-      <button mat-raised-button class="switch-network-btn" (click)="forceSwitchNetwork()">
-        <mat-icon>swap_horiz</mat-icon> Cambiar a Red Sepolia
+  <div class="luxury-card center-content warning-state" *ngIf="isInstalled && (isConnected$ | async) && !(isSepolia$ | async)">
+    <mat-icon class="huge-icon">wifi_tethering_error</mat-icon>
+    <h2>Red Incorrecta</h2>
+    <p>La red actual no es compatible. VibeCheck opera de forma exclusiva sobre la red <strong>Sepolia Testnet</strong>.</p>
+    <button class="luxury-btn warning-btn" (click)="forceSwitchNetwork()">
+      <mat-icon>swap_horiz</mat-icon> Cambiar a Sepolia
+    </button>
+  </div>
+
+  <!-- CONECTADO Y EN SEPOLIA -->
+  <div class="dashboard-container" *ngIf="isInstalled && (isConnected$ | async) && (isSepolia$ | async)">
+    
+    <!-- Dashboard Header -->
+    <div class="dashboard-header luxury-card">
+      <div class="user-info">
+        <div class="avatar-circle">
+          <img src="assets/metamask.png" alt="MetaMask" class="mm-logo-small">
+        </div>
+        <div class="address-details">
+          <span class="network-badge">Sepolia Network</span>
+          <h2 class="address">{{ truncateAddress(connectedAddress$ | async) }}</h2>
+        </div>
+      </div>
+      <div class="powered-by">
+        <span>Powered by</span>
+        <img src="assets/metamask.png" alt="MetaMask Logo" class="mm-logo-tiny">
+        <strong>MetaMask</strong>
+      </div>
+    </div>
+
+    <!-- Navegación de Pestañas (Tabs) -->
+    <div class="premium-tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'balances'" (click)="switchTab('balances')">
+        <mat-icon>account_balance</mat-icon> Mis Saldos
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'send'" (click)="switchTab('send')">
+        <mat-icon>send</mat-icon> Transferir
       </button>
     </div>
-  </div>
 
-  <!-- CONECTADO Y EN LA RED CORRECTA (SEPOLIA) -->
-  <div class="web3-balance-card" *ngIf="isInstalled && (isConnected$ | async) && (isSepolia$ | async)">
-    <div class="wallet-info">
-      <div class="address-group">
-        <span class="network-badge">Sepolia Testnet</span>
-        <h3 class="address-text">{{ truncateAddress(connectedAddress$ | async) }}</h3>
+    <!-- PESTAÑA: SALDOS -->
+    <div class="tab-content fade-in" *ngIf="activeTab === 'balances'">
+      <div class="balances-grid">
+        <!-- VBK -->
+        <div class="balance-glass-card">
+          <div class="card-icon-bg purple-bg"><mat-icon>toll</mat-icon></div>
+          <span class="asset-name">VibeCheck Token</span>
+          <div class="amount-row">
+            <span class="amount">{{ vbkBalance$ | async }}</span>
+            <span class="symbol">VBK</span>
+          </div>
+        </div>
+
+        <!-- USDC -->
+        <div class="balance-glass-card">
+          <div class="card-icon-bg blue-bg"><mat-icon>attach_money</mat-icon></div>
+          <span class="asset-name">Dólar Digital</span>
+          <div class="amount-row">
+            <span class="amount">{{ usdcBalance$ | async }}</span>
+            <span class="symbol">USDC</span>
+          </div>
+        </div>
+
+        <!-- ETH -->
+        <div class="balance-glass-card">
+          <div class="card-icon-bg indigo-bg"><mat-icon>local_gas_station</mat-icon></div>
+          <span class="asset-name">Ethereum (Gas)</span>
+          <div class="amount-row">
+            <span class="amount">{{ ethBalance$ | async }}</span>
+            <span class="symbol">ETH</span>
+          </div>
+        </div>
       </div>
-      <div class="provider-logo">
-        <span class="logo-fox">🦊</span>
+
+      <div class="dashboard-footer">
+        <a href="https://sepolia.etherscan.io/address/{{ connectedAddress$ | async }}" target="_blank" class="text-link">
+          Ver historial en Etherscan <mat-icon>launch</mat-icon>
+        </a>
       </div>
     </div>
 
-    <!-- Grilla de Balances -->
-    <div class="balances-grid">
-      <!-- VBK Balance -->
-      <div class="balance-item-web3 vbk-balance">
-        <span class="balance-label">Moneda Interna ($VC)</span>
-        <div class="balance-value-container">
-          <span class="balance-amount">{{ vbkBalance$ | async }}</span>
-          <span class="balance-token-symbol">VBK</span>
+    <!-- PESTAÑA: ENVIAR FONDOS -->
+    <div class="tab-content fade-in" *ngIf="activeTab === 'send'">
+      <div class="luxury-card form-card">
+        <div class="form-header">
+          <h3>Enviar Criptoactivos</h3>
+          <p>Transfiere valor a cualquier dirección de forma segura a través de MetaMask.</p>
         </div>
-        <span class="balance-description">VibeCheck Token (ERC-20)</span>
-      </div>
 
-      <!-- USDC Balance -->
-      <div class="balance-item-web3 usdc-balance">
-        <span class="balance-label">Dólar Digital</span>
-        <div class="balance-value-container">
-          <span class="balance-amount">{{ usdcBalance$ | async }}</span>
-          <span class="balance-token-symbol">USDC</span>
-        </div>
-        <span class="balance-description">Moneda de Pago (ERC-20)</span>
-      </div>
+        <div class="premium-form">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label>Activo</label>
+              <div class="custom-select-wrapper">
+                <select [(ngModel)]="selectedAsset" class="glass-input" [disabled]="isSending">
+                  <option value="ETH">Sepolia ETH</option>
+                  <option value="VBK">VBK Token</option>
+                  <option value="USDC">USDC</option>
+                </select>
+                <mat-icon class="select-icon">expand_more</mat-icon>
+              </div>
+            </div>
+            
+            <div class="form-group flex-2">
+              <label>Monto a enviar</label>
+              <div class="input-with-icon">
+                <input type="number" [(ngModel)]="sendAmount" placeholder="0.00" class="glass-input" [disabled]="isSending" min="0" step="0.0001">
+                <span class="input-suffix">{{ selectedAsset }}</span>
+              </div>
+            </div>
+          </div>
 
-      <!-- ETH Sepolia Balance -->
-      <div class="balance-item-web3 eth-balance">
-        <span class="balance-label">Fondos para Transacciones</span>
-        <div class="balance-value-container">
-          <span class="balance-amount">{{ ethBalance$ | async }}</span>
-          <span class="balance-token-symbol">SepoliaETH</span>
-        </div>
-        <span class="balance-description">Gas de la Blockchain</span>
-      </div>
-    </div>
+          <div class="form-group">
+            <label>Dirección de destino</label>
+            <div class="input-with-icon">
+              <mat-icon class="input-prefix">account_circle</mat-icon>
+              <input type="text" [(ngModel)]="sendToAddress" placeholder="0x..." class="glass-input pl-10" [disabled]="isSending">
+            </div>
+          </div>
 
-    <div class="web3-actions">
-      <a href="https://sepolia.etherscan.io/address/{{ connectedAddress$ | async }}" target="_blank" mat-button class="etherscan-link">
-        <mat-icon>launch</mat-icon> Ver cuenta en Etherscan
-      </a>
-    </div>
-  </div>
+          <!-- Feedback Messages -->
+          <div class="alert-box error" *ngIf="sendError">
+            <mat-icon>error_outline</mat-icon> <span>{{ sendError }}</span>
+          </div>
+          
+          <div class="alert-box success" *ngIf="sendSuccessHash">
+            <mat-icon>check_circle</mat-icon> 
+            <div class="success-details">
+              <strong>Transacción Exitosa</strong>
+              <a href="https://sepolia.etherscan.io/tx/{{ sendSuccessHash }}" target="_blank">Ver Recibo en Etherscan</a>
+            </div>
+          </div>
 
-  <!-- ENVIAR FONDOS -->
-  <div class="web3-card send-funds-card" *ngIf="isInstalled && (isConnected$ | async) && (isSepolia$ | async)">
-    <div class="send-funds-header">
-      <mat-icon class="card-icon send-icon">send</mat-icon>
-      <div class="card-details">
-        <h3>Enviar Fondos</h3>
-        <p>Transfiere ETH, VBK o USDC a otra billetera de forma segura.</p>
-      </div>
-    </div>
-
-    <div class="send-funds-form">
-      <div class="form-row">
-        <div class="form-group flex-1">
-          <label>Activo a enviar</label>
-          <select [(ngModel)]="selectedAsset" class="web3-input" [disabled]="isSending">
-            <option value="ETH">Sepolia ETH</option>
-            <option value="VBK">VBK Token</option>
-            <option value="USDC">USDC (Sepolia)</option>
-          </select>
-        </div>
-        <div class="form-group flex-2">
-          <label>Monto</label>
-          <input type="number" [(ngModel)]="sendAmount" placeholder="0.00" class="web3-input" [disabled]="isSending" min="0" step="0.0001">
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label>Dirección de destino (0x...)</label>
-        <input type="text" [(ngModel)]="sendToAddress" placeholder="Ej: 0x123..." class="web3-input" [disabled]="isSending">
-      </div>
-
-      <div class="send-actions">
-        <button mat-raised-button class="send-btn" (click)="onSendFunds()" [disabled]="isSending || !sendToAddress || !sendAmount">
-          <mat-icon *ngIf="!isSending">send</mat-icon>
-          <mat-icon *ngIf="isSending" class="spinner">sync</mat-icon>
-          {{ isSending ? 'Enviando...' : 'Enviar ' + selectedAsset }}
-        </button>
-      </div>
-
-      <!-- Feedback Messages -->
-      <div class="feedback-message error-message" *ngIf="sendError">
-        <mat-icon>error_outline</mat-icon> {{ sendError }}
-      </div>
-      
-      <div class="feedback-message success-message" *ngIf="sendSuccessHash">
-        <mat-icon>check_circle</mat-icon> 
-        <div class="success-content">
-          <span>¡Envío exitoso!</span>
-          <a href="https://sepolia.etherscan.io/tx/{{ sendSuccessHash }}" target="_blank" class="tx-link">Ver en Etherscan</a>
+          <div class="form-actions">
+            <button class="luxury-btn primary-btn submit-btn" (click)="onSendFunds()" [disabled]="isSending || !sendToAddress || !sendAmount">
+              <ng-container *ngIf="!isSending">
+                <mat-icon>send</mat-icon> Confirmar en MetaMask
+              </ng-container>
+              <ng-container *ngIf="isSending">
+                <mat-icon class="spin">sync</mat-icon> Esperando firma...
+              </ng-container>
+            </button>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
 </div>

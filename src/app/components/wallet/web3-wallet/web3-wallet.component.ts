@@ -47,6 +47,13 @@ export class Web3WalletComponent {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   }
 
+  // Navegación por pestañas
+  activeTab: 'balances' | 'send' = 'balances';
+
+  switchTab(tab: 'balances' | 'send') {
+    this.activeTab = tab;
+  }
+
   // Formularios de envío
   sendToAddress: string = '';
   sendAmount: number | null = null;
