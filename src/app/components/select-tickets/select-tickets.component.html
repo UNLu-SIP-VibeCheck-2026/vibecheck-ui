@@ -54,6 +54,12 @@
                 </div>
               </div>
             </div>
+            
+            <div class="selected-seats-preview" *ngIf="ticket.hasSeats && ticket.selectedSeats?.length" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+              <span class="seat-badge" *ngFor="let seat of ticket.selectedSeats" style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+                Fila: {{seat.row}} | Asiento: {{seat.number}}
+              </span>
+            </div>
           </mat-card-content>
         </mat-card>
       </div>

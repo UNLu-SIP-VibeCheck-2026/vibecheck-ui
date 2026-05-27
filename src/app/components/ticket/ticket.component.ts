@@ -4,6 +4,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TicketService } from '../../services/ticket.service';
+import { environment } from '../../../environments/environment';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { EventService } from '../../services/event.service';
 
 @Component({
   selector: 'app-ticket',
@@ -23,21 +27,37 @@ export class TicketComponent implements OnInit {
     this.loadTicket(id);
   }
 
+  private ticketService = inject(TicketService);
+  private sanitizer = inject(DomSanitizer);
+  private eventService = inject(EventService);
+
   loadTicket(id: string | null): void {
-    // Mock ticket detail with time
-    this.ticket = {
-      id: id || 'TICK-001',
-      eventTitle: 'Quilmes Rock 2027',
-      description: 'El festival más grande de Argentina vuelve con un line-up histórico. Disfrutá de tres días de puro rock nacional e internacional.',
-      startDate: '15/05/2026 18:00 hs',
-      endDate: '17/05/2026 23:50 hs',
-      venue: 'Estadio Velez Sarsfield',
-      address: 'Av. Juan B. Justo 9200, CABA',
-      ticketType: 'VIP Platino',
-      location: 'Sector VIP Front - Fila 5, Asiento 12',
-      imageUrl: 'https://picsum.photos/seed/rock-detail/1200/400',
-      qrCode: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=VIBECHECK-TICK-001'
-    };
+    if (!id) return;
+    
+    this.ticketService.getTicketById(Number(id)).subscribe({
+        next: (t) => {
+            this.ticket = {
+                id: t.id.toString(),
+                eventTitle: 'Evento ID: ' + t.ticketType.eventId,
+                description: t.ticketType.description,
+                startDate: new Date(t.ticketType.saleStartDate).toLocaleDateString(),
+                endDate: new Date(t.ticketType.saleEndDate).toLocaleDateString(),
+                venue: 'Sede a confirmar',
+                address: 'Dirección a confirmar',
+                ticketType: t.ticketType.name,
+                location: t.ticketType.hasSeats ? `Fila ${t.seatRow} - Asiento ${t.seatNumber}` : 'Entrada General',
+                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${t.token || 'VIBECHECK-' + t.id}`
+            };
+            
+            this.eventService.getEventImage(t.ticketType.eventId).subscribe({
+                next: (blob) => this.ticket.imageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob)),
+                error: (err) => console.error("No image found for event", t.ticketType.eventId)
+            });
+        },
+        error: (err) => {
+            console.error('Error fetching ticket', err);
+        }
+    });
   }
 
   toggleQR(): void {

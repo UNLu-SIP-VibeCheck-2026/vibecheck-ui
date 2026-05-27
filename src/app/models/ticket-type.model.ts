@@ -9,6 +9,11 @@ export interface TicketTypeCreateRequest {
   saleStartDate: string; // ISO date string
   saleEndDate: string; // ISO date string
   active: boolean;
+  hasSeats: boolean;
+  firstRow?: number | null;
+  lastRow?: number | null;
+  firstSeat?: number | null;
+  lastSeat?: number | null;
   eventId: number;
 }
 
@@ -23,6 +28,11 @@ export interface TicketTypeUpdateRequest {
   saleStartDate: string; // ISO date string
   saleEndDate: string; // ISO date string
   active: boolean;
+  hasSeats: boolean;
+  firstRow?: number | null;
+  lastRow?: number | null;
+  firstSeat?: number | null;
+  lastSeat?: number | null;
 }
 
 export interface TicketTypeResponse {
@@ -37,5 +47,10 @@ export interface TicketTypeResponse {
   saleStartDate: string; // ISO date string
   saleEndDate: string; // ISO date string
   active: boolean;
+  hasSeats: boolean;
+  firstRow?: number | null;
+  lastRow?: number | null;
+  firstSeat?: number | null;
+  lastSeat?: number | null;
   eventId: number;
 }

@@ -16,10 +16,19 @@ import { TicketTypeService } from '../../services/ticket-type.service';
 import { EventResponse } from '../../models/event.model';
 import { TicketTypeResponse } from '../../models/ticket-type.model';
 import { environment } from '../../../environments/environment';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { SeatSelectionDialogComponent } from '../shared/dialogs/seat-selection-dialog/seat-selection-dialog.component';
+import { ErrorDialogComponent } from '../shared/dialogs/error-dialog/error-dialog.component';
+import { forkJoin } from 'rxjs';
+import { TicketService } from '../../services/ticket.service';
+import { TicketBuyRequest, SeatSelection } from '../../models/ticket.model';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 export interface TicketTypeUI extends TicketTypeResponse {
   quantity: number;
   status: string;
+  selectedSeats?: SeatSelection[];
 }
 
 @Component({
@@ -35,7 +44,9 @@ export interface TicketTypeUI extends TicketTypeResponse {
     MatSelectModule, 
     MatInputModule,
     MatRadioModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDialogModule,
+    MatSnackBarModule
   ],
   templateUrl: './select-tickets.component.html',
   styleUrls: ['./select-tickets.component.scss']
@@ -45,8 +56,12 @@ export class SelectTicketsComponent implements OnInit {
   private router = inject(Router);
   private eventService = inject(EventService);
   private ticketTypeService = inject(TicketTypeService);
+  private ticketService = inject(TicketService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+  private sanitizer = inject(DomSanitizer);
 
-  event: (EventResponse & { image?: string | null }) | null = null;
+  event: (EventResponse & { image?: SafeUrl | null }) | null = null;
   ticketTypes: TicketTypeUI[] = [];
   
   isLoading = true;
@@ -83,8 +98,18 @@ export class SelectTicketsComponent implements OnInit {
       next: (eventData) => {
         this.event = {
           ...eventData,
-          image: eventData.hasImage ? `${environment.apiBaseUrl}/events/${eventId}/image` : null
+          image: null
         };
+        if (eventData.hasImage) {
+            this.eventService.getEventImage(eventId).subscribe({
+                next: (blob) => {
+                    if (this.event) {
+                        this.event.image = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+                    }
+                },
+                error: (err) => console.error('No image for event', err)
+            });
+        }
         this.loadTicketTypes(eventId);
       },
       error: (err) => {
@@ -130,28 +155,88 @@ export class SelectTicketsComponent implements OnInit {
   }
 
   incrementQuantity(ticket: TicketTypeUI) {
-    if (ticket.status === 'AVAILABLE') {
-      if (ticket.maxPerUser && ticket.quantity >= ticket.maxPerUser) {
-          // Maximum tickets per user reached
-          return;
-      }
-      ticket.quantity++;
+    if (ticket.status !== 'AVAILABLE') return;
+    if (ticket.maxPerUser && ticket.quantity >= ticket.maxPerUser) return;
+    
+    if (ticket.hasSeats) {
+        const dialogRef = this.dialog.open(SeatSelectionDialogComponent, {
+            width: '400px',
+            data: {
+                firstRow: ticket.firstRow || 1,
+                lastRow: ticket.lastRow || 1,
+                firstSeat: ticket.firstSeat || 1,
+                lastSeat: ticket.lastSeat || 1
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                const alreadySelected = ticket.selectedSeats?.some(s => s.row === result.row && s.number === result.number);
+                if (alreadySelected) {
+                    this.snackBar.open('Ya seleccionaste este asiento', 'Cerrar', { duration: 3000 });
+                    return;
+                }
+                
+                ticket.selectedSeats = ticket.selectedSeats || [];
+                ticket.selectedSeats.push(result);
+                ticket.quantity++;
+            }
+        });
+    } else {
+        ticket.quantity++;
     }
   }
 
   decrementQuantity(ticket: TicketTypeUI) {
     if (ticket.quantity > 0) {
+      if (ticket.hasSeats && ticket.selectedSeats && ticket.selectedSeats.length > 0) {
+          ticket.selectedSeats.pop();
+      }
       ticket.quantity--;
     }
   }
 
   processPayment() {
-    if (this.canPay) {
-      console.log('Processing payment for:', this.total, 'using', this.selectedPaymentMethod);
-      // Logic for payment would go here
-      alert(`Pago procesado con éxito por un total de ${this.total} $VBK`);
-      this.router.navigate(['/dashboard']);
+    if (!this.canPay) return;
+    
+    this.isLoading = true;
+    
+    const requests = this.ticketTypes
+        .filter(t => t.quantity > 0)
+        .map(t => {
+            const req: TicketBuyRequest = {
+                ticketTypeId: t.id,
+                quantity: t.hasSeats ? null : t.quantity,
+                seats: t.hasSeats ? t.selectedSeats : null
+            };
+            return this.ticketService.buyTickets(req);
+        });
+
+    if (requests.length === 0) {
+        this.isLoading = false;
+        return;
     }
+
+    forkJoin(requests).subscribe({
+        next: () => {
+            this.snackBar.open(`Pago procesado con éxito por un total de ${this.total} $VBK`, 'Cerrar', { duration: 3000 });
+            this.router.navigate(['/my-tickets']);
+        },
+        error: (err) => {
+            console.error('Error procesando el pago', err);
+            const errorMsg = err.error?.message || 'Error al procesar el pago. Por favor, intente nuevamente.';
+            
+            this.dialog.open(ErrorDialogComponent, {
+                width: '400px',
+                panelClass: 'vibe-dialog-container',
+                data: {
+                    title: 'No se pudo completar la compra',
+                    message: errorMsg
+                }
+            });
+            this.isLoading = false;
+        }
+    });
   }
 
   goBack() {

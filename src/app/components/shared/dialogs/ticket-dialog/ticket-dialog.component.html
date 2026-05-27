@@ -78,6 +78,31 @@
                 <mat-checkbox formControlName="active" color="primary">
                     Activo
                 </mat-checkbox>
+                <mat-checkbox formControlName="hasSeats" color="primary" style="margin-left: 20px;">
+                    Tiene Asientos
+                </mat-checkbox>
+            </div>
+
+            <div class="form-section-title" *ngIf="ticketForm.get('hasSeats')?.value">Rangos de Asientos</div>
+            <div class="form-grid" *ngIf="ticketForm.get('hasSeats')?.value">
+                <mat-form-field appearance="outline">
+                    <mat-label>Fila Inicial</mat-label>
+                    <input matInput type="number" formControlName="firstRow" placeholder="1">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <mat-label>Fila Final</mat-label>
+                    <input matInput type="number" formControlName="lastRow" placeholder="10">
+                </mat-form-field>
+            </div>
+            <div class="form-grid" *ngIf="ticketForm.get('hasSeats')?.value">
+                <mat-form-field appearance="outline">
+                    <mat-label>Asiento Inicial</mat-label>
+                    <input matInput type="number" formControlName="firstSeat" placeholder="1">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <mat-label>Asiento Final</mat-label>
+                    <input matInput type="number" formControlName="lastSeat" placeholder="50">
+                </mat-form-field>
             </div>
 
             <div class="api-error" *ngIf="errorMessage">

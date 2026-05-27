@@ -1,0 +1,15 @@
+<div class="error-dialog-container">
+  <div class="error-icon-wrapper">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+  </div>
+  
+  <h2 class="error-title">{{ data.title }}</h2>
+  
+  <div class="error-content">
+    <p>{{ data.message }}</p>
+  </div>
+  
+  <div class="error-actions">
+    <button mat-flat-button class="close-btn" (click)="close()">Entendido</button>
+  </div>
+</div>

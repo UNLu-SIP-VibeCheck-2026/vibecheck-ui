@@ -74,7 +74,12 @@ export class TicketDialogComponent implements OnInit {
       maxPerUser: [ticket?.maxPerUser || '', [Validators.required, Validators.min(1)]],
       saleStartDate: [ticket?.saleStartDate || '', [Validators.required]],
       saleEndDate: [ticket?.saleEndDate || '', [Validators.required]],
-      active: [ticket?.active !== undefined ? ticket.active : true, [Validators.required]]
+      active: [ticket?.active !== undefined ? ticket.active : true, [Validators.required]],
+      hasSeats: [ticket?.hasSeats || false],
+      firstRow: [ticket?.firstRow || null],
+      lastRow: [ticket?.lastRow || null],
+      firstSeat: [ticket?.firstSeat || null],
+      lastSeat: [ticket?.lastSeat || null]
     });
   }
 
@@ -92,6 +97,19 @@ export class TicketDialogComponent implements OnInit {
 
     const formValue = this.ticketForm.value;
 
+    if (formValue.hasSeats) {
+        if (!formValue.firstRow || !formValue.lastRow || !formValue.firstSeat || !formValue.lastSeat) {
+            this.errorMessage = 'Los rangos de filas y asientos son requeridos si tiene asientos.';
+            this.isSubmitting = false;
+            return;
+        }
+        if (formValue.firstRow > formValue.lastRow || formValue.firstSeat > formValue.lastSeat) {
+            this.errorMessage = 'Los rangos no son válidos.';
+            this.isSubmitting = false;
+            return;
+        }
+    }
+
     const request: TicketTypeCreateRequest | TicketTypeUpdateRequest = {
       name: formValue.name,
       description: formValue.description || '',
@@ -103,6 +121,11 @@ export class TicketDialogComponent implements OnInit {
       saleStartDate: formValue.saleStartDate, // DateTimePicker ya emite string ISO
       saleEndDate: formValue.saleEndDate, // DateTimePicker ya emite string ISO
       active: formValue.active,
+      hasSeats: formValue.hasSeats,
+      firstRow: formValue.hasSeats ? Number(formValue.firstRow) : undefined,
+      lastRow: formValue.hasSeats ? Number(formValue.lastRow) : undefined,
+      firstSeat: formValue.hasSeats ? Number(formValue.firstSeat) : undefined,
+      lastSeat: formValue.hasSeats ? Number(formValue.lastSeat) : undefined,
       ...(this.isEditMode ? {} : { eventId: this.data.eventId })
     };
 

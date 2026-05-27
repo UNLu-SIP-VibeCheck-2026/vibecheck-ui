@@ -7,6 +7,12 @@ import { Router } from '@angular/router';
 import { LoadingStateComponent } from '../shared/loading-state/loading-state.component';
 import { EmptyStateComponent } from '../shared/empty-state/empty-state.component';
 
+import { TicketService } from '../../services/ticket.service';
+import { TicketResponse } from '../../models/ticket.model';
+import { environment } from '../../../environments/environment';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { EventService } from '../../services/event.service';
+
 export interface UserTicket {
   id: string;
   eventTitle: string;
@@ -14,7 +20,7 @@ export interface UserTicket {
   venue: string;
   ticketType: string;
   location: string;
-  imageUrl?: string;
+  imageUrl?: SafeUrl | string;
 }
 
 @Component({
@@ -33,52 +39,45 @@ export interface UserTicket {
 })
 export class MyTicketsComponent implements OnInit {
   private router = inject(Router);
+  private ticketService = inject(TicketService);
+  private sanitizer = inject(DomSanitizer);
+  private eventService = inject(EventService);
   
   tickets: UserTicket[] = [];
   isLoading: boolean = false;
 
   ngOnInit(): void {
-    this.loadTicketsWithDelay();
+    this.loadTickets();
   }
 
-  loadTicketsWithDelay(): void {
+  loadTickets(): void {
     this.isLoading = true;
-    setTimeout(() => {
-      this.loadMockTickets();
-      this.isLoading = false;
-    }, 1500);
-  }
-
-  loadMockTickets(): void {
-    this.tickets = [
-      {
-        id: 'TICK-001',
-        eventTitle: 'Quilmes Rock 2027',
-        startDate: '15/05/2026',
-        venue: 'Estadio Velez',
-        ticketType: 'VIP Platino',
-        location: 'Sector VIP Front',
-        imageUrl: 'https://picsum.photos/seed/rock/600/300'
+    this.ticketService.getMyTickets(0, 50).subscribe({
+      next: (page) => {
+        this.tickets = page.content.map((t: TicketResponse) => {
+          const ticketUI: UserTicket = {
+            id: t.id.toString(),
+            eventTitle: 'Evento ID: ' + t.ticketType.eventId,
+            startDate: 'Válido hasta: ' + new Date(t.ticketType.saleEndDate).toLocaleDateString(),
+            venue: 'Sede ID a confirmar',
+            ticketType: t.ticketType.name,
+            location: t.ticketType.hasSeats ? `Fila ${t.seatRow} - Asiento ${t.seatNumber}` : 'Entrada General'
+          };
+          
+          this.eventService.getEventImage(t.ticketType.eventId).subscribe({
+              next: (blob) => ticketUI.imageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob)),
+              error: (err) => console.error("No image found for event", t.ticketType.eventId)
+          });
+          
+          return ticketUI;
+        });
+        this.isLoading = false;
       },
-      {
-        id: 'TICK-002',
-        eventTitle: 'VibeFest 2026',
-        startDate: '20/06/2026',
-        venue: 'Movistar Arena',
-        ticketType: 'General',
-        location: 'Campo',
-        imageUrl: 'https://picsum.photos/seed/fest/600/300'
-      },
-      {
-        id: 'TICK-003',
-        eventTitle: 'Techno Night',
-        startDate: '12/07/2026',
-        venue: 'Luna Park',
-        ticketType: 'Platea Alta',
-        location: 'Sector C',
-        imageUrl: 'https://picsum.photos/seed/techno/600/300'
+      error: (err) => {
+        console.error('Error fetching tickets', err);
+        this.isLoading = false;
       }
-    ];
+    });
   }
 
   exploreEvents(): void {
