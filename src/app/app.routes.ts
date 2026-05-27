@@ -1,7 +1,6 @@
 import { Routes } from "@angular/router";
 import { LoginComponent } from "./components/login/login.component";
 import { RegisterComponent } from "./components/register/register.component";
-import { HomeComponent } from "./components/home/home.component";
 import { ChangePasswordComponent } from "./components/change-password/change-password.component";
 import { PasswordRecoveryComponent } from "./components/password-recovery/password-recovery.component";
 import { PerfilConfigComponent } from "./components/perfil-config/perfil-config.component";
@@ -35,9 +34,8 @@ import { ResetPasswordComponent } from "./components/reset-password/reset-passwo
 export const routes: Routes = [
   {
     path: "",
-    component: HomeComponent,
+    redirectTo: "events",
     pathMatch: "full",
-    canActivate: [guestGuard],
   },
   {
     path: "pass-recovery",
@@ -107,7 +105,6 @@ export const routes: Routes = [
   {
     path: "events",
     component: EventsComponent,
-    canActivate: [authGuard],
   },
   {
     path: "create-event",
@@ -174,5 +171,5 @@ export const routes: Routes = [
     component: AdvertiseEventComponent,
     canActivate: [authGuard],
   },
-  { path: "**", redirectTo: "" },
+  { path: "**", redirectTo: "events" },
 ];

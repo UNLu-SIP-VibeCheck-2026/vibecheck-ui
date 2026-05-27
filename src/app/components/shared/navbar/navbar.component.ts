@@ -29,7 +29,7 @@ export class NavbarComponent {
   }
 
   navigateToHome(): void {
-    this.router.navigate(['/']);
+    this.router.navigate(['/events']);
   }
 
   navigateToDashboard(): void {
@@ -49,6 +49,6 @@ export class NavbarComponent {
 
   logout(): void {
     this.authService.logout();
-    this.router.navigate(['/']);
+    this.router.navigate(['/events']);
   }
 }

@@ -72,8 +72,10 @@
 }
 
 .brand-icon {
-  font-size: 40px;
-  line-height: 1;
+  width: 90px;
+  height: 90px;
+  display: block;
+  object-fit: contain;
 }
 
 .brand-name {
@@ -195,27 +197,27 @@
       align-items: center !important;
       background-color: rgba(255, 255, 255, 0.04) !important;
       border-radius: 10px !important;
+      padding: 0 !important;
     }
 
     .mat-mdc-form-field-infix {
-      padding: 0 8px !important;
+      padding: 0 12px !important;
       min-height: auto !important;
+      width: 100%;
+      display: flex !important;
+      align-items: center !important;
+      box-sizing: border-box !important;
     }
 
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: rgba(255, 255, 255, 0.10) !important;
-    }
-
-    .mdc-text-field--focused .mdc-notched-outline__leading,
-    .mdc-text-field--focused .mdc-notched-outline__notch,
-    .mdc-text-field--focused .mdc-notched-outline__trailing {
-      border-color: var(--md-sys-color-primary, #a855f7) !important;
-      border-width: 2px !important;
+    .mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper {
+      padding-right: 0 !important;
     }
 
     .mat-mdc-input-element {
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
       color: #ffffff !important;
       font-size: 14px !important;
       caret-color: var(--md-sys-color-primary) !important;
@@ -225,7 +227,12 @@
       color: rgba(255, 255, 255, 0.25) !important;
     }
 
-    // Prefix icons
+    .mat-mdc-form-field-prefix,
+    .mat-mdc-form-field-suffix {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
     mat-icon {
       color: rgba(255, 255, 255, 0.35) !important;
       font-size: 18px !important;
@@ -234,7 +241,6 @@
       margin-right: 6px !important;
     }
 
-    // Suffix button
     .mat-mdc-icon-button {
       color: rgba(255, 255, 255, 0.4) !important;
       width: 36px !important;
@@ -260,6 +266,10 @@
       border-color: rgba(248, 113, 113, 0.6) !important;
     }
   }
+}
+
+:host ::ng-deep .mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper {
+  padding-right: 0 !important;
 }
 
 // ---------------------------------------------------------------------------

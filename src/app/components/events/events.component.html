@@ -40,6 +40,83 @@
     <h2 class="headline-medium selected-pill-title">{{ selectedPill }}</h2>
   </div>
 
+    <!-- Carousels for showcased/promoted events -->
+    <div class="carousels">
+      <!-- Large single-item carousel (auto-slide cada 3s) -->
+      <section *ngIf="tier1Events.length" class="carousel carousel-large">
+        <div class="carousel-viewport">
+          <div class="carousel-track" [style.transform]="'translateX(-' + (currentIndex1 * 100) + 'vw)'" [style.width]="tier1Events.length * 100 + 'vw'">
+            <div class="carousel-item" *ngFor="let ev of tier1Events" (click)="navigateToEvent(ev.id)">
+              <div class="large-card">
+                <div class="large-image-container">
+                  <img class="large-image" [src]="ev.imageUrl" [alt]="ev.title">
+                </div>
+                <div class="large-info">
+                  <div>
+                    <h2 class="large-title">{{ ev.title }}</h2>
+                    <p class="large-meta">{{ ev.startDate }} · {{ ev.venue }}</p>
+                    <p class="large-desc">{{ ev.description }}</p>
+                  </div>
+                  <div class="large-footer">
+                    <div class="large-price">Desde {{ ev.price | currency:'$':'symbol':'1.0-0' }}</div>
+                    <button mat-raised-button color="primary">Ver evento</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="carousel-nav prev" type="button" (click)="prevTier1()">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button class="carousel-nav next" type="button" (click)="nextTier1()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </section>
+
+      <!-- Mid carousel: 3 items per viewport, less info -->
+      <section *ngIf="tier2Events.length" class="carousel carousel-mid">
+        <div class="carousel-scroll" #midCarousel>
+          <div class="mid-item" *ngFor="let ev of tier2Events" (click)="navigateToEvent(ev.id)">
+            <div class="mid-image-container">
+              <img class="mid-image" [src]="ev.imageUrl" [alt]="ev.title">
+            </div>
+            <div class="mid-info">
+              <div>
+                <h3 class="mid-title">{{ ev.title }}</h3>
+                <div class="mid-meta">{{ ev.startDate }} · {{ ev.venue }}</div>
+                <p class="mid-desc">{{ ev.description }}</p>
+              </div>
+              <div class="mid-footer">
+                <div class="mid-price">Desde {{ ev.price | currency:'$':'symbol':'1.0-0' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-nav prev" type="button" (click)="scrollTier2(-1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button class="carousel-nav next" type="button" (click)="scrollTier2(1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </section>
+
+      <!-- Mini carousel: 6 images per viewport (solo imagen) -->
+      <section *ngIf="tier3Events.length" class="carousel carousel-mini">
+        <div class="mini-scroll" #miniCarousel>
+          <div class="mini-item" *ngFor="let ev of tier3Events" (click)="navigateToEvent(ev.id)">
+            <img class="mini-image" [src]="ev.imageUrl" [alt]="ev.title">
+          </div>
+        </div>
+        <button class="carousel-nav prev" type="button" (click)="scrollTier3(-1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button class="carousel-nav next" type="button" (click)="scrollTier3(1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </section>
+    </div>
+
   <!-- Loading State -->
   <app-loading-state 
     *ngIf="isLoading" 

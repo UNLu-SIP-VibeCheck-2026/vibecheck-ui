@@ -33,6 +33,7 @@
         margin: 0;
         white-space: nowrap;
         background: var(--gradient-brand);
+        background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 900;
@@ -134,6 +135,175 @@
 
   &.marketplace-grid {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+/* --- Carousel styles --- */
+.carousels {
+  margin-bottom: var(--space-8);
+
+  .carousel {
+    margin-bottom: var(--space-6);
+    position: relative;
+  }
+
+  /* Large: one per viewport, auto-slide */
+  .carousel-large {
+    .carousel-viewport {
+      width: 100%;
+      overflow: hidden;
+      height: 72vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 600ms cubic-bezier(0.4,0,0.2,1);
+      height: 100%;
+      min-width: 100%;
+    }
+
+    .carousel-item {
+      flex: 0 0 100vw;
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+
+      .large-card {
+        display: flex;
+        width: 92vw;
+        height: calc(72vh - 16px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+        background: var(--md-sys-color-surface);
+
+        .large-image-container {
+          flex: 0 0 60%;
+          aspect-ratio: 6 / 5;
+          overflow: hidden;
+        }
+
+        .large-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .large-info {
+          flex: 1 1 40%;
+          padding: var(--space-6);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: var(--space-3);
+
+          .large-title { margin: 0; font-size: 28px; font-weight: 800; color: var(--md-sys-color-on-surface); }
+          .large-meta { margin: 0; color: var(--md-sys-color-on-surface-variant); }
+          .large-desc { margin-top: var(--space-2); color: var(--md-sys-color-on-surface-variant); }
+
+          .large-footer { display:flex; align-items:center; gap:var(--space-3); }
+
+          .large-price {
+            background: var(--gradient-brand);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            color: white;
+          }
+        }
+      }
+    }
+
+    .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0, 0, 0, 0.55);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      z-index: 2;
+    }
+
+    .carousel-nav:hover {
+      background: rgba(0, 0, 0, 0.75);
+    }
+
+    .carousel-nav.prev {
+      left: 18px;
+    }
+
+    .carousel-nav.next {
+      right: 18px;
+    }
+  }
+
+  /* Mid carousel: 3 items per viewport */
+  .carousel-mid {
+    .carousel-scroll {
+      display: flex;
+      gap: var(--space-4);
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .mid-item {
+      flex: 0 0 calc((100% / 3) - (var(--space-4) * 0.66));
+      background: var(--md-sys-color-surface);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      display: flex;
+      gap: var(--space-3);
+
+      .mid-image-container { flex: 0 0 40%; aspect-ratio: 4 / 5; overflow: hidden; }
+      .mid-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+      .mid-info { padding: var(--space-3); flex: 1 1 60%; display:flex; flex-direction:column; justify-content:space-between; }
+      .mid-title { margin: 0 0 6px 0; font-size: 16px; color: var(--md-sys-color-on-surface); }
+      .mid-meta { font-size: var(--text-body-sm); color: var(--md-sys-color-on-surface-variant); }
+      .mid-desc { color: var(--md-sys-color-on-surface-variant); margin-top:6px; }
+      .mid-footer { display:flex; justify-content:flex-end; }
+      .mid-price { font-weight:800; color: var(--md-sys-color-primary); }
+    }
+  }
+
+  /* Mini carousel: 6 images per viewport */
+  .carousel-mini {
+    .mini-scroll {
+      display: flex;
+      gap: var(--space-3);
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .mini-item {
+      flex: 0 0 calc((100% / 6) - (var(--space-3) * 0.5));
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+
+      .mini-image { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; display: block; }
+    }
   }
 }
 
