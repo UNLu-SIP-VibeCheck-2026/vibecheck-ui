@@ -45,23 +45,38 @@
       <!-- Large single-item carousel (auto-slide cada 3s) -->
       <section *ngIf="tier1Events.length" class="carousel carousel-large">
         <div class="carousel-viewport">
-          <div class="carousel-track" [style.transform]="'translateX(-' + (currentIndex1 * 100) + 'vw)'" [style.width]="tier1Events.length * 100 + 'vw'">
+          <div class="carousel-track" [style.transform]="'translateX(-' + (currentIndex1 * 100) + '%)'" [style.width]="tier1Events.length * 100 + '%'">
             <div class="carousel-item" *ngFor="let ev of tier1Events" (click)="navigateToEvent(ev.id)">
               <div class="large-card">
                 <div class="large-image-container">
                   <img class="large-image" [src]="ev.imageUrl" [alt]="ev.title">
                 </div>
                 <div class="large-info">
-                  <div>
-                    <h2 class="large-title">{{ ev.title }}</h2>
-                    <p class="large-meta">{{ ev.startDate }} · {{ ev.venue }}</p>
-                    <p class="large-desc">{{ ev.description }}</p>
+                <h2 class="large-title">{{ ev.title }}</h2>
+                <div class="large-data-panel">
+                  <div class="large-data-item">
+                    <span class="data-label">Inicio</span>
+                    <span class="data-value">{{ ev.startDate }}</span>
                   </div>
-                  <div class="large-footer">
-                    <div class="large-price">Desde {{ ev.price | currency:'$':'symbol':'1.0-0' }}</div>
-                    <button mat-raised-button color="primary">Ver evento</button>
+                  <div class="large-data-item">
+                    <span class="data-label">Fin</span>
+                    <span class="data-value">{{ ev.endDate || ev.startDate }}</span>
+                  </div>
+                  <div class="large-data-item">
+                    <span class="data-label">Venue</span>
+                    <span class="data-value">{{ ev.venue }}</span>
+                  </div>
+                  <div class="large-data-item">
+                    <span class="data-label">Capacidad</span>
+                    <span class="data-value">{{ (ev.capacity || 0) | number }} personas</span>
                   </div>
                 </div>
+                <p class="large-desc">{{ ev.description }}</p>
+                <div class="large-price-panel">
+                  <span class="price-label">Desde</span>
+                  <span class="price-value">{{ ev.price | currency:'$':'symbol':'1.0-0' }} USDC</span>
+                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -82,15 +97,17 @@
               <img class="mid-image" [src]="ev.imageUrl" [alt]="ev.title">
             </div>
             <div class="mid-info">
-              <div>
                 <h3 class="mid-title">{{ ev.title }}</h3>
-                <div class="mid-meta">{{ ev.startDate }} · {{ ev.venue }}</div>
-                <p class="mid-desc">{{ ev.description }}</p>
+                <div class="mid-data">
+                  <div class="mid-data-row">{{ ev.venue }}</div>
+                  <div class="mid-data-row">Capacidad: {{ (ev.capacity || 0) | number }} personas</div>
+                  <div class="mid-data-row">{{ ev.startDate }}</div>
+                </div>
+                <div class="price-panel">
+                  <span class="price-label">Desde</span>
+                  <span class="price-value">{{ ev.price | currency:'$':'symbol':'1.0-0' }} USDC</span>
+                </div>
               </div>
-              <div class="mid-footer">
-                <div class="mid-price">Desde {{ ev.price | currency:'$':'symbol':'1.0-0' }}</div>
-              </div>
-            </div>
           </div>
         </div>
         <button class="carousel-nav prev" type="button" (click)="scrollTier2(-1)">
