@@ -7,6 +7,7 @@ import {
   PromoteEventRequest,
   PromoteEventResponse
 } from "../models/advertisement.model";
+import { EventResponse } from "../models/event.model";
 
 @Injectable({
   providedIn: "root",
@@ -30,5 +31,9 @@ export class AdvertisementService {
         durationDays: durationDays.toString()
       }
     });
+  }
+
+  getUpcomingPromotedEventsGroupedByTier(): Observable<Record<string, EventResponse[]>> {
+    return this.http.get<Record<string, EventResponse[]>>(`${this.apiUrl}/events/promoted/grouped-by-tier`);
   }
 }

@@ -9,6 +9,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { Router } from "@angular/router";
 import { EventService } from "../../services/event.service";
+import { AdvertisementService } from "../../services/advertisement.service";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
@@ -23,7 +24,7 @@ export interface EventSummary {
   endDate?: string;
   venue: string;
   capacity?: number;
-  imageUrl?: string;
+  imageUrl?: any;
   category: "Próximos eventos" | "Recomendados" | "Cerca tuyo" | "Marketplace";
   // Marketplace fields
   sellerName?: string;
@@ -66,7 +67,13 @@ export class EventsComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private eventService = inject(EventService);
+  private advertisementService = inject(AdvertisementService);
   private sanitizer = inject(DomSanitizer);
+
+  // Configurable limits for tier promotions
+  readonly TIER1_LIMIT = 5;
+  readonly TIER2_LIMIT = 15;
+  readonly TIER3_LIMIT = 20;
 
   isLoading: boolean = false;
   selectedPill: string = "Próximos eventos";
@@ -84,6 +91,7 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadEvents();
+    this.loadPromotedEvents();
   }
 
   ngOnDestroy(): void {
@@ -237,5 +245,84 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(["/dashboard"]);
+  }
+
+  loadPromotedEvents(): void {
+    this.advertisementService.getUpcomingPromotedEventsGroupedByTier().subscribe({
+      next: (grouped) => {
+        console.log("Promoted events grouped by tier loaded:", grouped);
+
+        const mapBackendEvent = (backendEvent: any): EventSummary => {
+          return {
+            id: backendEvent.id.toString(),
+            title: backendEvent.title,
+            description: backendEvent.description || "Sin descripción",
+            startDate: new Date(backendEvent.startDate).toLocaleDateString(),
+            endDate: backendEvent.endDate ? new Date(backendEvent.endDate).toLocaleDateString() : undefined,
+            venue: `Venue ${backendEvent.venueId || "Desconocido"}`,
+            capacity: backendEvent.capacity,
+            category: "Próximos eventos",
+            imageUrl: undefined
+          };
+        };
+
+        const sortByDateAsc = (a: any, b: any) => {
+          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+        };
+
+        const highEvents = (grouped['high'] || grouped['premium'] || grouped['mega'] || [])
+          .sort(sortByDateAsc)
+          .slice(0, this.TIER1_LIMIT)
+          .map(mapBackendEvent);
+
+        const mediumEvents = (grouped['medium'] || grouped['destacado'] || grouped['super'] || [])
+          .sort(sortByDateAsc)
+          .slice(0, this.TIER2_LIMIT)
+          .map(mapBackendEvent);
+
+        const lowEvents = (grouped['low'] || grouped['básico'] || grouped['cool'] || [])
+          .sort(sortByDateAsc)
+          .slice(0, this.TIER3_LIMIT)
+          .map(mapBackendEvent);
+
+        this.tier1Events = highEvents;
+        this.tier2Events = mediumEvents;
+        this.tier3Events = lowEvents;
+
+        const allPromotedRaw = [
+          ...(grouped['high'] || grouped['premium'] || grouped['mega'] || []),
+          ...(grouped['medium'] || grouped['destacado'] || grouped['super'] || []),
+          ...(grouped['low'] || grouped['básico'] || grouped['cool'] || [])
+        ];
+
+        this.loadPromotedEventImages(allPromotedRaw);
+        this.startCarousel1();
+      },
+      error: (err) => {
+        console.error("Error loading promoted events:", err);
+      }
+    });
+  }
+
+  loadPromotedEventImages(rawEvents: any[]): void {
+    rawEvents.forEach((raw) => {
+      if (raw.hasImage) {
+        this.eventService.getEventImage(raw.id).subscribe({
+          next: (blob) => {
+            const url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+            this.imageMap.set(raw.id, url);
+
+            const idStr = raw.id.toString();
+            const t1 = this.tier1Events.find(e => e.id === idStr);
+            if (t1) t1.imageUrl = url;
+            const t2 = this.tier2Events.find(e => e.id === idStr);
+            if (t2) t2.imageUrl = url;
+            const t3 = this.tier3Events.find(e => e.id === idStr);
+            if (t3) t3.imageUrl = url;
+          },
+          error: (err) => console.warn(`Error loading image for promoted event ${raw.id}:`, err)
+        });
+      }
+    });
   }
 }
