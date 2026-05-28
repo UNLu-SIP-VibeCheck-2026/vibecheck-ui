@@ -83,8 +83,6 @@ export class EventsComponent implements OnInit, OnDestroy {
   pageIndex = 0;
 
   ngOnInit(): void {
-    this.createSampleTiers();
-    this.startCarousel1();
     this.loadEvents();
   }
 
@@ -92,71 +90,6 @@ export class EventsComponent implements OnInit, OnDestroy {
     if (this.carouselTimer1) {
       clearInterval(this.carouselTimer1);
     }
-  }
-
-  createSampleTiers(): void {
-    // Tier 1: large showcased events (one per viewport)
-    this.tier1Events = [
-      {
-        id: 's1-1',
-        title: 'Neon Nights - Live DJ',
-        description: 'Una noche de música electrónica con invitados especiales.',
-        startDate: '10/06/2026 21:00',
-        endDate: '10/06/2026 23:30',
-        venue: 'Club Aurora',
-        capacity: 1500,
-        imageUrl: 'https://picsum.photos/id/1011/1600/900',
-        category: 'Recomendados',
-        price: 3500,
-      },
-      {
-        id: 's1-2',
-        title: 'Indie Summer Fest',
-        description: 'Bandas locales e internacionales en 2 escenarios.',
-        startDate: '21/06/2026 18:30',
-        endDate: '21/06/2026 23:00',
-        venue: 'Parque Central',
-        capacity: 8200,
-        imageUrl: 'https://picsum.photos/id/1018/1600/900',
-        category: 'Recomendados',
-        price: 4200,
-      },
-      {
-        id: 's1-3',
-        title: 'Classical Under Stars',
-        description: 'Orquesta sinfónica al aire libre.',
-        startDate: '05/07/2026 20:00',
-        endDate: '05/07/2026 22:45',
-        venue: 'Teatro al Aire Libre',
-        capacity: 5400,
-        imageUrl: 'https://picsum.photos/id/1025/1600/900',
-        category: 'Recomendados',
-        price: 2800,
-      },
-    ];
-
-    // Tier 2: mid-sized cards (3 per viewport)
-    this.tier2Events = Array.from({ length: 9 }).map((_, i) => ({
-      id: `s2-${i}`,
-      title: `Evento ${i + 1}`,
-      description: 'Descripción breve del evento.',
-      startDate: `0${(i % 9) + 1}/07/2026`,
-      venue: `Venue ${i + 1}`,
-      imageUrl: `https://picsum.photos/seed/s2-${i}/600/400`,
-      category: 'Próximos eventos',
-      price: 1500 + i * 200,
-    }));
-
-    // Tier 3: mini cards (only images, 6 per viewport)
-    this.tier3Events = Array.from({ length: 12 }).map((_, i) => ({
-      id: `s3-${i}`,
-      title: `Mini ${i + 1}`,
-      description: '',
-      startDate: `07/${(i % 30) + 1}/2026`,
-      venue: `Venue ${i + 1}`,
-      imageUrl: `https://picsum.photos/seed/s3-${i}/400/400`,
-      category: 'Cerca tuyo',
-    }));
   }
 
   startCarousel1(): void {
