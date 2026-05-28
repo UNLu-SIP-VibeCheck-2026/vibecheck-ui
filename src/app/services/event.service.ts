@@ -49,7 +49,7 @@ export class EventService {
     let params = new HttpParams()
       .set("page", page.toString())
       .set("size", size.toString());
-    return this.http.get<Page<EventResponse>>(this.apiUrl, { params });
+    return this.http.get<Page<EventResponse>>(`${this.apiUrl}/public/all`, { params });
   }
 
   findMyEvents(page: number, size: number): Observable<Page<EventResponse>> {
