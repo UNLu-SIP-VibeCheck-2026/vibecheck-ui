@@ -139,7 +139,7 @@ export class SelectTicketsComponent implements OnInit {
   }
 
   get subtotal() {
-    return this.ticketTypes.reduce((sum, ticket) => sum + (ticket.priceUsdt * ticket.quantity), 0);
+    return this.ticketTypes.reduce((sum, ticket) => sum + (ticket.priceUsdc * ticket.quantity), 0);
   }
 
   get serviceCharge() {

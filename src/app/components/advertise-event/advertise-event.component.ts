@@ -18,7 +18,7 @@ interface AdvertiseTier {
   name: string;
   displayName: string;
   pricePerDayVbk: number;
-  pricePerDayUsdt: number;
+  pricePerDayUsdc: number;
   icon: string;
   description: string;
   availableSlots: number | null;
@@ -585,7 +585,7 @@ export class AdvertiseEventComponent implements OnInit {
             name: p.name,
             displayName: p.displayName,
             pricePerDayVbk: p.pricePerDayVbk,
-            pricePerDayUsdt: p.pricePerDayUsdt,
+            pricePerDayUsdc: p.pricePerDayUsdc,
             icon,
             description,
             availableSlots: p.availableSlots

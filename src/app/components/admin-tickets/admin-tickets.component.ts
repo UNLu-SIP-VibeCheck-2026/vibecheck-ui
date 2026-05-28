@@ -53,7 +53,7 @@ export class AdminTicketsComponent implements OnInit {
   displayedColumns: string[] = [
     "id",
     "name",
-    "priceUsdt",
+    "priceUsdc",
     "maxPrice",
     "royalties",
     "maxQuantity",

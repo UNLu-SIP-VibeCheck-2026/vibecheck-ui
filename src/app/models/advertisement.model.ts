@@ -3,7 +3,7 @@ export interface AdvertisementPlanResponse {
   name: string;
   displayName: string;
   pricePerDayVbk: number;
-  pricePerDayUsdt: number;
+  pricePerDayUsdc: number;
   maxSlots: number | null;
   availableSlots: number | null;
 }
@@ -18,7 +18,7 @@ export interface PromoteEventResponse {
   eventId: number;
   planName: string;
   totalPriceVbk: number;
-  totalPriceUsdt: number;
+  totalPriceUsdc: number;
   durationDays: number;
   expiresAt: string;
   newBalanceVbk: number;

@@ -1,7 +1,7 @@
 export interface TicketTypeCreateRequest {
   name: string;
   description: string;
-  priceUsdt: number;
+  priceUsdc: number;
   maxPrice: number;
   royalties: number;
   maxQuantity: number;
@@ -20,7 +20,7 @@ export interface TicketTypeCreateRequest {
 export interface TicketTypeUpdateRequest {
   name: string;
   description: string;
-  priceUsdt: number;
+  priceUsdc: number;
   maxPrice: number;
   royalties: number;
   maxQuantity: number;
@@ -39,7 +39,7 @@ export interface TicketTypeResponse {
   id: number;
   name: string;
   description: string;
-  priceUsdt: number;
+  priceUsdc: number;
   maxPrice: number;
   royalties: number;
   maxQuantity: number;

@@ -67,7 +67,7 @@ export class TicketDialogComponent implements OnInit {
     this.ticketForm = this.fb.group({
       name: [ticket?.name || '', [Validators.required]],
       description: [ticket?.description || '', []],
-      priceUsdt: [ticket?.priceUsdt || '', [Validators.required, Validators.min(0)]],
+      priceUsdc: [ticket?.priceUsdc || '', [Validators.required, Validators.min(0)]],
       maxPrice: [ticket?.maxPrice || '', [Validators.required, Validators.min(0)]],
       royalties: [ticket?.royalties || '', [Validators.required, Validators.min(0), Validators.max(100)]],
       maxQuantity: [ticket?.maxQuantity || '', [Validators.required, Validators.min(1)]],
@@ -113,7 +113,7 @@ export class TicketDialogComponent implements OnInit {
     const request: TicketTypeCreateRequest | TicketTypeUpdateRequest = {
       name: formValue.name,
       description: formValue.description || '',
-      priceUsdt: Number(formValue.priceUsdt),
+      priceUsdc: Number(formValue.priceUsdc),
       maxPrice: Number(formValue.maxPrice),
       royalties: Number(formValue.royalties),
       maxQuantity: Number(formValue.maxQuantity),
