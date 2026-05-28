@@ -1,0 +1,59 @@
+@use '../../../tokens' as *;
+
+.not-found-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.not-found-container h1 {
+  font-size: 8rem;
+  margin: 0;
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+.not-found-container h2 {
+  font-size: 2rem;
+  margin-top: 1rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.not-found-container p {
+  font-size: 1.2rem;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 2rem;
+}
+
+.back-home-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3rem;
+  min-height: 64px;
+  border-radius: 16px;
+  font-family: "Outfit", sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  background: var(--gradient-brand);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+  text-decoration: none;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.back-home-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.55);
+  filter: brightness(1.1);
+}
