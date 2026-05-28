@@ -1,14 +1,16 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UsersService } from '../../services/users.service';
 import { UserPublicResponse } from '../../models/user-public-response.model';
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-perfil-user',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule],
   templateUrl: './perfil-user.component.html',
   styleUrl: './perfil-user.component.scss'
 })
@@ -16,6 +18,7 @@ export class PerfilUserComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private route = inject(ActivatedRoute);
   private usersService = inject(UsersService);
+  private router = inject(Router);
 
   profile = signal<UserPublicResponse | null>(null);
   isLoading = signal<boolean>(true);
@@ -53,5 +56,9 @@ export class PerfilUserComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

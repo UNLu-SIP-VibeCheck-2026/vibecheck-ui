@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { WalletService } from '../../services/wallet.service';
 import { Transaction, Wallet } from '../../models/wallet.model';
@@ -19,6 +20,7 @@ import { Web3WalletComponent } from './web3-wallet/web3-wallet.component';
 export class WalletComponent {
   private walletService = inject(WalletService);
   private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
 
   balance$: Observable<Wallet> = this.walletService.getWalletBalance();
   transactions$: Observable<Transaction[]> = this.walletService.getTransactionHistory();
@@ -115,5 +117,9 @@ export class WalletComponent {
 
   getAmountClass(type: string): string {
     return (type === 'CREDIT') ? 'positive-amount' : 'negative-amount';
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

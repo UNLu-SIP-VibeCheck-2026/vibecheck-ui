@@ -1,4 +1,12 @@
 <div class="wallet-container">
+  <!-- Back Button Header -->
+  <div class="header" style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+    <button mat-icon-button (click)="goBack()" style="color: white; background: rgba(255, 255, 255, 0.05);">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 style="margin: 0; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; font-size: 2.2rem; font-family: inherit;">MI BILLETERA</h1>
+  </div>
+
   <!-- Header / Balance Section -->
   <div class="balance-section">
     <div class="balance-content">
