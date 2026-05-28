@@ -30,12 +30,12 @@ import { ResellTicketComponent } from "./components/resell-ticket/resell-ticket.
 import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 import { ResetPasswordComponent } from "./components/reset-password/reset-password.component";
+import { NotFoundComponent } from "./components/not-found/not-found.component";
 
 export const routes: Routes = [
   {
     path: "",
-    redirectTo: "events",
-    pathMatch: "full",
+    component: EventsComponent,
   },
   {
     path: "pass-recovery",
@@ -103,10 +103,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: "events",
-    component: EventsComponent,
-  },
-  {
     path: "create-event",
     component: CreateEventComponent,
     canActivate: [authGuard],
@@ -171,5 +167,5 @@ export const routes: Routes = [
     component: AdvertiseEventComponent,
     canActivate: [authGuard],
   },
-  { path: "**", redirectTo: "events" },
+  { path: "**", component: NotFoundComponent },
 ];
