@@ -78,7 +78,7 @@ export class EventService {
   }
 
   getEventImage(id: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/public/${id}/image`, {
+    return this.http.get(`${this.apiUrl}/${id}/image`, {
       responseType: "blob",
     });
   }
