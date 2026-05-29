@@ -14,7 +14,7 @@ import { UserUpdateRequest } from '../../models/user-update-request.model';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule, ChangeRoleDialogComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
