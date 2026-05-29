@@ -253,7 +253,7 @@ export class SelectTicketsComponent implements OnInit {
 
   goBack() {
     if (this.event) {
-      this.router.navigate(['/', this.event.id]);
+      this.router.navigate(['/event/', this.event.id]);
     } else {
       this.router.navigate(['/']);
     }
