@@ -11,6 +11,8 @@ export interface EventCreateRequest {
   ownerId: number;
   venueId?: number | null;
   categoryIds?: number[];
+  royaltyBps: number;
+  maxPriceResale: number;
 }
 
 export interface EventUpdateRequest {

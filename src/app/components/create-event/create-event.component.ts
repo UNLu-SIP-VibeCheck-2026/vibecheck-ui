@@ -69,6 +69,8 @@ export class CreateEventComponent implements OnInit {
       endDate: ["", Validators.required],
       venue: [null, Validators.required],
       categoryIds: [[], Validators.required],
+      maxPriceResale: [150, [Validators.required, Validators.min(100)]],
+      royaltyBps: [500, [Validators.required, Validators.min(0), Validators.max(10000)]],
     },
     { validators: [this.endAfterStartValidator] }
   );
@@ -182,6 +184,8 @@ export class CreateEventComponent implements OnInit {
         ownerId: 1,
         venueId: formValue.venue ?? null,
         categoryIds: formValue.categoryIds,
+        maxPriceResale: formValue.maxPriceResale,
+        royaltyBps: formValue.royaltyBps,
       };
 
       this.eventService.createEventWithImage(request, this.selectedImage || undefined).subscribe({
