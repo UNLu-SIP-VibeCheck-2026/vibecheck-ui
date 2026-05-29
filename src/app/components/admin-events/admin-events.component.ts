@@ -433,13 +433,13 @@ export class AdminEventsComponent implements OnInit {
             maxResalePriceBps: event.maxResalePriceBps || 12000,
             royaltyBps: event.royaltyBps || 500,
             venueSigner: this.web3Service.VENUE_SIGNER_ADDRESS,
-            baseUri: `${environment.backendUrl}/api/tickets/`
+            baseURI: `${environment.backendUrl}/api/tickets/`
           };
 
           const tiers = ticketTypes.map(tt => ({
             name: tt.name,
             priceUSDC: ethers.parseUnits(tt.priceUsdc.toString(), 6),
-            maxSupply: tt.maxQuantity,
+            supply: tt.maxQuantity,
             sold: 0
           }));
 

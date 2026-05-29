@@ -19,10 +19,12 @@ export class EventService {
 
   createEventWithImage(
     request: EventCreateRequest,
-    image?: File
+    image?: File,
   ): Observable<EventResponse> {
     const formData = new FormData();
-    const eventBlob = new Blob([JSON.stringify(request)], { type: 'application/json' });
+    const eventBlob = new Blob([JSON.stringify(request)], {
+      type: "application/json",
+    });
     formData.append("event", eventBlob);
     if (image) {
       formData.append("image", image);
@@ -50,7 +52,9 @@ export class EventService {
     let params = new HttpParams()
       .set("page", page.toString())
       .set("size", size.toString());
-    return this.http.get<Page<EventResponse>>(`${this.apiUrl}/public/all`, { params });
+    return this.http.get<Page<EventResponse>>(`${this.apiUrl}/public/all`, {
+      params,
+    });
   }
 
   findMyEvents(page: number, size: number): Observable<Page<EventResponse>> {
@@ -67,18 +71,29 @@ export class EventService {
   uploadEventImage(id: number, image: File): Observable<EventResponse> {
     const formData = new FormData();
     formData.append("image", image);
-    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/image`, formData);
+    return this.http.post<EventResponse>(
+      `${this.apiUrl}/${id}/image`,
+      formData,
+    );
   }
 
   getEventImage(id: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${id}/image`, { responseType: 'blob' });
+    return this.http.get(`${this.apiUrl}/public/${id}/image`, {
+      responseType: "blob",
+    });
   }
 
   publishEvent(id: number): Observable<EventResponse> {
     return this.http.patch<EventResponse>(`${this.apiUrl}/${id}/publish`, {});
   }
 
-  registerDeploy(id: number, request: EventDeployRegisterRequest): Observable<EventResponse> {
-    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/register-deploy`, request);
+  registerDeploy(
+    id: number,
+    request: EventDeployRegisterRequest,
+  ): Observable<EventResponse> {
+    return this.http.post<EventResponse>(
+      `${this.apiUrl}/${id}/register-deploy`,
+      request,
+    );
   }
 }
