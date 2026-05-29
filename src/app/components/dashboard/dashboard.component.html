@@ -4,25 +4,37 @@
     <div class="welcome-content">
       <h1 class="welcome-title text-gradient display-md">¡Hola, {{ user.username }}!</h1>
       <p class="welcome-subtitle">Bienvenido de nuevo a VibeCheck</p>
+      </div>
+      <div class="role-action">
+        <div *ngIf="!canChangeRole" class="user-badge user-badge-static" aria-hidden="true">
+          <span class="badge-text">{{ user.role }}</span>
+        </div>
+        <span *ngIf="canChangeRole" class="badge-arrow">&gt;</span>
+        <button
+          *ngIf="canChangeRole"
+          type="button"
+          class="user-badge user-badge-button"
+          (click)="openChangeRole()"
+          aria-label="Cambiar mi rol activo"
+        >
+          <span class="badge-text">{{ user.role }}</span>
+        </button>
+      </div>
     </div>
-    <div class="user-badge">
-      <span class="badge-text">{{ user.role }}</span>
-    </div>
-  </div>
 
-  <!-- Upcoming Events Carousel -->
-  <div class="events-section">
-    <div class="section-header">
-      <h2 class="section-title">
-        <ng-container *ngIf="isCliente">Próximos Eventos</ng-container>
-        <ng-container *ngIf="isOrganizador">Tus Eventos</ng-container>
-        <ng-container *ngIf="isValidador">Validación de entradas</ng-container>
-        <ng-container *ngIf="isAdmin">Panel de administración</ng-container>
-        <ng-container *ngIf="isCeo">Panel de auditoría</ng-container>
-      </h2>
-      <span class="coming-soon-badge" *ngIf="isCliente || isValidador">PROXIMAMENTE</span>
-    </div>
-    
+    <!-- Upcoming Events Carousel -->
+    <div class="events-section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <ng-container *ngIf="isCliente">Próximos Eventos</ng-container>
+          <ng-container *ngIf="isOrganizador">Tus Eventos</ng-container>
+          <ng-container *ngIf="isValidador">Validación de entradas</ng-container>
+          <ng-container *ngIf="isAdmin">Panel de administración</ng-container>
+          <ng-container *ngIf="isCeo">Panel de auditoría</ng-container>
+        </h2>
+        <span class="coming-soon-badge" *ngIf="isCliente || isValidador">PROXIMAMENTE</span>
+      </div>
+
     <div class="events-carousel">
       <!-- Case: Cliente (Existing) -->
       <ng-container *ngIf="isCliente">

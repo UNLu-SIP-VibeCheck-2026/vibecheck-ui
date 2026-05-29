@@ -3,11 +3,16 @@
   <ng-container *ngIf="currentUser$ | async as user">
 
     <!-- Header -->
-    <div class="config-header">
-      <div class="avatar">{{ user.username[0].toUpperCase() }}</div>
-      <div class="header-info">
-        <h1 class="config-title">{{ user.username }}</h1>
-        <span class="config-role">{{ user.role }}</span>
+    <div class="config-header-row">
+      <button mat-icon-button (click)="goBack()" style="color: white; background: rgba(255, 255, 255, 0.05);">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="config-header">
+        <div class="avatar">{{ user.username[0].toUpperCase() }}</div>
+        <div class="header-info">
+          <h1 class="config-title">{{ user.username }}</h1>
+          <span class="config-role">{{ user.role }}</span>
+        </div>
       </div>
     </div>
 

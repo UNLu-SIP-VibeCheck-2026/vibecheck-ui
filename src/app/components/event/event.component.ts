@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { CommonModule, Location } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -37,6 +37,7 @@ export class EventComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
   private eventService = inject(EventService);
   private ticketTypeService = inject(TicketTypeService);
   private venueService = inject(VenueService);
@@ -226,6 +227,10 @@ export class EventComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(["/"]);
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(["/"]);
+    }
   }
 }

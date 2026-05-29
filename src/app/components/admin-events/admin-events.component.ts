@@ -14,11 +14,11 @@ import {
 import { MatSortModule } from "@angular/material/sort";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { MatSelectModule } from "@angular/material/select";
-import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { Router } from "@angular/router";
+import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
 import { EventDialogComponent } from "../shared/dialogs/event-dialog/event-dialog.component";
 import { ResaleDialogComponent } from "../shared/dialogs/resale-dialog/resale-dialog.component";
 import { EventService } from "../../services/event.service";
@@ -46,7 +46,6 @@ import { trackLoading } from "../../utils/loading.operator";
     MatDialogModule,
     MatPaginatorModule,
     MatSortModule,
-    MatCheckboxModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule,
@@ -200,21 +199,6 @@ export class AdminEventsComponent implements OnInit {
   // Selection helpers
   // -------------------------------------------------------------------------
 
-  isAllSelected(): boolean {
-    return (
-      this.dataSource.data.length > 0 &&
-      this.dataSource.data.every((e: any) => e.selected)
-    );
-  }
-
-  isAtLeastOneSelected(): boolean {
-    return this.dataSource.data.some((e: any) => e.selected);
-  }
-
-  toggleAllSelection(checked: boolean): void {
-    this.dataSource.data.forEach((e: any) => (e.selected = checked));
-  }
-
   // -------------------------------------------------------------------------
   // Venue helper
   // -------------------------------------------------------------------------
@@ -331,31 +315,37 @@ export class AdminEventsComponent implements OnInit {
   // -------------------------------------------------------------------------
 
   deleteEvent(event: EventResponse): void {
-    if (
-      !confirm(
-        `¿Eliminar el evento "${event.title}"? Esta acción no se puede deshacer.`
-      )
-    )
-      return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "400px",
+      data: {
+        title: "Eliminar evento",
+        message: `¿Eliminar el evento "${event.title}"? Esta acción no se puede deshacer.`,
+        confirmText: "Eliminar",
+        cancelText: "Cancelar",
+      },
+    });
 
-    this.deletingId = event.id;
-    this.eventService.deleteEvent(event.id).subscribe({
-      next: () => {
-        // Find the event and mark it as inactive (logical delete)
-        const idx = this.allEvents.findIndex((e) => e.id === event.id);
-        if (idx !== -1) {
-          this.allEvents[idx] = { ...this.allEvents[idx], active: false };
-        }
-        this.applyFilter();
-        this.deletingId = null;
-        this.showSnack(`Evento "${event.title}" dado de baja`);
-      },
-      error: (err) => {
-        this.deletingId = null;
-        const msg = err?.error?.message || "Error al eliminar el evento";
-        this.showSnack(msg, "error");
-        console.error(err);
-      },
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+
+      this.deletingId = event.id;
+      this.eventService.deleteEvent(event.id).subscribe({
+        next: () => {
+          const idx = this.allEvents.findIndex((e) => e.id === event.id);
+          if (idx !== -1) {
+            this.allEvents[idx] = { ...this.allEvents[idx], active: false };
+          }
+          this.applyFilter();
+          this.deletingId = null;
+          this.showSnack(`Evento "${event.title}" dado de baja`);
+        },
+        error: (err) => {
+          this.deletingId = null;
+          const msg = err?.error?.message || "Error al eliminar el evento";
+          this.showSnack(msg, "error");
+          console.error(err);
+        },
+      });
     });
   }
 
@@ -364,28 +354,36 @@ export class AdminEventsComponent implements OnInit {
   // -------------------------------------------------------------------------
 
   publishEvent(event: EventResponse): void {
-    if (
-      !confirm(
-        `¿Publicar el evento "${event.title}"? Esta acción hará visible el evento a los usuarios.`
-      )
-    )
-      return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "400px",
+      data: {
+        title: "Publicar evento",
+        message: `¿Publicar el evento "${event.title}"? Esta acción hará visible el evento a los usuarios.`,
+        confirmText: "Publicar",
+        cancelText: "Cancelar",
+        success: true,
+      },
+    });
 
-    this.publishingId = event.id;
-    this.eventService.publishEvent(event.id).subscribe({
-      next: (updated) => {
-        const idx = this.allEvents.findIndex((e) => e.id === updated.id);
-        if (idx !== -1) this.allEvents[idx] = updated;
-        this.applyFilter();
-        this.publishingId = null;
-        this.showSnack(`Evento "${event.title}" publicado correctamente`);
-      },
-      error: (err) => {
-        this.publishingId = null;
-        const errorMsg = err?.error?.message || err?.message || 'Error al publicar el evento';
-        this.showSnack(errorMsg, "error");
-        console.error(err);
-      },
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+
+      this.publishingId = event.id;
+      this.eventService.publishEvent(event.id).subscribe({
+        next: (updated) => {
+          const idx = this.allEvents.findIndex((e) => e.id === updated.id);
+          if (idx !== -1) this.allEvents[idx] = updated;
+          this.applyFilter();
+          this.publishingId = null;
+          this.showSnack(`Evento "${event.title}" publicado correctamente`);
+        },
+        error: (err) => {
+          this.publishingId = null;
+          const errorMsg = err?.error?.message || err?.message || 'Error al publicar el evento';
+          this.showSnack(errorMsg, "error");
+          console.error(err);
+        },
+      });
     });
   }
 
@@ -394,39 +392,46 @@ export class AdminEventsComponent implements OnInit {
   // -------------------------------------------------------------------------
 
   cancelEvent(event: EventResponse): void {
-    if (
-      !confirm(
-        `¿Estás seguro de que deseas cancelar el evento "${event.title}"? Esta acción no se puede deshacer.`
-      )
-    )
-      return;
-
-    this.cancellingId = event.id;
-    const req = {
-      title: event.title,
-      description: event.description,
-      startDate: event.startDate,
-      endDate: event.endDate,
-      capacity: event.capacity,
-      active: false,
-      venueId: event.venueId,
-    };
-
-    this.eventService.updateEvent(event.id, req).subscribe({
-      next: (updated) => {
-        const idx = this.allEvents.findIndex((e) => e.id === updated.id);
-        if (idx !== -1) this.allEvents[idx] = updated;
-        this.applyFilter();
-        this.cancellingId = null;
-        this.showSnack(`Evento "${event.title}" cancelado correctamente`);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "400px",
+      data: {
+        title: "Cancelar evento",
+        message: `¿Estás seguro de que deseas cancelar el evento "${event.title}"? Esta acción no se puede deshacer.`,
+        confirmText: "Cancelar",
+        cancelText: "Volver",
       },
-      error: (err) => {
-        this.cancellingId = null;
-        const errorMsg =
-          err?.error?.message || err?.message || "Error al cancelar el evento";
-        this.showSnack(errorMsg, "error");
-        console.error(err);
-      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+
+      this.cancellingId = event.id;
+      const req = {
+        title: event.title,
+        description: event.description,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        capacity: event.capacity,
+        active: false,
+        venueId: event.venueId,
+      };
+
+      this.eventService.updateEvent(event.id, req).subscribe({
+        next: (updated) => {
+          const idx = this.allEvents.findIndex((e) => e.id === updated.id);
+          if (idx !== -1) this.allEvents[idx] = updated;
+          this.applyFilter();
+          this.cancellingId = null;
+          this.showSnack(`Evento "${event.title}" cancelado correctamente`);
+        },
+        error: (err) => {
+          this.cancellingId = null;
+          const errorMsg =
+            err?.error?.message || err?.message || "Error al cancelar el evento";
+          this.showSnack(errorMsg, "error");
+          console.error(err);
+        },
+      });
     });
   }
 

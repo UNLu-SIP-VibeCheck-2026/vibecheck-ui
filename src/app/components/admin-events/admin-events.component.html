@@ -49,17 +49,6 @@
         (actionClick)="searchQuery ? clearSearch() : createEvent()">
     </app-empty-state>
 
-    <!-- Selection Bar -->
-    <div class="selection-bar" *ngIf="!isLoading && totalElements > 0">
-        <div class="selection-controls">
-            <mat-checkbox [checked]="isAllSelected()"
-                          [indeterminate]="isAtLeastOneSelected() && !isAllSelected()"
-                          (change)="toggleAllSelection($event.checked)">
-                Seleccionar todos
-            </mat-checkbox>
-        </div>
-    </div>
-
     <!-- Data Table Section -->
     <div class="table-container mat-elevation-z0" *ngIf="!isLoading && totalElements > 0">
         <table mat-table [dataSource]="dataSource" class="custom-table">
@@ -83,11 +72,6 @@
                 <th mat-header-cell *matHeaderCellDef style="display: none;">Evento</th>
                 <td mat-cell *matCellDef="let element" class="event-cell">
                     <div class="event-card-row">
-                        <!-- Checkbox -->
-                        <div class="checkbox-col">
-                            <mat-checkbox [(ngModel)]="element.selected"></mat-checkbox>
-                        </div>
-
                         <!-- Title & Description -->
                         <div class="details-col">
                             <div class="detail-group">

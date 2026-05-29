@@ -3,18 +3,26 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { UsersService } from '../../services/users.service';
+import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
+import { UserUpdateRequest } from '../../models/user-update-request.model';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule, ChangeRoleDialogComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
   authService = inject(AuthService);
+  usersService = inject(UsersService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
   router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -38,6 +46,10 @@ export class DashboardComponent {
     return this.userRole === 'validador';
   }
 
+  get canChangeRole(): boolean {
+    return this.isCliente || this.isOrganizador || this.isValidador;
+  }
+
   get isAdmin(): boolean {
     return this.userRole === 'admin';
   }
@@ -48,6 +60,62 @@ export class DashboardComponent {
 
   navigateTo(path: string): void {
     this.router.navigate([path]);
+  }
+
+  openChangeRole(): void {
+    const user = this.authService.getCurrentUserValue();
+    if (!user?.username) return;
+
+    this.usersService.getUserByUsername(user.username).subscribe({
+      next: (fullUser) => {
+        const dialogRef = this.dialog.open(ChangeRoleDialogComponent, {
+          width: '440px',
+          data: { user: fullUser },
+          autoFocus: false
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result && result.roleId) {
+            this.snackBar.open('Actualizando rol...', 'Cerrar', { duration: 2000 });
+
+            let formattedBirthdate = fullUser.birthdate;
+            if (Array.isArray(fullUser.birthdate)) {
+              const [year, month, day] = fullUser.birthdate;
+              formattedBirthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            }
+
+            const updatePayload: UserUpdateRequest = {
+              username: fullUser.username,
+              name: fullUser.name,
+              lastName: fullUser.lastName,
+              email: fullUser.email,
+              phoneNumber: fullUser.phoneNumber,
+              birthdate: formattedBirthdate,
+              roleId: result.roleId
+            };
+
+            this.usersService.updateUser(user.username, updatePayload).subscribe({
+              next: () => {
+                this.authService.refreshToken().subscribe({
+                  next: () => {
+                    this.snackBar.open('Rol actualizado y sesión sincronizada', 'Cerrar', { duration: 3000 });
+                  },
+                  error: (err) => {
+                    console.error('Error al refrescar el token:', err);
+                    this.snackBar.open('Rol actualizado, por favor reinicia sesión para ver los cambios', 'Cerrar', { duration: 5000 });
+                  }
+                });
+              },
+              error: (err) => {
+                console.error('Error al cambiar el rol:', err);
+                this.snackBar.open('Error al actualizar el rol', 'Cerrar', { duration: 5000 });
+              }
+            });
+          }
+        });
+      },
+      error: (err) => this.snackBar.open(err?.error?.message || 'Error al obtener perfil para cambio de rol:', 'Cerrar', { duration: 4000 })
+    });
   }
 
   navigateToAdminUsers() {

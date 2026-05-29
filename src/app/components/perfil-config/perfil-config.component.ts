@@ -10,6 +10,7 @@ import { Observable, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EditProfileDialogComponent } from '../shared/dialogs/edit-profile-dialog/edit-profile-dialog.component';
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-perfil-config',
@@ -18,7 +19,8 @@ import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/
     CommonModule,
     MatButtonModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatIconModule
   ],
   templateUrl: './perfil-config.component.html',
   styleUrl: './perfil-config.component.css'
@@ -166,5 +168,9 @@ export class PerfilConfigComponent {
 
   openChangePassword() {
     this.router.navigate(['/change-password']);
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

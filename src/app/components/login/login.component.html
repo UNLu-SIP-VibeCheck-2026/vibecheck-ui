@@ -15,7 +15,7 @@
                            id="username"
                            formControlName="username"
                            placeholder="usuario o ejemplo@correo.com">
-                    <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
+                    <mat-error *ngIf="loginForm.get('username')?.hasError('required') && loginForm.get('username')?.touched">
                         El usuario o correo es requerido
                     </mat-error>
                 </mat-form-field>
@@ -28,7 +28,7 @@
                            type="password"
                            id="password"
                            formControlName="password">
-                    <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+                    <mat-error *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
                         La contraseña es requerida
                     </mat-error>
                 </mat-form-field>
