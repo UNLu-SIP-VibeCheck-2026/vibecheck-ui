@@ -7,6 +7,9 @@ export interface TicketResponse {
   seatRow: string | null;
   seatNumber: string | null;
   token: string | null;
+  tokenId: number | null;
+  mintTxHash: string | null;
+  ownerWallet: string | null;
   createdAt: string;
 }
 
@@ -20,3 +23,12 @@ export interface TicketBuyRequest {
   quantity?: number | null;
   seats?: SeatSelection[] | null;
 }
+
+export interface TicketConfirmRequest {
+  ticketTypeId: number;
+  txHash: string;
+  tokenId: number;
+  seatRow?: string | null;
+  seatNumber?: string | null;
+}
+

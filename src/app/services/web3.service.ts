@@ -29,9 +29,12 @@ export class Web3Service {
   isSepolia$ = this.isSepoliaSubject.asObservable();
 
   // Smart Contract Addresses
-  private readonly VBK_ADDRESS = '0x68ec4adD5D3D615a86D56615DDED79B2326037aB';
+  private readonly VBK_ADDRESS = '0xF84c05F1278A60601989192077f40bAb340A1947';
   // Standard Sepolia USDC contract address (Circle official / widely used Sepolia Aave)
   private readonly USDC_ADDRESS = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
+  private readonly OFFERING_NFT_ADDRESS = '0x21112CF36fE9676b9bD7b405e054F8C1C71d24d5';
+  readonly EVENT_FACTORY_ADDRESS = '0x4781B805872245c899F2904c28398870BDfc3d4c';
+  readonly VENUE_SIGNER_ADDRESS = '0xF8A5EcdE82f020Ec51419D73F73B1d83BB941292';
 
   private readonly SEPOLIA_CHAIN_ID = '0xaa36a7'; // Chain ID 11155111 en hexadecimal
 
@@ -40,6 +43,19 @@ export class Web3Service {
     'function decimals() view returns (uint8)',
     'function symbol() view returns (string)',
     'function transfer(address to, uint256 amount) returns (bool)'
+  ];
+
+  private readonly OFFERING_ABI = [
+    'function buyWithUSDC(address eventNFT, uint256 tierIdx) external',
+    'function buyWithVBK(address eventNFT, uint256 tierIdx, uint256 maxVbkAmount) external',
+    'function quoteVBK(address eventNFT, uint256 tierIdx) external view returns (uint256)',
+    'event TicketPurchasedUSDC(address indexed buyer, address indexed eventNFT, uint256 indexed tokenId, uint256 tierIdx, uint256 amountPaid, uint256 feePaid)',
+    'event TicketPurchasedVBK(address indexed buyer, address indexed eventNFT, uint256 indexed tokenId, uint256 tierIdx, uint256 amountPaid, uint256 feePaid, uint256 priceUSDC)'
+  ];
+
+  private readonly EVENT_FACTORY_ABI = [
+    'function launchEvent((string name, string symbol, uint256 eventDate, uint256 maxResalePriceBps, uint256 royaltyBps, address venueSigner, string baseUri) params, (string name, uint256 priceUSDC, uint256 maxSupply, uint256 sold)[] tiers) external returns (address)',
+    'event EventLaunched(address indexed organizer, address indexed eventNFT)'
   ];
 
   constructor() {
@@ -206,6 +222,155 @@ export class Web3Service {
       const tx = await tokenContract['transfer'](to, amountInWei);
       return tx.hash;
     }
+  }
+
+  async signMessage(message: string): Promise<string> {
+    if (!this.provider) {
+      this.provider = new ethers.BrowserProvider(this.ethereum);
+    }
+    const signer = await this.provider.getSigner();
+    return await signer.signMessage(message);
+  }
+
+  async getVbkQuote(eventNftAddress: string, tierIndex: number): Promise<bigint> {
+    if (!this.provider) {
+      this.provider = new ethers.BrowserProvider(this.ethereum);
+    }
+    const offeringContract = new ethers.Contract(this.OFFERING_NFT_ADDRESS, this.OFFERING_ABI, this.provider);
+    return await offeringContract['quoteVBK'](eventNftAddress, tierIndex);
+  }
+
+  async buyTicketWithUSDC(eventNftAddress: string, tierIndex: number, priceUsdc: number): Promise<{ txHash: string; tokenId: number }> {
+    if (!this.provider) {
+      throw new Error('No hay proveedor de Web3 conectado.');
+    }
+    const signer = await this.provider.getSigner();
+    
+    // 1. Aprobación de USDC (6 decimales)
+    const usdcContract = new ethers.Contract(this.USDC_ADDRESS, this.ERC20_ABI, signer);
+    const amountInUnits = ethers.parseUnits(priceUsdc.toString(), 6);
+    
+    const approveTx = await usdcContract['approve'](this.OFFERING_NFT_ADDRESS, amountInUnits);
+    await approveTx.wait();
+    
+    // 2. Compra de Ticket
+    const offeringContract = new ethers.Contract(this.OFFERING_NFT_ADDRESS, this.OFFERING_ABI, signer);
+    const buyTx = await offeringContract['buyWithUSDC'](eventNftAddress, tierIndex);
+    const receipt = await buyTx.wait();
+    
+    // 3. Extraer tokenId de logs
+    let tokenId: number | null = null;
+    for (const log of receipt.logs) {
+      try {
+        const parsed = offeringContract.interface.parseLog(log);
+        if (parsed && parsed.name === 'TicketPurchasedUSDC') {
+          tokenId = Number(parsed.args['tokenId']);
+          break;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    
+    if (tokenId === null) {
+      throw new Error('No se pudo extraer el tokenId de los logs de la transacción.');
+    }
+    
+    return {
+      txHash: receipt.hash || buyTx.hash,
+      tokenId
+    };
+  }
+
+  async buyTicketWithVBK(eventNftAddress: string, tierIndex: number): Promise<{ txHash: string; tokenId: number }> {
+    if (!this.provider) {
+      throw new Error('No hay proveedor de Web3 conectado.');
+    }
+    const signer = await this.provider.getSigner();
+    
+    // 1. Cotizar en VBK
+    const quote = await this.getVbkQuote(eventNftAddress, tierIndex);
+    // Slippage del 5%
+    const maxVbkAmount = (quote * 105n) / 100n;
+    
+    // 2. Aprobación de VBK (18 decimales)
+    const vbkContract = new ethers.Contract(this.VBK_ADDRESS, this.ERC20_ABI, signer);
+    const approveTx = await vbkContract['approve'](this.OFFERING_NFT_ADDRESS, quote);
+    await approveTx.wait();
+    
+    // 3. Compra de Ticket
+    const offeringContract = new ethers.Contract(this.OFFERING_NFT_ADDRESS, this.OFFERING_ABI, signer);
+    const buyTx = await offeringContract['buyWithVBK'](eventNftAddress, tierIndex, maxVbkAmount);
+    const receipt = await buyTx.wait();
+    
+    // 4. Extraer tokenId de logs
+    let tokenId: number | null = null;
+    for (const log of receipt.logs) {
+      try {
+        const parsed = offeringContract.interface.parseLog(log);
+        if (parsed && parsed.name === 'TicketPurchasedVBK') {
+          tokenId = Number(parsed.args['tokenId']);
+          break;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    
+    if (tokenId === null) {
+      throw new Error('No se pudo extraer el tokenId de los logs de la transacción.');
+    }
+    
+    return {
+      txHash: receipt.hash || buyTx.hash,
+      tokenId
+    };
+  }
+
+  async launchEventOnChain(params: {
+    name: string;
+    symbol: string;
+    eventDate: number;
+    maxResalePriceBps: number;
+    royaltyBps: number;
+    venueSigner: string;
+    baseUri: string;
+  }, tiers: Array<{
+    name: string;
+    priceUSDC: bigint;
+    maxSupply: number;
+    sold: number;
+  }>): Promise<{ eventNftAddress: string; deployTxHash: string }> {
+    if (!this.provider) {
+      throw new Error('No hay proveedor de Web3 conectado.');
+    }
+    const signer = await this.provider.getSigner();
+    const factoryContract = new ethers.Contract(this.EVENT_FACTORY_ADDRESS, this.EVENT_FACTORY_ABI, signer);
+
+    const tx = await factoryContract['launchEvent'](params, tiers);
+    const receipt = await tx.wait();
+
+    let eventNftAddress: string | null = null;
+    for (const log of receipt.logs) {
+      try {
+        const parsed = factoryContract.interface.parseLog(log);
+        if (parsed && parsed.name === 'EventLaunched') {
+          eventNftAddress = parsed.args['eventNFT'];
+          break;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    if (!eventNftAddress) {
+      throw new Error('No se pudo extraer el eventNftAddress del log de EventLaunched.');
+    }
+
+    return {
+      eventNftAddress,
+      deployTxHash: receipt.hash || tx.hash
+    };
   }
 
   private async checkIfWalletIsConnected() {

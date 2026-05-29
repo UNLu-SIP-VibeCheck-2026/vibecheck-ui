@@ -1,0 +1,48 @@
+<div class="dialog-container">
+    <div class="dialog-header">
+        <mat-icon class="warning-icon">warning_amber</mat-icon>
+        <h2 mat-dialog-title>Publicar Evento: {{ data.eventTitle }}</h2>
+    </div>
+
+    <mat-dialog-content class="dialog-content">
+        <div *ngIf="data.onChain" class="alert-box onchain-alert">
+            <div class="alert-title">
+                <mat-icon>account_balance_wallet</mat-icon>
+                <span>Despliegue y Publicación de Evento</span>
+            </div>
+            <p class="alert-desc">
+                Esta acción es <strong>irreversible</strong> y requiere interactuar con tu billetera <strong>MetaMask</strong>. 
+                Se desplegará el contrato inteligente <code>EventNFT</code> para el evento. 
+                Una vez realizado:
+            </p>
+            <ul class="alert-bullets">
+                <li>No podrás agregar, eliminar ni modificar categorías de entradas.</li>
+                <li>Los datos del evento quedarán registrados de forma inmutable.</li>
+            </ul>
+        </div>
+
+        <div *ngIf="!data.onChain" class="alert-box offchain-alert">
+            <div class="alert-title">
+                <mat-icon>public</mat-icon>
+                <span>Publicar Evento</span>
+            </div>
+            <p class="alert-desc">
+                El contrato inteligente ya está desplegado. Esta acción hará que el evento pase al estado <strong>PÚBLICO</strong>:
+            </p>
+            <ul class="alert-bullets">
+                <li>El evento aparecerá inmediatamente en la cartelera principal.</li>
+                <li>Cualquier usuario del sitio podrá adquirir entradas para el evento.</li>
+            </ul>
+        </div>
+
+        <p class="confirmation-question">¿Estás seguro de que deseas continuar?</p>
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions">
+        <button mat-button class="btn-cancel" (click)="onCancel()">Cancelar</button>
+        <button mat-raised-button class="btn-confirm" (click)="onConfirm()">
+            <mat-icon *ngIf="data.onChain">send</mat-icon>
+            <span>{{ data.onChain ? 'Desplegar y Publicar' : 'Confirmar Publicación' }}</span>
+        </button>
+    </mat-dialog-actions>
+</div>

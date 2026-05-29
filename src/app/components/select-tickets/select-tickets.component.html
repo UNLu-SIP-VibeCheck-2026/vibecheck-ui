@@ -35,8 +35,8 @@
                     <span class="price-value">{{ ticket.priceUsdc | currency:'$':'symbol':'1.0-0' }}</span>
                   </div>
                   <div class="price-item">
-                    <label>Máx. Reventa</label>
-                    <span class="resale-value">{{ ticket.maxPrice | currency:'$':'symbol':'1.0-0' }}</span>
+                    <label>Tope Reventa</label>
+                    <span class="resale-value">{{ (event.maxResalePriceBps || 10000) / 100 }}%</span>
                   </div>
                 </div>
               </div>

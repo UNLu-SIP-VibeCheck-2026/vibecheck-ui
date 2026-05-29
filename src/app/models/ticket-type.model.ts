@@ -2,8 +2,6 @@ export interface TicketTypeCreateRequest {
   name: string;
   description: string;
   priceUsdc: number;
-  maxPrice: number;
-  royalties: number;
   maxQuantity: number;
   maxPerUser: number;
   saleStartDate: string; // ISO date string
@@ -21,8 +19,6 @@ export interface TicketTypeUpdateRequest {
   name: string;
   description: string;
   priceUsdc: number;
-  maxPrice: number;
-  royalties: number;
   maxQuantity: number;
   maxPerUser: number;
   saleStartDate: string; // ISO date string
@@ -40,8 +36,6 @@ export interface TicketTypeResponse {
   name: string;
   description: string;
   priceUsdc: number;
-  maxPrice: number;
-  royalties: number;
   maxQuantity: number;
   maxPerUser: number;
   saleStartDate: string; // ISO date string
@@ -52,5 +46,7 @@ export interface TicketTypeResponse {
   lastRow?: number | null;
   firstSeat?: number | null;
   lastSeat?: number | null;
+  tierIndex: number;
   eventId: number;
 }
+

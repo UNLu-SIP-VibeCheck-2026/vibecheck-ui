@@ -48,8 +48,19 @@
           <img src="assets/metamask.png" alt="MetaMask" class="mm-logo-small">
         </div>
         <div class="address-details">
-          <span class="network-badge">Sepolia Network</span>
-          <h2 class="address">{{ truncateAddress(connectedAddress$ | async) }}</h2>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="network-badge">Sepolia Network</span>
+            <span *ngIf="isLinked" class="network-badge" style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; border-color: #2ecc71;">
+              <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;">check_circle</mat-icon>Vinculada
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 16px; margin-top: 4px;">
+            <h2 class="address" style="margin: 0;">{{ truncateAddress(connectedAddress$ | async) }}</h2>
+            <button *ngIf="!isLinked" class="luxury-btn primary-btn" (click)="linkWallet()" [disabled]="isLinking" style="font-size: 0.8rem; padding: 4px 12px; height: auto; min-height: unset; margin: 0;">
+              <mat-icon style="font-size: 16px; width: 16px; height: 16px; margin-right: 4px;">link</mat-icon>
+              {{ isLinking ? 'Vinculando...' : 'Vincular con VibeCheck' }}
+            </button>
+          </div>
         </div>
       </div>
       <div class="powered-by">

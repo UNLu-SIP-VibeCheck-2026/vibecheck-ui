@@ -417,6 +417,18 @@
       border: 1px solid var(--md-sys-color-outline-variant) !important;
     }
 
+    .draft-chip {
+      background-color: rgba(156, 163, 175, 0.1) !important;
+      color: #9ca3af !important;
+      border-color: #4b5563 !important;
+    }
+
+    .deployed-chip {
+      background-color: rgba(99, 102, 241, 0.1) !important;
+      color: #818cf8 !important;
+      border-color: #6366f1 !important;
+    }
+
     .scheduled-chip {
       background-color: rgba(59, 130, 246, 0.1) !important;
       color: #60a5fa !important;
