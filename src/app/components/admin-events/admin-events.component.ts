@@ -21,8 +21,11 @@ import { Router } from "@angular/router";
 import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
 import { EventDialogComponent } from "../shared/dialogs/event-dialog/event-dialog.component";
 import { ResaleDialogComponent } from "../shared/dialogs/resale-dialog/resale-dialog.component";
+import { PublishConfirmDialogComponent } from "../shared/dialogs/publish-confirm-dialog/publish-confirm-dialog.component";
 import { EventService } from "../../services/event.service";
 import { VenueService } from "../../services/venue.service";
+import { TicketTypeService } from "../../services/ticket-type.service";
+import { Web3Service } from "../../services/web3.service";
 import { EventResponse } from "../../models/event.model";
 import { VenueResponse } from "../../models/venue.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
@@ -30,6 +33,8 @@ import { UsersService } from "../../services/users.service";
 import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
 import { trackLoading } from "../../utils/loading.operator";
+import { environment } from "../../../environments/environment";
+import { ethers } from "ethers";
 
 @Component({
   selector: "app-admin-events",
@@ -61,6 +66,8 @@ export class AdminEventsComponent implements OnInit {
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
   private usersService = inject(UsersService);
+  private ticketTypeService = inject(TicketTypeService);
+  private web3Service = inject(Web3Service);
   private snackBar = inject(MatSnackBar);
   private sanitizer = inject(DomSanitizer);
 
@@ -219,14 +226,22 @@ export class AdminEventsComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch (status?.toUpperCase()) {
+      case "DRAFT":
+      case "BORRADOR":
+        return "draft-chip";
+      case "DEPLOYED":
+      case "DEPLOYADO":
+        return "deployed-chip";
+      case "PUBLIC":
+      case "PÚBLICO":
       case "SCHEDULED":
       case "PROGRAMADO":
-        return "scheduled-chip";
       case "IN_PROGRESS":
       case "EN_CURSO":
         return "inprogress-chip";
       case "FINISHED":
       case "FINALIZADO":
+      case "COMPLETED":
         return "finished-chip";
       case "CANCELLED":
       case "CANCELADO":
@@ -238,11 +253,18 @@ export class AdminEventsComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     const map: Record<string, string> = {
-      SCHEDULED: "PROGRAMADO",
+      DRAFT: "BORRADOR",
+      DEPLOYED: "DEPLOYADO",
+      PUBLIC: "PÚBLICO",
+      SCHEDULED: "PÚBLICO",
       IN_PROGRESS: "EN CURSO",
       FINISHED: "FINALIZADO",
+      COMPLETED: "FINALIZADO",
       CANCELLED: "CANCELADO",
-      PROGRAMADO: "PROGRAMADO",
+      BORRADOR: "BORRADOR",
+      DEPLOYADO: "DEPLOYADO",
+      PÚBLICO: "PÚBLICO",
+      PROGRAMADO: "PÚBLICO",
       EN_CURSO: "EN CURSO",
       FINALIZADO: "FINALIZADO",
       CANCELADO: "CANCELADO",
@@ -354,36 +376,136 @@ export class AdminEventsComponent implements OnInit {
   // -------------------------------------------------------------------------
 
   publishEvent(event: EventResponse): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: "400px",
+    const isOnChainDeployNeeded = event.status === 'DRAFT';
+
+    const dialogRef = this.dialog.open(PublishConfirmDialogComponent, {
+      width: "500px",
       data: {
-        title: "Publicar evento",
-        message: `¿Publicar el evento "${event.title}"? Esta acción hará visible el evento a los usuarios.`,
-        confirmText: "Publicar",
-        cancelText: "Cancelar",
-        success: true,
+        eventTitle: event.title,
+        onChain: isOnChainDeployNeeded
       },
+      autoFocus: false
     });
 
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
 
       this.publishingId = event.id;
-      this.eventService.publishEvent(event.id).subscribe({
-        next: (updated) => {
-          const idx = this.allEvents.findIndex((e) => e.id === updated.id);
-          if (idx !== -1) this.allEvents[idx] = updated;
-          this.applyFilter();
-          this.publishingId = null;
-          this.showSnack(`Evento "${event.title}" publicado correctamente`);
+
+      if (isOnChainDeployNeeded) {
+        this.deployAndPublishEvent(event);
+      } else {
+        this.executePublishOnly(event);
+      }
+    });
+  }
+
+  private deployAndPublishEvent(event: EventResponse): void {
+    if (!this.web3Service.isMetaMaskInstalled()) {
+      this.showSnack("MetaMask no está instalado. Por favor instálalo para continuar.", "error");
+      this.publishingId = null;
+      return;
+    }
+
+    this.web3Service.connectWallet().then(async () => {
+      const isSepolia = await this.web3Service.checkNetwork();
+      if (!isSepolia) {
+        this.showSnack("Por favor cambia la red de MetaMask a Sepolia.", "error");
+        this.publishingId = null;
+        return;
+      }
+
+      this.ticketTypeService.findTicketTypesByEvent(event.id).subscribe({
+        next: (ticketTypes) => {
+          if (ticketTypes.length === 0) {
+            this.showSnack("Error: El evento debe tener al menos una categoría de entrada antes de publicarse.", "error");
+            this.publishingId = null;
+            return;
+          }
+
+          const symbol = event.title.slice(0, 4).toUpperCase().replace(/\s/g, 'E');
+          const eventDateTimestamp = Math.floor(new Date(event.startDate).getTime() / 1000);
+          
+          const params = {
+            name: event.title,
+            symbol: symbol,
+            eventDate: eventDateTimestamp,
+            maxResalePriceBps: event.maxResalePriceBps || 12000,
+            royaltyBps: event.royaltyBps || 500,
+            venueSigner: this.web3Service.VENUE_SIGNER_ADDRESS,
+            baseUri: `${environment.backendUrl}/api/tickets/`
+          };
+
+          const tiers = ticketTypes.map(tt => ({
+            name: tt.name,
+            priceUSDC: ethers.parseUnits(tt.priceUsdc.toString(), 6),
+            maxSupply: tt.maxQuantity,
+            sold: 0
+          }));
+
+          this.web3Service.launchEventOnChain(params, tiers).then(({ eventNftAddress, deployTxHash }) => {
+            this.eventService.registerDeploy(event.id, { eventNftAddress, deployTxHash }).subscribe({
+              next: (registeredEvent) => {
+                this.eventService.publishEvent(event.id).subscribe({
+                  next: (publishedEvent) => {
+                    const idx = this.allEvents.findIndex((e) => e.id === publishedEvent.id);
+                    if (idx !== -1) this.allEvents[idx] = publishedEvent;
+                    this.applyFilter();
+                    this.publishingId = null;
+                    this.showSnack(`Evento "${event.title}" deployado y publicado correctamente`);
+                  },
+                  error: (err) => {
+                    this.publishingId = null;
+                    const errorMsg = err?.error?.message || err?.message || 'Error al publicar el evento post-deploy';
+                    this.showSnack(errorMsg, "error");
+                    console.error(err);
+                  }
+                });
+              },
+              error: (err) => {
+                this.publishingId = null;
+                const errorMsg = err?.error?.message || err?.message || 'Error al registrar el despliegue del evento';
+                this.showSnack(errorMsg, "error");
+                console.error(err);
+              }
+            });
+
+          }).catch((err) => {
+            this.publishingId = null;
+            const errorMsg = err?.message || 'Error en la transacción de MetaMask';
+            this.showSnack(errorMsg, "error");
+            console.error(err);
+          });
         },
         error: (err) => {
           this.publishingId = null;
-          const errorMsg = err?.error?.message || err?.message || 'Error al publicar el evento';
-          this.showSnack(errorMsg, "error");
+          this.showSnack("Error al consultar las categorías de entrada del evento.", "error");
           console.error(err);
-        },
+        }
       });
+
+    }).catch((err) => {
+      this.publishingId = null;
+      this.showSnack("Error al conectar la billetera MetaMask.", "error");
+      console.error(err);
+    });
+  }
+
+  private executePublishOnly(event: EventResponse): void {
+    this.eventService.publishEvent(event.id).subscribe({
+      next: (updated) => {
+        const idx = this.allEvents.findIndex((e) => e.id === updated.id);
+        if (idx !== -1) this.allEvents[idx] = updated;
+        this.applyFilter();
+        this.publishingId = null;
+        this.showSnack(`Evento "${event.title}" publicado correctamente`);
+      },
+      error: (err) => {
+        this.publishingId = null;
+        const errorMsg = err?.error?.message || err?.message || 'Error al publicar el evento';
+        this.showSnack(errorMsg, "error");
+        console.error(err);
+      },
     });
   }
 

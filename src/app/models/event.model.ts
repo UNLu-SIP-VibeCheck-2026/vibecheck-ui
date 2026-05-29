@@ -34,4 +34,14 @@ export interface EventResponse {
   venueId: number;
   hasImage: boolean;
   advertisementPlanId?: number;
+  eventNftAddress?: string;
+  deployTxHash?: string;
+  maxResalePriceBps?: number;
+  royaltyBps?: number;
 }
+
+export interface EventDeployRegisterRequest {
+  eventNftAddress: string;
+  deployTxHash: string;
+}
+

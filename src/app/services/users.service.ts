@@ -51,7 +51,14 @@ export class UsersService {
   }
 
   verifyEmail(token: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/verify-email`, { params: { token } });
+    return this.http.get(`${this.apiUrl}/users/verify`, { params: { token } });
+  }
+
+  resendVerification(email: string): Observable<string> {
+    return this.http.post(`${this.apiUrl}/users/resend-verification`, null, {
+      params: { email },
+      responseType: 'text'
+    });
   }
 
   forgotPassword(email: string): Observable<void> {
@@ -64,3 +71,4 @@ export class UsersService {
     return this.http.post(`${this.apiUrl}/users/reset-password`, payload, { responseType: 'text' });
   }
 }
+

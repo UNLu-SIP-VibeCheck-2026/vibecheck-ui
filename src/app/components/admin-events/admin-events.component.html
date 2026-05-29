@@ -163,7 +163,7 @@
                                         (click)="publishEvent(element)"
                                         [disabled]="publishingId === element.id"
                                         matTooltip="Publicar evento"
-                                        *ngIf="element.status === 'DRAFT'">
+                                        *ngIf="element.status === 'DRAFT' || element.status === 'DEPLOYED'">
                                     <mat-spinner *ngIf="publishingId === element.id" diameter="16"></mat-spinner>
                                     <mat-icon *ngIf="publishingId !== element.id">publish</mat-icon>
                                 </button>

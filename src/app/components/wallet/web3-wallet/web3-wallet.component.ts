@@ -1,19 +1,25 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Web3Service } from '../../../services/web3.service';
+import { WalletService } from '../../../services/wallet.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-web3-wallet',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, FormsModule, MatSnackBarModule],
   templateUrl: './web3-wallet.component.html',
   styleUrl: './web3-wallet.component.css'
 })
-export class Web3WalletComponent {
+export class Web3WalletComponent implements OnInit {
   web3Service = inject(Web3Service);
+  private walletService = inject(WalletService);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
 
   isConnected$ = this.web3Service.isConnected$;
   connectedAddress$ = this.web3Service.connectedAddress$;
@@ -21,6 +27,67 @@ export class Web3WalletComponent {
   vbkBalance$ = this.web3Service.vbkBalance$;
   usdcBalance$ = this.web3Service.usdcBalance$;
   isSepolia$ = this.web3Service.isSepolia$;
+
+  currentAddress: string | null = null;
+  isLinking = false;
+  isLinked = false;
+
+  ngOnInit() {
+    this.connectedAddress$.subscribe(address => {
+      this.currentAddress = address;
+      if (address) {
+        const username = this.getCurrentUser();
+        const stored = localStorage.getItem(`linked_wallet_${username}`);
+        this.isLinked = (stored?.toLowerCase() === address.toLowerCase());
+      } else {
+        this.isLinked = false;
+      }
+    });
+  }
+
+  getCurrentUser(): string {
+    const user = this.authService.getCurrentUserValue();
+    return user ? user.username : 'guest';
+  }
+
+  async linkWallet() {
+    if (!this.currentAddress) return;
+    this.isLinking = true;
+    this.walletService.requestChallenge(this.currentAddress).subscribe({
+      next: async (challenge) => {
+        try {
+          const signature = await this.web3Service.signMessage(challenge.message);
+          this.walletService.verifyChallenge(this.currentAddress!, challenge.message, signature).subscribe({
+            next: (verifyResponse) => {
+              this.isLinking = false;
+              if (verifyResponse.linked) {
+                const username = this.getCurrentUser();
+                localStorage.setItem(`linked_wallet_${username}`, verifyResponse.walletAddress);
+                this.isLinked = true;
+                this.snackBar.open('¡Billetera vinculada con éxito!', 'Cerrar', { duration: 3000 });
+              }
+            },
+            error: (err) => {
+              this.isLinking = false;
+              console.error('Error al verificar challenge SIWE:', err);
+              const errMsg = err.error?.message || 'Error al verificar la firma de la billetera.';
+              this.snackBar.open(errMsg, 'Cerrar', { duration: 4000 });
+            }
+          });
+        } catch (e: any) {
+          this.isLinking = false;
+          console.error('Firma cancelada o errónea:', e);
+          this.snackBar.open('Firma de mensaje rechazada o inválida.', 'Cerrar', { duration: 3000 });
+        }
+      },
+      error: (err) => {
+        this.isLinking = false;
+        console.error('Error al solicitar challenge SIWE:', err);
+        const errMsg = err.error?.message || 'Error al vincular con el servidor.';
+        this.snackBar.open(errMsg, 'Cerrar', { duration: 4000 });
+      }
+    });
+  }
 
   get isInstalled(): boolean {
     return this.web3Service.isMetaMaskInstalled();

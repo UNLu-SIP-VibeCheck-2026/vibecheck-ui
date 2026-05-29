@@ -72,8 +72,6 @@ export class TicketDialogComponent implements OnInit {
       name: [ticket?.name || '', [Validators.required]],
       description: [ticket?.description || '', []],
       priceUsdc: [ticket?.priceUsdc || '', [Validators.required, Validators.min(0)]],
-      maxPrice: [ticket?.maxPrice || '', [Validators.required, Validators.min(0)]],
-      royalties: [ticket?.royalties || '', [Validators.required, Validators.min(0), Validators.max(100)]],
       maxQuantity: [ticket?.maxQuantity || '', [Validators.required, Validators.min(1)]],
       maxPerUser: [ticket?.maxPerUser || '', [Validators.required, Validators.min(1)]],
       saleStartDate: [defaultSaleStartDate, [Validators.required]],
@@ -130,8 +128,6 @@ export class TicketDialogComponent implements OnInit {
       name: formValue.name,
       description: formValue.description || '',
       priceUsdc: Number(formValue.priceUsdc),
-      maxPrice: Number(formValue.maxPrice),
-      royalties: Number(formValue.royalties),
       maxQuantity: Number(formValue.maxQuantity),
       maxPerUser: Number(formValue.maxPerUser),
       saleStartDate: formValue.saleStartDate, // DateTimePicker ya emite string ISO

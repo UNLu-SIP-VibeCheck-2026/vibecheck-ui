@@ -6,6 +6,7 @@ import {
   EventCreateRequest,
   EventUpdateRequest,
   EventResponse,
+  EventDeployRegisterRequest,
 } from "../models/event.model";
 import { Page } from "../models/page.model";
 
@@ -75,5 +76,9 @@ export class EventService {
 
   publishEvent(id: number): Observable<EventResponse> {
     return this.http.patch<EventResponse>(`${this.apiUrl}/${id}/publish`, {});
+  }
+
+  registerDeploy(id: number, request: EventDeployRegisterRequest): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/register-deploy`, request);
   }
 }

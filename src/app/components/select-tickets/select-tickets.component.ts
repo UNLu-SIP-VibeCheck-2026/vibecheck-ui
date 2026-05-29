@@ -19,9 +19,9 @@ import { environment } from '../../../environments/environment';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { SeatSelectionDialogComponent } from '../shared/dialogs/seat-selection-dialog/seat-selection-dialog.component';
 import { ErrorDialogComponent } from '../shared/dialogs/error-dialog/error-dialog.component';
-import { forkJoin } from 'rxjs';
 import { TicketService } from '../../services/ticket.service';
-import { TicketBuyRequest, SeatSelection } from '../../models/ticket.model';
+import { Web3Service } from '../../services/web3.service';
+import { SeatSelection } from '../../models/ticket.model';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
@@ -57,6 +57,7 @@ export class SelectTicketsComponent implements OnInit {
   private eventService = inject(EventService);
   private ticketTypeService = inject(TicketTypeService);
   private ticketService = inject(TicketService);
+  private web3Service = inject(Web3Service);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private sanitizer = inject(DomSanitizer);
@@ -68,9 +69,8 @@ export class SelectTicketsComponent implements OnInit {
   errorMessage = '';
 
   paymentMethods = [
-    { id: 'vbk', name: '$VBK', enabled: true },
-    { id: 'mp', name: 'Mercado Pago', enabled: false },
-    { id: 'other', name: 'Otro', enabled: false }
+    { id: 'vbk', name: 'VibeCheck Token ($VBK)', enabled: true },
+    { id: 'usdc', name: 'Dólar Digital ($USDC)', enabled: true }
   ];
 
   selectedPaymentMethod = 'vbk';
@@ -151,7 +151,7 @@ export class SelectTicketsComponent implements OnInit {
   }
 
   get canPay() {
-    return this.subtotal > 0 && this.selectedPaymentMethod === 'vbk';
+    return this.subtotal > 0 && (this.selectedPaymentMethod === 'vbk' || this.selectedPaymentMethod === 'usdc');
   }
 
   incrementQuantity(ticket: TicketTypeUI) {
@@ -196,47 +196,59 @@ export class SelectTicketsComponent implements OnInit {
     }
   }
 
-  processPayment() {
+  async processPayment() {
     if (!this.canPay) return;
-    
-    this.isLoading = true;
-    
-    const requests = this.ticketTypes
-        .filter(t => t.quantity > 0)
-        .map(t => {
-            const req: TicketBuyRequest = {
-                ticketTypeId: t.id,
-                quantity: t.hasSeats ? null : t.quantity,
-                seats: t.hasSeats ? t.selectedSeats : null
-            };
-            return this.ticketService.buyTickets(req);
-        });
-
-    if (requests.length === 0) {
-        this.isLoading = false;
-        return;
+    if (!this.event || !this.event.eventNftAddress) {
+      this.snackBar.open('El evento no tiene una dirección de contrato vinculada.', 'Cerrar', { duration: 3000 });
+      return;
     }
 
-    forkJoin(requests).subscribe({
-        next: () => {
-            this.snackBar.open(`Pago procesado con éxito por un total de ${this.total} $VBK`, 'Cerrar', { duration: 3000 });
-            this.router.navigate(['/my-tickets']);
-        },
-        error: (err) => {
-            console.error('Error procesando el pago', err);
-            const errorMsg = err.error?.message || 'Error al procesar el pago. Por favor, intente nuevamente.';
-            
-            this.dialog.open(ErrorDialogComponent, {
-                width: '400px',
-                panelClass: 'vibe-dialog-container',
-                data: {
-                    title: 'No se pudo completar la compra',
-                    message: errorMsg
-                }
-            });
-            this.isLoading = false;
+    this.isLoading = true;
+
+    try {
+      const ticketsToBuy = this.ticketTypes.filter(t => t.quantity > 0);
+      
+      for (const t of ticketsToBuy) {
+        const qty = t.quantity;
+        for (let i = 0; i < qty; i++) {
+          let txResult: { txHash: string; tokenId: number };
+          
+          if (this.selectedPaymentMethod === 'vbk') {
+            txResult = await this.web3Service.buyTicketWithVBK(this.event.eventNftAddress, t.tierIndex);
+          } else { // 'usdc'
+            txResult = await this.web3Service.buyTicketWithUSDC(this.event.eventNftAddress, t.tierIndex, t.priceUsdc);
+          }
+          
+          // Confirmar con el backend
+          const confirmReq = {
+            ticketTypeId: t.id,
+            txHash: txResult.txHash,
+            tokenId: txResult.tokenId,
+            seatRow: t.hasSeats && t.selectedSeats ? t.selectedSeats[i]?.row : null,
+            seatNumber: t.hasSeats && t.selectedSeats ? t.selectedSeats[i]?.number : null
+          };
+          
+          // Esperamos síncronamente la confirmación del backend
+          await this.ticketService.confirmTicket(confirmReq).toPromise();
         }
-    });
+      }
+
+      this.snackBar.open(`Pago procesado con éxito por un total de ${this.total} $${this.selectedPaymentMethod.toUpperCase()}`, 'Cerrar', { duration: 4000 });
+      this.router.navigate(['/my-tickets']);
+    } catch (err: any) {
+      console.error('Error durante el proceso de pago/confirmación:', err);
+      const errorMsg = err.error?.message || err.message || 'Ocurrió un error inesperado al procesar la compra en MetaMask/Blockchain.';
+      this.dialog.open(ErrorDialogComponent, {
+          width: '400px',
+          panelClass: 'vibe-dialog-container',
+          data: {
+              title: 'No se pudo completar la compra',
+              message: errorMsg
+          }
+      });
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   goBack() {

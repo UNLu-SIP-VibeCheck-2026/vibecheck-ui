@@ -58,8 +58,6 @@ export class AdminTicketsComponent implements OnInit {
     "id",
     "name",
     "priceUsdc",
-    "maxPrice",
-    "royalties",
     "maxQuantity",
     "maxPerUser",
     "saleStartDate",
@@ -178,30 +176,7 @@ export class AdminTicketsComponent implements OnInit {
     });
   }
 
-  openResaleConfig(ticket: TicketTypeResponse) {
-    const dialogRef = this.dialog.open(ResaleDialogComponent, {
-      width: "440px",
-      data: {
-        event: {
-          title: ticket.name,
-          maxResalePrice: ticket.maxPrice
-        }
-      },
-      autoFocus: false,
-    });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const index = this.dataSource.data.findIndex(t => t.id === ticket.id);
-        if (index !== -1) {
-          const updatedData = [...this.dataSource.data];
-          updatedData[index].maxPrice = result.maxResalePrice;
-          this.dataSource.data = updatedData;
-          this.showSnack(`Precio de reventa actualizado para "${ticket.name}"`);
-        }
-      }
-    });
-  }
 
   formatDate(dateString: string): string {
     if (!dateString) return '';
