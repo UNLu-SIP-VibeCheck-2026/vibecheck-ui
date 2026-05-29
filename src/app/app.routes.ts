@@ -20,7 +20,7 @@ import { AdminVenuesComponent } from "./components/admin-venues/admin-venues.com
 import { AdminTicketsComponent } from "./components/admin-tickets/admin-tickets.component";
 import { AdvertiseEventComponent } from "./components/advertise-event/advertise-event.component";
 import { EventComponent } from "./components/event/event.component";
-import { SelectTicketsComponent } from "./components/select-tickets/select-tickets.component";
+import { TicketPurchaseComponent } from "./components/select-tickets/select-tickets.component";
 import { MyTicketsComponent } from "./components/my-tickets/my-tickets.component";
 import { TicketComponent } from "./components/ticket/ticket.component";
 import { TicketMarketplaceComponent } from "./components/ticket-marketplace/ticket-marketplace.component";
@@ -124,7 +124,7 @@ export const routes: Routes = [
   },
   {
     path: "select-tickets/:id",
-    component: SelectTicketsComponent,
+    component: TicketPurchaseComponent,
     canActivate: [authGuard],
   },
   {

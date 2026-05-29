@@ -1,261 +1,402 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 
 import { EventService } from '../../services/event.service';
 import { TicketTypeService } from '../../services/ticket-type.service';
-import { EventResponse } from '../../models/event.model';
-import { TicketTypeResponse } from '../../models/ticket-type.model';
-import { environment } from '../../../environments/environment';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { SeatSelectionDialogComponent } from '../shared/dialogs/seat-selection-dialog/seat-selection-dialog.component';
-import { ErrorDialogComponent } from '../shared/dialogs/error-dialog/error-dialog.component';
-import { TicketService } from '../../services/ticket.service';
 import { Web3Service } from '../../services/web3.service';
-import { SeatSelection } from '../../models/ticket.model';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-
-export interface TicketTypeUI extends TicketTypeResponse {
-  quantity: number;
-  status: string;
-  selectedSeats?: SeatSelection[];
-}
+import { environment } from '../../../environments/environment';
+import { ethers } from 'ethers';
 
 @Component({
-  selector: 'app-select-tickets',
+  selector: 'app-ticket-purchase',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    MatCardModule, 
-    MatButtonModule, 
-    MatIconModule, 
-    MatFormFieldModule, 
-    MatSelectModule, 
-    MatInputModule,
-    MatRadioModule,
+    CommonModule,
+    MatIconModule,
     MatProgressSpinnerModule,
-    MatDialogModule,
-    MatSnackBarModule
+    MatButtonModule,
+    MatCardModule
   ],
   templateUrl: './select-tickets.component.html',
   styleUrls: ['./select-tickets.component.scss']
 })
-export class SelectTicketsComponent implements OnInit {
+export class TicketPurchaseComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  router = inject(Router);
+  private http = inject(HttpClient);
   private eventService = inject(EventService);
   private ticketTypeService = inject(TicketTypeService);
-  private ticketService = inject(TicketService);
   private web3Service = inject(Web3Service);
-  private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar);
-  private sanitizer = inject(DomSanitizer);
 
-  event: (EventResponse & { image?: SafeUrl | null }) | null = null;
-  ticketTypes: TicketTypeUI[] = [];
+  @Input() event: {
+    eventId: number;
+    eventNftAddress: string;
+    name: string;
+    startDate: string;
+  } | null = null;
+
+  @Input() tiers: Array<{
+    ticketTypeId: number;
+    name: string;
+    priceUsdc: number;
+    maxQuantity: number;
+    quantitySold: number;
+    tierIndex: number;
+  }> = [];
+
+  // Route fallback event ID
+  private routeEventId: number | null = null;
+
+  // Component State Signals
+  currentStep = signal<number>(1);
+  isLoading = signal<boolean>(false);
+  errorMessage = signal<string>('');
+  connectedAddress = signal<string | null>(null);
+  isSepolia = signal<boolean>(false);
+  siweMessage = signal<string>('');
   
-  isLoading = true;
-  errorMessage = '';
+  // Event & Tiers display state signals (mapped from either @Input or fallback service calls)
+  mappedEvent = signal<{
+    eventId: number;
+    eventNftAddress: string;
+    name: string;
+    startDate: string;
+  } | null>(null);
 
-  paymentMethods = [
-    { id: 'vbk', name: 'VibeCheck Token ($VBK)', enabled: true },
-    { id: 'usdc', name: 'Dólar Digital ($USDC)', enabled: true }
-  ];
+  mappedTiers = signal<Array<{
+    ticketTypeId: number;
+    name: string;
+    priceUsdc: number;
+    maxQuantity: number;
+    quantitySold: number;
+    tierIndex: number;
+  }>>([]);
 
-  selectedPaymentMethod = 'vbk';
-  serviceChargeRate = 0.10; // 10%
+  vbkQuotes = signal<Record<number, string>>({});
+  
+  // Purchase final details signals
+  selectedTierName = signal<string>('');
+  purchaseTxHash = signal<string>('');
+  purchaseTokenId = signal<number | null>(null);
+  successTicket = signal<any | null>(null);
 
   ngOnInit() {
     window.scrollTo(0, 0);
+
     const idParam = this.route.snapshot.paramMap.get('id');
-    const eventId = idParam ? parseInt(idParam, 10) : null;
+    this.routeEventId = idParam ? parseInt(idParam, 10) : null;
 
-    if (!eventId || isNaN(eventId)) {
-      this.errorMessage = 'ID de evento inválido.';
-      this.isLoading = false;
+    this.web3Service.connectedAddress$.subscribe(addr => {
+      this.connectedAddress.set(addr);
+      this.checkConnectionState();
+    });
+
+    this.web3Service.isSepolia$.subscribe(sepolia => {
+      this.isSepolia.set(sepolia);
+      this.checkConnectionState();
+    });
+  }
+
+  checkConnectionState() {
+    const address = this.connectedAddress();
+    const sepolia = this.isSepolia();
+
+    if (!address || !sepolia) {
+      this.currentStep.set(1);
       return;
     }
 
-    this.loadEventData(eventId);
+    if (this.currentStep() === 1) {
+      this.currentStep.set(2);
+      this.startSiweFlow();
+    }
   }
 
-  loadEventData(eventId: number) {
-    this.isLoading = true;
-    this.errorMessage = '';
+  async connectWallet() {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    try {
+      await this.web3Service.connectWallet();
+      const isSepolia = await this.web3Service.checkNetwork();
+      if (!isSepolia) {
+        this.errorMessage.set('Cambiá a la red Sepolia');
+      }
+    } catch (err: any) {
+      console.error('Error al conectar wallet:', err);
+      this.errorMessage.set(err.message || 'Error al conectar MetaMask.');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
 
-    this.eventService.findByIdEvent(eventId).subscribe({
-      next: (eventData) => {
-        this.event = {
-          ...eventData,
-          image: null
-        };
-        if (eventData.hasImage) {
-            this.eventService.getEventImage(eventId).subscribe({
-                next: (blob) => {
-                    if (this.event) {
-                        this.event.image = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
-                    }
-                },
-                error: (err) => console.error('No image for event', err)
-            });
+  async checkNetwork() {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    try {
+      const isSepolia = await this.web3Service.checkNetwork();
+      if (!isSepolia) {
+        this.errorMessage.set('Cambiá a la red Sepolia');
+      }
+    } catch (err: any) {
+      console.error('Error al verificar red:', err);
+      this.errorMessage.set('No se pudo verificar la red. Asegurate de estar en Sepolia.');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  startSiweFlow() {
+    const address = this.connectedAddress();
+    if (!address) return;
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/challenge`, { walletAddress: address }).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        if (res && res.walletAddress && res.walletAddress.toLowerCase() === address.toLowerCase()) {
+          this.currentStep.set(3);
+          this.loadEventAndTiers();
+          return;
         }
-        this.loadTicketTypes(eventId);
+
+        if (res && res.message) {
+          this.siweMessage.set(res.message);
+        } else {
+          this.errorMessage.set('No se pudo obtener el mensaje de firma.');
+        }
       },
       error: (err) => {
-        console.error('Error fetching event', err);
-        this.errorMessage = 'No se pudo cargar la información del evento.';
-        this.isLoading = false;
+        this.isLoading.set(false);
+        if (err.status === 409) {
+          this.errorMessage.set('La billetera ya está vinculada a otro usuario.');
+        } else {
+          this.errorMessage.set(err.error?.message || 'Error al solicitar el desafío SIWE.');
+        }
       }
     });
   }
 
-  loadTicketTypes(eventId: number) {
-    this.ticketTypeService.findTicketTypesByEvent(eventId).subscribe({
-      next: (tickets) => {
-        this.ticketTypes = tickets.map(ticket => ({
-          ...ticket,
-          quantity: 0,
-          status: ticket.active ? 'AVAILABLE' : 'SOLD_OUT'
-        }));
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching ticket types', err);
-        this.errorMessage = 'No se pudieron cargar los tipos de tickets.';
-        this.isLoading = false;
-      }
-    });
-  }
+  async signAndVerify() {
+    const address = this.connectedAddress();
+    const message = this.siweMessage();
+    if (!address || !message) return;
 
-  get subtotal() {
-    return this.ticketTypes.reduce((sum, ticket) => sum + (ticket.priceUsdc * ticket.quantity), 0);
-  }
-
-  get serviceCharge() {
-    return this.subtotal * this.serviceChargeRate;
-  }
-
-  get total() {
-    return this.subtotal + this.serviceCharge;
-  }
-
-  get canPay() {
-    return this.subtotal > 0 && (this.selectedPaymentMethod === 'vbk' || this.selectedPaymentMethod === 'usdc');
-  }
-
-  incrementQuantity(ticket: TicketTypeUI) {
-    if (ticket.status !== 'AVAILABLE') return;
-    if (ticket.maxPerUser && ticket.quantity >= ticket.maxPerUser) return;
-    
-    if (ticket.hasSeats) {
-        const dialogRef = this.dialog.open(SeatSelectionDialogComponent, {
-            width: '400px',
-            data: {
-                firstRow: ticket.firstRow || 1,
-                lastRow: ticket.lastRow || 1,
-                firstSeat: ticket.firstSeat || 1,
-                lastSeat: ticket.lastSeat || 1
-            }
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                const alreadySelected = ticket.selectedSeats?.some(s => s.row === result.row && s.number === result.number);
-                if (alreadySelected) {
-                    this.snackBar.open('Ya seleccionaste este asiento', 'Cerrar', { duration: 3000 });
-                    return;
-                }
-                
-                ticket.selectedSeats = ticket.selectedSeats || [];
-                ticket.selectedSeats.push(result);
-                ticket.quantity++;
-            }
-        });
-    } else {
-        ticket.quantity++;
-    }
-  }
-
-  decrementQuantity(ticket: TicketTypeUI) {
-    if (ticket.quantity > 0) {
-      if (ticket.hasSeats && ticket.selectedSeats && ticket.selectedSeats.length > 0) {
-          ticket.selectedSeats.pop();
-      }
-      ticket.quantity--;
-    }
-  }
-
-  async processPayment() {
-    if (!this.canPay) return;
-    if (!this.event || !this.event.eventNftAddress) {
-      this.snackBar.open('El evento no tiene una dirección de contrato vinculada.', 'Cerrar', { duration: 3000 });
-      return;
-    }
-
-    this.isLoading = true;
+    this.isLoading.set(true);
+    this.errorMessage.set('');
 
     try {
-      const ticketsToBuy = this.ticketTypes.filter(t => t.quantity > 0);
-      
-      for (const t of ticketsToBuy) {
-        const qty = t.quantity;
-        for (let i = 0; i < qty; i++) {
-          let txResult: { txHash: string; tokenId: number };
-          
-          if (this.selectedPaymentMethod === 'vbk') {
-            txResult = await this.web3Service.buyTicketWithVBK(this.event.eventNftAddress, t.tierIndex);
-          } else { // 'usdc'
-            txResult = await this.web3Service.buyTicketWithUSDC(this.event.eventNftAddress, t.tierIndex, t.priceUsdc);
+      const signature = await this.web3Service.signMessage(message);
+      this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/verify`, {
+        walletAddress: address,
+        message,
+        signature
+      }).subscribe({
+        next: (verifyRes) => {
+          this.isLoading.set(false);
+          this.currentStep.set(3);
+          this.loadEventAndTiers();
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          if (err.status === 409) {
+            this.errorMessage.set('La billetera ya está vinculada a otro usuario.');
+          } else {
+            this.errorMessage.set(err.error?.message || 'Error al verificar la firma.');
           }
-          
-          // Confirmar con el backend
-          const confirmReq = {
-            ticketTypeId: t.id,
-            txHash: txResult.txHash,
-            tokenId: txResult.tokenId,
-            seatRow: t.hasSeats && t.selectedSeats ? t.selectedSeats[i]?.row : null,
-            seatNumber: t.hasSeats && t.selectedSeats ? t.selectedSeats[i]?.number : null
-          };
-          
-          // Esperamos síncronamente la confirmación del backend
-          await this.ticketService.confirmTicket(confirmReq).toPromise();
         }
-      }
-
-      this.snackBar.open(`Pago procesado con éxito por un total de ${this.total} $${this.selectedPaymentMethod.toUpperCase()}`, 'Cerrar', { duration: 4000 });
-      this.router.navigate(['/my-tickets']);
-    } catch (err: any) {
-      console.error('Error durante el proceso de pago/confirmación:', err);
-      const errorMsg = err.error?.message || err.message || 'Ocurrió un error inesperado al procesar la compra en MetaMask/Blockchain.';
-      this.dialog.open(ErrorDialogComponent, {
-          width: '400px',
-          panelClass: 'vibe-dialog-container',
-          data: {
-              title: 'No se pudo completar la compra',
-              message: errorMsg
-          }
       });
-    } finally {
-      this.isLoading = false;
+    } catch (e: any) {
+      this.isLoading.set(false);
+      console.error('Error al firmar:', e);
+      this.errorMessage.set('Firma cancelada o rechazada por el usuario.');
     }
+  }
+
+  loadEventAndTiers() {
+    const eventInput = this.event;
+    const tiersInput = this.tiers;
+
+    if (eventInput && tiersInput && tiersInput.length > 0) {
+      this.mappedEvent.set(eventInput);
+      this.mappedTiers.set(tiersInput);
+      this.loadVbkQuotes();
+      return;
+    }
+
+    const eventId = this.routeEventId;
+    if (!eventId) {
+      this.errorMessage.set('ID de evento inválido.');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.eventService.findByIdEvent(eventId).subscribe({
+      next: (eventData) => {
+        this.mappedEvent.set({
+          eventId: eventData.id,
+          eventNftAddress: eventData.eventNftAddress || '',
+          name: eventData.title,
+          startDate: eventData.startDate
+        });
+
+        this.ticketTypeService.findTicketTypesByEvent(eventId).subscribe({
+          next: (tickets) => {
+            this.isLoading.set(false);
+            const mapped = tickets.map(t => ({
+              ticketTypeId: t.id,
+              name: t.name,
+              priceUsdc: t.priceUsdc,
+              maxQuantity: t.maxQuantity,
+              quantitySold: (t as any).quantitySold || 0,
+              tierIndex: t.tierIndex
+            }));
+            this.mappedTiers.set(mapped);
+            this.loadVbkQuotes();
+          },
+          error: (err) => {
+            this.isLoading.set(false);
+            this.errorMessage.set('No se pudieron cargar los tipos de tickets.');
+          }
+        });
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMessage.set('No se pudo cargar la información del evento.');
+      }
+    });
+  }
+
+  async loadVbkQuotes() {
+    const currentEvent = this.mappedEvent();
+    if (!currentEvent || !currentEvent.eventNftAddress) return;
+    const currentTiers = this.mappedTiers();
+    const quotes: Record<number, string> = {};
+    for (const tier of currentTiers) {
+      try {
+        const quote = await this.web3Service.getVbkQuote(currentEvent.eventNftAddress, tier.tierIndex);
+        quotes[tier.ticketTypeId] = ethers.formatUnits(quote, 18);
+      } catch (err) {
+        console.error(`Error loading VBK quote for tier ${tier.name}:`, err);
+        quotes[tier.ticketTypeId] = 'Error';
+      }
+    }
+    this.vbkQuotes.set(quotes);
+  }
+
+  async buyWithUSDC(tier: any) {
+    const currentEvent = this.mappedEvent();
+    if (!currentEvent || !currentEvent.eventNftAddress) {
+      this.errorMessage.set('El contrato del evento no está configurado.');
+      return;
+    }
+
+    this.currentStep.set(4);
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    try {
+      const result = await this.web3Service.buyTicketWithUSDC(
+        currentEvent.eventNftAddress,
+        tier.tierIndex,
+        tier.priceUsdc
+      );
+      this.purchaseTxHash.set(result.txHash);
+      this.purchaseTokenId.set(result.tokenId);
+      this.selectedTierName.set(tier.name);
+      this.confirmPurchaseOnBackend(tier.ticketTypeId, result.txHash, result.tokenId);
+    } catch (err: any) {
+      this.isLoading.set(false);
+      this.currentStep.set(3);
+      this.handlePurchaseError(err);
+    }
+  }
+
+  async buyWithVBK(tier: any) {
+    const currentEvent = this.mappedEvent();
+    if (!currentEvent || !currentEvent.eventNftAddress) {
+      this.errorMessage.set('El contrato del evento no está configurado.');
+      return;
+    }
+
+    this.currentStep.set(4);
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    try {
+      const result = await this.web3Service.buyTicketWithVBK(
+        currentEvent.eventNftAddress,
+        tier.tierIndex
+      );
+      this.purchaseTxHash.set(result.txHash);
+      this.purchaseTokenId.set(result.tokenId);
+      this.selectedTierName.set(tier.name);
+      this.confirmPurchaseOnBackend(tier.ticketTypeId, result.txHash, result.tokenId);
+    } catch (err: any) {
+      this.isLoading.set(false);
+      this.currentStep.set(3);
+      this.handlePurchaseError(err);
+    }
+  }
+
+  handlePurchaseError(err: any) {
+    console.error('Error durante la compra on-chain:', err);
+    if (err.code === 4001 || err.code === 'ACTION_REJECTED' || (err.message && err.message.includes('rejected'))) {
+      this.errorMessage.set('Transacción cancelada por el usuario.');
+    } else if (
+      err.code === 'INSUFFICIENT_FUNDS' ||
+      (err.message && err.message.toLowerCase().includes('insufficient funds')) ||
+      (err.message && err.message.toLowerCase().includes('transfer amount exceeds balance'))
+    ) {
+      this.errorMessage.set('Saldo insuficiente de USDC/VBK.');
+    } else if (err.reason) {
+      this.errorMessage.set(err.reason);
+    } else {
+      this.errorMessage.set(err.message || 'Ocurrió un error inesperado en la transacción.');
+    }
+  }
+
+  confirmPurchaseOnBackend(ticketTypeId: number, txHash: string, tokenId: number) {
+    this.currentStep.set(5);
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.http.post<any>(`${environment.apiBaseUrl}/tickets/confirm`, {
+      ticketTypeId,
+      txHash,
+      tokenId
+    }).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        this.successTicket.set(res);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMessage.set(`La compra se realizó on-chain pero hubo un error al registrarla. Contactá soporte con el txHash: ${txHash}`);
+      }
+    });
   }
 
   goBack() {
-    if (this.event) {
-      this.router.navigate(['/event/', this.event.id]);
+    const currentEvent = this.mappedEvent();
+    if (currentEvent && currentEvent.eventId) {
+      this.router.navigate(['/event/', currentEvent.eventId]);
+    } else if (this.routeEventId) {
+      this.router.navigate(['/event/', this.routeEventId]);
     } else {
       this.router.navigate(['/']);
     }
+  }
+
+  truncateAddress(address: string | null): string {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   }
 }
