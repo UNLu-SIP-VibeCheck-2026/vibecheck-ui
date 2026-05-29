@@ -1,4 +1,5 @@
 import { Page } from './page.model';
+import { CategoryResponse } from './category.model';
 
 export interface EventCreateRequest {
   title: string;
@@ -9,6 +10,7 @@ export interface EventCreateRequest {
   active: boolean;
   ownerId: number;
   venueId?: number | null;
+  categoryIds?: number[];
 }
 
 export interface EventUpdateRequest {
@@ -19,6 +21,7 @@ export interface EventUpdateRequest {
   capacity: number;
   active: boolean;
   venueId?: number | null;
+  categoryIds?: number[];
 }
 
 export interface EventResponse {
@@ -38,6 +41,7 @@ export interface EventResponse {
   deployTxHash?: string;
   maxResalePriceBps?: number;
   royaltyBps?: number;
+  categories?: CategoryResponse[];
 }
 
 export interface EventDeployRegisterRequest {

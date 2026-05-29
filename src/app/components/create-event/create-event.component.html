@@ -72,22 +72,13 @@
             <div class="form-group custom-field-wrapper mt-24">
                 <label>Categorías</label>
                 <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                    <mat-select formControlName="category" placeholder="Selecciona una o más categorías">
-                        <mat-option *ngFor="let cat of categories" [value]="cat.value">
-                            {{cat.viewValue}}
+                    <mat-select formControlName="categoryIds" placeholder="Selecciona una o más categorías" multiple>
+                        <mat-option *ngIf="isLoadingCategories" disabled>Cargando categorías...</mat-option>
+                        <mat-option *ngFor="let cat of categories" [value]="cat.id">
+                            {{cat.name}}
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
-                <div class="selected-chips">
-                    <mat-chip-set>
-                        <mat-chip *ngFor="let cat of selectedCategories" (removed)="removeCategory(cat)">
-                            {{cat}}
-                            <button matChipRemove>
-                                <mat-icon>cancel</mat-icon>
-                            </button>
-                        </mat-chip>
-                    </mat-chip-set>
-                </div>
             </div>
 
             <!-- Start Date and Time -->

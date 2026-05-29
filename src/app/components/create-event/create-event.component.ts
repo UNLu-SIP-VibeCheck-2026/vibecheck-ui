@@ -21,8 +21,10 @@ import { FormsModule } from "@angular/forms";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { EventService } from "../../services/event.service";
 import { VenueService } from "../../services/venue.service";
+import { CategoryService } from "../../services/category.service";
 import { EventCreateRequest } from "../../models/event.model";
 import { VenueResponse } from "../../models/venue.model";
+import { CategoryResponse } from "../../models/category.model";
 import { DateTimePickerComponent } from "../shared/date-time-picker/date-time-picker.component";
 import {
   VenueDialogComponent,
@@ -54,6 +56,7 @@ export class CreateEventComponent implements OnInit {
   private dialog = inject(MatDialog);
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
+  private categoryService = inject(CategoryService);
   private snackBar = inject(MatSnackBar);
 
   today = new Date();
@@ -65,7 +68,7 @@ export class CreateEventComponent implements OnInit {
       startDate: ["", Validators.required],
       endDate: ["", Validators.required],
       venue: [null, Validators.required],
-      category: ["", Validators.required],
+      categoryIds: [[], Validators.required],
     },
     { validators: [this.endAfterStartValidator] }
   );
@@ -79,13 +82,8 @@ export class CreateEventComponent implements OnInit {
 
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
 
-  categories = [
-    { value: "musica", viewValue: "Música" },
-    { value: "teatro", viewValue: "Teatro" },
-    { value: "deportes", viewValue: "Deportes" },
-    { value: "conferencia", viewValue: "Conferencia" },
-    { value: "otros", viewValue: "Otros" },
-  ];
+  isLoadingCategories = false;
+  categories: CategoryResponse[] = [];
 
   venues: VenueResponse[] = [];
   filteredVenues: VenueResponse[] = [];
@@ -93,6 +91,21 @@ export class CreateEventComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadVenues();
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.isLoadingCategories = true;
+    this.categoryService.getAllCategories().subscribe({
+      next: (data) => {
+        this.categories = data;
+        this.isLoadingCategories = false;
+      },
+      error: (err) => {
+        console.error("Error cargando categorías:", err);
+        this.isLoadingCategories = false;
+      }
+    });
   }
 
   loadVenues(): void {
@@ -168,6 +181,7 @@ export class CreateEventComponent implements OnInit {
         active: true,
         ownerId: 1,
         venueId: formValue.venue ?? null,
+        categoryIds: formValue.categoryIds,
       };
 
       this.eventService.createEventWithImage(request, this.selectedImage || undefined).subscribe({
@@ -232,9 +246,5 @@ export class CreateEventComponent implements OnInit {
 
   cancel(): void {
     this.router.navigate(["/dashboard"]);
-  }
-
-  removeCategory(cat: string): void {
-    this.selectedCategories = this.selectedCategories.filter((c) => c !== cat);
   }
 }
