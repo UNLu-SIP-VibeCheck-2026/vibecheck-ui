@@ -4,7 +4,7 @@
       <button mat-icon-button (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <h1 class="display-medium">Mis Entradas</h1>
+      <h1 class="welcome-title text-gradient display-md">Mis Entradas</h1>
     </div>
   </div>
 
@@ -30,17 +30,42 @@
   <!-- Tickets Grid -->
   <div *ngIf="!isLoading && tickets.length > 0" class="tickets-grid">
     <div class="ticket-card" *ngFor="let ticket of tickets" (click)="viewTicket(ticket.id)">
+      
+      <!-- Left side: image section -->
       <div class="ticket-image-container">
-        <img [src]="ticket.imageUrl" [alt]="ticket.eventTitle" class="ticket-image">
+        <img *ngIf="ticket.imageUrl" [src]="ticket.imageUrl" [alt]="ticket.eventTitle" class="ticket-image">
+        <div *ngIf="!ticket.imageUrl" class="ticket-image-fallback">
+          <mat-icon>confirmation_number</mat-icon>
+        </div>
       </div>
+      
+      <!-- Perforation Divider -->
+      <div class="ticket-perforation-container">
+        <div class="ticket-notch notch-top"></div>
+        <div class="ticket-perforation-line"></div>
+        <div class="ticket-notch notch-bottom"></div>
+      </div>
+
+      <!-- Right side: ticket info -->
       <div class="ticket-info">
         <div class="event-details">
-          <h3 class="headline-large">{{ ticket.eventTitle }}</h3>
+          <div class="event-header-row">
+            <h3 class="event-title">{{ ticket.eventTitle }}</h3>
+            <!-- Ticket Status -->
+            <span class="status-badge" [ngClass]="ticket.status.toLowerCase()">
+              {{ ticket.status === 'ACTIVE' ? 'Activa' : ticket.status === 'REDEEMED' ? 'Canjeada' : 'Cancelada' }}
+            </span>
+          </div>
+          
           <div class="ticket-type-info">
             <span class="type-badge">{{ ticket.ticketType }}</span>
-            <span class="location-text">{{ ticket.location }}</span>
+            <span class="location-text">
+              <mat-icon class="icon-inline">chair</mat-icon>
+              {{ ticket.location }}
+            </span>
           </div>
         </div>
+
         <div class="event-metadata">
           <div class="metadata-item">
             <mat-icon>calendar_today</mat-icon>
@@ -52,9 +77,16 @@
           </div>
         </div>
       </div>
+
+      <!-- Action Indicator -->
       <div class="ticket-action">
-        <mat-icon>chevron_right</mat-icon>
+        <div class="action-qr-wrapper">
+          <mat-icon>qr_code_2</mat-icon>
+          <span class="action-label">Ver QR</span>
+        </div>
+        <mat-icon class="chevron">chevron_right</mat-icon>
       </div>
     </div>
   </div>
 </div>
+

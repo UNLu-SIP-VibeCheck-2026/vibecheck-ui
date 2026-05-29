@@ -8,6 +8,7 @@ import { TicketService } from '../../services/ticket.service';
 import { environment } from '../../../environments/environment';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { EventService } from '../../services/event.service';
+import { VenueService } from '../../services/venue.service';
 
 @Component({
   selector: 'app-ticket',
@@ -22,14 +23,32 @@ export class TicketComponent implements OnInit {
   ticket: any = null;
   isQrVisible = false;
 
+  private ticketService = inject(TicketService);
+  private sanitizer = inject(DomSanitizer);
+  private eventService = inject(EventService);
+  private venueService = inject(VenueService);
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     this.loadTicket(id);
   }
 
-  private ticketService = inject(TicketService);
-  private sanitizer = inject(DomSanitizer);
-  private eventService = inject(EventService);
+  formatDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return "—";
+    try {
+      const formatted = new Date(dateStr).toLocaleString("es-AR", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+    } catch {
+      return dateStr;
+    }
+  }
 
   loadTicket(id: string | null): void {
     if (!id) return;
@@ -38,16 +57,49 @@ export class TicketComponent implements OnInit {
         next: (t) => {
             this.ticket = {
                 id: t.id.toString(),
-                eventTitle: 'Evento ID: ' + t.ticketType.eventId,
+                eventTitle: 'Cargando evento...',
                 description: t.ticketType.description,
-                startDate: new Date(t.ticketType.saleStartDate).toLocaleDateString(),
-                endDate: new Date(t.ticketType.saleEndDate).toLocaleDateString(),
-                venue: 'Sede a confirmar',
-                address: 'Dirección a confirmar',
+                startDate: 'Cargando fecha...',
+                endDate: 'Cargando fecha...',
+                venue: 'Cargando sede...',
+                address: 'Cargando dirección...',
                 ticketType: t.ticketType.name,
                 location: t.ticketType.hasSeats ? `Fila ${t.seatRow} - Asiento ${t.seatNumber}` : 'Entrada General',
                 qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${t.token || 'VIBECHECK-' + t.id}`
             };
+
+            // Load event details
+            this.eventService.findByIdEvent(t.ticketType.eventId).subscribe({
+                next: (event) => {
+                    this.ticket.eventTitle = event.title;
+                    this.ticket.description = event.description || t.ticketType.description;
+                    this.ticket.startDate = this.formatDate(event.startDate);
+                    this.ticket.endDate = this.formatDate(event.endDate);
+                    
+                    if (event.venueId) {
+                        this.venueService.findVenueById(event.venueId).subscribe({
+                            next: (venue) => {
+                                this.ticket.venue = venue.title;
+                                this.ticket.address = venue.coordinates || 'Sin dirección registrada';
+                            },
+                            error: () => {
+                                this.ticket.venue = 'Dirección no disponible';
+                                this.ticket.address = 'No disponible';
+                            }
+                        });
+                    } else {
+                        this.ticket.venue = 'Sin sede asignada';
+                        this.ticket.address = 'No disponible';
+                    }
+                },
+                error: (err) => {
+                    this.ticket.eventTitle = 'Evento ID: ' + t.ticketType.eventId;
+                    this.ticket.startDate = this.formatDate(t.ticketType.saleStartDate);
+                    this.ticket.endDate = this.formatDate(t.ticketType.saleEndDate);
+                    this.ticket.venue = 'No disponible';
+                    this.ticket.address = 'No disponible';
+                }
+            });
             
             this.eventService.getEventImage(t.ticketType.eventId).subscribe({
                 next: (blob) => this.ticket.imageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob)),
@@ -76,3 +128,4 @@ export class TicketComponent implements OnInit {
     this.router.navigate(['/my-tickets']);
   }
 }
+
