@@ -57,7 +57,7 @@ export class ResellTicketComponent implements OnInit {
   publishResale(): void {
     if (confirm(`¿Estás seguro de publicar esta reventa por $${this.resalePrice}? Una vez publicada, no podrás deshacer esta acción sin cancelar el proceso.`)) {
       alert('Entrada publicada en el Marketplace!');
-      this.router.navigate(['/events']);
+      this.router.navigate(['/']);
     }
   }
 

@@ -81,7 +81,7 @@ export class MyTicketsComponent implements OnInit {
   }
 
   exploreEvents(): void {
-    this.router.navigate(['/events']);
+    this.router.navigate(['/']);
   }
 
   viewTicket(id: string): void {

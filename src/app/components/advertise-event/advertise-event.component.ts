@@ -391,7 +391,7 @@ interface AdvertiseTier {
     }
 
     .duration-input {
-      width: 60px;
+      width: 40px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--md-sys-color-outline-variant);
       border-radius: 6px;

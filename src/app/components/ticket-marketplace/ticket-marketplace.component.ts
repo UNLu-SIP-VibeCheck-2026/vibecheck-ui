@@ -50,6 +50,6 @@ export class TicketMarketplaceComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/events']);
+    this.router.navigate(['/']);
   }
 }

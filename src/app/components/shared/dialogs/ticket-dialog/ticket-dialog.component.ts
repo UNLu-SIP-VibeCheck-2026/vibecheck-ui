@@ -22,6 +22,7 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 export interface TicketDialogData {
   ticket?: TicketTypeResponse;
   eventId?: number;
+  eventStartDate?: string;
 }
 
 @Component({
@@ -64,6 +65,9 @@ export class TicketDialogComponent implements OnInit {
 
   private initForm(): void {
     const ticket = this.data?.ticket;
+    const defaultSaleStartDate = ticket?.saleStartDate || this.getDefaultSaleStartDate();
+    const defaultSaleEndDate = ticket?.saleEndDate || this.data?.eventStartDate || defaultSaleStartDate;
+
     this.ticketForm = this.fb.group({
       name: [ticket?.name || '', [Validators.required]],
       description: [ticket?.description || '', []],
@@ -72,8 +76,8 @@ export class TicketDialogComponent implements OnInit {
       royalties: [ticket?.royalties || '', [Validators.required, Validators.min(0), Validators.max(100)]],
       maxQuantity: [ticket?.maxQuantity || '', [Validators.required, Validators.min(1)]],
       maxPerUser: [ticket?.maxPerUser || '', [Validators.required, Validators.min(1)]],
-      saleStartDate: [ticket?.saleStartDate || '', [Validators.required]],
-      saleEndDate: [ticket?.saleEndDate || '', [Validators.required]],
+      saleStartDate: [defaultSaleStartDate, [Validators.required]],
+      saleEndDate: [defaultSaleEndDate, [Validators.required]],
       active: [ticket?.active !== undefined ? ticket.active : true, [Validators.required]],
       hasSeats: [ticket?.hasSeats || false],
       firstRow: [ticket?.firstRow || null],
@@ -81,6 +85,18 @@ export class TicketDialogComponent implements OnInit {
       firstSeat: [ticket?.firstSeat || null],
       lastSeat: [ticket?.lastSeat || null]
     });
+  }
+
+  private getDefaultSaleStartDate(): string {
+    const now = new Date();
+    now.setMinutes(0, 0, 0);
+    now.setHours(now.getHours() + 1);
+    return this.toLocalIsoString(now);
+  }
+
+  private toLocalIsoString(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
   }
 
   onCancel(): void {

@@ -51,14 +51,15 @@
     }
   }
 
-  .btn-outline {
-    background-color: transparent !important;
-    color: #ffffff !important;
-    border: 1px solid #ffffff !important;
-    transition: all 0.2s ease !important;
+    .btn-success {
+      background: linear-gradient(135deg, #34d399 0%, #059669 100%) !important;
+      color: #ffffff !important;
+      transition: all 0.2s ease !important;
 
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
+      &:hover {
+        background: linear-gradient(135deg, #45e9ad 0%, #11b17f 100%) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3) !important;
+      }
     }
-  }
 }

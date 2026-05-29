@@ -8,9 +8,11 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { ActivatedRoute, Router } from "@angular/router";
 import { EventService } from "../../services/event.service";
+import { TicketTypeService } from "../../services/ticket-type.service";
 import { VenueService } from "../../services/venue.service";
 import { UsersService } from "../../services/users.service";
 import { EventResponse } from "../../models/event.model";
+import { TicketTypeResponse } from "../../models/ticket-type.model";
 import { VenueResponse } from "../../models/venue.model";
 import { UserPublicResponse } from "../../models/user-public-response.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
@@ -36,6 +38,7 @@ export class EventComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private eventService = inject(EventService);
+  private ticketTypeService = inject(TicketTypeService);
   private venueService = inject(VenueService);
   private usersService = inject(UsersService);
   private sanitizer = inject(DomSanitizer);
@@ -44,6 +47,7 @@ export class EventComponent implements OnInit {
   venue: VenueResponse | null = null;
   owner: UserPublicResponse | null = null;
   eventImage: SafeUrl | null = null;
+  cheapestTicketPrice: number | null = null;
 
   isLoading = false;
   errorMessage = "";
@@ -79,6 +83,7 @@ export class EventComponent implements OnInit {
         if (event.ownerId) {
           this.loadOwner(event.ownerId);
         }
+        this.loadCheapestTicketPrice(event.id);
       },
       error: (err) => {
         this.isLoading = false;
@@ -117,6 +122,34 @@ export class EventComponent implements OnInit {
       },
       error: (err: any) => {
         console.error("Error fetching owner:", err);
+      },
+    });
+  }
+
+  private loadCheapestTicketPrice(eventId: number): void {
+    this.cheapestTicketPrice = null;
+    const now = new Date();
+
+    this.ticketTypeService.findTicketTypesByEvent(eventId).subscribe({
+      next: (ticketTypes: TicketTypeResponse[]) => {
+        const availableTickets = ticketTypes.filter((ticket) => {
+          const starts = new Date(ticket.saleStartDate);
+          const ends = new Date(ticket.saleEndDate);
+          return (
+            ticket.active &&
+            starts <= now &&
+            ends >= now
+          );
+        });
+
+        if (availableTickets.length === 0) {
+          return;
+        }
+
+        this.cheapestTicketPrice = Math.min(...availableTickets.map((ticket) => ticket.priceUsdc));
+      },
+      error: () => {
+        this.cheapestTicketPrice = null;
       },
     });
   }
@@ -193,6 +226,6 @@ export class EventComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(["/events"]);
+    this.router.navigate(["/"]);
   }
 }

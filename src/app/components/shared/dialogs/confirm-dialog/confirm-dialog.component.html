@@ -6,7 +6,7 @@
     </mat-dialog-content>
 
     <mat-dialog-actions class="dialog-actions">
-        <button mat-raised-button class="btn-dark" (click)="onConfirm()">
+        <button mat-raised-button [ngClass]="data.success ? 'btn-success' : 'btn-dark'" (click)="onConfirm()">
             {{ data.confirmText || 'Eliminar' }}
         </button>
         <button mat-stroked-button *ngIf="!data.hideCancel" class="btn-outline" (click)="onCancel()">

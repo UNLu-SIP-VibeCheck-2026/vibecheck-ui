@@ -138,6 +138,13 @@
         </button>
       </div>
 
+      <div class="price-panel-wrapper" *ngIf="event.active && cheapestTicketPrice !== null">
+        <div class="large-price-panel">
+          <span class="price-label">Desde</span>
+          <span class="price-value">{{ cheapestTicketPrice | currency:'$':'symbol':'1.0-0' }} USDC</span>
+        </div>
+      </div>
+
       <!-- Inactive warning -->
       <div class="inactive-warning" *ngIf="!event.active">
         <mat-icon>info</mat-icon>

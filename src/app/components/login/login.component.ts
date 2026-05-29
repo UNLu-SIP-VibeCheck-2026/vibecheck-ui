@@ -58,7 +58,8 @@ export class LoginComponent implements OnInit {
             title: "¡Cuenta verificada!",
             message: "Tu cuenta ha sido verificada con éxito. Ya podés iniciar sesión.",
             confirmText: "Aceptar",
-            hideCancel: true
+            hideCancel: true,
+            success: true,
           },
           width: "400px"
         });

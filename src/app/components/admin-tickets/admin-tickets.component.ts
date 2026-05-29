@@ -15,7 +15,9 @@ import { TicketDialogComponent } from "../shared/dialogs/ticket-dialog/ticket-di
 import { ResaleDialogComponent } from "../shared/dialogs/resale-dialog/resale-dialog.component";
 import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
 import { TicketTypeService } from "../../services/ticket-type.service";
+import { EventService } from "../../services/event.service";
 import { TicketTypeResponse } from "../../models/ticket-type.model";
+import { EventResponse } from "../../models/event.model";
 import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
 import { trackLoading } from "../../utils/loading.operator";
@@ -46,9 +48,11 @@ export class AdminTicketsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private dialog = inject(MatDialog);
   private ticketTypeService = inject(TicketTypeService);
+  private eventService = inject(EventService);
   private snackBar = inject(MatSnackBar);
 
   eventId: number = 0;
+  eventStartDate: string | null = null;
   dataSource = new MatTableDataSource<TicketTypeResponse>([]);
   displayedColumns: string[] = [
     "id",
@@ -72,7 +76,19 @@ export class AdminTicketsComponent implements OnInit {
     this.eventId = eventIdParam ? +eventIdParam : 0;
     if (this.eventId) {
       this.loadTicketTypes();
+      this.loadEventStartDate();
     }
+  }
+
+  private loadEventStartDate(): void {
+    this.eventService.findByIdEvent(this.eventId).subscribe({
+      next: (event: EventResponse) => {
+        this.eventStartDate = event.startDate;
+      },
+      error: (err) => {
+        console.error('Error loading event start date:', err);
+      },
+    });
   }
 
   loadTicketTypes(): void {
@@ -97,7 +113,10 @@ export class AdminTicketsComponent implements OnInit {
     const dialogRef = this.dialog.open(TicketDialogComponent, {
       width: "900px",
       maxWidth: "95vw",
-      data: { eventId: this.eventId },
+      data: {
+        eventId: this.eventId,
+        eventStartDate: this.eventStartDate,
+      },
       autoFocus: false,
     });
 

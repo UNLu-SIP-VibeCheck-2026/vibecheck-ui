@@ -388,6 +388,39 @@
   gap: var(--space-4);
 }
 
+.price-panel-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+.large-price-panel {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  justify-content: right;
+  flex-wrap: wrap;
+  width: 100%;
+  text-align: right;
+  max-width: 320px;
+}
+
+.price-label {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--md-sys-color-primary);
+}
+
+.price-value {
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+}
+
 .buy-btn {
   flex: 2;
   height: 64px !important;
