@@ -25,25 +25,22 @@
 
 .dtp-row {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   width: 100%;
 }
 
 .dtp-date-field {
-  flex: 2.5;
+  width: 100%;
 }
 
 .dtp-time-field {
-  flex: 1;
+  width: 100%;
 }
 
 .dtp-separator {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--md-sys-color-on-surface-variant);
-  user-select: none;
-  padding-bottom: 2px;
+  display: none;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,6 +82,18 @@
       color: var(--md-sys-color-on-surface) !important;
       display: flex !important;
       align-items: center !important;
+    }
+
+    .mat-mdc-input-element {
+      &[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(1) opacity(0.6);
+        cursor: pointer;
+        transition: opacity 150ms ease;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
     }
 
     .mat-mdc-form-field-infix {
@@ -139,22 +148,5 @@
 }
 
 // ---------------------------------------------------------------------------
-// Responsive
+// End of Styles
 // ---------------------------------------------------------------------------
-@media (max-width: 600px) {
-  .dtp-row {
-    flex-wrap: wrap;
-  }
-
-  .dtp-date-field {
-    flex: 1 1 100%;
-  }
-
-  .dtp-time-field {
-    flex: 1 1 40%;
-  }
-
-  .dtp-separator {
-    display: none;
-  }
-}

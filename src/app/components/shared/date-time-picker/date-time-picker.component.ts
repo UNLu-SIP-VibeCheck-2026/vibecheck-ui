@@ -101,31 +101,22 @@ export class DateTimePickerComponent
   /** Emits whenever internal validation changes */
   @Output() validChange = new EventEmitter<boolean>();
 
-  form!: FormGroup;
-
-  hours: string[] = [];
-  minutes: string[] = [];
+  form: FormGroup = new FormGroup({
+    date: new FormControl<Date | null>(null, Validators.required),
+    time: new FormControl<string>('', Validators.required),
+  });
 
   errorMessage = '';
 
   // Typed getters for the template
   get dateCtrl(): FormControl { return this.form.get('date') as FormControl; }
-  get hourCtrl(): FormControl { return this.form.get('hour') as FormControl; }
-  get minuteCtrl(): FormControl { return this.form.get('minute') as FormControl; }
+  get timeCtrl(): FormControl { return this.form.get('time') as FormControl; }
 
   // ControlValueAccessor callbacks
   private onChange: (value: string | null) => void = () => {};
   private onTouched: () => void = () => {};
 
   ngOnInit(): void {
-    this.buildTimeOptions();
-
-    this.form = this.fb.group({
-      date: [null, Validators.required],
-      hour: ['', Validators.required],
-      minute: ['', Validators.required],
-    });
-
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.emitValue();
     });
@@ -147,8 +138,7 @@ export class DateTimePickerComponent
       this.form.patchValue(
         {
           date: dt,
-          hour: pad(dt.getHours()),
-          minute: pad(dt.getMinutes()),
+          time: `${pad(dt.getHours())}:${pad(dt.getMinutes())}`,
         },
         { emitEvent: false }
       );
@@ -175,21 +165,11 @@ export class DateTimePickerComponent
 
   // --- Internal helpers ---
 
-  private buildTimeOptions(): void {
-    this.hours = Array.from({ length: 24 }, (_, i) =>
-      i < 10 ? '0' + i : '' + i
-    );
-    this.minutes = Array.from({ length: 12 }, (_, i) => {
-      const m = i * 5;
-      return m < 10 ? '0' + m : '' + m;
-    });
-  }
-
   private emitValue(): void {
-    const { date, hour, minute } = this.form.value;
+    const { date, time } = this.form.value;
     this.errorMessage = '';
 
-    if (!date || hour === '' || hour == null || minute === '' || minute == null) {
+    if (!date || !time) {
       this.onChange(null);
       this.validChange.emit(false);
       return;
@@ -197,7 +177,7 @@ export class DateTimePickerComponent
 
     const d: Date = new Date(date);
     const pad = (n: number) => (n < 10 ? '0' + n : '' + n);
-    const iso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${hour}:${minute}:00`;
+    const iso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${time}:00`;
 
     // Validation: must be in the future
     const selected = new Date(iso);

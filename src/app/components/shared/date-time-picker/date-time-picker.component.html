@@ -16,20 +16,9 @@
       <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
 
-    <!-- Hour selector -->
+    <!-- Time picker -->
     <mat-form-field appearance="outline" class="custom-mat-form-field dtp-time-field" subscriptSizing="dynamic">
-      <mat-select [formControl]="hourCtrl" placeholder="HH">
-        <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <span class="dtp-separator">:</span>
-
-    <!-- Minute selector -->
-    <mat-form-field appearance="outline" class="custom-mat-form-field dtp-time-field" subscriptSizing="dynamic">
-      <mat-select [formControl]="minuteCtrl" placeholder="MM">
-        <mat-option *ngFor="let m of minutes" [value]="m">{{ m }}</mat-option>
-      </mat-select>
+      <input matInput type="time" [formControl]="timeCtrl" placeholder="HH:MM">
     </mat-form-field>
   </div>
 

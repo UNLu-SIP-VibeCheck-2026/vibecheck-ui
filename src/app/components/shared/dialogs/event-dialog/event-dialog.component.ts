@@ -29,6 +29,7 @@ import { VenueService } from "../../../../services/venue.service";
 import { EventResponse, EventUpdateRequest } from "../../../../models/event.model";
 import { VenueResponse } from "../../../../models/venue.model";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatNativeDateModule } from "@angular/material/core";
 
 export interface EventDialogData {
   event: EventResponse;
@@ -50,6 +51,7 @@ export interface EventDialogData {
     MatIconModule,
     MatProgressSpinnerModule,
     DateTimePickerComponent,
+    MatNativeDateModule,
   ],
   templateUrl: "./event-dialog.component.html",
   styleUrls: ["./event-dialog.component.scss"],
@@ -104,6 +106,21 @@ export class EventDialogComponent implements OnInit {
         },
       });
     }
+
+    this.setupVenueListener();
+  }
+
+  setupVenueListener(): void {
+    this.eventForm.get("venueId")?.valueChanges.subscribe((venueId) => {
+      const venue = this.venues.find((v) => v.id === venueId);
+      if (venue) {
+        const capacityCtrl = this.eventForm.get("capacity");
+        if (capacityCtrl && (capacityCtrl.value > venue.capacity || capacityCtrl.pristine)) {
+          capacityCtrl.setValue(venue.capacity);
+          capacityCtrl.markAsTouched();
+        }
+      }
+    });
   }
 
   private initForm(): void {
@@ -124,7 +141,7 @@ export class EventDialogComponent implements OnInit {
         active: [e?.active ?? true],
         venueId: [e?.venueId ?? null],
       },
-      { validators: [this.endAfterStartValidator] }
+      { validators: [this.endAfterStartValidator, (g) => this.venueCapacityValidator(g)] }
     );
   }
 
@@ -133,6 +150,25 @@ export class EventDialogComponent implements OnInit {
     const end = group.get("endDate")?.value;
     if (!start || !end) return null;
     return new Date(end) > new Date(start) ? null : { endBeforeStart: true };
+  }
+
+  venueCapacityValidator(group: AbstractControl): ValidationErrors | null {
+    const venueId = group.get("venueId")?.value;
+    const capacity = group.get("capacity")?.value;
+    if (!venueId || capacity === null || capacity === undefined) return null;
+
+    const venue = this.venues.find((v) => v.id === venueId);
+    if (venue && capacity > venue.capacity) {
+      return { capacityExceedsVenue: true };
+    }
+    return null;
+  }
+
+  getSelectedVenueCapacity(): number {
+    const venueId = this.eventForm?.get("venueId")?.value;
+    if (!venueId) return 0;
+    const venue = this.venues.find((v) => v.id === venueId);
+    return venue ? venue.capacity : 0;
   }
 
   filterVenues(): void {

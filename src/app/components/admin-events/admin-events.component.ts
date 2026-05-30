@@ -35,6 +35,7 @@ import { EmptyStateComponent } from "../shared/empty-state/empty-state.component
 import { trackLoading } from "../../utils/loading.operator";
 import { environment } from "../../../environments/environment";
 import { ethers } from "ethers";
+import { MatNativeDateModule } from "@angular/material/core";
 
 @Component({
   selector: "app-admin-events",
@@ -56,6 +57,7 @@ import { ethers } from "ethers";
     MatTooltipModule,
     LoadingStateComponent,
     EmptyStateComponent,
+    MatNativeDateModule,
   ],
   templateUrl: "./admin-events.component.html",
   styleUrl: "./admin-events.component.scss",
