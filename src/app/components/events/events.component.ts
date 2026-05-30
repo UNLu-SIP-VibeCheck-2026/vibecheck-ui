@@ -11,7 +11,9 @@ import { Router } from "@angular/router";
 import { EventService } from "../../services/event.service";
 import { AdvertisementService } from "../../services/advertisement.service";
 import { CategoryService } from "../../services/category.service";
+import { VenueService } from "../../services/venue.service";
 import { CategoryResponse } from "../../models/category.model";
+import { VenueResponse } from "../../models/venue.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
@@ -26,10 +28,13 @@ export interface EventSummary {
   startDate: string;
   endDate?: string;
   venue: string;
+  venueId?: number;
   capacity?: number;
   imageUrl?: any;
   categoryIds?: number[];
   realCategories?: string[];
+  advertisementLevel?: 'HIGH' | 'MEDIUM' | 'LOW';
+  advertisementPlanId?: number;
 }
 
 @Component({
@@ -72,6 +77,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   private eventService = inject(EventService);
   private advertisementService = inject(AdvertisementService);
   private categoryService = inject(CategoryService);
+  private venueService = inject(VenueService);
   private sanitizer = inject(DomSanitizer);
 
   // Configurable limits for tier promotions
@@ -91,11 +97,15 @@ export class EventsComponent implements OnInit, OnDestroy {
   /** Image lookup map id → SafeUrl */
   imageMap = new Map<number, SafeUrl>();
 
+  /** Venue lookup map id → VenueResponse */
+  venueMap = new Map<number, VenueResponse>();
+
   totalEvents = 0;
   pageSize = 8;
   pageIndex = 0;
 
   ngOnInit(): void {
+    this.loadVenues();
     this.loadCategories();
     this.loadEvents();
     this.loadPromotedEvents();
@@ -105,6 +115,16 @@ export class EventsComponent implements OnInit, OnDestroy {
     if (this.carouselTimer1) {
       clearInterval(this.carouselTimer1);
     }
+  }
+
+  loadVenues(): void {
+    this.venueService.findAllVenues(0, 500).subscribe({
+      next: (page) => {
+        this.venueMap.clear();
+        page.content.forEach((v) => this.venueMap.set(v.id, v));
+      },
+      error: (err) => console.error("Error loading venues:", err)
+    });
   }
 
   loadCategories(): void {
@@ -173,11 +193,13 @@ export class EventsComponent implements OnInit, OnDestroy {
               title: backendEvent.title,
               description: backendEvent.description || "Sin descripción",
               startDate: new Date(backendEvent.startDate).toLocaleDateString(),
-              venue: `Venue ${backendEvent.venueId || "Desconocido"}`,
+              venue: this.getVenueName(backendEvent.venueId),
+              venueId: backendEvent.venueId,
               capacity: backendEvent.capacity,
               categoryIds: backendEvent.categories ? backendEvent.categories.map(c => c.id) : [],
               realCategories: backendEvent.categories ? backendEvent.categories.map(c => c.name) : [],
-              imageUrl: undefined
+              imageUrl: undefined,
+              advertisementPlanId: backendEvent.advertisementPlanId
             };
           });
 
@@ -205,6 +227,12 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   getEventImage(eventId: string): SafeUrl | null {
     return this.imageMap.get(Number(eventId)) || null;
+  }
+
+  getVenueName(venueId: number | null | undefined): string {
+    if (!venueId) return "Sin venue";
+    const v = this.venueMap.get(venueId);
+    return v ? v.title : `Venue #${venueId}`;
   }
 
   applyFilter(): void {
@@ -256,18 +284,21 @@ export class EventsComponent implements OnInit, OnDestroy {
       next: (grouped) => {
         console.log("Promoted events grouped by tier loaded:", grouped);
 
-        const mapBackendEvent = (backendEvent: any): EventSummary => {
+        const mapBackendEvent = (backendEvent: any, level: 'HIGH' | 'MEDIUM' | 'LOW'): EventSummary => {
           return {
             id: backendEvent.id.toString(),
             title: backendEvent.title,
             description: backendEvent.description || "Sin descripción",
             startDate: new Date(backendEvent.startDate).toLocaleDateString(),
             endDate: backendEvent.endDate ? new Date(backendEvent.endDate).toLocaleDateString() : undefined,
-            venue: `Venue ${backendEvent.venueId || "Desconocido"}`,
+            venue: this.getVenueName(backendEvent.venueId),
+            venueId: backendEvent.venueId,
             capacity: backendEvent.capacity,
             categoryIds: backendEvent.categories ? backendEvent.categories.map((c: any) => c.id) : [],
             realCategories: backendEvent.categories ? backendEvent.categories.map((c: any) => c.name) : [],
-            imageUrl: undefined
+            imageUrl: undefined,
+            advertisementLevel: level,
+            advertisementPlanId: backendEvent.advertisementPlanId
           };
         };
 
@@ -278,17 +309,17 @@ export class EventsComponent implements OnInit, OnDestroy {
         const highEvents = (grouped['high'] || grouped['premium'] || grouped['mega'] || [])
           .sort(sortByDateAsc)
           .slice(0, this.TIER1_LIMIT)
-          .map(mapBackendEvent);
+          .map((e) => mapBackendEvent(e, 'HIGH'));
 
         const mediumEvents = (grouped['medium'] || grouped['destacado'] || grouped['super'] || [])
           .sort(sortByDateAsc)
           .slice(0, this.TIER2_LIMIT)
-          .map(mapBackendEvent);
+          .map((e) => mapBackendEvent(e, 'MEDIUM'));
 
         const lowEvents = (grouped['low'] || grouped['básico'] || grouped['cool'] || [])
           .sort(sortByDateAsc)
           .slice(0, this.TIER3_LIMIT)
-          .map(mapBackendEvent);
+          .map((e) => mapBackendEvent(e, 'LOW'));
 
         this.rawTier1Events = highEvents;
         this.rawTier2Events = mediumEvents;

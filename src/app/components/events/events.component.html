@@ -38,7 +38,7 @@
         <div class="carousel-viewport">
           <div class="carousel-track" [style.transform]="'translateX(-' + (currentIndex1 * 100) + '%)'" [style.width]="tier1Events.length * 100 + '%'">
             <div class="carousel-item" *ngFor="let ev of tier1Events" (click)="navigateToEvent(ev.id)">
-              <div class="large-card">
+              <div class="large-card" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
                 <div class="large-image-container">
                   <img class="large-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
                   <div class="no-image-placeholder-large" *ngIf="!getEventImage(ev.id)">
@@ -47,7 +47,7 @@
                 </div>
                 <div class="large-info">
                   <div class="large-header-block">
-                    <div class="card-badges" *ngIf="ev.realCategories?.length">
+                    <div class="card-badges">
                       <span class="category-badge" *ngFor="let cat of ev.realCategories">{{ cat }}</span>
                     </div>
                     <h2 class="large-title">{{ ev.title }}</h2>
@@ -75,6 +75,13 @@
               </div>
             </div>
           </div>
+          <div class="carousel-dots">
+            <button *ngFor="let _ of tier1Events; let i = index" 
+                    class="carousel-dot" 
+                    [class.active]="i === currentIndex1"
+                    (click)="currentIndex1 = i">
+            </button>
+          </div>
           <button class="carousel-nav prev" type="button" (click)="prevTier1()">
             <mat-icon>chevron_left</mat-icon>
           </button>
@@ -86,8 +93,11 @@
 
       <!-- Mid carousel: 3 items per viewport, less info -->
       <section *ngIf="tier2Events.length" class="carousel carousel-mid">
+        <div class="carousel-section-header">
+          <h3 class="carousel-section-title">Eventos Recomendados</h3>
+        </div>
         <div class="carousel-scroll" #midCarousel>
-          <div class="mid-item" *ngFor="let ev of tier2Events" (click)="navigateToEvent(ev.id)">
+          <div class="mid-item" *ngFor="let ev of tier2Events" (click)="navigateToEvent(ev.id)" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
             <div class="mid-image-container">
               <img class="mid-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
               <div class="no-image-placeholder-mid" *ngIf="!getEventImage(ev.id)">
@@ -95,7 +105,7 @@
               </div>
             </div>
             <div class="mid-info">
-              <div class="card-badges" *ngIf="ev.realCategories?.length">
+              <div class="card-badges">
                 <span class="category-badge mini" *ngFor="let cat of ev.realCategories">{{ cat }}</span>
               </div>
               <h3 class="mid-title">{{ ev.title }}</h3>
@@ -118,10 +128,10 @@
       <!-- Mini carousel: 6 images per viewport (con titulo y overlay de info) -->
       <section *ngIf="tier3Events.length" class="carousel carousel-mini">
         <div class="carousel-section-header">
-          <h3 class="carousel-section-title">Eventos Sugeridos</h3>
+          <h3 class="carousel-section-title">Más Eventos</h3>
         </div>
         <div class="mini-scroll" #miniCarousel>
-          <div class="mini-item" *ngFor="let ev of tier3Events" (click)="navigateToEvent(ev.id)">
+          <div class="mini-item" *ngFor="let ev of tier3Events" (click)="navigateToEvent(ev.id)" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
             <div class="mini-card-inner">
               <img class="mini-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
               <div class="no-image-placeholder-mini" *ngIf="!getEventImage(ev.id)">
@@ -164,7 +174,7 @@
 
   <!-- Events Grid -->
   <div *ngIf="!isLoading && pagedEvents.length > 0 && viewMode === 'grid'" class="events-grid">
-    <div class="event-card" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)">
+    <div class="event-card" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)" [class.ad-highlight]="event.advertisementPlanId">
       <div class="event-image-container">
         <img *ngIf="getEventImage(event.id)" [src]="getEventImage(event.id)" [alt]="event.title" class="event-image">
         <div *ngIf="!getEventImage(event.id)" class="no-image-placeholder">
@@ -174,7 +184,7 @@
       
       <!-- Regular Info -->
       <div class="event-info">
-        <div class="card-badges" *ngIf="event.realCategories?.length">
+        <div class="card-badges">
           <span class="category-badge" *ngFor="let cat of event.realCategories">{{ cat }}</span>
         </div>
         <h3 class="headline-large">{{ event.title }}</h3>
