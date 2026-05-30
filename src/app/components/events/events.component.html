@@ -3,12 +3,20 @@
     <div class="title-row">
       <div class="title-search-wrapper">
         <h1 class="display-medium">Eventos</h1>
-        <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-          <input matInput placeholder="Buscar por evento o locación..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
-          <span matSuffix class="search-icon-wrapper">
-            <mat-icon>search</mat-icon>
-          </span>
-        </mat-form-field>
+        <div class="search-filters-container">
+          <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+            <input matInput placeholder="Buscar por evento o locación..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
+            <span matSuffix class="search-icon-wrapper">
+              <mat-icon>search</mat-icon>
+            </span>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="category-filter-field" subscriptSizing="dynamic">
+            <mat-select placeholder="Todas las categorías" [(ngModel)]="selectedCategoryId" (selectionChange)="onCategoryChange()">
+              <mat-option [value]="null">Todas las categorías</mat-option>
+              <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
       </div>
       <div class="pills-container">
         <button 
@@ -49,34 +57,42 @@
             <div class="carousel-item" *ngFor="let ev of tier1Events" (click)="navigateToEvent(ev.id)">
               <div class="large-card">
                 <div class="large-image-container">
-                  <img class="large-image" [src]="ev.imageUrl" [alt]="ev.title">
+                  <img class="large-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
+                  <div class="no-image-placeholder-large" *ngIf="!getEventImage(ev.id)">
+                    <mat-icon>event</mat-icon>
+                  </div>
                 </div>
                 <div class="large-info">
-                <h2 class="large-title">{{ ev.title }}</h2>
-                <div class="large-data-panel">
-                  <div class="large-data-item">
-                    <span class="data-label">Inicio</span>
-                    <span class="data-value">{{ ev.startDate }}</span>
+                  <div class="large-header-block">
+                    <div class="card-badges" *ngIf="ev.realCategories?.length">
+                      <span class="category-badge" *ngFor="let cat of ev.realCategories">{{ cat }}</span>
+                    </div>
+                    <h2 class="large-title">{{ ev.title }}</h2>
                   </div>
-                  <div class="large-data-item">
-                    <span class="data-label">Fin</span>
-                    <span class="data-value">{{ ev.endDate || ev.startDate }}</span>
+                  <div class="large-data-panel">
+                    <div class="large-data-item">
+                      <span class="data-label">Inicio</span>
+                      <span class="data-value">{{ ev.startDate }}</span>
+                    </div>
+                    <div class="large-data-item">
+                      <span class="data-label">Fin</span>
+                      <span class="data-value">{{ ev.endDate || ev.startDate }}</span>
+                    </div>
+                    <div class="large-data-item">
+                      <span class="data-label">Venue</span>
+                      <span class="data-value">{{ ev.venue }}</span>
+                    </div>
+                    <div class="large-data-item">
+                      <span class="data-label">Capacidad</span>
+                      <span class="data-value">{{ (ev.capacity || 0) | number }} personas</span>
+                    </div>
                   </div>
-                  <div class="large-data-item">
-                    <span class="data-label">Venue</span>
-                    <span class="data-value">{{ ev.venue }}</span>
-                  </div>
-                  <div class="large-data-item">
-                    <span class="data-label">Capacidad</span>
-                    <span class="data-value">{{ (ev.capacity || 0) | number }} personas</span>
+                  <p class="large-desc">{{ ev.description }}</p>
+                  <div class="large-price-panel" *ngIf="ev.price">
+                    <span class="price-label">Desde</span>
+                    <span class="price-value">{{ ev.price | currency:'$':'symbol':'1.0-0' }} USDC</span>
                   </div>
                 </div>
-                <p class="large-desc">{{ ev.description }}</p>
-                <div class="large-price-panel">
-                  <span class="price-label">Desde</span>
-                  <span class="price-value">{{ ev.price | currency:'$':'symbol':'1.0-0' }} USDC</span>
-                </div>
-              </div>
               </div>
             </div>
           </div>
@@ -94,20 +110,26 @@
         <div class="carousel-scroll" #midCarousel>
           <div class="mid-item" *ngFor="let ev of tier2Events" (click)="navigateToEvent(ev.id)">
             <div class="mid-image-container">
-              <img class="mid-image" [src]="ev.imageUrl" [alt]="ev.title">
+              <img class="mid-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
+              <div class="no-image-placeholder-mid" *ngIf="!getEventImage(ev.id)">
+                <mat-icon>event</mat-icon>
+              </div>
             </div>
             <div class="mid-info">
-                <h3 class="mid-title">{{ ev.title }}</h3>
-                <div class="mid-data">
-                  <div class="mid-data-row">{{ ev.venue }}</div>
-                  <div class="mid-data-row">Capacidad: {{ (ev.capacity || 0) | number }} personas</div>
-                  <div class="mid-data-row">{{ ev.startDate }}</div>
-                </div>
-                <div class="price-panel">
-                  <span class="price-label">Desde</span>
-                  <span class="price-value">{{ ev.price | currency:'$':'symbol':'1.0-0' }} USDC</span>
-                </div>
+              <div class="card-badges" *ngIf="ev.realCategories?.length">
+                <span class="category-badge mini" *ngFor="let cat of ev.realCategories">{{ cat }}</span>
               </div>
+              <h3 class="mid-title">{{ ev.title }}</h3>
+              <div class="mid-data">
+                <div class="mid-data-row">{{ ev.venue }}</div>
+                <div class="mid-data-row">Capacidad: {{ (ev.capacity || 0) | number }} personas</div>
+                <div class="mid-data-row">{{ ev.startDate }}</div>
+              </div>
+              <div class="price-panel" *ngIf="ev.price">
+                <span class="price-label">Desde</span>
+                <span class="price-value">{{ ev.price | currency:'$':'symbol':'1.0-0' }} USDC</span>
+              </div>
+            </div>
           </div>
         </div>
         <button class="carousel-nav prev" type="button" (click)="scrollTier2(-1)">
@@ -118,11 +140,23 @@
         </button>
       </section>
 
-      <!-- Mini carousel: 6 images per viewport (solo imagen) -->
+      <!-- Mini carousel: 6 images per viewport (con titulo y overlay de info) -->
       <section *ngIf="tier3Events.length" class="carousel carousel-mini">
+        <div class="carousel-section-header">
+          <h3 class="carousel-section-title">Eventos Sugeridos</h3>
+        </div>
         <div class="mini-scroll" #miniCarousel>
           <div class="mini-item" *ngFor="let ev of tier3Events" (click)="navigateToEvent(ev.id)">
-            <img class="mini-image" [src]="ev.imageUrl" [alt]="ev.title">
+            <div class="mini-card-inner">
+              <img class="mini-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
+              <div class="no-image-placeholder-mini" *ngIf="!getEventImage(ev.id)">
+                <mat-icon>event</mat-icon>
+              </div>
+              <div class="mini-info-overlay">
+                <span class="mini-event-title">{{ ev.title }}</span>
+                <span class="mini-event-date">{{ ev.startDate }}</span>
+              </div>
+            </div>
           </div>
         </div>
         <button class="carousel-nav prev" type="button" (click)="scrollTier3(-1)">
@@ -165,6 +199,9 @@
       
       <!-- Regular Info -->
       <div class="event-info" *ngIf="selectedPill !== 'Marketplace'">
+        <div class="card-badges" *ngIf="event.realCategories?.length">
+          <span class="category-badge" *ngFor="let cat of event.realCategories">{{ cat }}</span>
+        </div>
         <h3 class="headline-large">{{ event.title }}</h3>
         <div class="event-metadata">
           <div class="metadata-item">

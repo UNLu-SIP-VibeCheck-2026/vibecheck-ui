@@ -48,10 +48,13 @@ export class EventService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  findAllEvents(page: number, size: number): Observable<Page<EventResponse>> {
+  findAllEvents(page: number, size: number, categoryId?: number): Observable<Page<EventResponse>> {
     let params = new HttpParams()
       .set("page", page.toString())
       .set("size", size.toString());
+    if (categoryId !== undefined && categoryId !== null) {
+      params = params.set("categoryId", categoryId.toString());
+    }
     return this.http.get<Page<EventResponse>>(`${this.apiUrl}/public/all`, {
       params,
     });
@@ -95,5 +98,9 @@ export class EventService {
       `${this.apiUrl}/${id}/register-deploy`,
       request,
     );
+  }
+
+  getUpcomingPromotedEventsGroupedByTier(): Observable<Record<string, EventResponse[]>> {
+    return this.http.get<Record<string, EventResponse[]>>(`${this.apiUrl}/promoted/grouped-by-tier`);
   }
 }

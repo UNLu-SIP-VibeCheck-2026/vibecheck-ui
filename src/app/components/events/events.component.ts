@@ -10,11 +10,14 @@ import { MatInputModule } from "@angular/material/input";
 import { Router } from "@angular/router";
 import { EventService } from "../../services/event.service";
 import { AdvertisementService } from "../../services/advertisement.service";
+import { CategoryService } from "../../services/category.service";
+import { CategoryResponse } from "../../models/category.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
 import { trackLoading } from "../../utils/loading.operator";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatSelectModule } from "@angular/material/select";
 
 export interface EventSummary {
   id: string;
@@ -32,6 +35,7 @@ export interface EventSummary {
   price?: number;
   ticketType?: string;
   location?: string;
+  realCategories?: string[];
 }
 
 @Component({
@@ -46,6 +50,7 @@ export interface EventSummary {
     MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     LoadingStateComponent,
     EmptyStateComponent,
   ],
@@ -68,6 +73,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private eventService = inject(EventService);
   private advertisementService = inject(AdvertisementService);
+  private categoryService = inject(CategoryService);
   private sanitizer = inject(DomSanitizer);
 
   // Configurable limits for tier promotions
@@ -78,6 +84,8 @@ export class EventsComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   selectedPill: string = "Próximos eventos";
   searchQuery: string = "";
+  categories: CategoryResponse[] = [];
+  selectedCategoryId: number | null = null;
   allEvents: EventSummary[] = [];
   filteredEvents: EventSummary[] = [];
   pagedEvents: EventSummary[] = [];
@@ -90,6 +98,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   pageIndex = 0;
 
   ngOnInit(): void {
+    this.loadCategories();
     this.loadEvents();
     this.loadPromotedEvents();
   }
@@ -98,6 +107,20 @@ export class EventsComponent implements OnInit, OnDestroy {
     if (this.carouselTimer1) {
       clearInterval(this.carouselTimer1);
     }
+  }
+
+  loadCategories(): void {
+    this.categoryService.getAllCategories().subscribe({
+      next: (cats) => {
+        this.categories = cats;
+      },
+      error: (err) => console.error("Error loading categories:", err)
+    });
+  }
+
+  onCategoryChange(): void {
+    this.pageIndex = 0;
+    this.loadEvents();
   }
 
   startCarousel1(): void {
@@ -137,7 +160,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   loadEvents(): void {
-    this.eventService.findAllEvents(0, 100)
+    this.eventService.findAllEvents(0, 100, this.selectedCategoryId || undefined)
       .pipe(trackLoading((loading) => (this.isLoading = loading)))
       .subscribe({
         next: (page) => {
@@ -166,6 +189,7 @@ export class EventsComponent implements OnInit, OnDestroy {
               venue: `Venue ${backendEvent.venueId || "Desconocido"}`,
               category: category,
               imageUrl: undefined, // Se cargará dinámicamente
+              realCategories: backendEvent.categories ? backendEvent.categories.map(c => c.name) : []
             };
 
             if (category === "Marketplace") {
@@ -248,7 +272,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   loadPromotedEvents(): void {
-    this.advertisementService.getUpcomingPromotedEventsGroupedByTier().subscribe({
+    this.eventService.getUpcomingPromotedEventsGroupedByTier().subscribe({
       next: (grouped) => {
         console.log("Promoted events grouped by tier loaded:", grouped);
 

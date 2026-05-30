@@ -33,7 +33,4 @@ export class AdvertisementService {
     });
   }
 
-  getUpcomingPromotedEventsGroupedByTier(): Observable<Record<string, EventResponse[]>> {
-    return this.http.get<Record<string, EventResponse[]>>(`${this.apiUrl}/events/promoted/grouped-by-tier`);
-  }
 }
