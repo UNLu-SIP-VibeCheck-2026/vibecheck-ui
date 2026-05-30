@@ -31,6 +31,7 @@ import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 import { ResetPasswordComponent } from "./components/reset-password/reset-password.component";
 import { NotFoundComponent } from "./components/not-found/not-found.component";
+import { SwapComponent } from "./components/swap/swap.component";
 
 export const routes: Routes = [
   {

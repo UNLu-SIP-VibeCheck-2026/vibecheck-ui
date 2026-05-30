@@ -29,8 +29,14 @@ export class Web3Service {
   isSepolia$ = this.isSepoliaSubject.asObservable();
 
   // Smart Contract Addresses
-  private readonly VBK_ADDRESS = "0xF84c05F1278A60601989192077f40bAb340A1947";
-  private readonly USDC_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+  readonly VBK_ADDRESS = "0xF84c05F1278A60601989192077f40bAb340A1947";
+  readonly USDC_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+  readonly UNISWAP_ROUTER_ADDRESS = "0xeE567Fe1712Faf6149d80dA1E6934E354124CfE3";
+
+  private readonly UNISWAP_ROUTER_ABI = [
+    "function getAmountsOut(uint256 amountIn, address[] path) view returns (uint256[] amounts)",
+    "function swapExactTokensForTokens(uint256 amountIn, uint256 amountOutMin, address[] path, address to, uint256 deadline) returns (uint256[] amounts)",
+  ];
   private readonly OFFERING_NFT_ADDRESS =
     "0x8aA427498336C84b870A13FE92Fd3a31F53e7EC6";
   readonly EVENT_FACTORY_ADDRESS = "0x810acAfAAD9662377063065bE7e841cB65f9Bb84";
@@ -468,5 +474,153 @@ export class Web3Service {
         await this.updateBalances(address);
       }
     }
+  }
+
+  // =========================================================================
+  // Uniswap V2 Swap Methods (USDC <-> VBK)
+  // =========================================================================
+
+  async quoteUsdcToVbk(usdcAmount: number): Promise<bigint> {
+    if (!this.provider) {
+      this.provider = new ethers.BrowserProvider(this.ethereum);
+    }
+    const routerContract = new ethers.Contract(
+      this.UNISWAP_ROUTER_ADDRESS,
+      this.UNISWAP_ROUTER_ABI,
+      this.provider
+    );
+    const amountIn = ethers.parseUnits(usdcAmount.toString(), 6);
+    const amounts = await routerContract["getAmountsOut"](amountIn, [this.USDC_ADDRESS, this.VBK_ADDRESS]);
+    return amounts[1];
+  }
+
+  async approveToken(tokenAddress: string, spender: string, amount: bigint): Promise<void> {
+    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
+    const signer = await this.provider.getSigner();
+    const tokenContract = new ethers.Contract(tokenAddress, this.ERC20_ABI, signer);
+    const tx = await tokenContract["approve"](spender, amount);
+    await tx.wait();
+  }
+
+  async executeSwap(
+    amountIn: bigint,
+    amountOutMin: bigint,
+    path: string[],
+    to: string,
+    deadline: number
+  ): Promise<string> {
+    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
+    const signer = await this.provider.getSigner();
+    const routerContract = new ethers.Contract(
+      this.UNISWAP_ROUTER_ADDRESS,
+      this.UNISWAP_ROUTER_ABI,
+      signer
+    );
+    const tx = await routerContract["swapExactTokensForTokens"](
+      amountIn,
+      amountOutMin,
+      path,
+      to,
+      deadline
+    );
+    const receipt = await tx.wait();
+    return receipt.hash ?? tx.hash;
+  }
+
+  async swapUsdcForVbk(usdcAmount: number, slippagePct: number = 2): Promise<string> {
+    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
+    const signer = await this.provider.getSigner();
+    const userAddress = await signer.getAddress();
+
+    const amountIn = ethers.parseUnits(usdcAmount.toString(), 6);
+    const quoted = await this.quoteUsdcToVbk(usdcAmount);
+    
+    // amountOutMin = quoted * (100 - slippagePct) / 100
+    const amountOutMin = (quoted * BigInt(100 - slippagePct)) / 100n;
+
+    await this.approveToken(this.USDC_ADDRESS, this.UNISWAP_ROUTER_ADDRESS, amountIn);
+
+    const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes
+    return await this.executeSwap(amountIn, amountOutMin, [this.USDC_ADDRESS, this.VBK_ADDRESS], userAddress, deadline);
+  }
+
+  async quoteVbkToUsdc(vbkAmount: number): Promise<bigint> {
+    if (!this.provider) {
+      this.provider = new ethers.BrowserProvider(this.ethereum);
+    }
+    const routerContract = new ethers.Contract(
+      this.UNISWAP_ROUTER_ADDRESS,
+      this.UNISWAP_ROUTER_ABI,
+      this.provider
+    );
+    const amountIn = ethers.parseUnits(vbkAmount.toString(), 18);
+    const amounts = await routerContract["getAmountsOut"](amountIn, [this.VBK_ADDRESS, this.USDC_ADDRESS]);
+    return amounts[1];
+  }
+
+  async swapVbkForUsdc(vbkAmount: number, slippagePct: number = 2): Promise<string> {
+    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
+    const signer = await this.provider.getSigner();
+    const userAddress = await signer.getAddress();
+
+    const amountIn = ethers.parseUnits(vbkAmount.toString(), 18);
+    const quoted = await this.quoteVbkToUsdc(vbkAmount);
+    
+    // VBK -> USDC with 15% disincentive fee + slippage
+    const afterFee = (quoted * 85n) / 100n; // 15% fee
+    const amountOutMin = (afterFee * BigInt(100 - slippagePct)) / 100n;
+
+    await this.approveToken(this.VBK_ADDRESS, this.UNISWAP_ROUTER_ADDRESS, amountIn);
+
+    const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes
+    return await this.executeSwap(amountIn, amountOutMin, [this.VBK_ADDRESS, this.USDC_ADDRESS], userAddress, deadline);
+  }
+
+  async getVbkReceivedFromSwap(txHash: string, userAddress: string): Promise<bigint> {
+    if (!this.provider) {
+      this.provider = new ethers.BrowserProvider(this.ethereum);
+    }
+    const receipt = await this.provider.getTransactionReceipt(txHash);
+    if (!receipt) throw new Error("No se pudo obtener el recibo de transacción.");
+
+    const transferEventTopic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    let amountReceived = 0n;
+
+    for (const log of receipt.logs) {
+      if (
+        log.address.toLowerCase() === this.VBK_ADDRESS.toLowerCase() &&
+        log.topics[0] === transferEventTopic &&
+        log.topics[2] &&
+        log.topics[2].toLowerCase().slice(-40) === userAddress.toLowerCase().slice(-40)
+      ) {
+        const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["uint256"], log.data);
+        amountReceived = decoded[0];
+      }
+    }
+    return amountReceived;
+  }
+
+  async getUsdcReceivedFromSwap(txHash: string, userAddress: string): Promise<bigint> {
+    if (!this.provider) {
+      this.provider = new ethers.BrowserProvider(this.ethereum);
+    }
+    const receipt = await this.provider.getTransactionReceipt(txHash);
+    if (!receipt) throw new Error("No se pudo obtener el recibo de transacción.");
+
+    const transferEventTopic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    let amountReceived = 0n;
+
+    for (const log of receipt.logs) {
+      if (
+        log.address.toLowerCase() === this.USDC_ADDRESS.toLowerCase() &&
+        log.topics[0] === transferEventTopic &&
+        log.topics[2] &&
+        log.topics[2].toLowerCase().slice(-40) === userAddress.toLowerCase().slice(-40)
+      ) {
+        const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["uint256"], log.data);
+        amountReceived = decoded[0];
+      }
+    }
+    return amountReceived;
   }
 }
