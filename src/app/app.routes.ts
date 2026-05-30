@@ -121,7 +121,6 @@ export const routes: Routes = [
   {
     path: "event/:id",
     component: EventComponent,
-    canActivate: [authGuard],
   },
   {
     path: "select-tickets/:id",
