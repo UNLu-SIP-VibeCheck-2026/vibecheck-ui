@@ -50,6 +50,10 @@
             <div class="quote-loader" *ngIf="isLoadingQuote()">
               <mat-icon class="spin-slow">sync</mat-icon> <span>Cotizando...</span>
             </div>
+            <div class="quote-timer" *ngIf="!isLoadingQuote() && quotedVbk()">
+              <mat-icon>schedule</mat-icon>
+              <span>Actualizando en {{ secondsToRefresh() }}s</span>
+            </div>
           </div>
           
           <div class="quote-value-row" *ngIf="!isLoadingQuote() && quotedVbk()">
@@ -121,6 +125,10 @@
             <span>Cotización de Mercado:</span>
             <div class="quote-loader" *ngIf="isLoadingQuote()">
               <mat-icon class="spin-slow">sync</mat-icon> <span>Cotizando...</span>
+            </div>
+            <div class="quote-timer" *ngIf="!isLoadingQuote() && quotedUsdc()">
+              <mat-icon>schedule</mat-icon>
+              <span>Actualizando en {{ secondsToRefresh() }}s</span>
             </div>
           </div>
           

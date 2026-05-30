@@ -249,8 +249,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.95rem;
   color: #94a3b8;
+  line-height: 32px;
 }
 
 .quote-loader {
@@ -692,4 +695,43 @@
   .success-actions a {
     width: 100%;
   }
+}
+
+/* TIMER DE ACTUALIZACIÓN */
+.quote-timer {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 0.45rem;
+  color: #c7d2fe;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  padding: 0.45rem 0.9rem;
+  border-radius: 20px;
+  height: 32px;
+  box-sizing: border-box;
+  line-height: 1;
+  animation: pulse-timer-anim 2.5s infinite;
+}
+
+.quote-timer mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px;
+  min-height: 16px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+  line-height: 1;
+}
+
+@keyframes pulse-timer-anim {
+  0% { opacity: 0.85; }
+  50% { opacity: 1; border-color: rgba(99, 102, 241, 0.45); }
+  100% { opacity: 0.85; }
 }

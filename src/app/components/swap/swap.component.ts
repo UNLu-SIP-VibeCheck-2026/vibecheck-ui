@@ -38,6 +38,10 @@ export class SwapComponent implements OnInit, OnDestroy {
   usdcBalance = signal<string>("0.00");
   vbkBalance = signal<string>("0.00");
 
+  // Timer state
+  secondsToRefresh = signal<number>(30);
+  private countdownInterval: any = null;
+
   private quoteTimeout: any = null;
   private addressSub: any = null;
   private usdcSub: any = null;
@@ -52,6 +56,7 @@ export class SwapComponent implements OnInit, OnDestroy {
       this.quotedVbk.set(null);
       this.quotedUsdc.set(null);
       this.errorMessage.set("");
+      this.stopCountdown();
     }, { allowSignalWrites: true });
   }
 
@@ -72,6 +77,63 @@ export class SwapComponent implements OnInit, OnDestroy {
     if (this.usdcSub) this.usdcSub.unsubscribe();
     if (this.vbkSub) this.vbkSub.unsubscribe();
     if (this.quoteTimeout) clearTimeout(this.quoteTimeout);
+    this.stopCountdown();
+  }
+
+  // Timer control methods
+  startCountdown() {
+    this.stopCountdown();
+    this.secondsToRefresh.set(30);
+    this.countdownInterval = setInterval(() => {
+      if (this.step() !== 'idle') {
+        this.stopCountdown();
+        return;
+      }
+      
+      const hasInput = this.activeTab() === 'buy' ? this.usdcAmountInput() : this.vbkAmountInput();
+      if (!hasInput) {
+        this.stopCountdown();
+        return;
+      }
+
+      const currentSec = this.secondsToRefresh();
+      if (currentSec <= 1) {
+        this.secondsToRefresh.set(30);
+        this.refreshQuote();
+      } else {
+        this.secondsToRefresh.set(currentSec - 1);
+      }
+    }, 1000);
+  }
+
+  stopCountdown() {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
+  }
+
+  async refreshQuote() {
+    this.isLoadingQuote.set(true);
+    try {
+      if (this.activeTab() === 'buy') {
+        const amount = parseFloat(this.usdcAmountInput());
+        if (!isNaN(amount) && amount > 0) {
+          const quote = await this.web3Service.quoteUsdcToVbk(amount);
+          this.quotedVbk.set(quote);
+        }
+      } else {
+        const amount = parseFloat(this.vbkAmountInput());
+        if (!isNaN(amount) && amount > 0) {
+          const quote = await this.web3Service.quoteVbkToUsdc(amount);
+          this.quotedUsdc.set(quote);
+        }
+      }
+    } catch (err) {
+      console.error("Error refreshing quote:", err);
+    } finally {
+      this.isLoadingQuote.set(false);
+    }
   }
 
   // Formatting helpers
@@ -121,6 +183,7 @@ export class SwapComponent implements OnInit, OnDestroy {
   onInputUsdc(value: string) {
     this.usdcAmountInput.set(value);
     this.quotedVbk.set(null);
+    this.stopCountdown();
     if (this.quoteTimeout) clearTimeout(this.quoteTimeout);
 
     const amount = parseFloat(value);
@@ -133,6 +196,7 @@ export class SwapComponent implements OnInit, OnDestroy {
       try {
         const quote = await this.web3Service.quoteUsdcToVbk(amount);
         this.quotedVbk.set(quote);
+        this.startCountdown();
       } catch (err) {
         console.error("Error quoting USDC to VBK:", err);
       } finally {
@@ -144,6 +208,7 @@ export class SwapComponent implements OnInit, OnDestroy {
   onInputVbk(value: string) {
     this.vbkAmountInput.set(value);
     this.quotedUsdc.set(null);
+    this.stopCountdown();
     if (this.quoteTimeout) clearTimeout(this.quoteTimeout);
 
     const amount = parseFloat(value);
@@ -156,6 +221,7 @@ export class SwapComponent implements OnInit, OnDestroy {
       try {
         const quote = await this.web3Service.quoteVbkToUsdc(amount);
         this.quotedUsdc.set(quote);
+        this.startCountdown();
       } catch (err) {
         console.error("Error quoting VBK to USDC:", err);
       } finally {
@@ -190,6 +256,7 @@ export class SwapComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.stopCountdown();
     this.step.set('approving');
     this.errorMessage.set("");
     this.txHash.set("");
@@ -248,6 +315,7 @@ export class SwapComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.stopCountdown();
     this.step.set('approving');
     this.errorMessage.set("");
     this.txHash.set("");
@@ -320,6 +388,7 @@ export class SwapComponent implements OnInit, OnDestroy {
   }
 
   resetForm() {
+    this.stopCountdown();
     this.usdcAmountInput.set("");
     this.vbkAmountInput.set("");
     this.quotedVbk.set(null);
