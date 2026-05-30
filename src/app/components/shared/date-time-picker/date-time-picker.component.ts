@@ -179,6 +179,12 @@ export class DateTimePickerComponent
     const pad = (n: number) => (n < 10 ? '0' + n : '' + n);
     const iso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${time}:00`;
 
+    if (this.form.disabled) {
+      this.onChange(iso);
+      this.validChange.emit(true);
+      return;
+    }
+
     // Validation: must be in the future
     const selected = new Date(iso);
     const now = new Date();

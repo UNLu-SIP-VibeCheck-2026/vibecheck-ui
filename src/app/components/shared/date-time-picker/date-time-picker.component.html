@@ -23,7 +23,7 @@
   </div>
 
   <!-- Validation error -->
-  <div class="dtp-error" *ngIf="errorMessage">
+  <div class="dtp-error" *ngIf="errorMessage && !form.disabled">
     <mat-icon class="dtp-error-icon">warning</mat-icon>
     <span>{{ errorMessage }}</span>
   </div>

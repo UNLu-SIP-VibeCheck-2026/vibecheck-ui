@@ -52,6 +52,7 @@ export class AdminTicketsComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   eventId: number = 0;
+  event: EventResponse | null = null;
   eventStartDate: string | null = null;
   dataSource = new MatTableDataSource<TicketTypeResponse>([]);
   displayedColumns: string[] = [
@@ -69,22 +70,27 @@ export class AdminTicketsComponent implements OnInit {
   isLoading = false;
   deletingId: number | null = null;
 
+  get isEventPublished(): boolean {
+    return this.event ? this.event.status !== 'DRAFT' : false;
+  }
+
   ngOnInit(): void {
     const eventIdParam = this.route.snapshot.paramMap.get('id');
     this.eventId = eventIdParam ? +eventIdParam : 0;
     if (this.eventId) {
       this.loadTicketTypes();
-      this.loadEventStartDate();
+      this.loadEvent();
     }
   }
 
-  private loadEventStartDate(): void {
+  private loadEvent(): void {
     this.eventService.findByIdEvent(this.eventId).subscribe({
       next: (event: EventResponse) => {
+        this.event = event;
         this.eventStartDate = event.startDate;
       },
       error: (err) => {
-        console.error('Error loading event start date:', err);
+        console.error('Error loading event:', err);
       },
     });
   }
@@ -108,6 +114,7 @@ export class AdminTicketsComponent implements OnInit {
   }
 
   addTicket() {
+    if (this.isEventPublished) return;
     const dialogRef = this.dialog.open(TicketDialogComponent, {
       width: "900px",
       maxWidth: "95vw",
@@ -130,7 +137,10 @@ export class AdminTicketsComponent implements OnInit {
     const dialogRef = this.dialog.open(TicketDialogComponent, {
       width: "1000px",
       maxWidth: "95vw",
-      data: { ticket },
+      data: { 
+        ticket,
+        isReadOnly: this.isEventPublished
+      },
       autoFocus: false,
     });
 

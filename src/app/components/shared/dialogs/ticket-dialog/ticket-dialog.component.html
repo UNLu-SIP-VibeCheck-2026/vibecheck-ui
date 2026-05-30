@@ -1,5 +1,5 @@
 <div class="dialog-container">
-    <h2 mat-dialog-title>{{ isEditMode ? 'Editar Categoría de Entrada' : 'Crear Nueva Categoría de Entrada' }}</h2>
+    <h2 mat-dialog-title>{{ isReadOnly ? 'Ver Categoría de Entrada' : (isEditMode ? 'Editar Categoría de Entrada' : 'Crear Nueva Categoría de Entrada') }}</h2>
 
     <mat-dialog-content>
         <form [formGroup]="ticketForm" class="ticket-form">
@@ -99,10 +99,10 @@
     </mat-dialog-content>
 
     <mat-dialog-actions class="dialog-actions">
-        <button mat-raised-button (click)="onSubmit()" [disabled]="ticketForm.invalid || isSubmitting" class="btn-submit">
+        <button mat-raised-button *ngIf="!isReadOnly" (click)="onSubmit()" [disabled]="ticketForm.invalid || isSubmitting" class="btn-submit">
             <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
             <span *ngIf="!isSubmitting">{{ isEditMode ? 'Guardar Cambios' : 'Crear Categoría de Entrada' }}</span>
         </button>
-        <button mat-button (click)="onCancel()" class="btn-cancel" [disabled]="isSubmitting">Cancelar</button>
+        <button mat-button (click)="onCancel()" class="btn-cancel" [disabled]="isSubmitting">{{ isReadOnly ? 'Cerrar' : 'Cancelar' }}</button>
     </mat-dialog-actions>
 </div>
