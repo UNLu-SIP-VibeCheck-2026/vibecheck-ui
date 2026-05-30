@@ -28,13 +28,7 @@ export interface EventSummary {
   venue: string;
   capacity?: number;
   imageUrl?: any;
-  category: "Próximos eventos" | "Recomendados" | "Cerca tuyo" | "Marketplace";
-  // Marketplace fields
-  sellerName?: string;
-  sellerPhoto?: string;
-  price?: number;
-  ticketType?: string;
-  location?: string;
+  categoryIds?: number[];
   realCategories?: string[];
 }
 
@@ -62,6 +56,10 @@ export class EventsComponent implements OnInit, OnDestroy {
   @ViewChild('miniCarousel', { read: ElementRef }) miniCarousel?: ElementRef<HTMLDivElement>;
 
   // ---- Carousels (sample data for preview) ----
+  rawTier1Events: EventSummary[] = [];
+  rawTier2Events: EventSummary[] = [];
+  rawTier3Events: EventSummary[] = [];
+
   tier1Events: EventSummary[] = [];
   tier2Events: EventSummary[] = [];
   tier3Events: EventSummary[] = [];
@@ -82,7 +80,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   readonly TIER3_LIMIT = 20;
 
   isLoading: boolean = false;
-  selectedPill: string = "Próximos eventos";
+  viewMode: 'carousel' | 'grid' = 'carousel';
   searchQuery: string = "";
   categories: CategoryResponse[] = [];
   selectedCategoryId: number | null = null;
@@ -123,6 +121,10 @@ export class EventsComponent implements OnInit, OnDestroy {
     this.loadEvents();
   }
 
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'carousel' ? 'grid' : 'carousel';
+  }
+
   startCarousel1(): void {
     if (this.tier1Events.length <= 1) return;
     this.carouselTimer1 = setInterval(() => {
@@ -160,47 +162,23 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   loadEvents(): void {
-    this.eventService.findAllEvents(0, 100, this.selectedCategoryId || undefined)
+    this.eventService.findAllEvents(0, 100, this.selectedCategoryId || undefined, ['startDate,asc'])
       .pipe(trackLoading((loading) => (this.isLoading = loading)))
       .subscribe({
         next: (page) => {
           console.log("Eventos cargados:", page);
-          const categories: (
-            | "Próximos eventos"
-            | "Recomendados"
-            | "Cerca tuyo"
-            | "Marketplace"
-          )[] = ["Próximos eventos", "Recomendados", "Cerca tuyo", "Marketplace"];
-          const sellers = [
-            "Juan Perez",
-            "Maria Garcia",
-            "Carlos Lopez",
-            "Ana Martinez",
-          ];
-          const ticketTypes = ["General", "VIP", "Platea Alta", "Campo"];
-
-          this.allEvents = page.content.map((backendEvent, i) => {
-            const category = categories[i % categories.length];
-            const event: EventSummary = {
+          this.allEvents = page.content.map((backendEvent) => {
+            return {
               id: backendEvent.id.toString(),
               title: backendEvent.title,
               description: backendEvent.description || "Sin descripción",
               startDate: new Date(backendEvent.startDate).toLocaleDateString(),
               venue: `Venue ${backendEvent.venueId || "Desconocido"}`,
-              category: category,
-              imageUrl: undefined, // Se cargará dinámicamente
-              realCategories: backendEvent.categories ? backendEvent.categories.map(c => c.name) : []
+              capacity: backendEvent.capacity,
+              categoryIds: backendEvent.categories ? backendEvent.categories.map(c => c.id) : [],
+              realCategories: backendEvent.categories ? backendEvent.categories.map(c => c.name) : [],
+              imageUrl: undefined
             };
-
-            if (category === "Marketplace") {
-              event.sellerName = sellers[i % sellers.length];
-              event.sellerPhoto = `https://i.pravatar.cc/150?u=${event.sellerName}`;
-              event.price = 5000 + i * 100;
-              event.ticketType = ticketTypes[i % ticketTypes.length];
-              event.location = event.venue;
-            }
-
-            return event;
           });
 
           // Cargar imágenes de eventos que tienen imagen
@@ -229,22 +207,28 @@ export class EventsComponent implements OnInit, OnDestroy {
     return this.imageMap.get(Number(eventId)) || null;
   }
 
-  selectPill(pill: string): void {
-    this.selectedPill = pill;
-    this.pageIndex = 0;
-    this.applyFilter();
-  }
-
   applyFilter(): void {
+    const sQuery = this.searchQuery.toLowerCase();
+    
+    // Filter grid data
     this.filteredEvents = this.allEvents.filter((e) => {
-      const matchesCategory = e.category === this.selectedPill;
-      const matchesSearch =
-        e.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        e.venue.toLowerCase().includes(this.searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
+      const matchSearch = e.title.toLowerCase().includes(sQuery) || e.venue.toLowerCase().includes(sQuery);
+      return matchSearch;
     });
     this.totalEvents = this.filteredEvents.length;
     this.updatePagedEvents();
+    
+    // Filter carousel data
+    const filterCarousel = (raw: EventSummary[]) => raw.filter(e => {
+      const matchSearch = e.title.toLowerCase().includes(sQuery) || e.venue.toLowerCase().includes(sQuery);
+      const matchCat = this.selectedCategoryId ? e.categoryIds?.includes(this.selectedCategoryId) : true;
+      return matchSearch && matchCat;
+    });
+    
+    this.tier1Events = filterCarousel(this.rawTier1Events);
+    this.tier2Events = filterCarousel(this.rawTier2Events);
+    this.tier3Events = filterCarousel(this.rawTier3Events);
+    this.currentIndex1 = 0;
   }
 
   updatePagedEvents(): void {
@@ -260,11 +244,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   navigateToEvent(id: string): void {
-    if (this.selectedPill === "Marketplace") {
-      this.router.navigate(["/ticket-marketplace", id]);
-    } else {
-      this.router.navigate(["/event", id]);
-    }
+    this.router.navigate(["/event", id]);
   }
 
   goBack(): void {
@@ -285,7 +265,8 @@ export class EventsComponent implements OnInit, OnDestroy {
             endDate: backendEvent.endDate ? new Date(backendEvent.endDate).toLocaleDateString() : undefined,
             venue: `Venue ${backendEvent.venueId || "Desconocido"}`,
             capacity: backendEvent.capacity,
-            category: "Próximos eventos",
+            categoryIds: backendEvent.categories ? backendEvent.categories.map((c: any) => c.id) : [],
+            realCategories: backendEvent.categories ? backendEvent.categories.map((c: any) => c.name) : [],
             imageUrl: undefined
           };
         };
@@ -309,9 +290,11 @@ export class EventsComponent implements OnInit, OnDestroy {
           .slice(0, this.TIER3_LIMIT)
           .map(mapBackendEvent);
 
-        this.tier1Events = highEvents;
-        this.tier2Events = mediumEvents;
-        this.tier3Events = lowEvents;
+        this.rawTier1Events = highEvents;
+        this.rawTier2Events = mediumEvents;
+        this.rawTier3Events = lowEvents;
+        
+        this.applyFilter();
 
         const allPromotedRaw = [
           ...(grouped['high'] || grouped['premium'] || grouped['mega'] || []),

@@ -94,63 +94,49 @@
     }
   }
 
-  .pills-container {
+  .actions-container {
     display: flex;
-    gap: var(--space-3);
+    justify-content: space-between;
     align-items: center;
-  }
+    width: 100%;
+    flex-wrap: wrap;
+    gap: var(--space-4);
 
-  .selected-pill-title {
-    color: var(--md-sys-color-on-surface);
-    opacity: 0.9;
-    font-weight: 700;
-  }
-}
+    .view-toggle {
+      display: flex;
+      gap: var(--space-2);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--md-sys-shape-corner-medium);
+      padding: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
 
-.pill-button {
-  @include chip-outlined;
-  border-radius: var(--md-sys-shape-corner-full);
-  height: 40px;
-  padding: 0 var(--space-5);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(255, 255, 255, 0.03);
-  
-  &.active {
-    background: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-    border-color: var(--md-sys-color-primary);
-  }
+      .toggle-btn {
+        background: transparent;
+        border: none;
+        color: var(--md-sys-color-on-surface-variant);
+        width: 40px;
+        height: 40px;
+        border-radius: var(--md-sys-shape-corner-small);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
 
-  &:not(.active):hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-  }
+        &:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--md-sys-color-on-surface);
+        }
 
-  &.special {
-    position: relative;
-    border: none;
-    background: var(--md-sys-color-surface-variant);
-    overflow: visible;
-
-    &::before {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      border-radius: var(--md-sys-shape-corner-full);
-      background: var(--gradient-border);
-      z-index: -1;
-      padding: 2px;
-    }
-
-    &.active {
-      background: var(--gradient-brand);
-      color: white;
-      
-      &::before {
-        display: none;
+        &.active {
+          background: var(--md-sys-color-surface-variant);
+          color: var(--md-sys-color-primary);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
       }
     }
   }
+
 }
 
 .events-grid {
@@ -158,10 +144,6 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-6);
   margin-bottom: var(--space-8);
-
-  &.marketplace-grid {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  }
 }
 
 /* --- Carousel styles --- */
@@ -230,10 +212,18 @@
         max-width: 100%;
         height: calc(72vh - 16px);
         margin: 0 auto;
-        border-radius: 16px;
+        border-radius: var(--md-sys-shape-corner-medium);
         overflow: hidden;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+        border: 1px solid var(--md-sys-color-outline-variant);
         background: var(--md-sys-color-surface);
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: translateY(-8px);
+          border-color: var(--md-sys-color-primary);
+          background: var(--md-sys-color-surface-variant);
+          .large-image { transform: scale(1.05); }
+        }
 
         .large-image-container {
           flex: 0 0 56%;
@@ -247,6 +237,7 @@
           height: 100%;
           object-fit: cover;
           display: block;
+          transition: transform 0.5s ease;
         }
 
         .large-info {
@@ -352,15 +343,23 @@
       /* Calculate width so exactly 3 items fit without overflow */
       flex: 0 0 calc((100% - (3 * var(--space-4))) / 3);
       background: var(--md-sys-color-surface);
-      border-radius: 12px;
+      border-radius: var(--md-sys-shape-corner-medium);
       overflow: hidden;
       cursor: pointer;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-8px);
+        border-color: var(--md-sys-color-primary);
+        background: var(--md-sys-color-surface-variant);
+        .mid-image { transform: scale(1.05); }
+      }
       display: flex;
       gap: var(--space-3);
 
       .mid-image-container { flex: 0 0 40%; aspect-ratio: 1 / 1; overflow: hidden; }
-      .mid-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .mid-image { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s ease; }
 
       .mid-info { padding: var(--space-3); flex: 1 1 60%; display:flex; flex-direction:column; justify-content:space-between; }
       .mid-title { margin: 0 0 10px 0; font-size: 16px; color: var(--md-sys-color-on-surface); }
@@ -417,16 +416,20 @@
 
     .mini-item {
       flex: 0 0 calc((100% - (6 * var(--space-3))) / 6);
-      border-radius: 12px;
+      border-radius: var(--md-sys-shape-corner-medium);
       overflow: hidden;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-surface);
       position: relative;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s ease;
 
       &:hover {
         transform: translateY(-4px) scale(1.02);
+        border-color: var(--md-sys-color-primary);
+        background: var(--md-sys-color-surface-variant);
         
+        .mini-image { transform: scale(1.05); }
         .mini-info-overlay {
           background: linear-gradient(to top, rgba(13, 9, 30, 0.95) 0%, rgba(13, 9, 30, 0.5) 100%);
         }
@@ -444,6 +447,7 @@
         height: 100%; 
         object-fit: cover; 
         display: block; 
+        transition: transform 0.5s ease;
       }
 
       .mini-info-overlay {
@@ -504,13 +508,6 @@
     background: #1a1535;
     transition: aspect-ratio 0.3s ease;
   }
-
-  &.marketplace-card {
-    .event-image-container {
-      aspect-ratio: 16 / 9; // Reduced image size for marketplace
-    }
-  }
-
   .event-image {
     width: 100%;
     height: 100%;
@@ -531,70 +528,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
       color: var(--md-sys-color-on-surface);
-    }
-  }
-
-  // Marketplace Specific Info Styling
-  .marketplace-info {
-    justify-content: space-between;
-    gap: var(--space-4);
-
-    .event-main-details {
-      .ticket-details {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        
-        .ticket-type {
-          color: var(--md-sys-color-primary);
-          font-weight: 700;
-          font-size: var(--text-label-large);
-          text-transform: uppercase;
-        }
-
-        .ticket-location {
-          color: var(--md-sys-color-on-surface-variant);
-          font-size: var(--text-body-sm);
-        }
-      }
-    }
-
-    .marketplace-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: auto;
-      padding-top: var(--space-3);
-      border-top: 1px solid var(--md-sys-color-outline-variant);
-
-      .seller-info {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-
-        .seller-photo {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          border: 1px solid var(--md-sys-color-primary);
-        }
-
-        .seller-name {
-          font-size: var(--text-label-medium);
-          color: var(--md-sys-color-on-surface);
-          font-weight: 500;
-        }
-      }
-
-      .price-tag {
-        background: var(--gradient-brand);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 8px;
-        font-weight: 800;
-        font-size: var(--text-title-sm);
-        box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
-      }
     }
   }
 
