@@ -77,3 +77,39 @@
     }
   }
 }
+
+@media (max-width: 599px) {
+  .error-dialog-container {
+    padding: 24px 16px;
+
+    .error-icon-wrapper {
+      width: 60px;
+      height: 60px;
+
+      .error-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    .error-title {
+      font-size: 1.25rem;
+    }
+
+    .error-content {
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+  }
+}
+
+@media (max-width: 379px) {
+  .error-dialog-container {
+    padding: 16px 12px;
+
+    .error-title {
+      font-size: 1.1rem;
+    }
+  }
+}

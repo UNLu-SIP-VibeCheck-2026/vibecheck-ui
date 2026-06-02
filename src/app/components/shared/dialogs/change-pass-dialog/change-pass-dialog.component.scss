@@ -68,3 +68,25 @@
 .dialog-actions {
   margin-top: 8px;
 }
+
+@media (max-width: 599px) {
+  .change-password-container {
+    padding: 12px;
+    max-width: 100%;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .custom-btn-submit {
+    height: 44px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 379px) {
+  .change-password-container {
+    padding: 8px;
+  }
+}

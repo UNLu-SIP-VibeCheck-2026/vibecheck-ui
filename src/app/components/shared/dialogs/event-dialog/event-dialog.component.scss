@@ -178,3 +178,41 @@ h2 {
     border: 1px solid var(--md-sys-color-outline) !important;
   }
 }
+
+@media (max-width: 599px) {
+  .user-dialog-container {
+    padding: 8px 12px;
+    max-width: 100%;
+  }
+
+  .multi-row {
+    flex-direction: column;
+    gap: 0;
+
+    .half {
+      flex: unset;
+      width: 100%;
+    }
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 10px;
+
+    button {
+      flex: unset;
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 379px) {
+  .user-dialog-container {
+    padding: 6px 8px;
+  }
+
+  h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+}

@@ -96,3 +96,44 @@ mat-error {
   margin-top: 4px;
   color: var(--md-sys-color-error);
 }
+
+@media (max-width: 599px) {
+  .user-dialog-container {
+    padding: 8px 16px;
+    max-width: 100%;
+  }
+
+  .dob-inputs {
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .dob-field {
+      width: calc(50% - 4px);
+
+      &.year {
+        flex: 1 1 100%;
+      }
+    }
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+
+    button {
+      flex: unset;
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 379px) {
+  .user-dialog-container {
+    padding: 6px 12px;
+  }
+
+  .dob-inputs .dob-field {
+    width: 100%;
+  }
+}

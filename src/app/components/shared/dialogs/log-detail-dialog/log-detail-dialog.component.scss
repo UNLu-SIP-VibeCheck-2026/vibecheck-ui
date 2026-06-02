@@ -93,3 +93,34 @@
 ::ng-deep .mat-mdc-dialog-container {
     border-radius: var(--md-sys-shape-corner-extra-large) !important;
 }
+
+@media (max-width: 599px) {
+  .dialog-container {
+    padding: var(--space-2);
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .json-content {
+    font-size: 11px;
+    padding: var(--space-3);
+  }
+
+  .dialog-header h2 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 379px) {
+  .dialog-container {
+    padding: var(--space-1);
+  }
+
+  .json-content {
+    font-size: 10px;
+  }
+}

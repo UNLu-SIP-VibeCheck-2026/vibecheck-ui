@@ -63,3 +63,38 @@
       }
     }
 }
+
+@media (max-width: 599px) {
+  .confirm-dialog-container {
+    padding: 16px;
+    max-width: 100%;
+  }
+
+  .confirm-title {
+    font-size: 20px !important;
+  }
+
+  .confirm-message {
+    font-size: 15px !important;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 10px;
+
+    button {
+      min-width: unset;
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 379px) {
+  .confirm-dialog-container {
+    padding: 12px;
+  }
+
+  .confirm-title {
+    font-size: 18px !important;
+  }
+}

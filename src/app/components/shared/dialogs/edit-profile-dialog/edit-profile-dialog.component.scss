@@ -195,3 +195,36 @@ h2[mat-dialog-title] {
     border-color: rgba(255, 255, 255, 0.25) !important;
   }
 }
+
+@media (max-width: 599px) {
+  .edit-profile-container {
+    padding: 8px 12px 12px;
+    min-width: unset;
+    width: 100%;
+  }
+
+  .multi-input-row {
+    flex-direction: column;
+    gap: 0;
+
+    .small, .medium, .half {
+      flex: unset;
+      width: 100%;
+    }
+  }
+
+  .custom-btn-submit {
+    height: 46px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 379px) {
+  .edit-profile-container {
+    padding: 6px 8px 10px;
+  }
+
+  .form-group label {
+    font-size: 10px;
+  }
+}

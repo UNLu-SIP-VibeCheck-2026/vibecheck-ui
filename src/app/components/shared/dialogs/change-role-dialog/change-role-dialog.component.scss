@@ -97,8 +97,34 @@
   margin-top: 16px;
 }
 
-@media (max-width: 480px) {
-    .role-buttons {
-        flex-direction: column;
-    }
+@media (max-width: 599px) {
+  .change-role-container {
+    padding: 8px;
+    max-width: 100%;
+  }
+
+  .role-selection .role-buttons {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .role-selection .role-btn {
+    padding: 12px 8px;
+    font-size: 14px;
+  }
+
+  .custom-btn-submit {
+    height: 48px !important;
+    font-size: 15px !important;
+  }
+}
+
+@media (max-width: 379px) {
+  .change-role-container {
+    padding: 4px;
+  }
+
+  .form-group label {
+    font-size: 14px;
+  }
 }

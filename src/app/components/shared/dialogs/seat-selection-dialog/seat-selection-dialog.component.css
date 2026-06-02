@@ -4,3 +4,17 @@
     gap: 16px;
     margin-top: 16px;
 }
+
+@media (max-width: 599px) {
+  .seat-form {
+    gap: 12px;
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 379px) {
+  .seat-form {
+    gap: 8px;
+    margin-top: 8px;
+  }
+}

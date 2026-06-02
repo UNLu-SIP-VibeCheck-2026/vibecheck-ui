@@ -95,3 +95,42 @@ mat-error {
   margin-top: 4px;
   color: var(--md-sys-color-error);
 }
+
+@media (max-width: 599px) {
+  .dialog-container {
+    min-width: unset;
+    width: 100%;
+    min-height: unset;
+    padding: 16px;
+  }
+
+  h2 {
+    font-size: 20px;
+    margin-bottom: 20px !important;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 10px;
+
+    button {
+      flex: unset;
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 379px) {
+  .dialog-container {
+    padding: 12px;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+}

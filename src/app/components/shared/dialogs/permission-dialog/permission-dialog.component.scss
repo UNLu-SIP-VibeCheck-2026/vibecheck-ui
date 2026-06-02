@@ -51,3 +51,27 @@
 }
 
 .btn-submit:disabled { background-color: var(--md-sys-color-surface-variant) !important; color: var(--md-sys-color-on-surface-variant) !important; }
+
+@media (max-width: 599px) {
+  .permission-dialog-container {
+    padding: 12px 16px;
+    max-width: 100%;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+
+    button {
+      flex: unset;
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 379px) {
+  .permission-dialog-container {
+    padding: 8px 12px;
+  }
+}
