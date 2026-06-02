@@ -1,6 +1,6 @@
 :host {
   display: block;
-  min-height: calc(100vh - 72px); /* Viewport height minus navbar height */
+  min-height: calc(100vh - 72px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -68,4 +68,56 @@
 
 .hero-footer {
   margin-top: var(--space-4);
+}
+
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px)
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
+
+  // En pantallas cortas alinear al top para que los botones no queden cortados
+  :host {
+    align-items: flex-start;
+    padding-top: 48px;
+    padding-bottom: 32px;
+  }
+
+  .home-container {
+    max-width: 100%;
+    padding: var(--space-4);
+  }
+
+  .hero-section {
+    gap: var(--space-5);
+  }
+
+  // Permitir que el título haga wrap en pantallas angostas
+  // para que no desborde el viewport (white-space: nowrap lo rompería)
+  .brand-title {
+    white-space: normal;
+    padding-right: 0;
+    font-size: clamp(28px, 8vw, 48px);
+  }
+
+  .hero-actions {
+    gap: var(--space-2);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  :host {
+    padding-top: 32px;
+  }
+
+  .brand-title {
+    font-size: clamp(24px, 7vw, 36px);
+  }
 }

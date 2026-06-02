@@ -153,3 +153,96 @@
 ::ng-deep .mat-mdc-progress-spinner .mdc-circular-progress__circle-graphic {
   stroke: #667eea !important;
 }
+
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px)
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
+
+  // Alinear al top para evitar contenido cortado en pantallas cortas
+  .verify-page {
+    align-items: flex-start;
+    padding: 40px 16px 32px;
+  }
+
+  .verify-container {
+    max-width: 100%;
+  }
+
+  .verify-header {
+    margin-bottom: 18px;
+  }
+
+  .brand-title {
+    font-size: 36px;
+    letter-spacing: -0.5px;
+  }
+
+  .verify-card {
+    padding: 28px 20px !important;
+    border-radius: 16px !important;
+  }
+
+  // Icono de estado más compacto
+  .icon-circle {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 18px;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .result-title {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .status-text {
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+
+  // Botón CTA más compacto
+  .custom-btn-submit {
+    min-height: 52px !important;
+    font-size: 1rem !important;
+    border-radius: 12px !important;
+    padding: 0 1.5rem !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .verify-page {
+    padding: 28px 12px 24px;
+  }
+
+  .verify-card {
+    padding: 20px 16px !important;
+  }
+
+  .brand-title {
+    font-size: 28px;
+  }
+
+  .icon-circle {
+    width: 56px;
+    height: 56px;
+  }
+
+  .custom-btn-submit {
+    min-height: 48px !important;
+    font-size: 0.95rem !important;
+  }
+}

@@ -485,13 +485,26 @@
   mat-icon { flex-shrink: 0; }
 }
 
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
 // ---------------------------------------------------------------------------
-// Responsive
+// Tablet (< 768px): imagen más baja, meta en 2 columnas, acciones apiladas
 // ---------------------------------------------------------------------------
 @media (max-width: 768px) {
-  :host { padding: var(--space-4); }
+  :host {
+    padding: var(--space-5) var(--space-4);
+  }
 
-  .image-container { height: 280px; }
+  .page-header {
+    margin-bottom: var(--space-5);
+  }
+
+  .image-container {
+    height: 280px;
+  }
 
   .placeholder-img mat-icon {
     font-size: 56px;
@@ -499,25 +512,138 @@
     height: 56px;
   }
 
-  .event-info-section { padding: var(--space-6); }
+  .event-info-section {
+    padding: var(--space-6);
+  }
+
+  .event-title {
+    margin-bottom: var(--space-5);
+  }
 
   .meta-info {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-4);
     padding: var(--space-4);
+    margin-bottom: var(--space-6);
   }
 
   .actions {
     flex-direction: column;
 
-    .buy-btn, .share-btn {
+    .buy-btn,
+    .share-btn {
       flex: none !important;
       width: 100% !important;
     }
   }
+
+  .buy-btn {
+    height: 56px !important;
+    font-size: 1.1rem !important;
+  }
+
+  .share-btn {
+    height: 52px !important;
+    font-size: 1rem !important;
+  }
 }
 
-@media (max-width: 480px) {
-  .meta-info { grid-template-columns: 1fr; }
-  .status-badge, .active-badge { font-size: 11px; padding: 6px 12px; }
+// ---------------------------------------------------------------------------
+// Mobile (< 600px): una columna de meta, paddings ajustados
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
+  :host {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .page-header {
+    margin-bottom: var(--space-4);
+  }
+
+  // Breadcrumb puede truncarse en pantallas pequeñas
+  .header-breadcrumb {
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100vw - 80px);
+  }
+
+  .image-container {
+    height: 220px;
+  }
+
+  .event-info-section {
+    padding: var(--space-4);
+  }
+
+  .meta-info {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  // Icono de meta más compacto
+  .meta-icon-wrap {
+    width: 40px;
+    height: 40px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .description-section p {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .buy-btn {
+    height: 52px !important;
+    font-size: 1rem !important;
+    padding: 0 1.5rem !important;
+    border-radius: 12px !important;
+  }
+
+  .share-btn {
+    height: 48px !important;
+    font-size: 0.95rem !important;
+    padding: 0 1rem !important;
+    border-radius: 12px !important;
+  }
+
+  .status-badge,
+  .active-badge {
+    font-size: 11px;
+    padding: 6px 12px;
+    top: 12px;
+  }
+
+  .status-badge { right: 12px; }
+  .active-badge { left: 12px; }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .image-container {
+    height: 180px;
+  }
+
+  .event-info-section {
+    padding: var(--space-3);
+  }
+
+  .buy-btn {
+    height: 48px !important;
+    font-size: 0.95rem !important;
+  }
+
+  .share-btn {
+    height: 44px !important;
+    font-size: 0.9rem !important;
+  }
 }

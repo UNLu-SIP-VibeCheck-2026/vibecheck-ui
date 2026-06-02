@@ -416,7 +416,7 @@
 
   &.marketplace-card {
     .event-image-container {
-      aspect-ratio: 16 / 9; // Reduced image size for marketplace
+      aspect-ratio: 16 / 9;
     }
   }
 
@@ -539,6 +539,14 @@
   }
 }
 
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Tablet (< 768px): header en columna, search a ancho completo
+// ---------------------------------------------------------------------------
 @media (max-width: 768px) {
   .title-row {
     flex-direction: column;
@@ -548,10 +556,139 @@
       flex-direction: column;
       align-items: stretch !important;
       gap: var(--space-2) !important;
+      min-width: 0 !important;
 
       .search-field {
         max-width: none !important;
       }
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px): carousels, pills y grilla adaptados
+// ---------------------------------------------------------------------------
+@include mobile {
+
+  // Pills permiten wrap para que quepan en varias filas
+  .events-header .pills-container {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .pill-button {
+    height: 36px;
+    padding: 0 var(--space-4);
+    font-size: var(--text-label-md);
+  }
+
+  // Grilla de eventos: 1 columna en pantallas muy pequeñas
+  .events-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+
+    &.marketplace-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // --- Carousel Large ---
+  // En móvil, el viewport se reduce en altura y el card se apila verticalmente
+  .carousels .carousel-large {
+    .carousel-viewport {
+      height: auto;
+      min-height: 420px;
+    }
+
+    .carousel-track {
+      height: auto;
+      min-height: 420px;
+    }
+
+    .carousel-item {
+      height: auto;
+      align-items: flex-start;
+
+      .large-card {
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+
+        .large-image-container {
+          flex: none;
+          width: 100%;
+          aspect-ratio: 16 / 9;
+        }
+
+        .large-info {
+          flex: none;
+          max-width: 100%;
+          width: 100%;
+          padding: var(--space-4);
+          gap: var(--space-2);
+
+          .large-title {
+            font-size: 22px;
+          }
+
+          .large-data-panel {
+            width: 100%;
+            max-width: 100%;
+            padding: var(--space-3);
+            gap: var(--space-2);
+          }
+
+          .large-desc {
+            display: none; // Ocultar descripción en móvil para ahorrar espacio
+          }
+
+          .price-label,
+          .price-value {
+            font-size: 1.4rem;
+          }
+        }
+      }
+    }
+
+    // Botones de navegación más pequeños y mejor posicionados en móvil
+    .carousel-nav {
+      width: 36px;
+      height: 36px;
+      top: 28%; // Mitad de la imagen 16/9
+    }
+  }
+
+  // --- Carousel Mid ---
+  // En móvil muestra 2 ítems en lugar de 3
+  .carousels .carousel-mid .mid-item {
+    flex: 0 0 calc((100% - (2 * var(--space-4))) / 2);
+  }
+
+  // --- Carousel Mini ---
+  // En móvil muestra 3 ítems en lugar de 6
+  .carousels .carousel-mini .mini-item {
+    flex: 0 0 calc((100% - (3 * var(--space-3))) / 3);
+  }
+
+  // Ocultar botones de nav del carousel mid y mini en móvil (scroll táctil)
+  .carousels .carousel-mid .carousel-nav,
+  .carousels .carousel-mini .carousel-nav {
+    display: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  // Carousel mid: 1 ítem y medio visible (indicativo de scroll)
+  .carousels .carousel-mid .mid-item {
+    flex: 0 0 85%;
+  }
+
+  // Carousel mini: 2 ítems
+  .carousels .carousel-mini .mini-item {
+    flex: 0 0 calc((100% - (2 * var(--space-3))) / 2);
   }
 }

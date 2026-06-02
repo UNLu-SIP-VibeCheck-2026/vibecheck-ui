@@ -5,6 +5,10 @@
   margin: 0 auto;
   padding: var(--space-8) var(--space-6);
 
+  @include mobile {
+    padding: var(--space-4) var(--space-4);
+  }
+
   .header {
     display: flex;
     align-items: center;
@@ -33,6 +37,7 @@
 
   @include mobile {
     grid-template-columns: 1fr;
+    gap: var(--space-5);
   }
 }
 
@@ -197,5 +202,83 @@
     color: var(--md-sys-color-on-surface-variant);
     font-size: 1.1rem;
     max-width: 250px;
+  }
+}
+
+
+// =============================================================================
+// RESPONSIVE (extensión del @include mobile del layout)
+// =============================================================================
+
+@include mobile {
+
+  // Cards sin min-height fija en móvil para no desperdiciar espacio
+  .search-card,
+  .confirm-card {
+    min-height: auto;
+    padding: var(--space-4);
+  }
+
+  // El header del container: título más chico, botón back no se pisa
+  .gift-container .header {
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+
+    h1 {
+      font-size: clamp(22px, 6vw, 32px);
+    }
+  }
+
+  // Confirm card vacía: padding menor
+  .empty-confirm-state {
+    padding: var(--space-5);
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+    }
+
+    p {
+      font-size: 1rem;
+    }
+  }
+
+  // Botón de regalo más compacto
+  .gift-btn {
+    height: 52px;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
+
+  // Usuario seleccionado: foto más chica
+  .selected-user-card img {
+    width: 48px;
+    height: 48px;
+  }
+
+  // Warning box más compacta
+  .warning-box {
+    margin-bottom: var(--space-5);
+    padding: var(--space-3);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .gift-container {
+    padding: var(--space-3) var(--space-3);
+  }
+
+  .search-card,
+  .confirm-card {
+    padding: var(--space-3);
+  }
+
+  .gift-btn {
+    height: 48px;
+    font-size: 0.95rem;
   }
 }

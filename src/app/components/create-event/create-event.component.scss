@@ -1,4 +1,3 @@
-
 :host {
   display: block;
   min-height: calc(100vh - 72px);
@@ -137,7 +136,7 @@
 }
 
 .field-error {
-  color: #ff5252 !important; /* Vibrant red */
+  color: #ff5252 !important;
   font-size: var(--text-label-sm);
   font-weight: 500;
   margin-top: var(--space-3) !important;
@@ -237,7 +236,7 @@
 }
 
 ::ng-deep .custom-mat-form-field .mat-mdc-form-field-flex {
-  height: 52px !important; // Increased slightly for better visual balance
+  height: 52px !important;
 }
 
 ::ng-deep .textarea-field {
@@ -365,11 +364,11 @@
     flex-direction: column;
     
     .new-venue-link {
-        font-size: var(--text-body-md); // Same size as dropdown text
+        font-size: var(--text-body-md);
         color: var(--md-sys-color-primary);
         text-decoration: none;
         cursor: pointer;
-        align-self: flex-start; // Align left
+        align-self: flex-start;
         margin-top: var(--space-3);
         font-weight: 500;
         transition: all 0.2s ease;
@@ -413,14 +412,121 @@
     .venue-address { font-size: var(--text-label-sm); color: var(--md-sys-color-on-surface-variant); }
 }
 
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Tablet (768px): layout foto+info colapsa a columna, botones se apilan
+// ---------------------------------------------------------------------------
 @media (max-width: 768px) {
-  .form-top-section {
-    flex-direction: column;
+
+  :host {
+    padding: var(--space-6) 0;
+    align-items: flex-start;
   }
+
+  .page-header {
+    margin-bottom: var(--space-6);
+  }
+
   .brand-title {
     font-size: 32px;
   }
+
+  .create-event-card {
+    padding: var(--space-6) !important;
+  }
+
+  .form-top-section {
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  // La foto pasa a ser un banner horizontal rectangular
+  .photo-section .photo-preview {
+    aspect-ratio: 16 / 9;
+    max-height: 260px;
+  }
+
   .form-actions-row {
     flex-direction: column;
+    margin-top: var(--space-8);
+    gap: var(--space-3);
+  }
+
+  // Los botones ocupan el ancho completo al estar en columna
+  .custom-btn-submit,
+  .custom-btn-cancel {
+    flex: none !important;
+    width: 100% !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px)
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
+
+  :host {
+    padding: var(--space-4) 0 var(--space-8);
+  }
+
+  .create-event-page {
+    padding: var(--space-3);
+  }
+
+  .page-header {
+    margin-bottom: var(--space-5);
+  }
+
+  .brand-title {
+    font-size: 26px;
+    letter-spacing: -0.5px;
+  }
+
+  .create-event-card {
+    padding: var(--space-4) !important;
+    border-radius: var(--md-sys-shape-corner-small) !important;
+  }
+
+  // Filas de inputs múltiples (fecha+hora, precio+capacidad) se apilan
+  .multi-input-row {
+    flex-direction: column;
+    gap: var(--space-3);
+
+    .small,
+    .medium {
+      flex: none;
+      width: 100%;
+    }
+  }
+
+  .form-actions-row {
+    margin-top: var(--space-6);
+  }
+
+  .custom-btn-submit {
+    height: 48px !important;
+    font-size: 15px !important;
+  }
+
+  .custom-btn-cancel {
+    height: 44px !important;
+    font-size: 15px !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .brand-title {
+    font-size: 22px;
+  }
+
+  .create-event-card {
+    padding: var(--space-3) !important;
   }
 }
