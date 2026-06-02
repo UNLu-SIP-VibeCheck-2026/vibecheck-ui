@@ -90,6 +90,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "admin/statistics",
+    loadComponent: () =>
+      import(
+        "./components/admin-statistics/admin-statistics.component"
+      ).then((m) => m.AdminStatisticsComponent),
+    canActivate: [authGuard],
+    data: { roles: ["CEO", "ADMIN"] },
+  },
+  {
     path: "system-logs",
     component: SystemLogsComponent,
     canActivate: [authGuard],

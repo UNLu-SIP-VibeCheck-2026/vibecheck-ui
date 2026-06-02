@@ -133,4 +133,8 @@ export class DashboardComponent {
   navigateToSystemLogs() {
     this.router.navigate(['/system-logs']);
   }
+
+  navigateToStatistics() {
+    this.router.navigate(['/admin/statistics']);
+  }
 }
