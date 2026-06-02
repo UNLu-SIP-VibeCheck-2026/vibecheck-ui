@@ -38,11 +38,11 @@ export class Web3Service {
     "function swapExactTokensForTokens(uint256 amountIn, uint256 amountOutMin, address[] path, address to, uint256 deadline) returns (uint256[] amounts)",
   ];
   private readonly OFFERING_NFT_ADDRESS =
-    "0x8aA427498336C84b870A13FE92Fd3a31F53e7EC6";
-  readonly EVENT_FACTORY_ADDRESS = "0x810acAfAAD9662377063065bE7e841cB65f9Bb84";
+    "0xcdbf3C0347fa82749D830b40FCf69c5ff60eC0F0";
+  readonly EVENT_FACTORY_ADDRESS = "0x7cE4ef9eAecdcE0335cCfeB7630D7d656302BA6C";
   readonly VENUE_SIGNER_ADDRESS = "0xF8A5EcdE82f020Ec51419D73F73B1d83BB941292";
   readonly NFT_MARKETPLACE_ADDRESS =
-    "0x6B8DD4aBaaaf9D1c6ef4cb53cC3d9b12bb84b3cd";
+    "0x5640705bC19e6e4c9BE63DF9d385b610dEf3460C";
 
   private readonly SEPOLIA_CHAIN_ID = "0xaa36a7";
 
@@ -534,7 +534,7 @@ export class Web3Service {
 
     const amountIn = ethers.parseUnits(usdcAmount.toString(), 6);
     const quoted = await this.quoteUsdcToVbk(usdcAmount);
-    
+
     // amountOutMin = quoted * (100 - slippagePct) / 100
     const amountOutMin = (quoted * BigInt(100 - slippagePct)) / 100n;
 
@@ -565,7 +565,7 @@ export class Web3Service {
 
     const amountIn = ethers.parseUnits(vbkAmount.toString(), 18);
     const quoted = await this.quoteVbkToUsdc(vbkAmount);
-    
+
     // VBK -> USDC with 15% disincentive fee + slippage
     const afterFee = (quoted * 85n) / 100n; // 15% fee
     const amountOutMin = (afterFee * BigInt(100 - slippagePct)) / 100n;
