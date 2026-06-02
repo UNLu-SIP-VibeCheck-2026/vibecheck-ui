@@ -87,3 +87,13 @@
   font-style: italic;
   margin-top: -4px;
 }
+
+@media (max-width: 379px) {
+  .bdp-label {
+    font-size: 10px;
+  }
+  .bdp-hint {
+    font-size: 10px;
+  }
+}
+

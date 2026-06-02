@@ -369,3 +369,58 @@
     width: 100%;
   }
 }
+
+@media (max-width: 599px) {
+  .wallet-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .balance-section {
+    padding: 1.5rem;
+    border-radius: var(--md-sys-shape-corner-medium);
+  }
+
+  .balance-amount {
+    font-size: 2.5rem;
+  }
+
+  .transaction-item {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .tx-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 0;
+  }
+
+  .tx-description {
+    font-size: 1rem;
+  }
+
+  .tx-amount {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 379px) {
+  .wallet-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .balance-amount {
+    font-size: 2rem;
+  }
+
+  .transaction-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .tx-amount {
+    align-self: flex-end;
+  }
+}
+

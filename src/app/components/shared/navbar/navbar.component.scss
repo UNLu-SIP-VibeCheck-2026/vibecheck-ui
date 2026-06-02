@@ -57,3 +57,14 @@
 .user-menu-btn {
   color: var(--md-sys-color-on-background) !important;
 }
+
+@media (max-width: 599px) {
+  .navbar {
+    padding: 16px 16px;
+  }
+
+  .logo-text {
+    font-size: var(--text-title-sm);
+  }
+}
+

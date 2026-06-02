@@ -388,3 +388,34 @@
 
   .venues-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 599px) {
+  :host {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .brand-title {
+    font-size: clamp(24px, 8vw, 36px);
+  }
+
+  .toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .stats-badge {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 379px) {
+  :host {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .brand-title {
+    font-size: clamp(20px, 7vw, 28px);
+  }
+}
+

@@ -178,3 +178,36 @@
 ::ng-deep .mat-mdc-select-value {
   color: var(--md-sys-color-on-surface) !important;
 }
+
+@media (max-width: 599px) {
+  :host {
+    padding: var(--space-4);
+  }
+
+  .main-title {
+    font-size: clamp(24px, 6vw, 32px);
+    margin-bottom: var(--space-6);
+  }
+
+  .actions-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+
+    .btn-add {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+@media (max-width: 379px) {
+  :host {
+    padding: var(--space-3);
+  }
+
+  .main-title {
+    font-size: clamp(20px, 5vw, 24px);
+  }
+}
+

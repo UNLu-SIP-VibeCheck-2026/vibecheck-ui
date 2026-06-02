@@ -596,3 +596,46 @@
     padding: 1.5rem;
   }
 }
+
+@media (max-width: 599px) {
+  .web3-premium-container {
+    margin: 1rem 0;
+  }
+
+  .luxury-card {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+
+  .address {
+    font-size: 1.1rem;
+  }
+
+  .premium-tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .luxury-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 379px) {
+  .address {
+    font-size: 0.9rem;
+  }
+
+  .luxury-card {
+    padding: 1rem;
+  }
+
+  .amount {
+    font-size: 1.5rem;
+  }
+}
+

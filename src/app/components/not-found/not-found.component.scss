@@ -60,3 +60,35 @@
   box-shadow: 0 12px 32px rgba(168, 85, 247, 0.55);
   filter: brightness(1.1);
 }
+
+@media (max-width: 599px) {
+  .not-found-container {
+    h1 {
+      font-size: clamp(4rem, 20vw, 6rem);
+      margin-bottom: var(--space-2);
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: var(--space-4);
+    }
+
+    p {
+      font-size: 1rem;
+      padding: 0 var(--space-4);
+    }
+  }
+
+  .back-home-btn {
+    height: 48px;
+    font-size: 0.95rem;
+    padding: 0 var(--space-4);
+  }
+}
+
+@media (max-width: 379px) {
+  .not-found-container h1 {
+    font-size: clamp(3rem, 18vw, 4rem);
+  }
+}
+

@@ -268,3 +268,31 @@
     flex-direction: column;
   }
 }
+
+@media (max-width: 599px) {
+  .main-title {
+    font-size: clamp(24px, 6vw, 32px);
+    margin-bottom: var(--space-6);
+  }
+
+  .search-controls-row {
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .applied-filters {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 379px) {
+  :host {
+    padding: var(--space-3);
+  }
+
+  .main-title {
+    font-size: clamp(20px, 5vw, 24px);
+  }
+}
+

@@ -205,3 +205,25 @@
     padding: var(--space-4);
   }
 }
+
+@media (max-width: 599px) {
+  :host {
+    padding: var(--space-3);
+  }
+
+  .main-title {
+    font-size: clamp(24px, 6vw, 32px);
+    margin-bottom: var(--space-6);
+  }
+}
+
+@media (max-width: 379px) {
+  :host {
+    padding: var(--space-2);
+  }
+
+  .main-title {
+    font-size: clamp(20px, 5vw, 24px);
+  }
+}
+
