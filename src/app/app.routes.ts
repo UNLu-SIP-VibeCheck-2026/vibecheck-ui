@@ -123,6 +123,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "admin-events/:id/metrics",
+    loadComponent: () =>
+      import(
+        "./components/organizer-metrics/organizer-metrics.component"
+      ).then((m) => m.OrganizerMetricsComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: "admin-venues",
     component: AdminVenuesComponent,
     canActivate: [authGuard],

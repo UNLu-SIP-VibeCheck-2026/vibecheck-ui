@@ -157,6 +157,10 @@ export class AdminTicketsComponent implements OnInit {
     });
   }
 
+  viewTicketMetrics(ticket: TicketTypeResponse) {
+    this.router.navigate(["/admin-events", this.eventId, "metrics"]);
+  }
+
   deleteTicket(ticket: TicketTypeResponse) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {

@@ -17,6 +17,7 @@ import { MatSelectModule } from "@angular/material/select";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatMenuModule } from "@angular/material/menu";
 import { Router } from "@angular/router";
 import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
 import { EventDialogComponent } from "../shared/dialogs/event-dialog/event-dialog.component";
@@ -55,6 +56,7 @@ import { MatNativeDateModule } from "@angular/material/core";
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule,
+    MatMenuModule,
     LoadingStateComponent,
     EmptyStateComponent,
     MatNativeDateModule,
@@ -307,6 +309,10 @@ export class AdminEventsComponent implements OnInit {
 
   viewStats(event: EventResponse): void {
     this.router.navigate(["/admin-tickets", event.id]);
+  }
+
+  viewEventMetrics(event: EventResponse): void {
+    this.router.navigate(["/admin-events", event.id, "metrics"]);
   }
 
   viewFinance(event: EventResponse): void {

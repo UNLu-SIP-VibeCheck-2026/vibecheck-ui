@@ -9,6 +9,7 @@ import {
   EventDeployRegisterRequest,
 } from "../models/event.model";
 import { Page } from "../models/page.model";
+import { OrganizerEventMetrics } from "../models/organizer-metrics.model";
 
 @Injectable({
   providedIn: "root",
@@ -107,5 +108,9 @@ export class EventService {
 
   getUpcomingPromotedEventsGroupedByTier(): Observable<Record<string, EventResponse[]>> {
     return this.http.get<Record<string, EventResponse[]>>(`${this.apiUrl}/promoted/grouped-by-tier`);
+  }
+
+  getOrganizerMetrics(id: number): Observable<OrganizerEventMetrics> {
+    return this.http.get<OrganizerEventMetrics>(`${this.apiUrl}/${id}/organizer-metrics`);
   }
 }
