@@ -126,6 +126,13 @@
         </div>
       </div>
 
+      <div class="price-panel-wrapper" *ngIf="event.active && cheapestTicketPrice !== null">
+        <div class="large-price-panel">
+          <span class="price-label">Desde</span>
+          <span class="price-value">{{ cheapestTicketPrice | currency:'$':'symbol':'1.0-0' }} USDC</span>
+        </div>
+      </div>
+
       <!-- CTA Actions -->
       <div class="actions" *ngIf="event.active">
         <button mat-raised-button class="buy-btn" (click)="buyTickets()">
@@ -136,13 +143,6 @@
           <mat-icon>share</mat-icon>
           Compartir
         </button>
-      </div>
-
-      <div class="price-panel-wrapper" *ngIf="event.active && cheapestTicketPrice !== null">
-        <div class="large-price-panel">
-          <span class="price-label">Desde</span>
-          <span class="price-value">{{ cheapestTicketPrice | currency:'$':'symbol':'1.0-0' }} USDC</span>
-        </div>
       </div>
 
       <!-- Inactive warning -->
