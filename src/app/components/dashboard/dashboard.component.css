@@ -43,7 +43,7 @@
   background: var(--gradient-brand);
   color: #ffffff;
   border-radius: var(--chip-radius);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: none;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
@@ -72,9 +72,26 @@
 
 .role-action {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-2);
   padding-right: 16px;
+}
+
+.role-label {
+  font-size: var(--text-title-sm);
+  font-weight: 900;
+  letter-spacing: var(--tracking-label);
+  background: var(--gradient-brand);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .badge-arrow {
@@ -83,37 +100,14 @@
   justify-content: center;
   min-width: 28px;
   min-height: 28px;
-  font-size: 1rem;
-  color: #ffffff;
+  font-size: var(--text-title-sm);
   border-radius: 999px;
-  background: var(--gradient-brand);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.badge-arrow-left {
-  animation: arrowLeftPulse 2s ease-in-out infinite;
-}
-
-.badge-arrow-right {
-  animation: arrowRightPulse 2s ease-in-out infinite;
-}
-
-@keyframes arrowLeftPulse {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-3px);
-  }
-}
-
-@keyframes arrowRightPulse {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(3px);
-  }
+  background: var(--md-sys-color-surface-variant);
+  border: 0;/*2px solid var(--md-sys-color-outline-variant);*/
+  color: var(--md-sys-color-primary);
+  background-clip: text;
+  -webkit-background-clip: text;
+  /*-webkit-text-fill-color: transparent;*/
 }
 
 .badge-text {
