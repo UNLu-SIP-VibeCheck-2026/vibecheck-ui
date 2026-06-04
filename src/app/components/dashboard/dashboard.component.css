@@ -40,10 +40,10 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-2) var(--space-4);
-  background: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
+  background: var(--gradient-brand);
+  color: #ffffff;
   border-radius: var(--chip-radius);
-  border: 1px solid var(--md-sys-color-outline-variant);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
@@ -55,9 +55,9 @@
 }
 
 .user-badge-button:hover {
-  transform: translateY(-1px);
-  border-color: var(--md-sys-color-primary);
-  background: rgba(124, 58, 237, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.55);
+  filter: brightness(1.1);
 }
 
 .user-badge-button:focus-visible {
@@ -84,16 +84,42 @@
   min-width: 28px;
   min-height: 28px;
   font-size: 1rem;
-  color: var(--md-sys-color-on-surface-variant);
+  color: #ffffff;
   border-radius: 999px;
-  background: var(--md-sys-color-surface-variant);
-  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--gradient-brand);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.badge-arrow-left {
+  animation: arrowLeftPulse 2s ease-in-out infinite;
+}
+
+.badge-arrow-right {
+  animation: arrowRightPulse 2s ease-in-out infinite;
+}
+
+@keyframes arrowLeftPulse {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-3px);
+  }
+}
+
+@keyframes arrowRightPulse {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
 }
 
 .badge-text {
   font-size: var(--text-label-md);
   font-weight: 700;
-  color: var(--md-sys-color-on-primary-container);
+  color: #ffffff;
   letter-spacing: var(--tracking-label);
 }
 

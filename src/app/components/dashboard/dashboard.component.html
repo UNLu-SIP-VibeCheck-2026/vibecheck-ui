@@ -9,7 +9,7 @@
         <div *ngIf="!canChangeRole" class="user-badge user-badge-static" aria-hidden="true">
           <span class="badge-text">{{ user.role }}</span>
         </div>
-        <span *ngIf="canChangeRole" class="badge-arrow">&gt;</span>
+        <span *ngIf="canChangeRole" class="badge-arrow badge-arrow-right">&gt;</span>
         <button
           *ngIf="canChangeRole"
           type="button"
@@ -19,6 +19,7 @@
         >
           <span class="badge-text">{{ user.role }}</span>
         </button>
+        <span *ngIf="canChangeRole" class="badge-arrow badge-arrow-left">&lt;</span>
       </div>
     </div>
 
