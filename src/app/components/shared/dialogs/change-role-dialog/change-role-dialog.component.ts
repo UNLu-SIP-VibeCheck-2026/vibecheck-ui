@@ -70,15 +70,15 @@ export class ChangeRoleDialogComponent implements OnInit {
       switch (this.selectedRole) {
         case "comprar":
           targetNames = ["cliente", "Cliente", "CLIENTE"];
-          fallbackId = 2;
+          fallbackId = 5;
           break;
         case "crear":
           targetNames = ["organizador", "Organizador", "ORGANIZADOR"];
-          fallbackId = 3;
+          fallbackId = 6;
           break;
         case "validar":
           targetNames = ["validador", "Validador", "VALIDADOR"];
-          fallbackId = 4;
+          fallbackId = 7;
           break;
       }
 

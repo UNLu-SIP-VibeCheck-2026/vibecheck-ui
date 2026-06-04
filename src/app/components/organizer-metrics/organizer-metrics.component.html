@@ -1,0 +1,281 @@
+<div class="metrics-container">
+  <!-- Header -->
+  <div class="header-section">
+    <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver a Eventos">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="main-title">Panel de Ventas y <span class="text-gradient">Métricas</span></h1>
+  </div>
+
+  <!-- Loading State -->
+  <app-loading-state
+    *ngIf="isLoading"
+    [mode]="'skeleton'"
+    [skeletonType]="'list'"
+    [count]="4"
+    [gridClass]="'table-container'">
+  </app-loading-state>
+
+  <!-- Error Alert -->
+  <div class="alert-error" *ngIf="errorMessage && !isLoading">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Metrics Dashboard Content -->
+  <div class="dashboard-content animate-fade-in" *ngIf="metrics && !isLoading && !errorMessage">
+    
+    <!-- Event Details Panel -->
+    <div class="event-details-card">
+      <div class="event-meta-info">
+        <div class="title-status-row">
+          <h2 class="event-title-text">{{ metrics.eventTitle }}</h2>
+          <span class="status-badge" [ngClass]="getStatusClass(metrics.eventStatus)">
+            {{ getStatusLabel(metrics.eventStatus) }}
+          </span>
+        </div>
+        
+        <div class="event-meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">Venue</span>
+            <span class="meta-value">
+              <mat-icon class="inline-icon">location_on</mat-icon>
+              {{ metrics.venueName }}
+            </span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Fecha de Inicio</span>
+            <span class="meta-value">
+              <mat-icon class="inline-icon">calendar_today</mat-icon>
+              {{ formatDate(metrics.eventStartDate) }}
+            </span>
+          </div>
+          <div class="meta-item" *ngIf="metrics.eventNftAddress">
+            <span class="meta-label">Dirección NFT del Evento</span>
+            <span class="meta-value mono-text" [matTooltip]="metrics.eventNftAddress">
+              <mat-icon class="inline-icon">layers</mat-icon>
+              {{ metrics.eventNftAddress }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Widgets Grid -->
+    <div class="kpi-grid">
+      <!-- Occupancy KPI -->
+      <div class="kpi-card glow-purple">
+        <div class="kpi-header">
+          <span class="kpi-title">Ocupación / Ventas</span>
+          <mat-icon class="kpi-icon color-purple">percent</mat-icon>
+        </div>
+        <div class="kpi-value">{{ occupancyRate }}%</div>
+        <div class="occupancy-progress-container">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" [style.width.%]="occupancyRate"></div>
+          </div>
+        </div>
+        <div class="kpi-footer">
+          <span class="trend-indicator pos">Proporción de capacidad vendida</span>
+        </div>
+      </div>
+
+      <!-- Tickets Sold KPI -->
+      <div class="kpi-card glow-blue">
+        <div class="kpi-header">
+          <span class="kpi-title">Entradas Vendidas</span>
+          <mat-icon class="kpi-icon color-blue">confirmation_number</mat-icon>
+        </div>
+        <div class="kpi-value">{{ metrics.totalTicketsSold | number }}</div>
+        <div class="kpi-subvalues">
+          <span>Capacidad total: {{ metrics.totalCapacity | number }}</span>
+        </div>
+        <div class="kpi-footer">
+          <span>Tickets validados y confirmados</span>
+        </div>
+      </div>
+
+      <!-- Tickets Available KPI -->
+      <div class="kpi-card glow-green">
+        <div class="kpi-header">
+          <span class="kpi-title">Entradas Disponibles</span>
+          <mat-icon class="kpi-icon color-green">event_seat</mat-icon>
+        </div>
+        <div class="kpi-value">{{ metrics.totalTicketsAvailable | number }}</div>
+        <div class="kpi-footer">
+          <span class="trend-indicator pos">Remanente de stock libre</span>
+        </div>
+      </div>
+
+      <!-- Total Revenue KPI -->
+      <div class="kpi-card glow-cyan">
+        <div class="kpi-header">
+          <span class="kpi-title">Ingresos Recaudados</span>
+          <mat-icon class="kpi-icon color-cyan">payments</mat-icon>
+        </div>
+        <div class="kpi-value">
+          {{ metrics.totalRevenueUsdc | number:'1.2-2' }} <span class="usd-label">USDC</span>
+        </div>
+        <div class="kpi-footer">
+          <span class="trend-indicator pos">Ventas directas en canal primario</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticket Types Table / Chart Card -->
+    <div class="data-card">
+      <div class="card-header-actions">
+        <h3 class="card-title">Desglose por Categoría de Entrada</h3>
+        
+        <div class="view-controls">
+          <!-- View Toggle Buttons -->
+          <div class="view-toggle-buttons">
+            <button mat-flat-button 
+                    [class.active-toggle]="currentView === 'table'"
+                    [class.inactive-toggle]="currentView !== 'table'"
+                    (click)="currentView = 'table'"
+                    matTooltip="Ver tabla">
+              <mat-icon>table_chart</mat-icon>
+              <span>Tabla</span>
+            </button>
+            <button mat-flat-button 
+                    [class.active-toggle]="currentView === 'chart'"
+                    [class.inactive-toggle]="currentView !== 'chart'"
+                    (click)="currentView = 'chart'"
+                    matTooltip="Ver gráficos">
+              <mat-icon>bar_chart</mat-icon>
+              <span>Gráfico</span>
+            </button>
+          </div>
+          
+          <!-- Chart Type Selector -->
+          <div class="chart-selector-wrapper" *ngIf="currentView === 'chart'">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="custom-select-field">
+              <mat-select [(value)]="chartType">
+                <mat-option value="pie">
+                  <mat-icon class="inline-icon">pie_chart</mat-icon> Torta
+                </mat-option>
+                <mat-option value="doughnut">
+                  <mat-icon class="inline-icon">donut_large</mat-icon> Rosca
+                </mat-option>
+                <mat-option value="bar">
+                  <mat-icon class="inline-icon">equalizer</mat-icon> Barras
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Table View -->
+      <div class="table-container" *ngIf="currentView === 'table'">
+        <table mat-table [dataSource]="metrics.ticketTypes" class="custom-table">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef> Categoría </th>
+            <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="price">
+            <th mat-header-cell *matHeaderCellDef> Precio Nominal </th>
+            <td mat-cell *matCellDef="let element" class="mono-cell"> {{element.priceUsdc | number:'1.2-2'}} USDC </td>
+          </ng-container>
+
+          <ng-container matColumnDef="sold">
+            <th mat-header-cell *matHeaderCellDef> Vendidas </th>
+            <td mat-cell *matCellDef="let element" class="mono-cell highlight-blue"> {{element.quantitySold | number}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="available">
+            <th mat-header-cell *matHeaderCellDef> Disponibles </th>
+            <td mat-cell *matCellDef="let element" class="mono-cell highlight-green"> {{element.quantityAvailable | number}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="max">
+            <th mat-header-cell *matHeaderCellDef> Cantidad Máx </th>
+            <td mat-cell *matCellDef="let element" class="mono-cell"> {{element.maxQuantity | number}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="revenue">
+            <th mat-header-cell *matHeaderCellDef> Recaudado </th>
+            <td mat-cell *matCellDef="let element" class="mono-cell highlight-cyan"> {{element.totalRevenueUsdc | number:'1.2-2'}} USDC </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsTiers"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumnsTiers;"></tr>
+        </table>
+      </div>
+
+      <!-- Chart View -->
+      <div class="chart-view-container animate-fade-in" *ngIf="currentView === 'chart' && chartData">
+        <div class="chart-height-wrapper">
+          <canvas baseChart
+                  [data]="chartData"
+                  [options]="getChartOptions()"
+                  [type]="chartType">
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Sales Table Card -->
+    <div class="data-card">
+      <h3 class="card-title">Últimas Ventas Registradas</h3>
+      
+      <div class="table-container" *ngIf="metrics.recentSales && metrics.recentSales.length > 0">
+        <table mat-table [dataSource]="metrics.recentSales" class="custom-table">
+          <ng-container matColumnDef="ticketId">
+            <th mat-header-cell *matHeaderCellDef> Ticket ID </th>
+            <td mat-cell *matCellDef="let element"> #{{element.ticketId}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="tokenId">
+            <th mat-header-cell *matHeaderCellDef> Token ID </th>
+            <td mat-cell *matCellDef="let element" class="mono-cell"> 
+              {{ element.tokenId !== null ? (element.tokenId | number) : '—' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef> Categoría </th>
+            <td mat-cell *matCellDef="let element"> {{element.ticketTypeName}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="wallet">
+            <th mat-header-cell *matHeaderCellDef> Wallet Comprador </th>
+            <td mat-cell *matCellDef="let element" class="mono-cell"> {{element.ownerWalletMasked}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="paid">
+            <th mat-header-cell *matHeaderCellDef> Monto Pagado </th>
+            <td mat-cell *matCellDef="let element" class="mono-cell highlight-cyan"> 
+              {{element.amountPaid | number:'1.2-6'}} {{element.paymentToken}} 
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef> Fecha / Hora </th>
+            <td mat-cell *matCellDef="let element"> {{formatDate(element.purchaseDate)}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> Estado </th>
+            <td mat-cell *matCellDef="let element">
+              <span class="status-badge" [ngClass]="getStatusClass(element.status)">
+                {{ getStatusLabel(element.status) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsSales"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumnsSales;"></tr>
+        </table>
+      </div>
+
+      <div class="empty-sales-notice" *ngIf="!metrics.recentSales || metrics.recentSales.length === 0">
+        <mat-icon class="empty-icon">sentiment_dissatisfied</mat-icon>
+        <p>Aún no se han registrado compras de entradas para este evento.</p>
+      </div>
+    </div>
+
+  </div>
+</div>

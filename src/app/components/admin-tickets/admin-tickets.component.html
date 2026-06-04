@@ -97,6 +97,9 @@
                         <button mat-icon-button class="circle-btn" (click)="editTicket(element)" [title]="isEventPublished ? 'Ver Categoría' : 'Editar Categoría'">
                             <mat-icon>{{ isEventPublished ? 'visibility' : 'edit' }}</mat-icon>
                         </button>
+                        <button mat-icon-button class="circle-btn" *ngIf="isEventPublished" (click)="viewTicketMetrics(element)" title="Ver Ventas/Métricas">
+                            <mat-icon>bar_chart</mat-icon>
+                        </button>
                         <button mat-icon-button class="circle-btn delete" *ngIf="!isEventPublished" (click)="deleteTicket(element)" title="Eliminar Categoría" [disabled]="deletingId === element.id">
                             <mat-icon *ngIf="deletingId !== element.id">delete</mat-icon>
                             <mat-spinner *ngIf="deletingId === element.id" diameter="18"></mat-spinner>
