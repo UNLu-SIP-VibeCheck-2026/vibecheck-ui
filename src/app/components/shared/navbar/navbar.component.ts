@@ -26,25 +26,34 @@ export class NavbarComponent implements OnInit {
   fullUserProfile: UserPublicResponse | null = null;
 
   ngOnInit(): void {
-    this.loadFullUserProfile();
+    this.authService.currentUser$.subscribe({
+      next: (user) => {
+        if (user?.username) {
+          this.loadFullUserProfile(user.username);
+        } else {
+          this.fullUserProfile = null;
+        }
+      }
+    });
   }
 
-  private loadFullUserProfile(): void {
-    const user = this.authService.getCurrentUserValue();
-    if (user?.username) {
-      this.usersService.getUserByUsername(user.username).subscribe({
-        next: (profile) => {
-          this.fullUserProfile = profile;
-        },
-        error: () => {
-          // If we can't load the full profile, we'll just use the basic user info
-        }
-      });
-    }
+  private loadFullUserProfile(username: string): void {
+    this.usersService.getPublicUser(username).subscribe({
+      next: (profile) => {
+        this.fullUserProfile = profile;
+      },
+      error: () => {
+        // If we can't load the full profile, we'll just use the basic user info
+        this.fullUserProfile = null;
+      }
+    });
   }
 
   onProfilePhotoChanged(): void {
-    this.loadFullUserProfile();
+    const user = this.authService.getCurrentUserValue();
+    if (user?.username) {
+      this.loadFullUserProfile(user.username);
+    }
   }
 
   navigateToLogin(): void {
