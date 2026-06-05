@@ -51,6 +51,10 @@ export class NavbarComponent {
     this.router.navigate(['/my-listings']);
   }
 
+  navigateToMarketplace(): void {
+    this.router.navigate(['/marketplace']);
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/']);

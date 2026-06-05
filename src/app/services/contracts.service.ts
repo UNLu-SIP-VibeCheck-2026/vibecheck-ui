@@ -19,13 +19,19 @@ export class ContractsService {
   private readonly MARKETPLACE_ABI = [
     "function list(address eventNFT, uint256 tokenId, uint256 priceUSDC) external returns (uint256)",
     "function cancel(uint256 listingId) external",
+    "function buyWithUSDC(uint256 listingId) external",
+    "function buyWithVBK(uint256 listingId) external",
     "event Listed(uint256 indexed listingId, address indexed seller, address indexed eventNFT, uint256 tokenId, uint256 priceUSDC)",
     "event Cancelled(uint256 indexed listingId)",
+    "event TicketResoldUSDC(uint256 indexed listingId, address indexed buyer, address indexed seller, uint256 amountPaid, uint256 royaltyPaid, uint256 feePaid)",
+    "event TicketResoldVBK(uint256 indexed listingId, address indexed buyer, address indexed seller, uint256 vbkPaid, uint256 royaltyPaid, uint256 vbkFee, uint256 priceUSDC)"
   ];
 
   private readonly EVENT_NFT_ABI = [
     "function approve(address to, uint256 tokenId) external",
     "function getApproved(uint256 tokenId) external view returns (address)",
+    "function tokenTier(uint256 tokenId) external view returns (uint256)",
+    "function tierOf(uint256 tokenId) external view returns (uint256)"
   ];
 
   private readonly OFFERING_ABI = [

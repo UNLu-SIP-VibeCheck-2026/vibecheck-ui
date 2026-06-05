@@ -66,7 +66,13 @@ export class PurchaseOptionsComponent implements OnInit {
   }
 
   goToMarketplace(): void {
-    this.router.navigate(["/ticket-marketplace", this.eventId]);
+    if (this.event && this.event.eventNftAddress) {
+      this.router.navigate(["/marketplace"], {
+        queryParams: { eventNftAddress: this.event.eventNftAddress }
+      });
+    } else {
+      this.router.navigate(["/marketplace"]);
+    }
   }
 
   goBack(): void {

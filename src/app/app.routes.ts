@@ -33,6 +33,8 @@ import { ResetPasswordComponent } from "./components/reset-password/reset-passwo
 import { NotFoundComponent } from "./components/not-found/not-found.component";
 import { SwapComponent } from "./components/swap/swap.component";
 import { MyListingsComponent } from "./components/my-listings/my-listings.component";
+import { MarketplaceListComponent } from "./components/marketplace-list/marketplace-list.component";
+import { MarketplaceDetailComponent } from "./components/marketplace-detail/marketplace-detail.component";
 
 
 export const routes: Routes = [
@@ -197,6 +199,14 @@ export const routes: Routes = [
     path: "advertise-event/:id",
     component: AdvertiseEventComponent,
     canActivate: [authGuard],
+  },
+  {
+    path: "marketplace",
+    component: MarketplaceListComponent,
+  },
+  {
+    path: "marketplace/:listingId",
+    component: MarketplaceDetailComponent,
   },
   { path: "**", component: NotFoundComponent },
 ];

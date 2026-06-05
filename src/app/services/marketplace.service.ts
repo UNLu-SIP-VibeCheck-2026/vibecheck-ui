@@ -7,6 +7,8 @@ import {
   ListingResponse,
   ListingConfirmRequest,
   ListingCancelConfirmRequest,
+  PurchaseConfirmRequest,
+  PurchaseConfirmResponse,
 } from "../models/listing.model";
 
 @Injectable({
@@ -46,6 +48,13 @@ export class MarketplaceService {
   ): Observable<ListingResponse> {
     return this.http.post<ListingResponse>(
       `${this.apiUrl}/${onChainListingId}/cancel-confirm`,
+      req
+    );
+  }
+
+  confirmPurchase(req: PurchaseConfirmRequest): Observable<PurchaseConfirmResponse> {
+    return this.http.post<PurchaseConfirmResponse>(
+      `${environment.apiBaseUrl}/marketplace/purchases/confirm`,
       req
     );
   }

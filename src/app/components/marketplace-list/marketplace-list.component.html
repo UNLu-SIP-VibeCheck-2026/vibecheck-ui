@@ -1,0 +1,141 @@
+<div class="marketplace-list-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="display-medium text-gradient">Mercado Secundario</h1>
+    <p class="body-large muted">Comprá entradas originales verificadas de otros usuarios en Sepolia.</p>
+  </div>
+
+  <!-- Filters & Actions -->
+  <div class="filters-row">
+    <div class="filter-field">
+      <mat-form-field appearance="outline" class="event-select">
+        <mat-label>Filtrar por Evento</mat-label>
+        <mat-select [(value)]="selectedEventNftAddress" (selectionChange)="onFilterChange()">
+          <mat-option value="">Todos los eventos</mat-option>
+          <mat-option *ngFor="let evt of events()" [value]="evt.eventNftAddress">
+            {{ evt.title }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="loading-state">
+    <mat-spinner diameter="50" color="primary"></mat-spinner>
+    <p class="body-medium">Buscando publicaciones...</p>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="alert alert-danger" *ngIf="!isLoading() && errorMessage()">
+    <mat-icon class="alert-icon">warning</mat-icon>
+    <span class="alert-text">{{ errorMessage() }}</span>
+    <button (click)="loadEventsAndListings()" class="btn-cta" style="height: 36px; padding: 0 16px;">
+      <span class="btn-cta__label" style="font-size: 11px; padding:0;">REINTENTAR</span>
+    </button>
+  </div>
+
+  <!-- Main Grid -->
+  <ng-container *ngIf="!isLoading() && !errorMessage()">
+
+    <!-- Empty State -->
+    <div *ngIf="listings().length === 0" class="empty-state-card">
+      <div class="empty-icon-container">
+        <mat-icon class="empty-icon">storefront</mat-icon>
+      </div>
+      <h2 class="headline-medium">Sin publicaciones activas</h2>
+      <p class="body-medium muted">No hay entradas publicadas para el filtro seleccionado.</p>
+    </div>
+
+    <!-- Active Listings Grid -->
+    <div *ngIf="listings().length > 0" class="listings-grid">
+      <mat-card class="listing-card" *ngFor="let item of listings()">
+        
+        <!-- Ticket Image -->
+        <div class="listing-image-wrapper">
+          <img [src]="getEventImageUrl(item.eventNftAddress)" alt="Event Cover" class="listing-img" (click)="viewDetail(item)" />
+          <div class="price-badge">
+            <span class="price-value">{{ item.priceUsdc | currency:'USD':'symbol':'1.2-2' }}</span>
+            <span class="price-unit">USDC</span>
+          </div>
+        </div>
+
+        <!-- Details -->
+        <mat-card-content class="listing-info">
+          <div class="card-meta">
+            <span class="token-id">TOKEN #{{ item.tokenId }}</span>
+            <span class="tier-badge">{{ getTierName(item) }}</span>
+          </div>
+          
+          <h2 class="event-title" (click)="viewDetail(item)">
+            {{ getEventForListing(item.eventNftAddress)?.title || 'Evento de Sepolia' }}
+          </h2>
+          
+          <div class="details-row">
+            <mat-icon class="detail-icon">calendar_today</mat-icon>
+            <span class="detail-text">
+              {{ getEventForListing(item.eventNftAddress)?.startDate | date:'dd/MM/yyyy HH:mm' }} hs
+            </span>
+          </div>
+
+          <div class="details-row">
+            <mat-icon class="detail-icon">person_pin</mat-icon>
+            <span class="detail-text truncated-wallet">
+              Vendedor: <span class="wallet-text">{{ truncateAddress(item.sellerWallet) }}</span>
+            </span>
+          </div>
+
+          <!-- Divider -->
+          <div class="divider"></div>
+
+          <!-- Actions -->
+          <div class="listing-actions">
+            <button class="btn-detail-link" (click)="viewDetail(item)">
+              VER DETALLE
+            </button>
+            
+            <button class="btn-cta" (click)="openBuy(item)" [disabled]="walletAddress()?.toLowerCase() === item.sellerWallet.toLowerCase()">
+              <div class="cta-icon-wrapper">
+                <mat-icon>shopping_cart</mat-icon>
+              </div>
+              <span class="cta-text">COMPRAR</span>
+            </button>
+          </div>
+        </mat-card-content>
+
+      </mat-card>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="listings().length > 0 && totalPages > 1" class="pagination-container">
+      <button mat-flat-button class="pag-btn" [disabled]="currentPage === 0" (click)="goToPage(currentPage - 1)">
+        <mat-icon>navigate_before</mat-icon> Anterior
+      </button>
+      <span class="pagination-info">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+      <button mat-flat-button class="pag-btn" [disabled]="currentPage === totalPages - 1" (click)="goToPage(currentPage + 1)">
+        Siguiente <mat-icon>navigate_next</mat-icon>
+      </button>
+    </div>
+
+  </ng-container>
+
+  <!-- Lateral Panel Overlay for Buy Flow -->
+  <div class="buy-drawer-overlay" *ngIf="selectedListing" (click)="closeBuy()">
+    <div class="buy-drawer" (click)="$event.stopPropagation()">
+      <div class="drawer-header">
+        <h2 class="headline-medium text-gradient">Confirmar Compra</h2>
+        <button mat-icon-button (click)="closeBuy()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="drawer-content">
+        <app-buy-listing 
+          [listing]="selectedListing" 
+          (purchased)="onPurchased($event)">
+        </app-buy-listing>
+      </div>
+    </div>
+  </div>
+
+</div>

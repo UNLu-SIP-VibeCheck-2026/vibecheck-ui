@@ -1,0 +1,116 @@
+<div class="detail-container">
+
+  <!-- Back button -->
+  <button class="btn-back" (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon>
+    <span>VOLVER AL MARKETPLACE</span>
+  </button>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="loading-state">
+    <mat-spinner diameter="50" color="primary"></mat-spinner>
+    <p class="body-medium">Cargando publicación...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="alert alert-danger" *ngIf="!isLoading() && errorMessage()">
+    <mat-icon class="alert-icon">warning</mat-icon>
+    <span class="alert-text">{{ errorMessage() }}</span>
+    <button (click)="goBack()" class="btn-cta" style="height: 36px; padding: 0 16px;">
+      <span class="btn-cta__label" style="font-size: 11px; padding:0;">VOLVER</span>
+    </button>
+  </div>
+
+  <!-- Content Split Layout -->
+  <div class="split-layout" *ngIf="!isLoading() && !errorMessage() && listing()">
+    
+    <!-- Left Panel: Event & Ticket metadata -->
+    <div class="ticket-info-panel">
+      
+      <!-- Card Image -->
+      <div class="image-box">
+        <img [src]="eventImageUrl() || 'assets/event-placeholder.jpg'" alt="Event Artwork" class="event-img" />
+        <div class="token-overlay">
+          <span class="token-id-text">TOKEN #{{ listing()?.tokenId }}</span>
+          <span class="tier-badge">{{ tierName() }}</span>
+        </div>
+      </div>
+
+      <!-- Ticket Data Card -->
+      <div class="info-details">
+        <h1 class="event-title">{{ event()?.title || 'Evento de Sepolia' }}</h1>
+        <p class="event-desc">{{ event()?.description || 'Entrada resale verificada.' }}</p>
+        
+        <div class="metadata-grid">
+          
+          <div class="meta-item">
+            <mat-icon class="meta-icon">calendar_today</mat-icon>
+            <div class="meta-texts">
+              <span class="meta-label">Fecha y Hora</span>
+              <span class="meta-value">{{ formatDate(event()?.startDate) }}</span>
+            </div>
+          </div>
+
+          <div class="meta-item">
+            <mat-icon class="meta-icon">place</mat-icon>
+            <div class="meta-texts">
+              <span class="meta-label">Sede / Ubicación</span>
+              <span class="meta-value">{{ venueName() }}</span>
+              <span class="meta-subvalue">{{ venueAddress() }}</span>
+            </div>
+          </div>
+
+          <div class="meta-item">
+            <mat-icon class="meta-icon">person</mat-icon>
+            <div class="meta-texts">
+              <span class="meta-label">Vendedor</span>
+              <span class="meta-value wallet-font">{{ listing()?.sellerWallet }}</span>
+            </div>
+          </div>
+
+          <div class="meta-item">
+            <mat-icon class="meta-icon">vpn_key</mat-icon>
+            <div class="meta-texts">
+              <span class="meta-label">Dirección del Contrato NFT</span>
+              <span class="meta-value wallet-font">{{ listing()?.eventNftAddress }}</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Right Panel: Buy Flow -->
+    <div class="checkout-panel">
+      <div class="checkout-header">
+        <h2 class="headline-medium text-gradient">Checkout de Compra</h2>
+        <p class="body-medium muted">Completá los pasos en tu billetera para adquirir esta entrada.</p>
+      </div>
+
+      <div class="checkout-box-inner">
+        <!-- Prevent user buying their own ticket -->
+        <ng-container *ngIf="walletAddress()?.toLowerCase() === listing()?.sellerWallet?.toLowerCase(); else buyWidget">
+          <div class="own-ticket-alert">
+            <mat-icon>info_outline</mat-icon>
+            <h3 class="headline-small">Tu publicación</h3>
+            <p class="body-medium">No podés comprar tu propia entrada. Podés cancelarla desde la sección "Mis Reventas" en tu perfil.</p>
+            <button class="btn-cta" (click)="navigateToMyListings()">
+              <span class="cta-text">VER MIS REVENTAS</span>
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #buyWidget>
+          <app-buy-listing 
+            [listing]="listing()!" 
+            (purchased)="onPurchased($event)">
+          </app-buy-listing>
+        </ng-template>
+      </div>
+    </div>
+
+  </div>
+
+</div>
