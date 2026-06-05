@@ -198,6 +198,18 @@
         <mat-icon class="card-arrow">arrow_forward</mat-icon>
       </mat-card>
 
+      <!-- Mis Reventas -->
+      <mat-card class="action-card" *ngIf="isCliente" (click)="navigateTo('/my-listings')">
+        <div class="card-icon">
+          <mat-icon>sell</mat-icon>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title text-center">Mis Reventas</h3>
+          <p class="card-description">Administrá tus tickets publicados en el marketplace</p>
+        </div>
+        <mat-icon class="card-arrow">arrow_forward</mat-icon>
+      </mat-card>
+
       <!-- Mi Billetera -->
       <mat-card class="action-card" *ngIf="!isCeo && !isAdmin" (click)="navigateTo('/wallet')">
         <div class="card-icon">

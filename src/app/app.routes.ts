@@ -32,6 +32,8 @@ import { guestGuard } from "./guards/guest.guard";
 import { ResetPasswordComponent } from "./components/reset-password/reset-password.component";
 import { NotFoundComponent } from "./components/not-found/not-found.component";
 import { SwapComponent } from "./components/swap/swap.component";
+import { MyListingsComponent } from "./components/my-listings/my-listings.component";
+
 
 export const routes: Routes = [
   {
@@ -172,6 +174,11 @@ export const routes: Routes = [
   {
     path: "resell-ticket/:id",
     component: ResellTicketComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "my-listings",
+    component: MyListingsComponent,
     canActivate: [authGuard],
   },
   {

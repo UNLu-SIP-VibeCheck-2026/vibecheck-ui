@@ -1,0 +1,101 @@
+<div class="my-listings-container">
+  
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="display-medium">Mis Reventas</h1>
+    <p class="body-large muted">Administrá tus publicaciones activas en el mercado secundario.</p>
+  </div>
+
+  <!-- Wallet Connection Check -->
+  <div *ngIf="!userWallet()" class="connection-prompt-card">
+    <mat-icon class="prompt-icon">account_balance_wallet</mat-icon>
+    <h2 class="headline-medium">Conectá tu Billetera</h2>
+    <p class="body-medium">Necesitás conectar MetaMask para ver y administrar tus publicaciones.</p>
+    <button (click)="connectWallet()" class="btn-cta">
+      <div class="cta-icon-wrapper">
+        <mat-icon>power</mat-icon>
+      </div>
+      <span class="cta-text">CONECTAR WALLET</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="userWallet() && isLoading()" class="loading-state">
+    <mat-spinner diameter="50" color="primary"></mat-spinner>
+    <p class="body-medium">Cargando tus publicaciones...</p>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="alert alert-danger" *ngIf="userWallet() && !isLoading() && errorMessage()">
+    <mat-icon class="alert-icon">warning</mat-icon>
+    <span class="alert-text">{{ errorMessage() }}</span>
+    <button mat-flat-button color="warn" (click)="loadData()">Reintentar</button>
+  </div>
+
+  <!-- Main content when wallet is connected and data loaded -->
+  <ng-container *ngIf="userWallet() && !isLoading() && !errorMessage()">
+    
+    <!-- Empty State -->
+    <div *ngIf="listings().length === 0" class="empty-state-card">
+      <div class="empty-icon-container">
+        <mat-icon class="empty-icon">sell</mat-icon>
+      </div>
+      <h2 class="headline-medium">Sin publicaciones activas</h2>
+      <p class="body-medium muted">No tenés ninguna entrada publicada para reventa en este momento.</p>
+      <button (click)="goToTickets()" class="btn-cta">
+        <div class="cta-icon-wrapper">
+          <mat-icon>confirmation_number</mat-icon>
+        </div>
+        <span class="cta-text">VER MIS ENTRADAS</span>
+      </button>
+    </div>
+
+    <!-- Active Listings Grid -->
+    <div *ngIf="listings().length > 0" class="listings-grid">
+      <mat-card class="listing-card" *ngFor="let item of listings()">
+        
+        <!-- Ticket Image -->
+        <div class="listing-image-wrapper">
+          <img [src]="getEventImageUrl(item.eventNftAddress)" alt="Event Cover" class="listing-img" />
+          <div class="price-badge">
+            <span class="price-value">{{ item.priceUsdc | currency:'USD':'symbol':'1.2-2' }}</span>
+            <span class="price-unit">USDC</span>
+          </div>
+        </div>
+
+        <!-- Details -->
+        <mat-card-content class="listing-info">
+          <span class="token-id">TOKEN #{{ item.tokenId }}</span>
+          
+          <h2 class="event-title">
+            {{ getEventForListing(item.eventNftAddress)?.title || 'Evento de Sepolia' }}
+          </h2>
+          
+          <div class="details-row">
+            <mat-icon class="detail-icon">calendar_today</mat-icon>
+            <span class="detail-text">
+              {{ getEventForListing(item.eventNftAddress)?.startDate | date:'dd/MM/yyyy HH:mm' }} hs
+            </span>
+          </div>
+
+          <div class="details-row">
+            <mat-icon class="detail-icon">history</mat-icon>
+            <span class="detail-text muted">
+              Publicado el {{ item.listedAt | date:'dd/MM/yyyy HH:mm' }} hs
+            </span>
+          </div>
+
+          <!-- Divider -->
+          <div class="divider"></div>
+
+          <!-- Actions -->
+          <div class="listing-actions">
+            <app-cancel-listing [listing]="item" (cancelled)="onListingCancelled()"></app-cancel-listing>
+          </div>
+        </mat-card-content>
+
+      </mat-card>
+    </div>
+
+  </ng-container>
+</div>
