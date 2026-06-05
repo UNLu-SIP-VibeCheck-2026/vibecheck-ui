@@ -1,26 +1,23 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSliderModule } from '@angular/material/slider';
-import { ActivatedRoute, Router } from '@angular/router';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
+import { TicketService } from '../../services/ticket.service';
+import { TicketResponse } from '../../models/ticket.model';
+import { CreateListingComponent } from '../create-listing/create-listing.component';
 
 @Component({
   selector: 'app-resell-ticket',
   standalone: true,
   imports: [
     CommonModule, 
-    FormsModule, 
-    MatCardModule, 
     MatButtonModule, 
-    MatIconModule, 
-    MatFormFieldModule, 
-    MatInputModule,
-    MatSliderModule
+    MatIconModule,
+    MatProgressSpinnerModule,
+    CreateListingComponent
   ],
   templateUrl: './resell-ticket.component.html',
   styleUrl: './resell-ticket.component.scss'
@@ -28,37 +25,42 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class ResellTicketComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private ticketService = inject(TicketService);
 
-  ticketId: string | null = null;
-  resalePrice = 5000;
-  maxResalePrice = 12000;
-
-  selectedTier = 'none';
-  tiers = [
-    { id: 'none', name: 'Sin Publicidad', fee: 5, icon: 'block', description: 'Tu entrada aparecerá al final de la lista.' },
-    { id: 'cool', name: 'Cool-Vibe', fee: 10, icon: 'waves', description: 'Posicionamiento básico y resaltado suave en el marketplace.' },
-    { id: 'super', name: 'Super-Vibe', fee: 15, icon: 'vibration', description: 'Aparece en las primeras posiciones y notificaciones push.' },
-    { id: 'mega', name: 'MEGA-Vibe', fee: 20, icon: 'graphic_eq', description: 'Destacado premium en home, redes sociales y carrusel principal.' }
-  ];
+  ticket: TicketResponse | null = null;
+  isLoading = true;
+  errorMessage = '';
 
   ngOnInit(): void {
-    this.ticketId = this.route.snapshot.paramMap.get('id');
-  }
-
-  get currentFee(): number {
-    const tier = this.tiers.find(t => t.id === this.selectedTier);
-    return tier ? tier.fee : 0;
-  }
-
-  get finalEarnings(): number {
-    return this.resalePrice * (1 - this.currentFee / 100);
-  }
-
-  publishResale(): void {
-    if (confirm(`¿Estás seguro de publicar esta reventa por $${this.resalePrice}? Una vez publicada, no podrás deshacer esta acción sin cancelar el proceso.`)) {
-      alert('Entrada publicada en el Marketplace!');
-      this.router.navigate(['/']);
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.loadTicket(Number(idParam));
+    } else {
+      this.errorMessage = 'ID de entrada no provisto.';
+      this.isLoading = false;
     }
+  }
+
+  loadTicket(id: number): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    this.ticketService.getTicketById(id).subscribe({
+      next: (res) => {
+        this.ticket = res;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading ticket details', err);
+        this.errorMessage = 'No se pudo cargar la información de la entrada.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onTicketListed(): void {
+    // Navigate to user listings page
+    this.router.navigate(['/my-listings']);
   }
 
   goBack(): void {

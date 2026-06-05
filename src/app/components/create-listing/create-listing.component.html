@@ -1,0 +1,113 @@
+<div class="create-listing-container">
+  <!-- Loading Event State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p>Cargando información del contrato...</p>
+  </div>
+
+  <div *ngIf="!isLoading && eventDetails" class="listing-content">
+    <mat-card class="form-card">
+      <mat-card-header>
+        <div class="header-icon">
+          <mat-icon>sell</mat-icon>
+        </div>
+        <mat-card-title class="headline-large">Revender Entrada</mat-card-title>
+        <mat-card-subtitle class="body-medium">
+          Publicá tu ticket en el mercado secundario de VibeCheck.
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="form-body">
+        <div class="ticket-reference-card">
+          <div class="ref-field">
+            <span class="label">Entrada:</span>
+            <span class="value">{{ ticket.ticketType.name }}</span>
+          </div>
+          <div class="ref-field">
+            <span class="label">Token ID:</span>
+            <span class="value">#{{ ticket.tokenId }}</span>
+          </div>
+          <div class="ref-field">
+            <span class="label">Precio Original:</span>
+            <span class="value">{{ ticket.ticketType.priceUsdc | currency:'USD':'symbol':'1.2-2' }} USDC</span>
+          </div>
+          <div class="ref-field warning-highlight">
+            <span class="label">Precio Máx Permitido (Cap {{ capPercentage }}%):</span>
+            <span class="value">{{ maxPrice | currency:'USD':'symbol':'1.2-2' }} USDC</span>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="listingForm" (ngSubmit)="onSubmit()" *ngIf="txStep === 'idle'">
+          <div class="input-group">
+            <label for="priceUsdc" class="input-label">Precio de Reventa (USDC)</label>
+            <div class="price-input-wrapper">
+              <input
+                type="number"
+                id="priceUsdc"
+                formControlName="priceUsdc"
+                class="price-input"
+                placeholder="0.00"
+                step="0.01"
+                min="0.01"
+                [max]="maxPrice"
+              />
+              <span class="price-suffix">USDC</span>
+            </div>
+            <div *ngIf="isPriceInvalid" class="error-msg">
+              <span *ngIf="listingForm.get('priceUsdc')?.errors?.['required']">El precio es requerido.</span>
+              <span *ngIf="listingForm.get('priceUsdc')?.errors?.['min']">El precio debe ser mayor a 0.</span>
+              <span *ngIf="listingForm.get('priceUsdc')?.errors?.['max']">El precio no puede exceder el cap del {{ capPercentage }}% ({{ maxPrice | currency:'USD':'symbol':'1.2-2' }} USDC).</span>
+            </div>
+          </div>
+
+          <!-- Error Message Alert -->
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            <mat-icon class="alert-icon">warning</mat-icon>
+            <span class="alert-text">{{ errorMessage }}</span>
+          </div>
+
+          <!-- Submit Button (CTA Principal, space mono) -->
+          <button type="submit" class="btn-cta" [disabled]="listingForm.invalid">
+            <div class="cta-icon-wrapper">
+              <mat-icon>check</mat-icon>
+            </div>
+            <span class="cta-text">LISTAR PARA REVENTA</span>
+          </button>
+        </form>
+
+        <!-- Transaction tracker states -->
+        <div class="transaction-states" *ngIf="txStep !== 'idle'">
+          <h3 class="step-title">
+            <span *ngIf="txStep === 'approving'">Paso 1/2: Aprobando Marketplace</span>
+            <span *ngIf="txStep === 'listing'">Paso 2/2: Creando Publicación on-chain</span>
+            <span *ngIf="txStep === 'confirming'">Sincronizando con base de datos</span>
+            <span *ngIf="txStep === 'success'">¡Publicación Exitosa!</span>
+          </h3>
+
+          <app-tx-status [txState]="currentTxState" *ngIf="currentTxState"></app-tx-status>
+
+          <div class="backend-spinner" *ngIf="txStep === 'confirming'">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="status-desc">Confirmando la operación en el servidor de VibeCheck...</p>
+          </div>
+
+          <div class="success-actions" *ngIf="txStep === 'success'">
+            <p class="status-desc">Tu entrada ya está disponible en el marketplace para otros compradores.</p>
+          </div>
+
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            <mat-icon class="alert-icon">warning</mat-icon>
+            <span class="alert-text">{{ errorMessage }}</span>
+            <button mat-flat-button color="warn" (click)="txStep = 'idle'; errorMessage = ''" class="btn-retry">
+              Reintentar
+            </button>
+          </div>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,38 @@
+<div class="cancel-listing-container">
+  <!-- Action trigger button -->
+  <button
+    mat-flat-button
+    color="warn"
+    *ngIf="txStep === 'idle'"
+    (click)="confirmCancel()"
+    class="btn-cancel-listing"
+  >
+    <mat-icon>cancel</mat-icon>
+    Quitar de Reventa
+  </button>
+
+  <!-- Status / Transaction Tracking -->
+  <div class="cancel-progress-panel" *ngIf="txStep !== 'idle'">
+    <h4 class="step-title">
+      <span *ngIf="txStep === 'cancelling'">Enviando transacción de cancelación...</span>
+      <span *ngIf="txStep === 'confirming'">Registrando en el servidor...</span>
+      <span *ngIf="txStep === 'success'">¡Retirado con éxito!</span>
+    </h4>
+
+    <app-tx-status [txState]="currentTxState" *ngIf="currentTxState"></app-tx-status>
+
+    <div class="backend-spinner" *ngIf="txStep === 'confirming'">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="status-desc">Actualizando estado en el servidor de VibeCheck...</p>
+    </div>
+
+    <!-- Error block -->
+    <div class="alert alert-danger" *ngIf="errorMessage">
+      <mat-icon class="alert-icon">warning</mat-icon>
+      <span class="alert-text">{{ errorMessage }}</span>
+      <button mat-flat-button color="warn" (click)="txStep = 'idle'; errorMessage = ''" class="btn-retry">
+        Reintentar
+      </button>
+    </div>
+  </div>
+</div>

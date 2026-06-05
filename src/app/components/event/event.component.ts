@@ -212,7 +212,7 @@ export class EventComponent implements OnInit {
   // -------------------------------------------------------------------------
 
   buyTickets(): void {
-    this.router.navigate(["/select-tickets", this.event!.id]);
+    this.router.navigate(["/event", this.event!.id, "purchase-options"]);
   }
 
   shareEvent(): void {

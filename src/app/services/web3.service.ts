@@ -12,6 +12,9 @@ export class Web3Service {
 
   private connectedAddressSubject = new BehaviorSubject<string | null>(null);
   connectedAddress$ = this.connectedAddressSubject.asObservable();
+  walletAddress$ = this.connectedAddressSubject; // Expose BehaviorSubject as required by the prompt
+
+  chainId$ = new BehaviorSubject<number | null>(null); // Expose chainId BehaviorSubject
 
   private ethBalanceSubject = new BehaviorSubject<string>("0");
   ethBalance$ = this.ethBalanceSubject.asObservable();
@@ -27,6 +30,23 @@ export class Web3Service {
 
   private isSepoliaSubject = new BehaviorSubject<boolean>(false);
   isSepolia$ = this.isSepoliaSubject.asObservable();
+
+  getSigner(): Promise<ethers.Signer> {
+    if (!this.provider) {
+      if (!this.ethereum) throw new Error("MetaMask no está instalado.");
+      this.provider = new ethers.BrowserProvider(this.ethereum);
+    }
+    return this.provider.getSigner();
+  }
+
+  getProvider(): ethers.BrowserProvider {
+    if (!this.provider) {
+      if (!this.ethereum) throw new Error("MetaMask no está instalado.");
+      this.provider = new ethers.BrowserProvider(this.ethereum);
+    }
+    return this.provider;
+  }
+
 
   // Smart Contract Addresses
   readonly VBK_ADDRESS = "0xF84c05F1278A60601989192077f40bAb340A1947";
@@ -109,9 +129,11 @@ export class Web3Service {
     try {
       const chainId = await this.ethereum.request({ method: "eth_chainId" });
       const isSepolia = chainId === this.SEPOLIA_CHAIN_ID;
+      const parsedChainId = parseInt(chainId, 16);
 
       this.zone.run(() => {
         this.isSepoliaSubject.next(isSepolia);
+        this.chainId$.next(parsedChainId);
       });
 
       if (!isSepolia) {
@@ -466,6 +488,7 @@ export class Web3Service {
       this.ethBalanceSubject.next("0");
       this.vbkBalanceSubject.next("0");
       this.usdcBalanceSubject.next("0");
+      this.chainId$.next(null);
     } else {
       const address = accounts[0];
       this.connectedAddressSubject.next(address);
