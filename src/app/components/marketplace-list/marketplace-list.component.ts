@@ -18,7 +18,7 @@ import { EventService } from "../../services/event.service";
 import { TicketTypeService } from "../../services/ticket-type.service";
 import { ContractsService } from "../../services/contracts.service";
 import { Web3Service } from "../../services/web3.service";
-import { BuyListingComponent } from "../buy-listing/buy-listing.component";
+
 
 @Component({
   selector: "app-marketplace-list",
@@ -34,7 +34,7 @@ import { BuyListingComponent } from "../buy-listing/buy-listing.component";
     MatSelectModule,
     MatFormFieldModule,
     MatSnackBarModule,
-    BuyListingComponent
+
   ],
   templateUrl: "./marketplace-list.component.html",
   styleUrl: "./marketplace-list.component.scss"
@@ -67,8 +67,6 @@ export class MarketplaceListComponent implements OnInit {
   isLoading = signal<boolean>(true);
   errorMessage = signal<string>("");
   
-  // Buyer selection
-  selectedListing: ListingResponse | null = null;
   walletAddress = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -223,19 +221,7 @@ export class MarketplaceListComponent implements OnInit {
   }
 
   openBuy(listing: ListingResponse): void {
-    this.selectedListing = listing;
-  }
-
-  closeBuy(): void {
-    this.selectedListing = null;
-  }
-
-  onPurchased(event: any): void {
-    this.selectedListing = null;
-    this.snackBar.open("¡Compra realizada con éxito!", "Cerrar", {
-      duration: 5000
-    });
-    this.router.navigate(["/my-tickets"]);
+    this.router.navigate(["/marketplace", listing.onChainListingId]);
   }
 
   viewDetail(listing: ListingResponse): void {

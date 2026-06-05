@@ -6,8 +6,10 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { HttpClient } from "@angular/common/http";
+import { ethers } from "ethers";
 
-import { ListingResponse } from "../../models/listing.model";
+import { ListingResponse, PurchaseConfirmResponse } from "../../models/listing.model";
 import { EventResponse } from "../../models/event.model";
 import { TicketTypeResponse } from "../../models/ticket-type.model";
 import { MarketplaceService } from "../../services/marketplace.service";
@@ -16,7 +18,9 @@ import { VenueService } from "../../services/venue.service";
 import { TicketTypeService } from "../../services/ticket-type.service";
 import { ContractsService } from "../../services/contracts.service";
 import { Web3Service } from "../../services/web3.service";
-import { BuyListingComponent } from "../buy-listing/buy-listing.component";
+import { TokenApprovalService } from "../../services/token-approval.service";
+import { TransactionService } from "../../services/transaction.service";
+import { environment } from "../../../environments/environment";
 
 @Component({
   selector: "app-marketplace-detail",
@@ -27,62 +31,198 @@ import { BuyListingComponent } from "../buy-listing/buy-listing.component";
     MatCardModule,
     MatIconModule,
     MatButtonModule,
-    MatProgressSpinnerModule,
-    BuyListingComponent
+    MatProgressSpinnerModule
   ],
   templateUrl: "./marketplace-detail.component.html",
   styleUrl: "./marketplace-detail.component.scss"
 })
 export class MarketplaceDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  router = inject(Router);
   private sanitizer = inject(DomSanitizer);
+  private http = inject(HttpClient);
   private marketplaceService = inject(MarketplaceService);
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
   private ticketTypeService = inject(TicketTypeService);
   private contractsService = inject(ContractsService);
   private web3Service = inject(Web3Service);
+  private tokenApprovalService = inject(TokenApprovalService);
+  private transactionService = inject(TransactionService);
 
-  // States
+  // Core wizard steps & states
+  currentStep = signal<number>(1);
+  isLoading = signal<boolean>(false);
+  errorMessage = signal<string>("");
+  connectedAddress = signal<string | null>(null);
+  isSepolia = signal<boolean>(false);
+  siweMessage = signal<string>("");
+
+  // Listing details & quotes
   listing = signal<ListingResponse | null>(null);
   event = signal<EventResponse | null>(null);
   venueName = signal<string>("Cargando...");
   venueAddress = signal<string>("Cargando...");
   tierName = signal<string>("Cargando...");
   eventImageUrl = signal<SafeUrl | null>(null);
-  walletAddress = signal<string | null>(null);
 
-  isLoading = signal<boolean>(true);
-  errorMessage = signal<string>("");
+  selectedToken = signal<"USDC" | "VBK">("USDC");
+  isVbkAvailable = signal<boolean>(false);
+  vbkPriceEstimate = signal<string>("");
+  vbkQuoteBigInt = signal<bigint>(0n);
+
+  // Success ticket receipt
+  purchaseTxHash = signal<string>("");
+  successTicket = signal<PurchaseConfirmResponse | null>(null);
 
   ngOnInit(): void {
-    this.web3Service.connectedAddress$.subscribe((addr) => {
-      this.walletAddress.set(addr);
-    });
+    window.scrollTo(0, 0);
 
     const listingId = this.route.snapshot.paramMap.get("listingId");
     if (listingId) {
       this.loadListingDetails(Number(listingId));
     } else {
       this.errorMessage.set("ID de publicación no proporcionado.");
+    }
+
+    this.web3Service.connectedAddress$.subscribe((addr) => {
+      this.connectedAddress.set(addr);
+      this.checkConnectionState();
+    });
+
+    this.web3Service.isSepolia$.subscribe((sepolia) => {
+      this.isSepolia.set(sepolia);
+      this.checkConnectionState();
+    });
+  }
+
+  checkConnectionState(): void {
+    const address = this.connectedAddress();
+    const sepolia = this.isSepolia();
+
+    if (!address || !sepolia) {
+      this.currentStep.set(1);
+      return;
+    }
+
+    if (this.currentStep() === 1) {
+      this.currentStep.set(2);
+      this.startSiweFlow();
+    }
+  }
+
+  async connectWallet(): Promise<void> {
+    this.isLoading.set(true);
+    this.errorMessage.set("");
+    try {
+      await this.web3Service.connectWallet();
+      const isSepolia = await this.web3Service.checkNetwork();
+      if (!isSepolia) {
+        this.errorMessage.set("Cambiá a la red Sepolia");
+      }
+    } catch (err: any) {
+      console.error("Error al conectar wallet:", err);
+      this.errorMessage.set(err.message || "Error al conectar MetaMask.");
+    } finally {
       this.isLoading.set(false);
     }
   }
 
-  loadListingDetails(listingId: number): void {
+  async checkNetwork(): Promise<void> {
     this.isLoading.set(true);
+    this.errorMessage.set("");
+    try {
+      const isSepolia = await this.web3Service.checkNetwork();
+      if (!isSepolia) {
+        this.errorMessage.set("Cambiá a la red Sepolia");
+      }
+    } catch (err: any) {
+      console.error("Error al verificar red:", err);
+      this.errorMessage.set("No se pudo verificar la red. Asegurate de estar en Sepolia.");
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  startSiweFlow(): void {
+    const address = this.connectedAddress();
+    if (!address) return;
+
+    this.isLoading.set(true);
+    this.errorMessage.set("");
+
+    this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/challenge`, { walletAddress: address }).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        if (res && res.walletAddress && res.walletAddress.toLowerCase() === address.toLowerCase()) {
+          this.currentStep.set(3);
+          return;
+        }
+
+        if (res && res.message) {
+          this.siweMessage.set(res.message);
+        } else {
+          this.errorMessage.set("No se pudo obtener el mensaje de firma.");
+        }
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        if (err.status === 409) {
+          this.errorMessage.set("La billetera ya está vinculada a otro usuario.");
+        } else {
+          this.errorMessage.set(err.error?.message || "Error al solicitar el desafío SIWE.");
+        }
+      }
+    });
+  }
+
+  async signAndVerify(): Promise<void> {
+    const address = this.connectedAddress();
+    const message = this.siweMessage();
+    if (!address || !message) return;
+
+    this.isLoading.set(true);
+    this.errorMessage.set("");
+
+    try {
+      const signature = await this.web3Service.signMessage(message);
+      this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/verify`, {
+        walletAddress: address,
+        message,
+        signature
+      }).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.currentStep.set(3);
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          if (err.status === 409) {
+            this.errorMessage.set("La billetera ya está vinculada a otro usuario.");
+          } else {
+            this.errorMessage.set(err.error?.message || "Error al verificar la firma.");
+          }
+        }
+      });
+    } catch (e: any) {
+      this.isLoading.set(false);
+      console.error("Error al firmar:", e);
+      this.errorMessage.set("Firma cancelada o rechazada por el usuario.");
+    }
+  }
+
+  loadListingDetails(listingId: number): void {
     this.errorMessage.set("");
 
     this.marketplaceService.getListingById(listingId).subscribe({
       next: (l) => {
         this.listing.set(l);
         this.loadEnrichmentData(l);
+        this.fetchVbkQuote(l);
       },
       error: (err) => {
         console.error("Error fetching listing details", err);
         this.errorMessage.set("No se pudieron cargar los detalles de la publicación.");
-        this.isLoading.set(false);
       }
     });
   }
@@ -127,8 +267,6 @@ export class MarketplaceDetailComponent implements OnInit {
           // 4. Load ticket types to resolve on-chain tier
           this.resolveOnChainTier(matchedEvent, l);
         } else {
-          // Event not found in DB
-          this.isLoading.set(false);
           this.venueName.set("Desconocida");
           this.venueAddress.set("No disponible");
           this.tierName.set("Entrada General");
@@ -136,7 +274,6 @@ export class MarketplaceDetailComponent implements OnInit {
       },
       error: (err) => {
         console.error("Error searching event list", err);
-        this.isLoading.set(false);
       }
     });
   }
@@ -171,8 +308,175 @@ export class MarketplaceDetailComponent implements OnInit {
     } catch (err) {
       console.error("Error resolving tier on-chain", err);
       this.tierName.set("Entrada");
-    } finally {
-      this.isLoading.set(false);
+    }
+  }
+
+  async fetchVbkQuote(l: ListingResponse): Promise<void> {
+    this.isVbkAvailable.set(false);
+    this.vbkPriceEstimate.set("");
+    this.vbkQuoteBigInt.set(0n);
+
+    try {
+      const quote = await this.web3Service.quoteUsdcToVbk(l.priceUsdc);
+      if (quote > 0n) {
+        this.vbkQuoteBigInt.set(quote);
+        this.vbkPriceEstimate.set(ethers.formatUnits(quote, 18));
+        this.isVbkAvailable.set(true);
+      }
+    } catch (err) {
+      console.warn("Oracle VBK is not available or pool has no liquidity. VBK purchases disabled.", err);
+    }
+  }
+
+  async executePurchase(): Promise<void> {
+    this.errorMessage.set("");
+    const lst = this.listing();
+    if (!lst) return;
+
+    // 0. Verify connected wallet and network
+    const isSepolia = await this.web3Service.checkNetwork();
+    if (!isSepolia) {
+      this.errorMessage.set("Cambiá la red a Sepolia en MetaMask");
+      return;
+    }
+
+    const wallet = this.connectedAddress();
+    if (!wallet) {
+      this.errorMessage.set("Por favor conectá tu billetera para comprar.");
+      return;
+    }
+
+    this.currentStep.set(4);
+    this.isLoading.set(true);
+
+    try {
+      const signer = await this.web3Service.getSigner();
+      const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
+
+      if (this.selectedToken() === "USDC") {
+        const usdcAddress = this.web3Service.USDC_ADDRESS;
+        const amountUsdc = BigInt(Math.round(lst.priceUsdc * 1_000_000));
+
+        // 1. Approve USDC if necessary
+        const usdcContract = this.contractsService.getUsdcToken(signer);
+        const currentAllowance = await usdcContract["allowance"](wallet, marketplaceAddress);
+
+        if (currentAllowance < amountUsdc) {
+          await this.tokenApprovalService.ensureAllowance(usdcAddress, marketplaceAddress, amountUsdc);
+        }
+
+        // 2. Call buyWithUSDC
+        const marketplace = this.contractsService.getMarketplace(signer);
+        const buyTx = await marketplace["buyWithUSDC"](lst.onChainListingId);
+
+        this.transactionService.track(buyTx).subscribe({
+          next: (state) => {
+            if (state.status === "confirmed") {
+              const txHash = buyTx.hash || buyTx.transactionHash;
+              this.purchaseTxHash.set(txHash);
+              this.confirmPurchaseOnBackend(txHash);
+            } else if (state.status === "failed") {
+              this.currentStep.set(3);
+              this.errorMessage.set("La transacción de compra falló.");
+              this.isLoading.set(false);
+            }
+          },
+          error: (err) => {
+            this.currentStep.set(3);
+            this.handleTxError(err);
+          }
+        });
+
+      } else {
+        // VBK buy flow
+        if (!this.isVbkAvailable() || this.vbkQuoteBigInt() === 0n) {
+          this.errorMessage.set("La compra con VBK no está disponible.");
+          this.currentStep.set(3);
+          this.isLoading.set(false);
+          return;
+        }
+
+        const vbkAddress = this.web3Service.VBK_ADDRESS;
+        // 5% slippage on VBK amount
+        const amountVbk = (this.vbkQuoteBigInt() * 105n) / 100n;
+
+        // 1. Approve VBK if necessary
+        const vbkContract = this.contractsService.getVbkToken(signer);
+        const currentAllowance = await vbkContract["allowance"](wallet, marketplaceAddress);
+
+        if (currentAllowance < amountVbk) {
+          await this.tokenApprovalService.ensureAllowance(vbkAddress, marketplaceAddress, amountVbk);
+        }
+
+        // 2. Call buyWithVBK
+        const marketplace = this.contractsService.getMarketplace(signer);
+        const buyTx = await marketplace["buyWithVBK"](lst.onChainListingId);
+
+        this.transactionService.track(buyTx).subscribe({
+          next: (state) => {
+            if (state.status === "confirmed") {
+              const txHash = buyTx.hash || buyTx.transactionHash;
+              this.purchaseTxHash.set(txHash);
+              this.confirmPurchaseOnBackend(txHash);
+            } else if (state.status === "failed") {
+              this.currentStep.set(3);
+              this.errorMessage.set("La transacción de compra con VBK falló.");
+              this.isLoading.set(false);
+            }
+          },
+          error: (err) => {
+            this.currentStep.set(3);
+            this.handleTxError(err);
+          }
+        });
+      }
+    } catch (err: any) {
+      this.currentStep.set(3);
+      this.handleTxError(err);
+    }
+  }
+
+  confirmPurchaseOnBackend(txHash: string): void {
+    this.currentStep.set(5);
+    this.isLoading.set(true);
+
+    const lst = this.listing();
+    if (!lst) return;
+
+    this.marketplaceService.confirmPurchase({
+      onChainListingId: lst.onChainListingId,
+      txHash: txHash
+    }).subscribe({
+      next: (response) => {
+        this.successTicket.set(response);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error("Backend purchase confirm failed", err);
+        this.isLoading.set(false);
+        if (err.status === 400) {
+          this.errorMessage.set("Esta entrada ya no está disponible.");
+        } else {
+          this.errorMessage.set(`La compra se procesó on-chain pero falló la confirmación del servidor. Contactá a soporte con el Hash: ${txHash}`);
+        }
+      }
+    });
+  }
+
+  handleTxError(err: any): void {
+    this.isLoading.set(false);
+    console.error("Purchase error", err);
+
+    if (err.code === "ACTION_REJECTED" || err.code === 4001 || (err.message && err.message.toLowerCase().includes("user rejected"))) {
+      this.errorMessage.set("Transacción cancelada por el usuario.");
+    } else if (
+      err.code === "INSUFFICIENT_FUNDS" ||
+      (err.message && err.message.toLowerCase().includes("insufficient funds")) ||
+      (err.message && err.message.toLowerCase().includes("transfer amount exceeds balance"))
+    ) {
+      this.errorMessage.set("Fondos insuficientes para pagar el gas o comprar en Sepolia.");
+    } else {
+      this.errorMessage.set(err.reason || err.message || "Ocurrió un error inesperado al procesar la compra.");
     }
   }
 
@@ -204,9 +508,5 @@ export class MarketplaceDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(["/marketplace"]);
-  }
-
-  onPurchased(event: any): void {
-    this.router.navigate(["/my-tickets"]);
   }
 }

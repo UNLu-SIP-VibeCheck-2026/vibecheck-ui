@@ -120,22 +120,4 @@
 
   </ng-container>
 
-  <!-- Lateral Panel Overlay for Buy Flow -->
-  <div class="buy-drawer-overlay" *ngIf="selectedListing" (click)="closeBuy()">
-    <div class="buy-drawer" (click)="$event.stopPropagation()">
-      <div class="drawer-header">
-        <h2 class="headline-medium text-gradient">Confirmar Compra</h2>
-        <button mat-icon-button (click)="closeBuy()" class="close-btn">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-      <div class="drawer-content">
-        <app-buy-listing 
-          [listing]="selectedListing" 
-          (purchased)="onPurchased($event)">
-        </app-buy-listing>
-      </div>
-    </div>
-  </div>
-
 </div>
