@@ -142,6 +142,13 @@ export const routes: Routes = [
     component: EventComponent,
   },
   {
+    path: "event/:id/purchase-options",
+    loadComponent: () =>
+      import(
+        "./components/purchase-options/purchase-options.component"
+      ).then((m) => m.PurchaseOptionsComponent),
+  },
+  {
     path: "select-tickets/:id",
     component: TicketPurchaseComponent,
     canActivate: [authGuard],
