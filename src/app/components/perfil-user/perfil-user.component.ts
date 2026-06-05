@@ -6,11 +6,12 @@ import { UserPublicResponse } from '../../models/user-public-response.model';
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { AvatarComponent } from '../shared/avatar/avatar.component';
 
 @Component({
   selector: 'app-perfil-user',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, AvatarComponent],
   templateUrl: './perfil-user.component.html',
   styleUrl: './perfil-user.component.scss'
 })
@@ -60,5 +61,20 @@ export class PerfilUserComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/dashboard']);
+  }
+
+  onProfilePhotoChanged(): void {
+    const username = this.route.snapshot.paramMap.get('username');
+    if (!username) return;
+
+    this.usersService.getPublicUser(username).subscribe({
+      next: (data) => {
+        this.profile.set(data);
+      },
+      error: () => {
+        this.hasError.set(true);
+        this.isLoading.set(false);
+      }
+    });
   }
 }

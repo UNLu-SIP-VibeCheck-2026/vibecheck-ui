@@ -9,7 +9,17 @@
   <div class="nav-actions">
     <ng-container *ngIf="user$ | async as user; else loggedOut">
       <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
-        <mat-icon>account_circle</mat-icon>
+        <app-avatar
+          *ngIf="fullUserProfile"
+          [username]="fullUserProfile.username"
+          [name]="fullUserProfile.name"
+          [lastName]="fullUserProfile.lastName"
+          [hasImage]="fullUserProfile.hasImage || false"
+          [clickable]="true"
+          [size]="'small'"
+          (photoChanged)="onProfilePhotoChanged()"
+        ></app-avatar>
+        <mat-icon *ngIf="!fullUserProfile">account_circle</mat-icon>
         {{ user.username }}
         <mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
       </button>

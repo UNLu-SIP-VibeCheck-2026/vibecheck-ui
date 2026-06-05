@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,15 +10,17 @@ import { AuthService } from '../../services/auth.service';
 import { UsersService } from '../../services/users.service';
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
+import { UserPublicResponse } from '../../models/user-public-response.model';
+import { AvatarComponent } from '../shared/avatar/avatar.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule, AvatarComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   authService = inject(AuthService);
   usersService = inject(UsersService);
   private dialog = inject(MatDialog);
@@ -27,6 +29,29 @@ export class DashboardComponent {
   private route = inject(ActivatedRoute);
 
   user$ = this.authService.currentUser$;
+  fullUserProfile: UserPublicResponse | null = null;
+
+  ngOnInit(): void {
+    this.loadFullUserProfile();
+  }
+
+  private loadFullUserProfile(): void {
+    const user = this.authService.getCurrentUserValue();
+    if (user?.username) {
+      this.usersService.getUserByUsername(user.username).subscribe({
+        next: (profile) => {
+          this.fullUserProfile = profile;
+        },
+        error: () => {
+          // If we can't load the full profile, we'll just use the basic user info
+        }
+      });
+    }
+  }
+
+  onProfilePhotoChanged(): void {
+    this.loadFullUserProfile();
+  }
 
   get userRole(): string {
     const roleParam = this.route.snapshot.queryParamMap.get('role');

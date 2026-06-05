@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -6,11 +6,13 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/auth.service';
 import { UsersService } from '../../services/users.service';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
+import { UserPublicResponse } from '../../models/user-public-response.model';
 import { Observable, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EditProfileDialogComponent } from '../shared/dialogs/edit-profile-dialog/edit-profile-dialog.component';
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
+import { AvatarComponent } from '../shared/avatar/avatar.component';
 
 @Component({
   selector: 'app-perfil-config',
@@ -20,12 +22,13 @@ import { MatIconModule } from '@angular/material/icon';
     MatButtonModule,
     MatDialogModule,
     MatSnackBarModule,
-    MatIconModule
+    MatIconModule,
+    AvatarComponent
   ],
   templateUrl: './perfil-config.component.html',
   styleUrl: './perfil-config.component.css'
 })
-export class PerfilConfigComponent {
+export class PerfilConfigComponent implements OnInit {
   private authService = inject(AuthService);
   private usersService = inject(UsersService);
   private route = inject(ActivatedRoute);
@@ -34,6 +37,29 @@ export class PerfilConfigComponent {
   private snackBar = inject(MatSnackBar);
 
   currentUser$: Observable<{ username: string; role: string } | null> = this.authService.currentUser$;
+  fullUserProfile: UserPublicResponse | null = null;
+
+  ngOnInit(): void {
+    this.loadFullUserProfile();
+  }
+
+  private loadFullUserProfile(): void {
+    const user = this.authService.getCurrentUserValue();
+    if (user?.username) {
+      this.usersService.getUserByUsername(user.username).subscribe({
+        next: (profile) => {
+          this.fullUserProfile = profile;
+        },
+        error: () => {
+          // If we can't load the full profile, we'll just use the basic user info
+        }
+      });
+    }
+  }
+
+  onProfilePhotoChanged(): void {
+    this.loadFullUserProfile();
+  }
 
   get isAdmin(): boolean {
     const roleParam = this.route.snapshot.queryParamMap.get('role');
