@@ -56,4 +56,11 @@
 
 .user-menu-btn {
   color: var(--md-sys-color-on-background) !important;
+
+  ::ng-deep .mdc-button__label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px;
+    height: 100%;
+  }
 }
