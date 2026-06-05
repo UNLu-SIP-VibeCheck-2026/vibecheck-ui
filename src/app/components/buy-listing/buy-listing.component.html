@@ -1,0 +1,116 @@
+<div class="buy-listing-wrapper">
+
+  <!-- Unconnected Wallet View -->
+  <div *ngIf="!connectedAddress()" class="connect-prompt">
+    <mat-icon class="prompt-icon">account_balance_wallet</mat-icon>
+    <h3 class="headline-small">Conectá tu Wallet</h3>
+    <p class="body-medium muted">Necesitás conectar MetaMask para comprar entradas.</p>
+    <button (click)="connectWallet()" class="btn-cta">
+      <div class="cta-icon-wrapper">
+        <mat-icon>power</mat-icon>
+      </div>
+      <span class="cta-text">CONECTAR WALLET</span>
+    </button>
+  </div>
+
+  <!-- Connected Wallet View -->
+  <div *ngIf="connectedAddress() && txStep === 'idle'" class="payment-flow">
+    
+    <!-- Summary Details -->
+    <div class="price-summary">
+      <span class="summary-label">Monto de la Entrada</span>
+      <div class="summary-value-row">
+        <span class="usdc-val">{{ listing.priceUsdc | currency:'USD':'symbol':'1.2-2' }}</span>
+        <span class="currency-label">USDC</span>
+      </div>
+    </div>
+
+    <!-- Currency selection -->
+    <div class="payment-methods">
+      <h4 class="methods-title">Seleccioná tu método de pago</h4>
+      
+      <div class="method-option" [class.selected]="selectedToken === 'USDC'" (click)="selectedToken = 'USDC'">
+        <div class="option-header">
+          <mat-icon class="method-icon">monetization_on</mat-icon>
+          <div class="method-info">
+            <span class="method-name">Pagar con USDC</span>
+            <span class="method-desc">Se descontará de tu saldo de USDC en Sepolia</span>
+          </div>
+        </div>
+        <div class="option-price">
+          <span>{{ listing.priceUsdc | currency:'USD':'symbol':'1.2-2' }} USDC</span>
+        </div>
+      </div>
+
+      <!-- VBK Option -->
+      <div 
+        class="method-option" 
+        [class.selected]="selectedToken === 'VBK'" 
+        [class.disabled]="!isVbkAvailable()"
+        (click)="isVbkAvailable() ? selectedToken = 'VBK' : null">
+        
+        <div class="option-header">
+          <mat-icon class="method-icon">account_balance_wallet</mat-icon>
+          <div class="method-info">
+            <span class="method-name">Pagar con VBK (VibeCheck Token)</span>
+            <span class="method-desc">Conversión instantánea usando Uniswap</span>
+          </div>
+        </div>
+        
+        <div class="option-price">
+          <ng-container *ngIf="isVbkAvailable(); else vbkUnavailable">
+            <span>{{ vbkPriceEstimate() | number:'1.2-4' }} VBK</span>
+          </ng-container>
+          <ng-template #vbkUnavailable>
+            <span class="tooltip-badge">Próximamente</span>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error message -->
+    <div class="error-box" *ngIf="errorMessage()">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage() }}</span>
+    </div>
+
+    <!-- Execute purchase CTA -->
+    <div class="actions-area">
+      <button class="btn-cta full-width" (click)="executePurchase()" [disabled]="isLoading()">
+        <div class="cta-icon-wrapper" *ngIf="!isLoading()">
+          <mat-icon>lock</mat-icon>
+        </div>
+        <mat-spinner diameter="20" color="accent" *ngIf="isLoading()" class="btn-spinner"></mat-spinner>
+        <span class="cta-text">{{ isLoading() ? 'PROCESANDO...' : 'CONFIRMAR PAGO' }}</span>
+      </button>
+      
+      <p class="gas-notice muted">Se te solicitará firmar la transacción y pagar gas de red en ETH.</p>
+    </div>
+
+  </div>
+
+  <!-- Transaction status screen -->
+  <div *ngIf="txStep !== 'idle'" class="tx-progress-view">
+    <div class="status-header">
+      <h3 class="headline-small" *ngIf="txStep === 'approving'">Aprobación de Fondos</h3>
+      <h3 class="headline-small" *ngIf="txStep === 'buying'">Procesando Compra</h3>
+      <h3 class="headline-small" *ngIf="txStep === 'confirming'">Sincronizando con el Servidor</h3>
+    </div>
+
+    <app-tx-status [txState]="currentTxState" *ngIf="currentTxState"></app-tx-status>
+
+    <div *ngIf="txStep === 'confirming'" class="backend-confirm-status">
+      <mat-spinner diameter="40" color="primary"></mat-spinner>
+      <p class="body-medium">Esperando que el servidor valide el cambio de dueño...</p>
+    </div>
+
+    <div class="error-box" *ngIf="errorMessage()">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage() }}</span>
+      <button (click)="txStep = 'idle'; isLoading.set(false)" class="btn-cancel">
+        Volver a intentar
+      </button>
+    </div>
+  </div>
+
+</div>

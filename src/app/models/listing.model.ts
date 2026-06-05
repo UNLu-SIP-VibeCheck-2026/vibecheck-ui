@@ -20,3 +20,20 @@ export interface ListingConfirmRequest {
 export interface ListingCancelConfirmRequest {
   txHash: string;
 }
+
+export interface PurchaseConfirmRequest {
+  onChainListingId: number;
+  txHash: string;
+}
+
+export interface PurchaseConfirmResponse {
+  onChainListingId: number;
+  tokenId: number;
+  eventNftAddress: string;
+  buyerWallet: string;
+  sellerWallet: string;
+  amountPaid: number;
+  paymentToken: 'USDC' | 'VBK';
+  txHash: string;
+}
+
