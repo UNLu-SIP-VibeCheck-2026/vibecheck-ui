@@ -4,6 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from "@angular/materia
 import { MatButtonModule } from "@angular/material/button";
 import { RolesService } from "../../../../services/roles.service";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { ErrorService } from "../../../../services/error.service";
 
 @Component({
   selector: "app-change-role-dialog",
@@ -19,6 +20,7 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 export class ChangeRoleDialogComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private rolesService = inject(RolesService);
+  private errorService = inject(ErrorService);
   private dialogRef = inject(MatDialogRef<ChangeRoleDialogComponent>);
   public data = inject<any>(MAT_DIALOG_DATA);
   private cdr = inject(ChangeDetectorRef);
@@ -48,6 +50,7 @@ export class ChangeRoleDialogComponent implements OnInit {
       error: (err) => {
         console.error("Error al cargar roles en el diálogo:", err);
         this.isLoadingRoles = false;
+        this.errorService.handleError(err, "No se pudieron cargar los roles.");
         this.cdr.detectChanges();
       },
     });

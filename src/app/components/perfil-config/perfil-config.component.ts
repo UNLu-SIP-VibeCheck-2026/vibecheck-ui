@@ -13,6 +13,7 @@ import { EditProfileDialogComponent } from '../shared/dialogs/edit-profile-dialo
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
 import { AvatarComponent } from '../shared/avatar/avatar.component';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-perfil-config',
@@ -35,6 +36,7 @@ export class PerfilConfigComponent implements OnInit {
   private router = inject(Router);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private errorService = inject(ErrorService);
 
   currentUser$: Observable<{ username: string; role: string } | null> = this.authService.currentUser$;
   fullUserProfile: UserPublicResponse | null = null;
@@ -129,10 +131,12 @@ export class PerfilConfigComponent implements OnInit {
             })
           ).subscribe({
             next: () => this.router.navigate(['/perfil-config']),
-            error: (err) =>  this.snackBar.open(err?.error?.message || "Error al renovar la sesión:", "Cerrar", { duration: 4000 }),});
+            error: (err) => this.errorService.handleError(err, "Error al renovar la sesión:"),
+          });
         });
       },
-      error: (err) =>  this.snackBar.open(err?.error?.message || "Error al obtener el perfil del usuario:", "Cerrar", { duration: 4000 }),});
+      error: (err) => this.errorService.handleError(err, "Error al obtener el perfil del usuario:"),
+    });
   }
 
   openChangeRole() {
@@ -177,19 +181,20 @@ export class PerfilConfigComponent implements OnInit {
                   },
                   error: (err) => {
                     console.error('Error al refrescar el token:', err);
-                    this.snackBar.open('Rol actualizado, por favor reinicia sesión para ver los cambios', 'Cerrar', { duration: 5000 });
+                    this.errorService.handleError(err, 'Rol actualizado, por favor reinicia sesión para ver los cambios');
                   }
                 });
               },
               error: (err) => {
                 console.error('Error al cambiar el rol:', err);
-                this.snackBar.open('Error al actualizar el rol', 'Cerrar', { duration: 5000 });
+                this.errorService.handleError(err, 'Error al actualizar el rol');
               }
             });
           }
         });
       },
-      error: (err) =>  this.snackBar.open(err?.error?.message || "Error al obtener perfil para cambio de rol:", "Cerrar", { duration: 4000 }),});
+      error: (err) => this.errorService.handleError(err, "Error al obtener perfil para cambio de rol:"),
+    });
   }
 
   openChangePassword() {
