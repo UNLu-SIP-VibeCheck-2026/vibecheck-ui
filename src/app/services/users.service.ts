@@ -70,5 +70,19 @@ export class UsersService {
   resetPassword(payload: { token: string; newPassword: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/users/reset-password`, payload, { responseType: 'text' });
   }
+
+  getUserImage(username: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/users/${username}/image`, { responseType: 'blob' });
+  }
+
+  getPublicUserImage(username: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/users/public/${username}/image`, { responseType: 'blob' });
+  }
+
+  uploadUserImage(username: string, image: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('image', image);
+    return this.http.post(`${this.apiUrl}/users/${username}/image`, formData);
+  }
 }
 

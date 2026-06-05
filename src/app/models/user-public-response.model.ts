@@ -5,4 +5,5 @@ export interface UserPublicResponse {
   birthdate?: string;
   role: string;
   tier?: string;
+  hasImage?: boolean;
 }

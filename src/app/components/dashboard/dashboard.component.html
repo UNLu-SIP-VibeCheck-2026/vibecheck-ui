@@ -1,13 +1,25 @@
 <div class="dashboard-container" *ngIf="user$ | async as user; else noUser">
   <!-- Welcome Header -->
   <div class="welcome-section">
+    <div class="welcome-avatar">
+      <app-avatar
+        *ngIf="fullUserProfile"
+        [username]="fullUserProfile.username"
+        [name]="fullUserProfile.name"
+        [lastName]="fullUserProfile.lastName"
+        [hasImage]="fullUserProfile.hasImage || false"
+        [clickable]="true"
+        [size]="'medium'"
+        (photoChanged)="onProfilePhotoChanged()"
+      ></app-avatar>
+    </div>
     <div class="welcome-content">
       <h1 class="welcome-title text-gradient display-md">¡Hola, {{ user.username }}!</h1>
       <p class="welcome-subtitle">Bienvenido de nuevo a VibeCheck</p>
-      </div>
-      <div class="role-action">
-        <div class="role-label">ROL:</div>
-        <div class="role-badge">
+    </div>
+    <div class="role-action">
+      <div class="role-label">ROL:</div>
+      <div class="role-badge">
           <div *ngIf="!canChangeRole" class="user-badge user-badge-static" aria-hidden="true">
             <span class="badge-text">{{ user.role }}</span>
           </div>

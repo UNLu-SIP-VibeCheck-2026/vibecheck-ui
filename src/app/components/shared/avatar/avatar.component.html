@@ -1,0 +1,26 @@
+<div class="avatar-container" [class]="sizeClass" [class.clickable]="clickable">
+  @if (isLoading()) {
+    <div class="avatar avatar-loading">
+      <div class="loading-spinner"></div>
+    </div>
+  } @else if (profileImage()) {
+    <div class="avatar avatar-image" [style.background-image]="'url(' + profileImage() + ')'">
+      @if (clickable) {
+        <div class="avatar-overlay">
+          <span class="overlay-text">Hacé click para cambiar la foto</span>
+        </div>
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input">
+      }
+    </div>
+  } @else {
+    <div class="avatar avatar-initials">
+      <span class="initials-text">{{ initials() }}</span>
+      @if (clickable) {
+        <div class="avatar-overlay">
+          <span class="overlay-text">Hacé click para cambiar la foto</span>
+        </div>
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input">
+      }
+    </div>
+  }
+</div>

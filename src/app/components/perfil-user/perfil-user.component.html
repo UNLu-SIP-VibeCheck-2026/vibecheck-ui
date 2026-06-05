@@ -30,10 +30,20 @@
   } @else if (profile()) {
     <!-- Contenido del perfil -->
     <div class="profile-content">
-      
-      <!-- Avatar con iniciales -->
+
+      <!-- Avatar con foto o iniciales -->
       <div class="avatar-wrapper">
-        <div class="avatar">{{ initials() }}</div>
+        <app-avatar
+          *ngIf="profile()"
+          [username]="profile()?.username || null"
+          [name]="profile()?.name || null"
+          [lastName]="profile()?.lastName || null"
+          [hasImage]="profile()?.hasImage || false"
+          [clickable]="true"
+          [size]="'large'"
+          [isPublic]="true"
+          (photoChanged)="onProfilePhotoChanged()"
+        ></app-avatar>
       </div>
 
       <!-- Identidad -->
