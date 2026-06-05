@@ -12,6 +12,7 @@ import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/
 import { UserUpdateRequest } from '../../models/user-update-request.model';
 import { UserPublicResponse } from '../../models/user-public-response.model';
 import { AvatarComponent } from '../shared/avatar/avatar.component';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +26,7 @@ export class DashboardComponent implements OnInit {
   usersService = inject(UsersService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private errorService = inject(ErrorService);
   router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -127,19 +129,19 @@ export class DashboardComponent implements OnInit {
                   },
                   error: (err) => {
                     console.error('Error al refrescar el token:', err);
-                    this.snackBar.open('Rol actualizado, por favor reinicia sesión para ver los cambios', 'Cerrar', { duration: 5000 });
+                    this.errorService.handleError(err, 'Rol actualizado, por favor reinicia sesión para ver los cambios');
                   }
                 });
               },
               error: (err) => {
                 console.error('Error al cambiar el rol:', err);
-                this.snackBar.open('Error al actualizar el rol', 'Cerrar', { duration: 5000 });
+                this.errorService.handleError(err, 'Error al actualizar el rol');
               }
             });
           }
         });
       },
-      error: (err) => this.snackBar.open(err?.error?.message || 'Error al obtener perfil para cambio de rol:', 'Cerrar', { duration: 4000 })
+      error: (err) => this.errorService.handleError(err, 'Error al obtener perfil para cambio de rol:')
     });
   }
 

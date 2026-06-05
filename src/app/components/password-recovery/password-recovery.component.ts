@@ -9,6 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { UsersService } from '../../services/users.service';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-password-recovery',
@@ -30,6 +31,7 @@ export class PasswordRecoveryComponent {
   private snackBar = inject(MatSnackBar);
   private usersService = inject(UsersService);
   private router = inject(Router);
+  private errorService = inject(ErrorService);
 
   recoveryForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]]
@@ -56,9 +58,7 @@ export class PasswordRecoveryComponent {
       },
       error: (err) => {
         this.isSubmitting = false;
-        this.snackBar.open(err?.error?.message || 'Error al enviar el correo. Reintentá de nuevo.', 'Cerrar', {
-          duration: 5000
-        });
+        this.errorService.handleError(err, 'Error al enviar el correo. Reintentá de nuevo.');
       }
     });
   }

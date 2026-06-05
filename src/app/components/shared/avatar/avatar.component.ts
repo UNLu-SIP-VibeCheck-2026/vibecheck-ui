@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { UsersService } from '../../../services/users.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ErrorService } from '../../../services/error.service';
 
 @Component({
   selector: 'app-avatar',
@@ -15,6 +16,7 @@ export class AvatarComponent {
   private sanitizer = inject(DomSanitizer);
   private usersService = inject(UsersService);
   private snackBar = inject(MatSnackBar);
+  private errorService = inject(ErrorService);
 
   @Input() username: string | null = null;
   @Input() name: string | null = null;
@@ -82,7 +84,7 @@ export class AvatarComponent {
         this.photoChanged.emit();
       },
       error: (err) => {
-        this.snackBar.open(err?.error?.message || 'Error al actualizar la foto', 'Cerrar', { duration: 4000 });
+        this.errorService.handleError(err, 'Error al actualizar la foto');
       }
     });
   }
