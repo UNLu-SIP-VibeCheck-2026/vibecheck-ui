@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, effect, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { Router, RouterLink } from "@angular/router";
+import { Router } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
@@ -11,7 +11,7 @@ import { ethers } from "ethers";
 @Component({
   selector: "app-swap",
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSnackBarModule, RouterLink],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSnackBarModule],
   templateUrl: "./swap.component.html",
   styleUrl: "./swap.component.css",
 })

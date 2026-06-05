@@ -1,4 +1,4 @@
-@import '../../../tokens.scss';
+@use '../../../tokens.scss' as *;
 
 .metrics-container {
   padding: var(--space-5);

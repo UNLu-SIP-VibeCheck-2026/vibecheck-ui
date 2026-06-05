@@ -7,13 +7,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Web3Service } from '../../../services/web3.service';
 import { WalletService } from '../../../services/wallet.service';
 import { AuthService } from '../../../services/auth.service';
-import { RouterLink } from '@angular/router';
 import { SwapComponent } from '../../swap/swap.component';
 
 @Component({
   selector: 'app-web3-wallet',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, FormsModule, MatSnackBarModule, RouterLink, SwapComponent],
+  imports: [CommonModule, MatButtonModule, MatIconModule, FormsModule, MatSnackBarModule, SwapComponent],
   templateUrl: './web3-wallet.component.html',
   styleUrl: './web3-wallet.component.css'
 })
