@@ -1,9 +1,14 @@
 <div class="statistics-container">
   <!-- Header & Title -->
-  <div class="statistics-header">
-    <div class="header-content">
-      <h1 class="statistics-title text-gradient display-md">Consola Financiera</h1>
-      <p class="statistics-subtitle">Métricas, reportes e informes de VibeCheck para Administración</p>
+  <div class="page-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="brand-title">Consola <span class="text-gradient">Financiera</span></h1>
+        <p class="header-subtitle">Métricas, reportes e informes de VibeCheck para Administración</p>
+      </div>
     </div>
     
     <!-- Period Selector -->

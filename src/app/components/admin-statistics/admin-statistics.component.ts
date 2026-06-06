@@ -21,6 +21,9 @@ import {
   AdvertisingTimeSeriesDTO
 } from '../../models/statistics.model';
 
+import { Router } from '@angular/router';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 Chart.register(...registerables);
 
 @Component({
@@ -37,13 +40,15 @@ Chart.register(...registerables);
     MatTableModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
-    BaseChartDirective
+    BaseChartDirective,
+    MatTooltipModule
   ],
   templateUrl: './admin-statistics.component.html',
   styleUrl: './admin-statistics.component.scss'
 })
 export class AdminStatisticsComponent implements OnInit {
   private statisticsService = inject(StatisticsService);
+  private router = inject(Router);
 
   // States
   isLoading = false;
@@ -403,5 +408,9 @@ export class AdminStatisticsComponent implements OnInit {
   showError(message: string, error: any): void {
     console.error(message, error);
     this.errorMessage = `${message}. Verifique la conexión con el servidor.`;
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

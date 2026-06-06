@@ -1,7 +1,19 @@
 <div class="approval-container">
-  <div class="header">
-    <h1>Aprobación de Eventos</h1>
-    <p class="subtitle">Gestiona la aprobación de eventos pendientes</p>
+  <!-- Header -->
+  <div class="page-header">
+      <div class="header-left">
+          <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+              <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div class="header-text">
+              <h1 class="brand-title">Aprobación de <span class="text-gradient">Eventos</span></h1>
+              <p class="header-subtitle">Gestioná la aprobación de eventos pendientes</p>
+          </div>
+      </div>
+      <div class="stats-badge" *ngIf="totalElements > 0">
+          <mat-icon>event</mat-icon>
+          <span>{{ totalElements }} {{ totalElements === 1 ? 'evento pendiente' : 'eventos pendientes' }}</span>
+      </div>
   </div>
 
   <div *ngIf="error" class="error-message">

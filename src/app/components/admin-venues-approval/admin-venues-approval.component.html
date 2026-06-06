@@ -25,7 +25,6 @@
 
   <!-- Empty state -->
   <div class="empty-state" *ngIf="!isLoading && venues.length === 0">
-    <mat-icon class="empty-icon">check_circle_outline</mat-icon>
     <h3>No hay solicitudes pendientes</h3>
     <p>Todas las solicitudes de venues han sido procesadas.</p>
     <button mat-raised-button class="btn-back" (click)="goBack()">
@@ -71,11 +70,8 @@
         <div class="rejection-content">
           <h4>Motivo del rechazo</h4>
           <mat-form-field appearance="outline" class="rejection-input">
-            <textarea matInput 
-                      [(ngModel)]="rejectionReason" 
-                      placeholder="Describí el motivo del rechazo..."
-                      rows="3"
-                      maxlength="255"></textarea>
+            <textarea matInput [(ngModel)]="rejectionReason" placeholder="Describí el motivo del rechazo..." rows="3"
+              maxlength="255"></textarea>
             <mat-hint align="end">{{ rejectionReason.length }}/255</mat-hint>
           </mat-form-field>
           <div class="rejection-actions">
@@ -106,14 +102,8 @@
   </div>
 
   <!-- Paginator -->
-  <mat-paginator
-    *ngIf="!isLoading && totalVenues > pageSize"
-    [length]="totalVenues"
-    [pageSize]="pageSize"
-    [pageSizeOptions]="[5, 10, 20]"
-    [pageIndex]="pageIndex"
-    (page)="onPageChange($event)"
-    class="custom-paginator">
+  <mat-paginator *ngIf="!isLoading && totalVenues > pageSize" [length]="totalVenues" [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 20]" [pageIndex]="pageIndex" (page)="onPageChange($event)" class="custom-paginator">
   </mat-paginator>
 
 </div>

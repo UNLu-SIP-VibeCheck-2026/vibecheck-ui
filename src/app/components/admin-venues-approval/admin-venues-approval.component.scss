@@ -22,6 +22,7 @@
 .back-btn {
   color: #f97316;
   background: rgba(249, 115, 22, 0.1);
+
   &:hover {
     background: rgba(249, 115, 22, 0.2);
   }
@@ -70,6 +71,7 @@
   justify-content: center;
   padding: 80px 20px;
   color: #94a3b8;
+
   p {
     margin-top: 20px;
     font-size: 16px;
@@ -83,12 +85,6 @@
   justify-content: center;
   padding: 80px 20px;
   text-align: center;
-
-  .empty-icon {
-    font-size: 80px;
-    color: #22c55e;
-    margin-bottom: 24px;
-  }
 
   h3 {
     font-size: 24px;
@@ -309,6 +305,7 @@
 
 .custom-paginator {
   margin-top: 40px;
+
   ::ng-deep .mat-mdc-paginator {
     background: rgba(18, 19, 43, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.08);

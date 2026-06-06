@@ -20,6 +20,7 @@ import {
   MatPaginatorModule,
   PageEvent,
 } from "@angular/material/paginator";
+import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
@@ -42,7 +43,8 @@ import { Router } from "@angular/router";
     MatPaginatorModule,
     MatSnackBarModule,
     LoadingStateComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
+    MatTooltipModule
   ],
   templateUrl: "./admin-roles.component.html",
   styleUrl: "./admin-roles.component.scss",
@@ -191,5 +193,9 @@ export class AdminRolesComponent implements OnInit {
         });
       }
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }
