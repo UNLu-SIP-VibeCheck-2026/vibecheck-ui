@@ -931,3 +931,161 @@
   }
 }
 
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px)
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
+  .purchase-page-wrapper {
+    padding: var(--space-4) var(--space-3);
+    gap: var(--space-5);
+  }
+
+  .stepper-container {
+    padding: var(--space-3) var(--space-2);
+    border-radius: var(--md-sys-shape-corner-large);
+
+    .step-line {
+      display: none;
+    }
+
+    .step-item {
+      .step-badge {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+
+        mat-icon {
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+        }
+      }
+
+      .step-label {
+        font-size: 10px;
+        letter-spacing: 0.02em;
+      }
+    }
+  }
+
+  .card-prompt {
+    padding: var(--space-5) var(--space-4);
+    margin: 20px auto;
+    max-width: 100%;
+
+    .icon-avatar {
+      width: 56px;
+      height: 56px;
+
+      mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    h2 {
+      font-size: 1.4rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+    }
+  }
+
+  .resale-event-hero {
+    height: 150px;
+
+    .event-hero-overlay {
+      padding: var(--space-3);
+
+      h2 {
+        font-size: 1.25rem;
+      }
+
+      .hero-meta {
+        flex-direction: column;
+        gap: 4px;
+      }
+    }
+  }
+
+  .ticket-specs,
+  .payment-checkout-card {
+    padding: var(--space-4);
+  }
+
+  .method-option {
+    padding: var(--space-3);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+
+    .option-price {
+      align-self: flex-end;
+    }
+  }
+
+  .success-screen, .error-screen {
+    h2 {
+      font-size: 1.75rem;
+    }
+  }
+
+  .ticket-receipt {
+    .receipt-body {
+      padding: var(--space-4);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .purchase-page-wrapper {
+    padding: var(--space-3) var(--space-2);
+  }
+
+  .stepper-container {
+    .step-item {
+      .step-badge {
+        width: 24px;
+        height: 24px;
+        font-size: 0.75rem;
+      }
+
+      .step-label {
+        display: none;
+      }
+    }
+  }
+
+  .card-prompt {
+    padding: var(--space-4) var(--space-3);
+
+    h2 {
+      font-size: 1.2rem;
+    }
+  }
+
+  .resale-event-hero {
+    height: 120px;
+
+    .event-hero-overlay h2 {
+      font-size: 1.1rem;
+    }
+  }
+
+  .success-screen, .error-screen {
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+

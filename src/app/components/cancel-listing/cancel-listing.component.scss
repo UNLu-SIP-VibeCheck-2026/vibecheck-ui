@@ -98,3 +98,48 @@
     transform: rotate(360deg);
   }
 }
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px)
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
+  .cancel-listing-container {
+    .btn-cancel-listing {
+      padding: var(--space-2) var(--space-3);
+      font-size: 14px;
+    }
+
+    .cancel-progress-panel {
+      padding: var(--space-3);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .cancel-listing-container {
+    .btn-cancel-listing {
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    .cancel-progress-panel {
+      padding: var(--space-2);
+
+      .step-title {
+        font-size: 12px;
+      }
+
+      .status-desc {
+        font-size: 11px;
+      }
+    }
+  }
+}
+

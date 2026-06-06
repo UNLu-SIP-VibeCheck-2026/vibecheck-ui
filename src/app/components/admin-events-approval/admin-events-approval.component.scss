@@ -391,27 +391,122 @@
   }
 }
 
-@media (max-width: 768px) {
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px)
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
   .approval-container {
     padding: 1rem;
 
-    .events-list .events-grid {
-      grid-template-columns: 1fr;
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
-    .dialog-overlay .dialog {
-      padding: 1.5rem;
+    .header-left {
+      width: 100%;
     }
-  }
 
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+    .header-text {
+      .brand-title {
+        font-size: 24px;
+      }
+      .header-subtitle {
+        font-size: 14px;
+      }
+    }
 
-  .header-text {
-    .brand-title {
-      font-size: 24px;
+    .stats-badge {
+      width: 100%;
+      justify-content: center;
+      padding: 10px 20px;
+    }
+
+    .events-list {
+      .events-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .event-card {
+        padding: 1.25rem;
+
+        .event-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+
+          h3 {
+            font-size: 1.15rem;
+          }
+        }
+
+        .event-actions {
+          flex-direction: column;
+          width: 100%;
+
+          .btn {
+            width: 100%;
+          }
+        }
+      }
+
+      .pagination {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+    }
+
+    .dialog-overlay {
+      padding: 12px;
+
+      .dialog {
+        padding: 1.5rem;
+
+        .dialog-header {
+          h2 {
+            font-size: 1.25rem;
+          }
+        }
+
+        .dialog-footer {
+          flex-direction: column-reverse;
+          width: 100%;
+
+          .btn {
+            width: 100%;
+          }
+        }
+      }
     }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .approval-container {
+    padding: 0.75rem;
+
+    .header-text .brand-title {
+      font-size: 20px;
+    }
+
+    .events-list .event-card {
+      padding: 1rem;
+    }
+
+    .dialog-overlay .dialog {
+      padding: 1rem;
+    }
+  }
+}
+

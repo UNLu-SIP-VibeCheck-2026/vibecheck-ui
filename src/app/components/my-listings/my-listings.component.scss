@@ -261,3 +261,73 @@
     }
   }
 }
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px)
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
+  .my-listings-container {
+    padding: var(--space-4) var(--space-3) !important;
+
+    .page-header {
+      margin-bottom: var(--space-4);
+
+      .display-medium {
+        font-size: 32px;
+      }
+    }
+
+    .connection-prompt-card, .empty-state-card {
+      padding: var(--space-6) var(--space-4);
+      margin: var(--space-6) auto;
+
+      .empty-icon-container {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+      }
+
+      .headline-medium {
+        font-size: 18px;
+      }
+    }
+
+    .listings-grid {
+      grid-template-columns: 1fr !important;
+      gap: var(--space-4);
+    }
+
+    .listing-card {
+      .listing-image-wrapper {
+        height: 160px;
+      }
+      .listing-info .event-title {
+        font-size: 18px;
+        height: auto;
+        min-height: 48px;
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .my-listings-container {
+    padding: var(--space-3) var(--space-2) !important;
+
+    .page-header .display-medium {
+      font-size: 28px;
+    }
+
+    .connection-prompt-card, .empty-state-card {
+      padding: var(--space-4) var(--space-3);
+    }
+  }
+}
+

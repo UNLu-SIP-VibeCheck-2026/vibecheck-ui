@@ -85,18 +85,7 @@
   background-clip: text;
 }
 
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 
-  .header-text {
-    .brand-title {
-      font-size: 24px;
-    }
-  }
-}
 
 // --- Period Selector ---
 .period-selector-container {
@@ -863,3 +852,137 @@
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px)
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
+  .statistics-container {
+    padding: var(--space-4);
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: var(--space-5);
+    }
+
+    .header-left {
+      width: 100%;
+    }
+
+    .header-text {
+      .brand-title {
+        font-size: 24px;
+      }
+      .header-subtitle {
+        font-size: var(--text-body-md);
+      }
+    }
+
+    .period-selector-container {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-3);
+      width: 100%;
+
+      .period-buttons {
+        width: 100%;
+        justify-content: center;
+
+        button {
+          flex: 1;
+          padding: var(--space-2) var(--space-3);
+          font-size: var(--text-label-md);
+        }
+      }
+
+      .custom-dates {
+        width: 100%;
+        justify-content: space-between;
+
+        .date-input {
+          flex: 1;
+          min-width: 0;
+        }
+      }
+    }
+
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .kpi-card {
+      padding: var(--space-3);
+      min-height: auto;
+
+      .kpi-value {
+        font-size: 28px;
+      }
+    }
+
+    .chart-card {
+      padding: var(--space-4);
+
+      .chart-container {
+        height: 240px;
+      }
+    }
+
+    .data-card {
+      padding: var(--space-4);
+
+      .card-header-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+      }
+    }
+
+    .info-banner {
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-3);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .statistics-container {
+    padding: var(--space-3);
+
+    .header-text .brand-title {
+      font-size: 20px;
+    }
+
+    .kpi-card .kpi-value {
+      font-size: 24px;
+    }
+
+    .chart-card .chart-container {
+      height: 200px;
+    }
+
+    .period-selector-container .custom-dates {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+
+      .date-input {
+        width: 100%;
+      }
+
+      .btn-filter-custom {
+        width: 100%;
+      }
+    }
+  }
+}
+

@@ -310,3 +310,83 @@
     transform: rotate(360deg);
   }
 }
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Mobile (< 600px)
+// ---------------------------------------------------------------------------
+@media (max-width: 599px) {
+  .create-listing-container {
+    padding: var(--space-4) var(--space-3);
+
+    .form-card {
+      padding: var(--space-4);
+    }
+
+    .headline-large {
+      font-size: 24px;
+    }
+
+    .btn-cta {
+      padding: 6px 16px 6px 6px;
+      gap: var(--space-2);
+
+      .cta-icon-wrapper {
+        width: 32px;
+        height: 32px;
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+
+      .cta-text {
+        font-size: 13px;
+        margin-right: 32px;
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile muy pequeño (< 380px)
+// ---------------------------------------------------------------------------
+@media (max-width: 379px) {
+  .create-listing-container {
+    padding: var(--space-3) var(--space-2);
+
+    .form-card {
+      padding: var(--space-3);
+    }
+
+    .headline-large {
+      font-size: 20px;
+    }
+
+    .ticket-reference-card {
+      padding: var(--space-3);
+
+      .ref-field {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+
+        .value {
+          align-self: flex-end;
+        }
+      }
+    }
+
+    .btn-cta {
+      .cta-text {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+      }
+    }
+  }
+}
+
