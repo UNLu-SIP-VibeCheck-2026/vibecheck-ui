@@ -8,8 +8,8 @@
                 <h1 class="main-title">Categorías de Entrada</h1>
                 <h2 class="subtitle" *ngIf="event">
                     <span class="event-name">{{ event.title }}</span>
-                    <span class="status-badge" [class.status-draft]="event.status === 'DRAFT'" [class.status-public]="event.status !== 'DRAFT'">
-                        {{ event.status === 'DRAFT' ? 'Borrador' : 'Publicado' }}
+                    <span class="status-badge" [ngClass]="getStatusClass(event.status)">
+                        {{ getStatusLabel(event.status) }}
                     </span>
                 </h2>
             </div>

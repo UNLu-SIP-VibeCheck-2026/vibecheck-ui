@@ -71,7 +71,72 @@ export class AdminTicketsComponent implements OnInit {
   deletingId: number | null = null;
 
   get isEventPublished(): boolean {
-    return this.event ? this.event.status !== 'DRAFT' : false;
+    return this.event ? (this.event.status !== 'DRAFT' && this.event.status !== 'REJECTED') : false;
+  }
+
+  getStatusClass(status: string): string {
+    switch (status?.toUpperCase()) {
+      case "DRAFT":
+      case "BORRADOR":
+        return "draft-chip";
+      case "PENDING_APPROVAL":
+      case "PENDIENTE":
+      case "PENDIENTE_APROBACION":
+        return "pending-chip";
+      case "APPROVED":
+      case "APROBADO":
+        return "approved-chip";
+      case "REJECTED":
+      case "RECHAZADO":
+        return "rejected-chip";
+      case "DEPLOYED":
+      case "DEPLOYADO":
+        return "deployed-chip";
+      case "PUBLIC":
+      case "PÚBLICO":
+      case "SCHEDULED":
+      case "PROGRAMADO":
+      case "IN_PROGRESS":
+      case "EN_CURSO":
+        return "inprogress-chip";
+      case "FINISHED":
+      case "FINALIZADO":
+      case "COMPLETED":
+        return "finished-chip";
+      case "CANCELLED":
+      case "CANCELADO":
+        return "cancelled-chip";
+      default:
+        return "";
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      DRAFT: "BORRADOR",
+      PENDING_APPROVAL: "PENDIENTE DE APROBACIÓN",
+      APPROVED: "APROBADO",
+      REJECTED: "RECHAZADO",
+      DEPLOYED: "DEPLOYADO",
+      PUBLIC: "PÚBLICO",
+      SCHEDULED: "PÚBLICO",
+      IN_PROGRESS: "EN CURSO",
+      FINISHED: "FINALIZADO",
+      COMPLETED: "FINALIZADO",
+      CANCELLED: "CANCELADO",
+      BORRADOR: "BORRADOR",
+      PENDIENTE: "PENDIENTE DE APROBACIÓN",
+      PENDIENTE_APROBACION: "PENDIENTE DE APROBACIÓN",
+      APROBADO: "APROBADO",
+      RECHAZADO: "RECHAZADO",
+      DEPLOYADO: "DEPLOYADO",
+      PÚBLICO: "PÚBLICO",
+      PROGRAMADO: "PÚBLICO",
+      EN_CURSO: "EN CURSO",
+      FINALIZADO: "FINALIZADO",
+      CANCELADO: "CANCELADO",
+    };
+    return map[status?.toUpperCase()] ?? status ?? "—";
   }
 
   ngOnInit(): void {

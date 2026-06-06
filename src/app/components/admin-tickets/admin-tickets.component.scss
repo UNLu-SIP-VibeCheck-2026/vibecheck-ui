@@ -95,16 +95,52 @@
   align-items: center;
 }
 
-.status-draft {
+.draft-chip {
   background-color: rgba(249, 115, 22, 0.1) !important;
   border-color: rgba(249, 115, 22, 0.3) !important;
   color: #fdba74 !important;
 }
 
-.status-public {
-  background-color: rgba(168, 85, 247, 0.1) !important;
-  border-color: rgba(168, 85, 247, 0.3) !important;
-  color: #d8b4fe !important;
+.pending-chip {
+  background-color: rgba(251, 191, 36, 0.1) !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+  color: #fde047 !important;
+}
+
+.approved-chip {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: #93c5fd !important;
+}
+
+.rejected-chip {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
+}
+
+.deployed-chip {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  color: #c7d2fe !important;
+}
+
+.inprogress-chip {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+  color: #86efac !important;
+}
+
+.finished-chip {
+  background-color: rgba(148, 163, 184, 0.1) !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+  color: #cbd5e1 !important;
+}
+
+.cancelled-chip {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
 }
 
 .actions-header {
