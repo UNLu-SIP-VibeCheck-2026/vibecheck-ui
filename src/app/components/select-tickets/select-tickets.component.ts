@@ -10,6 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { EventService } from '../../services/event.service';
 import { TicketTypeService } from '../../services/ticket-type.service';
 import { Web3Service } from '../../services/web3.service';
+import { ContractsService } from '../../services/contracts.service';
 import { environment } from '../../../environments/environment';
 import { ethers } from 'ethers';
 
@@ -33,6 +34,7 @@ export class TicketPurchaseComponent implements OnInit {
   private eventService = inject(EventService);
   private ticketTypeService = inject(TicketTypeService);
   private web3Service = inject(Web3Service);
+  private contractsService = inject(ContractsService);
 
   @Input() event: {
     eventId: number;
@@ -227,7 +229,7 @@ export class TicketPurchaseComponent implements OnInit {
     if (eventInput && tiersInput && tiersInput.length > 0) {
       this.mappedEvent.set(eventInput);
       this.mappedTiers.set(tiersInput);
-      this.loadVbkQuotes();
+      this.loadOnChainData();
       return;
     }
 
@@ -259,7 +261,7 @@ export class TicketPurchaseComponent implements OnInit {
               tierIndex: t.tierIndex
             }));
             this.mappedTiers.set(mapped);
-            this.loadVbkQuotes();
+            this.loadOnChainData();
           },
           error: (err) => {
             this.isLoading.set(false);
@@ -274,20 +276,38 @@ export class TicketPurchaseComponent implements OnInit {
     });
   }
 
-  async loadVbkQuotes() {
+  async loadOnChainData() {
     const currentEvent = this.mappedEvent();
     if (!currentEvent || !currentEvent.eventNftAddress) return;
     const currentTiers = this.mappedTiers();
     const quotes: Record<number, string> = {};
-    for (const tier of currentTiers) {
-      try {
-        const quote = await this.web3Service.getVbkQuote(currentEvent.eventNftAddress, tier.tierIndex);
-        quotes[tier.ticketTypeId] = ethers.formatUnits(quote, 18);
-      } catch (err) {
-        console.error(`Error loading VBK quote for tier ${tier.name}:`, err);
-        quotes[tier.ticketTypeId] = 'Error';
+    const updatedTiers = currentTiers.map(t => ({ ...t }));
+    
+    try {
+      const eventNftContract = this.contractsService.getEventNFT(currentEvent.eventNftAddress);
+
+      for (const tier of updatedTiers) {
+        try {
+          const quote = await this.web3Service.getVbkQuote(currentEvent.eventNftAddress, tier.tierIndex);
+          quotes[tier.ticketTypeId] = ethers.formatUnits(quote, 18);
+        } catch (err) {
+          console.error(`Error loading VBK quote for tier ${tier.name}:`, err);
+          quotes[tier.ticketTypeId] = 'Error';
+        }
+
+        try {
+          const onChainTier = await eventNftContract["tiers"](tier.tierIndex);
+          // onChainTier is [string name, uint256 priceUSDC, uint256 supply, uint256 sold]
+          tier.quantitySold = Number(onChainTier[3]);
+        } catch (err) {
+          console.error(`Error loading on-chain tier info for ${tier.name}:`, err);
+        }
       }
+    } catch (err) {
+      console.error('Error connecting to EventNFT contract:', err);
     }
+    
+    this.mappedTiers.set(updatedTiers);
     this.vbkQuotes.set(quotes);
   }
 
@@ -398,5 +418,9 @@ export class TicketPurchaseComponent implements OnInit {
   truncateAddress(address: string | null): string {
     if (!address) return '';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  }
+
+  parseFloat(val: string): number {
+    return parseFloat(val) || 0;
   }
 }

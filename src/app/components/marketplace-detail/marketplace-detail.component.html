@@ -190,7 +190,10 @@
                 <div class="option-header">
                   <mat-icon class="method-icon">account_balance_wallet</mat-icon>
                   <div class="method-info">
-                    <span class="method-name">Pagar con VBK</span>
+                    <div class="method-name-wrapper">
+                      <span class="method-name">Pagar con VBK</span>
+                      <span class="discount-badge">3% OFF Fee</span>
+                    </div>
                     <span class="method-desc">Conversión instantánea con Uniswap</span>
                   </div>
                 </div>
@@ -205,8 +208,49 @@
               </div>
             </div>
 
+            <!-- Resumen de Pago con cargo de servicio -->
+            <div class="checkout-summary-box" *ngIf="listing() as item">
+              <div class="summary-title">Resumen de Pago</div>
+              
+              <!-- USDC Breakdown -->
+              <ng-container *ngIf="selectedToken() === 'USDC'">
+                <div class="summary-row">
+                  <span class="label">Precio Entrada:</span>
+                  <span class="val">{{ item.priceUsdc | currency:'USD':'symbol':'1.2-2' }} USDC</span>
+                </div>
+                <div class="summary-row">
+                  <span class="label">Cargo de Servicio (7%):</span>
+                  <span class="val">+{{ (item.priceUsdc * 0.07) | currency:'USD':'symbol':'1.2-2' }} USDC</span>
+                </div>
+                <div class="summary-row total-row">
+                  <span class="label">Total a pagar:</span>
+                  <span class="val">{{ (item.priceUsdc * 1.07) | currency:'USD':'symbol':'1.2-2' }} USDC</span>
+                </div>
+              </ng-container>
+
+              <!-- VBK Breakdown -->
+              <ng-container *ngIf="selectedToken() === 'VBK' && isVbkAvailable()">
+                <div class="summary-row">
+                  <span class="label">Precio Entrada:</span>
+                  <span class="val">{{ vbkNumber | number:'1.2-4' }} VBK</span>
+                </div>
+                <div class="summary-row">
+                  <span class="label">Cargo de Servicio (4%):</span>
+                  <span class="val">+{{ (vbkNumber * 0.04) | number:'1.2-4' }} VBK</span>
+                </div>
+                <div class="summary-row total-row">
+                  <span class="label">Total a pagar:</span>
+                  <span class="val">{{ (vbkNumber * 1.04) | number:'1.2-4' }} VBK</span>
+                </div>
+              </ng-container>
+            </div>
+
             <div class="checkout-actions">
-              <button (click)="executePurchase()" class="btn-cta full-width" [disabled]="isLoading()">
+              <button (click)="executePurchase()" 
+                      class="btn-cta full-width" 
+                      [class.buy-usdc]="selectedToken() === 'USDC'" 
+                      [class.buy-vbk]="selectedToken() === 'VBK'" 
+                      [disabled]="isLoading()">
                 <mat-icon *ngIf="!isLoading()">payment</mat-icon>
                 <mat-spinner diameter="20" *ngIf="isLoading()" class="btn-spinner"></mat-spinner>
                 <span>{{ isLoading() ? 'Procesando...' : 'Comprar Entrada' }}</span>

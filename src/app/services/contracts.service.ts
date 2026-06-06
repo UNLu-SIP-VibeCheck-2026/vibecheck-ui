@@ -32,7 +32,8 @@ export class ContractsService {
     "function approve(address to, uint256 tokenId) external",
     "function getApproved(uint256 tokenId) external view returns (address)",
     "function tokenTier(uint256 tokenId) external view returns (uint256)",
-    "function tierOf(uint256 tokenId) external view returns (uint256)"
+    "function tierOf(uint256 tokenId) external view returns (uint256)",
+    "function tiers(uint256 index) external view returns (string name, uint256 priceUSDC, uint256 supply, uint256 sold)"
   ];
 
   private readonly OFFERING_ABI = [

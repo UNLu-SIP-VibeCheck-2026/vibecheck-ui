@@ -134,22 +134,54 @@
           </div>
 
           <div class="tier-info-body">
-            <div class="info-row">
-              <span class="label">Precio USDC</span>
-              <span class="val usdc-val">{{ tier.priceUsdc | currency:'USD':'symbol':'1.2-2' }}</span>
+            <!-- USDC Price Breakdown -->
+            <div class="price-section">
+              <div class="info-row">
+                <span class="label">Entrada USDC</span>
+                <span class="val usdc-val">{{ tier.priceUsdc | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="info-row fee-row">
+                <span class="label">Cargo servicio (7%)</span>
+                <span class="val usdc-fee">+{{ (tier.priceUsdc * 0.07) | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="info-row total-row">
+                <span class="label">Total USDC</span>
+                <span class="val usdc-total">{{ (tier.priceUsdc * 1.07) | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
             </div>
 
-            <div class="info-row">
-              <span class="label">Precio VBK</span>
-              <span class="val vbk-val">
-                <ng-container *ngIf="vbkQuotes()[tier.ticketTypeId] as quote; else loadingQuote">
-                  <span *ngIf="quote !== 'Error'">{{ quote }} VBK</span>
-                  <span *ngIf="quote === 'Error'" class="error-text">No disponible</span>
+            <div class="divider-line"></div>
+
+            <!-- VBK Price Breakdown -->
+            <div class="price-section">
+              <div class="info-row">
+                <div class="label-wrapper">
+                  <span class="label">Entrada VBK</span>
+                  <span class="discount-badge">3% OFF Fee</span>
+                </div>
+                <span class="val vbk-val">
+                  <ng-container *ngIf="vbkQuotes()[tier.ticketTypeId] as quote; else loadingQuote">
+                    <span *ngIf="quote !== 'Error'">{{ parseFloat(quote) | number:'1.2-4' }}</span>
+                    <span *ngIf="quote === 'Error'" class="error-text">No disponible</span>
+                  </ng-container>
+                  <ng-template #loadingQuote>
+                    <span class="quote-spinner-text">Calculando...</span>
+                  </ng-template>
+                </span>
+              </div>
+              
+              <ng-container *ngIf="vbkQuotes()[tier.ticketTypeId] as quote">
+                <ng-container *ngIf="quote !== 'Error'">
+                  <div class="info-row fee-row">
+                    <span class="label">Cargo servicio (4%)</span>
+                    <span class="val vbk-fee">+{{ (parseFloat(quote) * 0.04) | number:'1.2-4' }}</span>
+                  </div>
+                  <div class="info-row total-row">
+                    <span class="label">Total VBK</span>
+                    <span class="val vbk-total">{{ (parseFloat(quote) * 1.04) | number:'1.2-4' }}</span>
+                  </div>
                 </ng-container>
-                <ng-template #loadingQuote>
-                  <span class="quote-spinner-text">Calculando...</span>
-                </ng-template>
-              </span>
+              </ng-container>
             </div>
 
             <div class="info-row separator">

@@ -293,13 +293,13 @@ export class Web3Service {
     if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
     const signer = await this.provider.getSigner();
 
-    // 1. Approve USDC (6 decimales)
+    // 1. Approve USDC (6 decimales) — cover priceUSDC + 7% fee
     const usdcContract = new ethers.Contract(
       this.USDC_ADDRESS,
       this.ERC20_ABI,
       signer,
     );
-    const amountInUnits = ethers.parseUnits(priceUsdc.toString(), 6);
+    const amountInUnits = (ethers.parseUnits(priceUsdc.toString(), 6) * 107n) / 100n;
     const approveTx = await usdcContract["approve"](
       this.OFFERING_NFT_ADDRESS,
       amountInUnits,
@@ -350,9 +350,10 @@ export class Web3Service {
 
     // 1. Cotizar en VBK
     const quote = await this.getVbkQuote(eventNftAddress, tierIndex);
-    const maxVbkAmount = (quote * 105n) / 100n; // 5% slippage
+    const vbkNeeded = (quote * 105n) / 100n; // 5% slippage
+    const maxVbkAmount = (vbkNeeded * 104n) / 100n; // 4% fee
 
-    // 2. Approve VBK (18 decimales) — usar maxVbkAmount para cubrir el slippage
+    // 2. Approve VBK (18 decimales) — usar maxVbkAmount para cubrir el slippage + fee
     const vbkContract = new ethers.Contract(
       this.VBK_ADDRESS,
       this.ERC20_ABI,
