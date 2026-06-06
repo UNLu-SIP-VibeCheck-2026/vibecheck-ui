@@ -16,10 +16,24 @@
       <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
 
-    <!-- Time picker -->
-    <mat-form-field appearance="outline" class="custom-mat-form-field dtp-time-field" subscriptSizing="dynamic">
-      <input matInput type="time" [formControl]="timeCtrl" placeholder="HH:MM">
-    </mat-form-field>
+    <!-- Time picker modern dropdowns -->
+    <div class="dtp-time-selects" [formGroup]="form">
+      <mat-icon class="time-icon">access_time</mat-icon>
+      <mat-form-field appearance="outline" class="custom-mat-form-field dtp-time-select" subscriptSizing="dynamic">
+        <mat-select formControlName="hour" placeholder="Hora">
+          <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      
+      <span class="dtp-time-colon">:</span>
+      
+      <mat-form-field appearance="outline" class="custom-mat-form-field dtp-time-select" subscriptSizing="dynamic">
+        <mat-select formControlName="minute" placeholder="Min">
+          <mat-option *ngFor="let m of minutes" [value]="m">{{ m }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
   </div>
 
   <!-- Validation error -->

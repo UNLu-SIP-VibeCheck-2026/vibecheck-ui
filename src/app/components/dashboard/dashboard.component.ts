@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,13 +13,22 @@ import { UserUpdateRequest } from '../../models/user-update-request.model';
 import { UserPublicResponse } from '../../models/user-public-response.model';
 import { AvatarComponent } from '../shared/avatar/avatar.component';
 import { ErrorService } from '../../services/error.service';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule, AvatarComponent],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrl: './dashboard.component.scss',
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(16px)' }),
+        animate('400ms cubic-bezier(0.16, 1, 0.3, 1)', style({ opacity: 1, transform: 'translateY(0)' }))
+      ])
+    ])
+  ]
 })
 export class DashboardComponent implements OnInit {
   authService = inject(AuthService);
@@ -33,8 +42,19 @@ export class DashboardComponent implements OnInit {
   user$ = this.authService.currentUser$;
   fullUserProfile: UserPublicResponse | null = null;
 
+  // Personalized Organizer invitations for Clients
+  readonly organizerInviteMessages = [
+    "¿Listo para llevar tu experiencia al siguiente nivel? Conviértete en Organizador y crea tus propios eventos.",
+    "¡Hola! ¿Sabías que podés vender entradas para tus propios shows o conferencias? Convertite en Organizador hoy.",
+    "¡Lanza tu primer evento! Cambia tu rol a Organizador desde tu perfil y empieza a gestionar tus tickets con Web3.",
+    "¿Tenés un espacio o querés armar un show? Transfórmate en Organizador y publica tu evento gratis en VibeCheck."
+  ];
+  selectedInviteMessage = "";
+
   ngOnInit(): void {
     this.loadFullUserProfile();
+    // Select a random invitation message
+    this.selectedInviteMessage = this.organizerInviteMessages[Math.floor(Math.random() * this.organizerInviteMessages.length)];
   }
 
   private loadFullUserProfile(): void {
@@ -97,6 +117,11 @@ export class DashboardComponent implements OnInit {
     return this.userRole === 'admin_eventos';
   }
 
+  // General check to identify any type of administrator/auditor role
+  get isCualquierAdmin(): boolean {
+    return this.isAdmin || this.isAdminUsuarios || this.isAdminEventos || this.isAdminVenues || this.isCeo;
+  }
+
   navigateTo(path: string): void {
     this.router.navigate([path]);
   }
@@ -105,55 +130,51 @@ export class DashboardComponent implements OnInit {
     const user = this.authService.getCurrentUserValue();
     if (!user?.username) return;
 
-    this.usersService.getUserByUsername(user.username).subscribe({
-      next: (fullUser) => {
-        const dialogRef = this.dialog.open(ChangeRoleDialogComponent, {
-          width: '440px',
-          data: { user: fullUser },
-          autoFocus: false
-        });
+    const dialogRef = this.dialog.open(ChangeRoleDialogComponent, {
+      width: '440px',
+      data: { username: user.username, initialRole: user.role },
+      autoFocus: false
+    });
 
-        dialogRef.afterClosed().subscribe(result => {
-          if (result && result.roleId) {
-            this.snackBar.open('Actualizando rol...', 'Cerrar', { duration: 2000 });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.roleId && result.fullUser) {
+        const fullUser = result.fullUser;
+        this.snackBar.open('Actualizando rol...', 'Cerrar', { duration: 2000 });
 
-            let formattedBirthdate = fullUser.birthdate;
-            if (Array.isArray(fullUser.birthdate)) {
-              const [year, month, day] = fullUser.birthdate;
-              formattedBirthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            }
+        let formattedBirthdate = fullUser.birthdate;
+        if (Array.isArray(fullUser.birthdate)) {
+          const [year, month, day] = fullUser.birthdate;
+          formattedBirthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
 
-            const updatePayload: UserUpdateRequest = {
-              username: fullUser.username,
-              name: fullUser.name,
-              lastName: fullUser.lastName,
-              email: fullUser.email,
-              phoneNumber: fullUser.phoneNumber,
-              birthdate: formattedBirthdate,
-              roleId: result.roleId
-            };
+        const updatePayload: UserUpdateRequest = {
+          username: fullUser.username,
+          name: fullUser.name,
+          lastName: fullUser.lastName,
+          email: fullUser.email,
+          phoneNumber: fullUser.phoneNumber,
+          birthdate: formattedBirthdate,
+          roleId: result.roleId
+        };
 
-            this.usersService.updateUser(user.username, updatePayload).subscribe({
+        this.usersService.updateUser(user.username, updatePayload).subscribe({
+          next: () => {
+            this.authService.refreshToken().subscribe({
               next: () => {
-                this.authService.refreshToken().subscribe({
-                  next: () => {
-                    this.snackBar.open('Rol actualizado y sesión sincronizada', 'Cerrar', { duration: 3000 });
-                  },
-                  error: (err) => {
-                    console.error('Error al refrescar el token:', err);
-                    this.errorService.handleError(err, 'Rol actualizado, por favor reinicia sesión para ver los cambios');
-                  }
-                });
+                this.snackBar.open('Rol actualizado y sesión sincronizada', 'Cerrar', { duration: 3000 });
               },
               error: (err) => {
-                console.error('Error al cambiar el rol:', err);
-                this.errorService.handleError(err, 'Error al actualizar el rol');
+                console.error('Error al refrescar el token:', err);
+                this.errorService.handleError(err, 'Rol actualizado, por favor reinicia sesión para ver los cambios');
               }
             });
+          },
+          error: (err) => {
+            console.error('Error al cambiar el rol:', err);
+            this.errorService.handleError(err, 'Error al actualizar el rol');
           }
         });
-      },
-      error: (err) => this.errorService.handleError(err, 'Error al obtener perfil para cambio de rol:')
+      }
     });
   }
 
@@ -191,7 +212,7 @@ export class DashboardComponent implements OnInit {
         // Stop the stream immediately since we're just checking permission
         stream.getTracks().forEach(track => track.stop());
         
-        // Navigate to the scanner page (you'll need to create this route/component)
+        // Navigate to the scanner page
         this.router.navigate(['/scanner']);
       })
       .catch((err) => {
@@ -215,3 +236,4 @@ export class DashboardComponent implements OnInit {
       });
   }
 }
+

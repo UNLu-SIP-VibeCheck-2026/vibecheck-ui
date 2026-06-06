@@ -47,11 +47,11 @@ export class Web3Service {
     return this.provider;
   }
 
-
   // Smart Contract Addresses
   readonly VBK_ADDRESS = "0xF84c05F1278A60601989192077f40bAb340A1947";
   readonly USDC_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-  readonly UNISWAP_ROUTER_ADDRESS = "0xeE567Fe1712Faf6149d80dA1E6934E354124CfE3";
+  readonly UNISWAP_ROUTER_ADDRESS =
+    "0xeE567Fe1712Faf6149d80dA1E6934E354124CfE3";
 
   private readonly UNISWAP_ROUTER_ABI = [
     "function getAmountsOut(uint256 amountIn, address[] path) view returns (uint256[] amounts)",
@@ -64,6 +64,7 @@ export class Web3Service {
   readonly NFT_MARKETPLACE_ADDRESS =
     "0xe293447a3229B628644d0f341F05E5AcCd7FC72e";
   readonly REFUND_SIGNER_ADDRESS = "0xEcd25CC3A10144B8b7f171Bb8B458791998f80d3";
+  readonly TREASURY_ADDRESS = "0x54618BBcc0b65778a872A0F01397f7D9983F8507";
 
   private readonly SEPOLIA_CHAIN_ID = "0xaa36a7";
 
@@ -299,7 +300,8 @@ export class Web3Service {
       this.ERC20_ABI,
       signer,
     );
-    const amountInUnits = (ethers.parseUnits(priceUsdc.toString(), 6) * 107n) / 100n;
+    const amountInUnits =
+      (ethers.parseUnits(priceUsdc.toString(), 6) * 107n) / 100n;
     const approveTx = await usdcContract["approve"](
       this.OFFERING_NFT_ADDRESS,
       amountInUnits,
@@ -512,17 +514,28 @@ export class Web3Service {
     const routerContract = new ethers.Contract(
       this.UNISWAP_ROUTER_ADDRESS,
       this.UNISWAP_ROUTER_ABI,
-      this.provider
+      this.provider,
     );
     const amountIn = ethers.parseUnits(usdcAmount.toString(), 6);
-    const amounts = await routerContract["getAmountsOut"](amountIn, [this.USDC_ADDRESS, this.VBK_ADDRESS]);
+    const amounts = await routerContract["getAmountsOut"](amountIn, [
+      this.USDC_ADDRESS,
+      this.VBK_ADDRESS,
+    ]);
     return amounts[1];
   }
 
-  async approveToken(tokenAddress: string, spender: string, amount: bigint): Promise<void> {
+  async approveToken(
+    tokenAddress: string,
+    spender: string,
+    amount: bigint,
+  ): Promise<void> {
     if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
     const signer = await this.provider.getSigner();
-    const tokenContract = new ethers.Contract(tokenAddress, this.ERC20_ABI, signer);
+    const tokenContract = new ethers.Contract(
+      tokenAddress,
+      this.ERC20_ABI,
+      signer,
+    );
     const tx = await tokenContract["approve"](spender, amount);
     await tx.wait();
   }
@@ -532,27 +545,30 @@ export class Web3Service {
     amountOutMin: bigint,
     path: string[],
     to: string,
-    deadline: number
+    deadline: number,
   ): Promise<string> {
     if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
     const signer = await this.provider.getSigner();
     const routerContract = new ethers.Contract(
       this.UNISWAP_ROUTER_ADDRESS,
       this.UNISWAP_ROUTER_ABI,
-      signer
+      signer,
     );
     const tx = await routerContract["swapExactTokensForTokens"](
       amountIn,
       amountOutMin,
       path,
       to,
-      deadline
+      deadline,
     );
     const receipt = await tx.wait();
     return receipt.hash ?? tx.hash;
   }
 
-  async swapUsdcForVbk(usdcAmount: number, slippagePct: number = 2): Promise<string> {
+  async swapUsdcForVbk(
+    usdcAmount: number,
+    slippagePct: number = 2,
+  ): Promise<string> {
     if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
     const signer = await this.provider.getSigner();
     const userAddress = await signer.getAddress();
@@ -563,10 +579,20 @@ export class Web3Service {
     // amountOutMin = quoted * (100 - slippagePct) / 100
     const amountOutMin = (quoted * BigInt(100 - slippagePct)) / 100n;
 
-    await this.approveToken(this.USDC_ADDRESS, this.UNISWAP_ROUTER_ADDRESS, amountIn);
+    await this.approveToken(
+      this.USDC_ADDRESS,
+      this.UNISWAP_ROUTER_ADDRESS,
+      amountIn,
+    );
 
     const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes
-    return await this.executeSwap(amountIn, amountOutMin, [this.USDC_ADDRESS, this.VBK_ADDRESS], userAddress, deadline);
+    return await this.executeSwap(
+      amountIn,
+      amountOutMin,
+      [this.USDC_ADDRESS, this.VBK_ADDRESS],
+      userAddress,
+      deadline,
+    );
   }
 
   async quoteVbkToUsdc(vbkAmount: number): Promise<bigint> {
@@ -576,14 +602,20 @@ export class Web3Service {
     const routerContract = new ethers.Contract(
       this.UNISWAP_ROUTER_ADDRESS,
       this.UNISWAP_ROUTER_ABI,
-      this.provider
+      this.provider,
     );
     const amountIn = ethers.parseUnits(vbkAmount.toString(), 18);
-    const amounts = await routerContract["getAmountsOut"](amountIn, [this.VBK_ADDRESS, this.USDC_ADDRESS]);
+    const amounts = await routerContract["getAmountsOut"](amountIn, [
+      this.VBK_ADDRESS,
+      this.USDC_ADDRESS,
+    ]);
     return amounts[1];
   }
 
-  async swapVbkForUsdc(vbkAmount: number, slippagePct: number = 2): Promise<string> {
+  async swapVbkForUsdc(
+    vbkAmount: number,
+    slippagePct: number = 2,
+  ): Promise<string> {
     if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
     const signer = await this.provider.getSigner();
     const userAddress = await signer.getAddress();
@@ -595,20 +627,35 @@ export class Web3Service {
     const afterFee = (quoted * 85n) / 100n; // 15% fee
     const amountOutMin = (afterFee * BigInt(100 - slippagePct)) / 100n;
 
-    await this.approveToken(this.VBK_ADDRESS, this.UNISWAP_ROUTER_ADDRESS, amountIn);
+    await this.approveToken(
+      this.VBK_ADDRESS,
+      this.UNISWAP_ROUTER_ADDRESS,
+      amountIn,
+    );
 
     const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes
-    return await this.executeSwap(amountIn, amountOutMin, [this.VBK_ADDRESS, this.USDC_ADDRESS], userAddress, deadline);
+    return await this.executeSwap(
+      amountIn,
+      amountOutMin,
+      [this.VBK_ADDRESS, this.USDC_ADDRESS],
+      userAddress,
+      deadline,
+    );
   }
 
-  async getVbkReceivedFromSwap(txHash: string, userAddress: string): Promise<bigint> {
+  async getVbkReceivedFromSwap(
+    txHash: string,
+    userAddress: string,
+  ): Promise<bigint> {
     if (!this.provider) {
       this.provider = new ethers.BrowserProvider(this.ethereum);
     }
     const receipt = await this.provider.getTransactionReceipt(txHash);
-    if (!receipt) throw new Error("No se pudo obtener el recibo de transacción.");
+    if (!receipt)
+      throw new Error("No se pudo obtener el recibo de transacción.");
 
-    const transferEventTopic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    const transferEventTopic =
+      "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
     let amountReceived = 0n;
 
     for (const log of receipt.logs) {
@@ -616,23 +663,32 @@ export class Web3Service {
         log.address.toLowerCase() === this.VBK_ADDRESS.toLowerCase() &&
         log.topics[0] === transferEventTopic &&
         log.topics[2] &&
-        log.topics[2].toLowerCase().slice(-40) === userAddress.toLowerCase().slice(-40)
+        log.topics[2].toLowerCase().slice(-40) ===
+          userAddress.toLowerCase().slice(-40)
       ) {
-        const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["uint256"], log.data);
+        const decoded = ethers.AbiCoder.defaultAbiCoder().decode(
+          ["uint256"],
+          log.data,
+        );
         amountReceived = decoded[0];
       }
     }
     return amountReceived;
   }
 
-  async getUsdcReceivedFromSwap(txHash: string, userAddress: string): Promise<bigint> {
+  async getUsdcReceivedFromSwap(
+    txHash: string,
+    userAddress: string,
+  ): Promise<bigint> {
     if (!this.provider) {
       this.provider = new ethers.BrowserProvider(this.ethereum);
     }
     const receipt = await this.provider.getTransactionReceipt(txHash);
-    if (!receipt) throw new Error("No se pudo obtener el recibo de transacción.");
+    if (!receipt)
+      throw new Error("No se pudo obtener el recibo de transacción.");
 
-    const transferEventTopic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    const transferEventTopic =
+      "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
     let amountReceived = 0n;
 
     for (const log of receipt.logs) {
@@ -640,9 +696,13 @@ export class Web3Service {
         log.address.toLowerCase() === this.USDC_ADDRESS.toLowerCase() &&
         log.topics[0] === transferEventTopic &&
         log.topics[2] &&
-        log.topics[2].toLowerCase().slice(-40) === userAddress.toLowerCase().slice(-40)
+        log.topics[2].toLowerCase().slice(-40) ===
+          userAddress.toLowerCase().slice(-40)
       ) {
-        const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["uint256"], log.data);
+        const decoded = ethers.AbiCoder.defaultAbiCoder().decode(
+          ["uint256"],
+          log.data,
+        );
         amountReceived = decoded[0];
       }
     }

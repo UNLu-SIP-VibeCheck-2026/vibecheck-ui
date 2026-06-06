@@ -103,14 +103,20 @@ export class DateTimePickerComponent
 
   form: FormGroup = new FormGroup({
     date: new FormControl<Date | null>(null, Validators.required),
-    time: new FormControl<string>('', Validators.required),
+    hour: new FormControl<string>('', Validators.required),
+    minute: new FormControl<string>('', Validators.required),
   });
 
   errorMessage = '';
 
+  // Generate lists for hour and minute options
+  hours: string[] = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+  minutes: string[] = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
+
   // Typed getters for the template
   get dateCtrl(): FormControl { return this.form.get('date') as FormControl; }
-  get timeCtrl(): FormControl { return this.form.get('time') as FormControl; }
+  get hourCtrl(): FormControl { return this.form.get('hour') as FormControl; }
+  get minuteCtrl(): FormControl { return this.form.get('minute') as FormControl; }
 
   // ControlValueAccessor callbacks
   private onChange: (value: string | null) => void = () => {};
@@ -135,10 +141,20 @@ export class DateTimePickerComponent
       const dt = new Date(value);
       if (isNaN(dt.getTime())) return;
       const pad = (n: number) => (n < 10 ? '0' + n : '' + n);
+      const h = pad(dt.getHours());
+      const m = pad(dt.getMinutes());
+
+      // If the incoming minute is not in the predefined 5-minute list, add it dynamically
+      if (!this.minutes.includes(m)) {
+        this.minutes.push(m);
+        this.minutes.sort();
+      }
+
       this.form.patchValue(
         {
           date: dt,
-          time: `${pad(dt.getHours())}:${pad(dt.getMinutes())}`,
+          hour: h,
+          minute: m,
         },
         { emitEvent: false }
       );
@@ -166,15 +182,16 @@ export class DateTimePickerComponent
   // --- Internal helpers ---
 
   private emitValue(): void {
-    const { date, time } = this.form.value;
+    const { date, hour, minute } = this.form.value;
     this.errorMessage = '';
 
-    if (!date || !time) {
+    if (!date || !hour || !minute) {
       this.onChange(null);
       this.validChange.emit(false);
       return;
     }
 
+    const time = `${hour}:${minute}`;
     const d: Date = new Date(date);
     const pad = (n: number) => (n < 10 ? '0' + n : '' + n);
     const iso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${time}:00`;
@@ -209,6 +226,7 @@ export class DateTimePickerComponent
     this.onChange(iso);
     this.validChange.emit(true);
   }
+
 
   /** Filter function for the datepicker — disable past dates */
   dateFilter = (d: Date | null): boolean => {

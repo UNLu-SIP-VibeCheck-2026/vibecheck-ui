@@ -154,57 +154,53 @@ export class PerfilConfigComponent implements OnInit {
     const user = this.authService.getCurrentUserValue();
     if (!user?.username) return;
 
-    this.usersService.getUserByUsername(user.username).subscribe({
-      next: (fullUser) => {
-        const dialogRef = this.dialog.open(ChangeRoleDialogComponent, {
-          width: '440px',
-          data: { user: fullUser },
-          autoFocus: false
-        });
+    const dialogRef = this.dialog.open(ChangeRoleDialogComponent, {
+      width: '440px',
+      data: { username: user.username, initialRole: user.role },
+      autoFocus: false
+    });
 
-        dialogRef.afterClosed().subscribe(result => {
-          if (result && result.roleId) {
-            this.snackBar.open('Actualizando rol...', 'Cerrar', { duration: 2000 });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.roleId && result.fullUser) {
+        const fullUser = result.fullUser;
+        this.snackBar.open('Actualizando rol...', 'Cerrar', { duration: 2000 });
 
-            // Formatear la fecha de nacimiento de array [YYYY, MM, DD] a string 'YYYY-MM-DD' si es necesario
-            let formattedBirthdate = fullUser.birthdate;
-            if (Array.isArray(fullUser.birthdate)) {
-              const [year, month, day] = fullUser.birthdate;
-              formattedBirthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            }
-            
-            const updatePayload: UserUpdateRequest = {
-              username:    fullUser.username,
-              name:        fullUser.name,
-              lastName:    fullUser.lastName,
-              email:       fullUser.email,
-              phoneNumber: fullUser.phoneNumber,
-              birthdate:   formattedBirthdate,
-              roleId:      result.roleId
-            };
+        // Formatear la fecha de nacimiento de array [YYYY, MM, DD] a string 'YYYY-MM-DD' si es necesario
+        let formattedBirthdate = fullUser.birthdate;
+        if (Array.isArray(fullUser.birthdate)) {
+          const [year, month, day] = fullUser.birthdate;
+          formattedBirthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+        
+        const updatePayload: UserUpdateRequest = {
+          username:    fullUser.username,
+          name:        fullUser.name,
+          lastName:    fullUser.lastName,
+          email:       fullUser.email,
+          phoneNumber: fullUser.phoneNumber,
+          birthdate:   formattedBirthdate,
+          roleId:      result.roleId
+        };
 
-            this.usersService.updateUser(user.username, updatePayload).subscribe({
+        this.usersService.updateUser(user.username, updatePayload).subscribe({
+          next: () => {
+            // Refresh tokens to get the new role claim without logging out
+            this.authService.refreshToken().subscribe({
               next: () => {
-                // Refresh tokens to get the new role claim without logging out
-                this.authService.refreshToken().subscribe({
-                  next: () => {
-                    this.snackBar.open('Rol actualizado y sesión sincronizada', 'Cerrar', { duration: 3000 });
-                  },
-                  error: (err) => {
-                    console.error('Error al refrescar el token:', err);
-                    this.errorService.handleError(err, 'Rol actualizado, por favor reinicia sesión para ver los cambios');
-                  }
-                });
+                this.snackBar.open('Rol actualizado y sesión sincronizada', 'Cerrar', { duration: 3000 });
               },
               error: (err) => {
-                console.error('Error al cambiar el rol:', err);
-                this.errorService.handleError(err, 'Error al actualizar el rol');
+                console.error('Error al refrescar el token:', err);
+                this.errorService.handleError(err, 'Rol actualizado, por favor reinicia sesión para ver los cambios');
               }
             });
+          },
+          error: (err) => {
+            console.error('Error al cambiar el rol:', err);
+            this.errorService.handleError(err, 'Error al actualizar el rol');
           }
         });
-      },
-      error: (err) => this.errorService.handleError(err, "Error al obtener perfil para cambio de rol:"),
+      }
     });
   }
 

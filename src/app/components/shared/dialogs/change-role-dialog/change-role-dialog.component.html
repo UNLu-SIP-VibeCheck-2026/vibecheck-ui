@@ -1,32 +1,44 @@
 <div class="change-role-container">
-    <div class="role-selection-wrapper">
-        
-        <div class="form-group custom-field-wrapper role-selection">
-            <label>En VibeCheck quiero:</label>
-            <div class="role-buttons">
-                <button type="button" 
-                        class="role-btn" 
-                        [class.active]="selectedRole === 'comprar'"
-                        (click)="setRole('comprar')">
-                    Comprar entradas
-                </button>
-                <button type="button" 
-                        class="role-btn" 
-                        [class.active]="selectedRole === 'crear'"
-                        (click)="setRole('crear')">
-                    Crear Eventos
+    @if (isLoadingUser || isLoadingRoles) {
+        <div class="skeleton-wrapper">
+            <div class="skeleton-label"></div>
+            <div class="skeleton-buttons-row">
+                <div class="skeleton-btn"></div>
+                <div class="skeleton-btn"></div>
+            </div>
+            <div class="skeleton-submit-btn"></div>
+        </div>
+    } @else {
+        <div class="role-selection-wrapper">
+            
+            <div class="form-group custom-field-wrapper role-selection">
+                <label>En VibeCheck quiero:</label>
+                <div class="role-buttons">
+                    <button type="button" 
+                            class="role-btn" 
+                            [class.active]="selectedRole === 'comprar'"
+                            (click)="setRole('comprar')">
+                        Comprar entradas
+                    </button>
+                    <button type="button" 
+                            class="role-btn" 
+                            [class.active]="selectedRole === 'crear'"
+                            (click)="setRole('crear')">
+                        Crear Eventos
+                    </button>
+                </div>
+            </div>
+
+            <div class="dialog-actions">
+                <button mat-raised-button 
+                        (click)="onSubmit()"
+                        [disabled]="!selectedRole"
+                        class="custom-btn-submit">
+                    Confirmar Modificación
                 </button>
             </div>
-        </div>
 
-        <div class="dialog-actions">
-            <button mat-raised-button 
-                    (click)="onSubmit()"
-                    [disabled]="!selectedRole"
-                    class="custom-btn-submit">
-                Confirmar Modificación
-            </button>
         </div>
+    }
 
-    </div>
 </div>

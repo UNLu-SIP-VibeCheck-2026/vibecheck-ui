@@ -5,25 +5,27 @@
         <h1 class="display-medium">Eventos</h1>
         <div class="search-filters-container">
           <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-            <input matInput placeholder="Buscar por evento o locación..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
+            <input matInput placeholder="Buscar por evento o locación..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
             <span matSuffix class="search-icon-wrapper">
               <mat-icon>search</mat-icon>
             </span>
           </mat-form-field>
           <mat-form-field appearance="outline" class="category-filter-field" subscriptSizing="dynamic">
-            <mat-select placeholder="Todas las categorías" [(ngModel)]="selectedCategoryId" (selectionChange)="onCategoryChange()">
+            <mat-select placeholder="Todas las categorías" [ngModel]="selectedCategoryId()" (ngModelChange)="selectedCategoryId.set($event); onCategoryChange()">
               <mat-option [value]="null">Todas las categorías</mat-option>
-              <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</mat-option>
+              @for (cat of categories(); track cat.id) {
+                <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
       </div>
       <div class="actions-container">
         <div class="view-toggle">
-          <button class="toggle-btn" [class.active]="viewMode === 'carousel'" (click)="viewMode = 'carousel'" title="Vista Carrusel">
+          <button class="toggle-btn" [class.active]="viewMode() === 'carousel'" (click)="viewMode.set('carousel')" title="Vista Carrusel">
             <mat-icon>view_carousel</mat-icon>
           </button>
-          <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Vista Grilla">
+          <button class="toggle-btn" [class.active]="viewMode() === 'grid'" (click)="viewMode.set('grid')" title="Vista Grilla">
             <mat-icon>grid_view</mat-icon>
           </button>
         </div>
@@ -31,184 +33,243 @@
     </div>
   </div>
 
-    <!-- Carousels for showcased/promoted events -->
-    <div class="carousels" *ngIf="viewMode === 'carousel'">
-      <!-- Large single-item carousel (auto-slide cada 3s) -->
-      <section *ngIf="tier1Events.length" class="carousel carousel-large">
-        <div class="carousel-viewport">
-          <div class="carousel-track" [style.transform]="'translateX(-' + (currentIndex1 * 100) + '%)'" [style.width]="tier1Events.length * 100 + '%'">
-            <div class="carousel-item" *ngFor="let ev of tier1Events" (click)="navigateToEvent(ev.id)">
-              <div class="large-card" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
-                <div class="large-image-container">
-                  <img class="large-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
-                  <div class="no-image-placeholder-large" *ngIf="!getEventImage(ev.id)">
-                    <mat-icon>event</mat-icon>
+  <!-- Carousels for showcased/promoted events -->
+  @if (viewMode() === 'carousel') {
+    <div class="carousels" @fadeInOut>
+      <!-- Large single-item carousel (auto-slide) -->
+      @if (tier1Events().length) {
+        <section class="carousel carousel-large" aria-label="Destacados principales">
+          <div class="carousel-viewport">
+            <div class="carousel-track" [style.transform]="'translateX(-' + (currentIndex1() * 100) + '%)'" [style.width]="tier1Events().length * 100 + '%'">
+              @for (ev of tier1Events(); track ev.id) {
+                <div class="carousel-item" (click)="navigateToEvent(ev.id)">
+                  <div class="large-card" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
+                    <!-- Premium Label -->
+                    @if (ev.advertisementLevel === 'HIGH') {
+                      <div class="premium-badge-tag"><mat-icon>workspace_premium</mat-icon><span>PREMIUM</span></div>
+                    } @else if (ev.advertisementLevel === 'MEDIUM') {
+                      <div class="premium-badge-tag featured-tag"><mat-icon>star</mat-icon><span>RECOMENDADO</span></div>
+                    }
+                    
+                    <div class="large-image-container">
+                      @if (getEventImage(ev.id)) {
+                        <img class="large-image" [src]="getEventImage(ev.id)" [alt]="ev.title">
+                      } @else {
+                        <div class="no-image-placeholder-large">
+                          <mat-icon>event</mat-icon>
+                        </div>
+                      }
+                    </div>
+                    <div class="large-info">
+                      <div class="large-header-block">
+                        <div class="card-badges">
+                          @for (cat of ev.realCategories; track cat) {
+                            <span class="category-badge">{{ cat }}</span>
+                          }
+                        </div>
+                        <h2 class="large-title">{{ ev.title }}</h2>
+                      </div>
+                      <div class="large-data-panel">
+                        <div class="large-data-item">
+                          <span class="data-label">Inicio</span>
+                          <span class="data-value">{{ ev.startDate }}</span>
+                        </div>
+                        <div class="large-data-item">
+                          <span class="data-label">Fin</span>
+                          <span class="data-value">{{ ev.endDate || ev.startDate }}</span>
+                        </div>
+                        <div class="large-data-item">
+                          <span class="data-label">Venue</span>
+                          <span class="data-value">{{ ev.venue }}</span>
+                        </div>
+                        <div class="large-data-item">
+                          <span class="data-label">Capacidad</span>
+                          <span class="data-value">{{ (ev.capacity || 0) | number }} personas</span>
+                        </div>
+                      </div>
+                      <p class="large-desc">{{ ev.description }}</p>
+                    </div>
                   </div>
                 </div>
-                <div class="large-info">
-                  <div class="large-header-block">
-                    <div class="card-badges">
-                      <span class="category-badge" *ngFor="let cat of ev.realCategories">{{ cat }}</span>
-                    </div>
-                    <h2 class="large-title">{{ ev.title }}</h2>
-                  </div>
-                  <div class="large-data-panel">
-                    <div class="large-data-item">
-                      <span class="data-label">Inicio</span>
-                      <span class="data-value">{{ ev.startDate }}</span>
-                    </div>
-                    <div class="large-data-item">
-                      <span class="data-label">Fin</span>
-                      <span class="data-value">{{ ev.endDate || ev.startDate }}</span>
-                    </div>
-                    <div class="large-data-item">
-                      <span class="data-label">Venue</span>
-                      <span class="data-value">{{ ev.venue }}</span>
-                    </div>
-                    <div class="large-data-item">
-                      <span class="data-label">Capacidad</span>
-                      <span class="data-value">{{ (ev.capacity || 0) | number }} personas</span>
-                    </div>
-                  </div>
-                  <p class="large-desc">{{ ev.description }}</p>
-                </div>
-              </div>
+              }
             </div>
-          </div>
-          <div class="carousel-dots">
-            <button *ngFor="let _ of tier1Events; let i = index" 
-                    class="carousel-dot" 
-                    [class.active]="i === currentIndex1"
-                    (click)="currentIndex1 = i">
+            <div class="carousel-dots">
+              @for (ev of tier1Events(); track ev.id; let i = $index) {
+                <button class="carousel-dot" 
+                        [class.active]="i === currentIndex1()"
+                        (click)="currentIndex1.set(i)"
+                        [attr.aria-label]="'Ir al evento destacado ' + (i + 1)">
+                </button>
+              }
+            </div>
+            <button class="carousel-nav prev" type="button" (click)="prevTier1()" aria-label="Evento anterior">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button class="carousel-nav next" type="button" (click)="nextTier1()" aria-label="Evento siguiente">
+              <mat-icon>chevron_right</mat-icon>
             </button>
           </div>
-          <button class="carousel-nav prev" type="button" (click)="prevTier1()">
-            <mat-icon>chevron_left</mat-icon>
-          </button>
-          <button class="carousel-nav next" type="button" (click)="nextTier1()">
-            <mat-icon>chevron_right</mat-icon>
-          </button>
-        </div>
-      </section>
+        </section>
+      }
 
       <!-- Mid carousel: 3 items per viewport, less info -->
-      <section *ngIf="tier2Events.length" class="carousel carousel-mid">
-        <div class="carousel-section-header">
-          <h3 class="carousel-section-title">Eventos Recomendados</h3>
-        </div>
-        <div class="carousel-scroll" #midCarousel>
-          <div class="mid-item" *ngFor="let ev of tier2Events" (click)="navigateToEvent(ev.id)" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
-            <div class="mid-image-container">
-              <img class="mid-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
-              <div class="no-image-placeholder-mid" *ngIf="!getEventImage(ev.id)">
-                <mat-icon>event</mat-icon>
-              </div>
-            </div>
-            <div class="mid-info">
-              <div class="card-badges">
-                <span class="category-badge mini" *ngFor="let cat of ev.realCategories">{{ cat }}</span>
-              </div>
-              <h3 class="mid-title">{{ ev.title }}</h3>
-              <div class="mid-data">
-                <div class="mid-data-row">{{ ev.venue }}</div>
-                <div class="mid-data-row">Capacidad: {{ (ev.capacity || 0) | number }} personas</div>
-                <div class="mid-data-row">{{ ev.startDate }}</div>
-              </div>
-            </div>
+      @if (tier2Events().length) {
+        <section class="carousel carousel-mid">
+          <div class="carousel-section-header">
+            <h3 class="carousel-section-title">Eventos Recomendados</h3>
           </div>
-        </div>
-        <button class="carousel-nav prev" type="button" (click)="scrollTier2(-1)">
-          <mat-icon>chevron_left</mat-icon>
-        </button>
-        <button class="carousel-nav next" type="button" (click)="scrollTier2(1)">
-          <mat-icon>chevron_right</mat-icon>
-        </button>
-      </section>
+          <div class="carousel-scroll" #midCarousel>
+            @for (ev of tier2Events(); track ev.id) {
+              <div class="mid-item" (click)="navigateToEvent(ev.id)" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
+                @if (ev.advertisementLevel === 'HIGH') {
+                  <div class="item-tag-badge mini-premium"><mat-icon>workspace_premium</mat-icon></div>
+                } @else if (ev.advertisementLevel === 'MEDIUM') {
+                  <div class="item-tag-badge mini-featured"><mat-icon>star</mat-icon></div>
+                }
+                <div class="mid-image-container">
+                  @if (getEventImage(ev.id)) {
+                    <img class="mid-image" [src]="getEventImage(ev.id)" [alt]="ev.title">
+                  } @else {
+                    <div class="no-image-placeholder-mid">
+                      <mat-icon>event</mat-icon>
+                    </div>
+                  }
+                </div>
+                <div class="mid-info">
+                  <div class="card-badges">
+                    @for (cat of ev.realCategories; track cat) {
+                      <span class="category-badge mini">{{ cat }}</span>
+                    }
+                  </div>
+                  <h3 class="mid-title">{{ ev.title }}</h3>
+                  <div class="mid-data">
+                    <div class="mid-data-row">{{ ev.venue }}</div>
+                    <div class="mid-data-row">Capacidad: {{ (ev.capacity || 0) | number }}</div>
+                    <div class="mid-data-row">{{ ev.startDate }}</div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          <button class="carousel-nav prev" type="button" (click)="scrollTier2(-1)" aria-label="Desplazar a la izquierda">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button class="carousel-nav next" type="button" (click)="scrollTier2(1)" aria-label="Desplazar a la derecha">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </section>
+      }
 
       <!-- Mini carousel: 6 images per viewport (con titulo y overlay de info) -->
-      <section *ngIf="tier3Events.length" class="carousel carousel-mini">
-        <div class="carousel-section-header">
-          <h3 class="carousel-section-title">Más Eventos</h3>
-        </div>
-        <div class="mini-scroll" #miniCarousel>
-          <div class="mini-item" *ngFor="let ev of tier3Events" (click)="navigateToEvent(ev.id)" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
-            <div class="mini-card-inner">
-              <img class="mini-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
-              <div class="no-image-placeholder-mini" *ngIf="!getEventImage(ev.id)">
-                <mat-icon>event</mat-icon>
+      @if (tier3Events().length) {
+        <section class="carousel carousel-mini">
+          <div class="carousel-section-header">
+            <h3 class="carousel-section-title">Más Eventos</h3>
+          </div>
+          <div class="mini-scroll" #miniCarousel>
+            @for (ev of tier3Events(); track ev.id) {
+              <div class="mini-item" (click)="navigateToEvent(ev.id)" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
+                <div class="mini-card-inner">
+                  @if (getEventImage(ev.id)) {
+                    <img class="mini-image" [src]="getEventImage(ev.id)" [alt]="ev.title">
+                  } @else {
+                    <div class="no-image-placeholder-mini">
+                      <mat-icon>event</mat-icon>
+                    </div>
+                  }
+                  <div class="mini-info-overlay">
+                    <span class="mini-event-title">{{ ev.title }}</span>
+                    <span class="mini-event-date">{{ ev.startDate }}</span>
+                  </div>
+                </div>
               </div>
-              <div class="mini-info-overlay">
-                <span class="mini-event-title">{{ ev.title }}</span>
-                <span class="mini-event-date">{{ ev.startDate }}</span>
+            }
+          </div>
+          <button class="carousel-nav prev" type="button" (click)="scrollTier3(-1)" aria-label="Desplazar a la izquierda">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button class="carousel-nav next" type="button" (click)="scrollTier3(1)" aria-label="Desplazar a la derecha">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </section>
+      }
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <app-loading-state 
+      [mode]="'skeleton'" 
+      [skeletonType]="'card'" 
+      [count]="8"
+      [gridClass]="'events-grid'">
+    </app-loading-state>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading() && pagedEvents().length === 0) {
+    <app-empty-state 
+      [icon]="'event_busy'" 
+      [title]="'No se encontraron eventos'" 
+      [description]="searchQuery() ? 'No encontramos eventos que coincidan con tu búsqueda: \'' + searchQuery() + '\'.' : 'Por el momento no hay eventos disponibles en esta categoría.'"
+      [actionText]="searchQuery() ? 'Limpiar búsqueda' : ''"
+      (actionClick)="searchQuery.set('')">
+    </app-empty-state>
+  }
+
+  <!-- Events Grid -->
+  @if (!isLoading() && pagedEvents().length > 0 && viewMode() === 'grid') {
+    <div class="events-grid-wrapper" @fadeInOut>
+      <div class="events-grid" [@listAnimation]="pagedEvents().length">
+        @for (event of pagedEvents(); track event.id) {
+          <div class="event-card" (click)="navigateToEvent(event.id)" [class.ad-highlight]="event.advertisementPlanId">
+            @if (event.advertisementPlanId) {
+              <div class="grid-card-tag"><mat-icon>star</mat-icon><span>DESTACADO</span></div>
+            }
+            <div class="event-image-container">
+              @if (getEventImage(event.id)) {
+                <img [src]="getEventImage(event.id)" [alt]="event.title" class="event-image">
+              } @else {
+                <div class="no-image-placeholder">
+                  <mat-icon>image_not_supported</mat-icon>
+                </div>
+              }
+            </div>
+            
+            <!-- Regular Info -->
+            <div class="event-info">
+              <div class="card-badges">
+                @for (cat of event.realCategories; track cat) {
+                  <span class="category-badge">{{ cat }}</span>
+                }
+              </div>
+              <h3 class="headline-large">{{ event.title }}</h3>
+              <div class="event-metadata">
+                <div class="metadata-item">
+                  <mat-icon>calendar_today</mat-icon>
+                  <span>{{ event.startDate }}</span>
+                </div>
+                <div class="metadata-item">
+                  <mat-icon>location_on</mat-icon>
+                  <span>{{ event.venue }}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <button class="carousel-nav prev" type="button" (click)="scrollTier3(-1)">
-          <mat-icon>chevron_left</mat-icon>
-        </button>
-        <button class="carousel-nav next" type="button" (click)="scrollTier3(1)">
-          <mat-icon>chevron_right</mat-icon>
-        </button>
-      </section>
-    </div>
-
-  <!-- Loading State -->
-  <app-loading-state 
-    *ngIf="isLoading" 
-    [mode]="'skeleton'" 
-    [skeletonType]="'card'" 
-    [count]="8"
-    [gridClass]="'events-grid'">
-  </app-loading-state>
-
-  <!-- Empty State -->
-  <app-empty-state 
-    *ngIf="!isLoading && pagedEvents.length === 0" 
-    [icon]="'event_busy'" 
-    [title]="'No se encontraron eventos'" 
-    [description]="searchQuery ? 'No encontramos eventos que coincidan con tu búsqueda: \'' + searchQuery + '\'.' : 'Por el momento no hay eventos disponibles en esta categoría.'"
-    [actionText]="searchQuery ? 'Limpiar búsqueda' : ''"
-    (actionClick)="searchQuery = ''; applyFilter()">
-  </app-empty-state>
-
-  <!-- Events Grid -->
-  <div *ngIf="!isLoading && pagedEvents.length > 0 && viewMode === 'grid'" class="events-grid">
-    <div class="event-card" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)" [class.ad-highlight]="event.advertisementPlanId">
-      <div class="event-image-container">
-        <img *ngIf="getEventImage(event.id)" [src]="getEventImage(event.id)" [alt]="event.title" class="event-image">
-        <div *ngIf="!getEventImage(event.id)" class="no-image-placeholder">
-          <mat-icon>image_not_supported</mat-icon>
-        </div>
+        }
       </div>
-      
-      <!-- Regular Info -->
-      <div class="event-info">
-        <div class="card-badges">
-          <span class="category-badge" *ngFor="let cat of event.realCategories">{{ cat }}</span>
-        </div>
-        <h3 class="headline-large">{{ event.title }}</h3>
-        <div class="event-metadata">
-          <div class="metadata-item">
-            <mat-icon>calendar_today</mat-icon>
-            <span>{{ event.startDate }}</span>
-          </div>
-          <div class="metadata-item">
-            <mat-icon>location_on</mat-icon>
-            <span>{{ event.venue }}</span>
-          </div>
-        </div>
+
+      <div class="pagination-container">
+        <mat-paginator 
+          [length]="totalEvents()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="[8, 16, 24]"
+          [pageIndex]="pageIndex()"
+          (page)="onPageChange($event)"
+          aria-label="Seleccionar página">
+        </mat-paginator>
       </div>
     </div>
-  </div>
-
-  <div *ngIf="!isLoading && pagedEvents.length > 0 && viewMode === 'grid'" class="pagination-container">
-    <mat-paginator 
-      [length]="totalEvents"
-      [pageSize]="pageSize"
-      [pageSizeOptions]="[8, 16, 24]"
-      (page)="onPageChange($event)"
-      aria-label="Seleccionar página">
-    </mat-paginator>
-  </div>
+  }
 </div>
+
