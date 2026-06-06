@@ -58,11 +58,11 @@ export class Web3Service {
     "function swapExactTokensForTokens(uint256 amountIn, uint256 amountOutMin, address[] path, address to, uint256 deadline) returns (uint256[] amounts)",
   ];
   private readonly OFFERING_NFT_ADDRESS =
-    "0xD44803C55cEef575496f8b9c3EB602305451B70D";
-  readonly EVENT_FACTORY_ADDRESS = "0xEae1FAd8C7dEdB57Ce15d7AC06f022c3D546c61c";
+    "0xD5aa5a006bC3e7532Df6a27535eC04432B1f1e94";
+  readonly EVENT_FACTORY_ADDRESS = "0x4F007690513D9cB44FCbCfDeE9024210E3660e32";
   readonly VENUE_SIGNER_ADDRESS = "0xF8A5EcdE82f020Ec51419D73F73B1d83BB941292";
   readonly NFT_MARKETPLACE_ADDRESS =
-    "0x4Fd8f8F6Dd194fDBcAA22259B376DA6561aB3BFd";
+    "0xe293447a3229B628644d0f341F05E5AcCd7FC72e";
   readonly REFUND_SIGNER_ADDRESS = "0xEcd25CC3A10144B8b7f171Bb8B458791998f80d3";
 
   private readonly SEPOLIA_CHAIN_ID = "0xaa36a7";

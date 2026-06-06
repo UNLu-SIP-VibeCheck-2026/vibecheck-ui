@@ -355,7 +355,8 @@ export class MarketplaceDetailComponent implements OnInit {
 
       if (this.selectedToken() === "USDC") {
         const usdcAddress = this.web3Service.USDC_ADDRESS;
-        const amountUsdc = BigInt(Math.round(lst.priceUsdc * 1_000_000));
+        const priceUsdcBig = BigInt(Math.round(lst.priceUsdc * 1_000_000));
+        const amountUsdc = (priceUsdcBig * 10500n) / 10000n;
 
         // 1. Approve USDC if necessary
         const usdcContract = this.contractsService.getUsdcToken(signer);
@@ -398,7 +399,8 @@ export class MarketplaceDetailComponent implements OnInit {
 
         const vbkAddress = this.web3Service.VBK_ADDRESS;
         // 5% slippage on VBK amount
-        const amountVbk = (this.vbkQuoteBigInt() * 105n) / 100n;
+        const vbkNeeded = (this.vbkQuoteBigInt() * 105n) / 100n;
+        const amountVbk = (vbkNeeded * 10200n) / 10000n;
 
         // 1. Approve VBK if necessary
         const vbkContract = this.contractsService.getVbkToken(signer);
