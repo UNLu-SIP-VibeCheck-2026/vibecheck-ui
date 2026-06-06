@@ -23,7 +23,7 @@ import { EventService } from "../../services/event.service";
 import { VenueService } from "../../services/venue.service";
 import { CategoryService } from "../../services/category.service";
 import { EventCreateRequest } from "../../models/event.model";
-import { VenueResponse } from "../../models/venue.model";
+import { VenueResponse, VenueStatus } from "../../models/venue.model";
 import { CategoryResponse } from "../../models/category.model";
 import { DateTimePickerComponent } from "../shared/date-time-picker/date-time-picker.component";
 import { MatNativeDateModule } from "@angular/material/core";
@@ -131,7 +131,7 @@ export class CreateEventComponent implements OnInit {
     this.isLoadingVenues = true;
     this.venueService.findAllVenues(0, 200).subscribe({
       next: (page) => {
-        this.venues = page.content;
+        this.venues = page.content.filter(v => v.status !== VenueStatus.REJECTED);
         this.filteredVenues = [...this.venues];
         this.isLoadingVenues = false;
       },
