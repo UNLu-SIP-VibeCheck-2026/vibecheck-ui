@@ -572,11 +572,11 @@ export class AdvertiseEventComponent implements OnInit {
           if (nameUpper.includes('MEDIUM') || nameUpper.includes('DESTACADO')) {
             id = 'super';
             icon = 'vibration';
-            description = 'Destacado en búsquedas y 1 notificación push dirigida.';
+            description = 'Posicionamiento destacado en búsquedas y categorías recomendadas.';
           } else if (nameUpper.includes('HIGH') || nameUpper.includes('PREMIUM') || nameUpper.includes('MEGA')) {
             id = 'mega';
             icon = 'graphic_eq';
-            description = 'Presencia total: Home carousel, Redes y Notificaciones globales.';
+            description = 'Presencia total: Home carousel y publicación en redes sociales de VibeCheck.';
           }
 
           return {
