@@ -70,6 +70,12 @@ export class PerfilConfigComponent implements OnInit {
     return user?.role === 'admin' || user?.role === 'ADMIN';
   }
 
+  get isAdminUsuarios(): boolean {
+    const user = this.authService.getCurrentUserValue();
+    const role = user?.role?.toLowerCase();
+    return role === 'admin_usuarios';
+  }
+
   get isCeo(): boolean {
     const roleParam = this.route.snapshot.queryParamMap.get('role');
     if (roleParam === 'ceo') return true;

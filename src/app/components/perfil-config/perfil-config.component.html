@@ -82,8 +82,8 @@
       </div>
     </section>
 
-    <!-- Sección: Administración (solo admin) -->
-    <section class="config-section" *ngIf="isAdmin">
+    <!-- Sección: Administración -->
+    <section class="config-section" *ngIf="isAdmin || isAdminUsuarios">
       <h2 class="section-title">Administración</h2>
       <div class="config-cards">
         <button class="config-card" mat-ripple (click)="navigateToAdminUsers()">

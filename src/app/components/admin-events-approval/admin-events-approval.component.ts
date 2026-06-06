@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { AuthService } from '../../services/auth.service';
 import { EventService } from '../../services/event.service';
 import { EventResponse } from '../../models/event.model';
 import { Page } from '../../models/page.model';
@@ -9,7 +11,7 @@ import { Page } from '../../models/page.model';
 @Component({
   selector: 'app-admin-events-approval',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, MatSnackBarModule],
   templateUrl: './admin-events-approval.component.html',
   styleUrls: ['./admin-events-approval.component.scss']
 })
@@ -26,10 +28,25 @@ export class AdminEventsApprovalComponent implements OnInit {
   showRejectDialog = false;
   rejectionReason = '';
 
-  constructor(private eventService: EventService) {}
+  constructor(
+    private eventService: EventService,
+    private authService: AuthService,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
+    this.checkRole();
     this.loadPendingEvents();
+  }
+
+  private checkRole(): void {
+    const user = this.authService.getCurrentUserValue();
+    const role = user?.role?.toLowerCase();
+    if (role !== 'admin' && role !== 'admin_eventos') {
+      this.snackBar.open('No tienes permiso para acceder a esta página', 'Cerrar', { duration: 3000 });
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   loadPendingEvents(): void {
