@@ -131,7 +131,7 @@ export class CreateEventComponent implements OnInit {
     this.isLoadingVenues = true;
     this.venueService.findAllVenues(0, 200).subscribe({
       next: (page) => {
-        this.venues = page.content.filter(v => v.status !== VenueStatus.REJECTED);
+        this.venues = page.content.filter(v => v.status === VenueStatus.APPROVED);
         this.filteredVenues = [...this.venues];
         this.isLoadingVenues = false;
       },
@@ -141,6 +141,7 @@ export class CreateEventComponent implements OnInit {
       },
     });
   }
+
 
   /** Cross-field validator: endDate must be after startDate */
   endAfterStartValidator(group: AbstractControl): ValidationErrors | null {
@@ -287,5 +288,9 @@ export class CreateEventComponent implements OnInit {
 
   cancel(): void {
     this.router.navigate(["/dashboard"]);
+  }
+
+  navigateToAdminVenues(): void {
+    this.router.navigate(["/admin-venues"]);
   }
 }

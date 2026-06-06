@@ -4,220 +4,297 @@
     </div>
 
     <mat-card class="create-event-card">
-        <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
-            
-            <div class="form-top-section">
-                <!-- Left: Photo section -->
-                <div class="photo-section">
-                    <div class="photo-header">
-                        <label>Foto del Evento</label>
-                        <button type="button" class="select-file-btn" (click)="triggerImageInput()">
-                            Seleccionar Archivo
-                        </button>
-                        <input
-                            #imageInput
-                            type="file"
-                            accept="image/*"
-                            style="display: none"
-                            (change)="onImageSelected($event)">
-                    </div>
-                    <div class="photo-preview" [class.has-image]="imagePreview" (click)="triggerImageInput()" style="cursor: pointer;">
-                        <img *ngIf="imagePreview" [src]="imagePreview" alt="Preview del evento" class="preview-img">
-                        <mat-icon *ngIf="!imagePreview" class="preview-placeholder-icon">add_a_photo</mat-icon>
-                        <button
-                            *ngIf="imagePreview"
-                            type="button"
-                            class="remove-image-btn"
-                            (click)="$event.stopPropagation(); removeImage()"
-                            mat-icon-button>
-                            <mat-icon>close</mat-icon>
-                        </button>
-                    </div>
-                    <div class="field-error" *ngIf="imageError">
-                        <span>{{ imageError }}</span>
-                    </div>
-                    <!-- New Mandatory Error -->
-                    <div class="field-error" *ngIf="!imagePreview && !imageError && eventForm.touched">
-                        <span>La foto del evento es obligatoria</span>
-                    </div>
+        @if (isLoadingVenues) {
+            <div class="venues-loading-state">
+                <mat-spinner diameter="48" class="spinner-primary"></mat-spinner>
+                <p>Cargando recintos disponibles...</p>
+            </div>
+        } @else if (venues.length === 0) {
+            <div class="no-venues-block">
+                <div class="warning-icon-wrapper">
+                    <mat-icon>location_off</mat-icon>
                 </div>
-
-                <!-- Right: Title and Description -->
-                <div class="basic-info-section">
-                    <div class="form-group custom-field-wrapper">
-                        <label for="title">Título del Evento</label>
-                        <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                            <input matInput type="text" id="title" formControlName="title" placeholder="Ej: Festival de Verano 2026" maxlength="100">
-                        </mat-form-field>
-                        <div class="field-error" *ngIf="eventForm.get('title')?.touched && eventForm.get('title')?.invalid">
-                            <span *ngIf="eventForm.get('title')?.errors?.['required']">El título es obligatorio</span>
-                            <span *ngIf="eventForm.get('title')?.errors?.['minlength'] || eventForm.get('title')?.errors?.['maxlength']">Mínimo 5 - Máximo 100 caracteres</span>
-                        </div>
-                    </div>
-
-                    <div class="form-group custom-field-wrapper">
-                        <label for="description">Descripción</label>
-                        <mat-form-field appearance="outline" class="custom-mat-form-field textarea-field" subscriptSizing="dynamic">
-                            <textarea matInput id="description" formControlName="description" placeholder="Cuéntale a la gente de qué trata tu evento..." maxlength="500"></textarea>
-                        </mat-form-field>
-                        <div class="field-error" *ngIf="eventForm.get('description')?.touched && eventForm.get('description')?.invalid">
-                            <span *ngIf="eventForm.get('description')?.errors?.['required']">La descripción es obligatoria</span>
-                            <span *ngIf="eventForm.get('description')?.errors?.['minlength'] || eventForm.get('description')?.errors?.['maxlength']">Mínimo 20 - Máximo 500 caracteres</span>
-                        </div>
-                    </div>
+                <h2>No hay Venues Aprobados Registrados</h2>
+                <p class="warning-description">
+                    Para poder publicar un evento, es obligatorio que exista al menos un lugar (venue) público o privado aprobado en la plataforma.
+                </p>
+                <div class="no-venues-actions">
+                    <button mat-flat-button class="btn-action-primary" (click)="navigateToAdminVenues()">
+                        <mat-icon style="margin-right: 8px;">add_location_alt</mat-icon>
+                        IR A ADMINISTRAR VENUES
+                    </button>
+                    <button mat-button class="btn-action-secondary" (click)="cancel()">
+                        Volver al Dashboard
+                    </button>
                 </div>
             </div>
-
-            <!-- Categories -->
-            <div class="form-group custom-field-wrapper mt-24">
-                <label>Categorías</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                    <mat-select formControlName="categoryIds" placeholder="Selecciona una o más categorías" multiple>
-                        <mat-option *ngIf="isLoadingCategories" disabled>Cargando categorías...</mat-option>
-                        <mat-option *ngFor="let cat of categories" [value]="cat.id">
-                            {{cat.name}}
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-
-            <!-- Start Date and Time -->
-            <div class="form-group custom-field-wrapper mt-24">
-                <app-date-time-picker
-                    formControlName="startDate"
-                    label="Inicio del Evento"
-                    [minDate]="today">
-                </app-date-time-picker>
-            </div>
-
-            <!-- End Date and Time -->
-            <div class="form-group custom-field-wrapper mt-24">
-                <app-date-time-picker
-                    formControlName="endDate"
-                    label="Finalización del Evento"
-                    [minDate]="today"
-                    [afterDate]="startDateValue">
-                </app-date-time-picker>
-            </div>
-
-            <!-- Cross-field validation error -->
-            <div class="cross-field-error" *ngIf="eventForm.hasError('endBeforeStart') && eventForm.get('endDate')?.touched">
-                <mat-icon>error_outline</mat-icon>
-                <span>La fecha de finalización debe ser posterior a la fecha de inicio.</span>
-            </div>
-
-            <!-- Resale configuration -->
-            <div class="form-group custom-field-wrapper mt-24">
-                <label>Configuración de Venta y Reventa de Entradas</label>
+        } @else {
+            <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
                 
-                <div class="resale-config-container" style="background: var(--md-sys-color-surface-variant); border-radius: 12px; padding: 16px; margin-top: 8px; gap: 16px; display: flex; flex-direction: column;">
-                    
-                    <div class="form-group custom-field-wrapper">
-                        <label for="maxPriceResale" style="font-size: 0.9rem;">Tope Máximo de Reventa (%)</label>
-                        <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                            <input matInput type="number" id="maxPriceResale" formControlName="maxPriceResale" min="100">
-                            <span matTextSuffix>%</span>
-                        </mat-form-field>
-                        <div class="field-hint" style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 4px;">
-                            Es el porcentaje máximo sobre el precio base al que se podrá revender la entrada. Por ejemplo: 150% significa que una entrada de $100 se podrá revender como máximo a $150.
+                <div class="form-top-section">
+                    <!-- Left: Photo section -->
+                    <div class="photo-section">
+                        <div class="photo-header">
+                            <label>Foto del Evento</label>
+                            <button type="button" class="select-file-btn" (click)="triggerImageInput()">
+                                Seleccionar Archivo
+                            </button>
+                            <input
+                                #imageInput
+                                type="file"
+                                accept="image/*"
+                                style="display: none"
+                                (change)="onImageSelected($event)">
                         </div>
-                        <div class="field-error" *ngIf="eventForm.get('maxPriceResale')?.touched && eventForm.get('maxPriceResale')?.invalid">
-                            <span>El tope es obligatorio y debe ser al menos 100%.</span>
+                        <div class="photo-preview" [class.has-image]="imagePreview" (click)="triggerImageInput()" style="cursor: pointer;">
+                            @if (imagePreview) {
+                                <img [src]="imagePreview" alt="Preview del evento" class="preview-img">
+                                <button
+                                    type="button"
+                                    class="remove-image-btn"
+                                    (click)="$event.stopPropagation(); removeImage()"
+                                    mat-icon-button>
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            } @else {
+                                <mat-icon class="preview-placeholder-icon">add_a_photo</mat-icon>
+                            }
                         </div>
-                    </div>
-
-                    <div class="form-group custom-field-wrapper mt-16">
-                        <label for="royaltyBps" style="font-size: 0.9rem;">Regalías del Organizador por Reventa (BPS)</label>
-                        <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                            <input matInput type="number" id="royaltyBps" formControlName="royaltyBps" min="0" max="10000">
-                            <span matTextSuffix>BPS</span>
-                        </mat-form-field>
-                        <div class="field-hint" style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 4px;">
-                            Es la ganancia que tendrás por cada reventa. Se mide en Puntos Básicos (BPS). Por ejemplo: 500 BPS = 5% del valor de la reventa irá para ti.
-                        </div>
-                        <div class="field-error" *ngIf="eventForm.get('royaltyBps')?.touched && eventForm.get('royaltyBps')?.invalid">
-                            <span>Las regalías son obligatorias (0 a 10000).</span>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Venue -->
-            <div class="form-group venue-group custom-field-wrapper mt-24">
-                <label for="venue">Lugar (Venue)</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                    <mat-select id="venue" formControlName="venue" placeholder="Selecciona el recinto del evento">
-                        <!-- Selected Value Custom Trigger -->
-                        <mat-select-trigger>
-                            <span *ngIf="eventForm.get('venue')?.value">
-                                {{ getSelectedVenueDisplay() }}
-                            </span>
-                        </mat-select-trigger>
-
-                        <!-- Search Bar inside Select -->
-                        <div class="select-search-header">
-                            <mat-form-field appearance="outline" class="search-inner-field" subscriptSizing="dynamic">
-                                <mat-icon matPrefix>search</mat-icon>
-                                <input matInput placeholder="Buscar por nombre o dirección..."
-                                       [(ngModel)]="venueSearch"
-                                       (ngModelChange)="filterVenues()"
-                                       [ngModelOptions]="{standalone: true}"
-                                       (keydown)="$event.stopPropagation()">
-                            </mat-form-field>
-                        </div>
-
-                        <mat-option *ngIf="isLoadingVenues" disabled>
-                            <span style="color:var(--md-sys-color-on-surface-variant)">Cargando venues...</span>
-                        </mat-option>
-
-                        <mat-option *ngFor="let venue of filteredVenues" [value]="venue.id" class="venue-option">
-                            <div class="venue-item">
-                                <span class="venue-name">{{venue.title}}</span>
-                                <span class="venue-address">{{venue.coordinates}} - Cap: {{venue.capacity | number}}</span>
+                        
+                        @if (imageError) {
+                            <div class="field-error-wrapper">
+                                <mat-icon class="error-icon">error_outline</mat-icon>
+                                <span>{{ imageError }}</span>
                             </div>
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-                <a class="new-venue-link" (click)="openNewVenueDialog()">¿El venue que buscás no está en la lista? Creá uno nuevo.</a>
-            </div>
+                        }
+                        
+                        @if (!imagePreview && !imageError && eventForm.touched) {
+                            <div class="field-error-wrapper">
+                                <mat-icon class="error-icon">error_outline</mat-icon>
+                                <span>La foto del evento es obligatoria</span>
+                            </div>
+                        }
+                    </div>
 
-            <!-- Capacity -->
-            <div class="form-group custom-field-wrapper mt-24" *ngIf="eventForm.get('venue')?.value">
-                <label for="capacity">Capacidad del Evento</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                    <mat-icon matPrefix style="margin-right:6px;font-size:18px">people</mat-icon>
-                    <input matInput type="number" id="capacity" formControlName="capacity" placeholder="Ej: 500">
-                </mat-form-field>
-                <div class="field-hint" style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 4px;">
-                    Capacidad máxima del venue seleccionado: {{ getSelectedVenueCapacity() | number }}
-                </div>
-                <div class="field-error" *ngIf="eventForm.get('capacity')?.touched && eventForm.get('capacity')?.invalid">
-                    <span *ngIf="eventForm.get('capacity')?.errors?.['required']">La capacidad es obligatoria</span>
-                    <span *ngIf="eventForm.get('capacity')?.errors?.['min']">Debe ser al menos 1</span>
-                </div>
-                <div class="cross-field-error" *ngIf="eventForm.hasError('capacityExceedsVenue') && eventForm.get('capacity')?.touched" style="margin-top: 8px;">
-                    <mat-icon style="vertical-align: middle; margin-right: 4px; color: var(--md-sys-color-error);">error_outline</mat-icon>
-                    <span style="color: var(--md-sys-color-error);">La capacidad del evento no puede superar la capacidad del venue (Máx: {{ getSelectedVenueCapacity() | number }})</span>
-                </div>
-            </div>
+                    <!-- Right: Title and Description -->
+                    <div class="basic-info-section">
+                        <div class="form-group custom-field-wrapper">
+                            <label for="title">Título del Evento</label>
+                            <mat-form-field appearance="outline" class="custom-mat-form-field" [class.field-invalid]="eventForm.get('title')?.touched && eventForm.get('title')?.invalid" subscriptSizing="dynamic">
+                                <input matInput type="text" id="title" formControlName="title" placeholder="Ej: Festival de Verano 2026" maxlength="100">
+                            </mat-form-field>
+                            
+                            <div class="field-footer">
+                                <div class="field-error-wrapper" *ngIf="eventForm.get('title')?.touched && eventForm.get('title')?.invalid">
+                                    <mat-icon class="error-icon">error_outline</mat-icon>
+                                    <span *ngIf="eventForm.get('title')?.errors?.['required']">El título es obligatorio</span>
+                                    <span *ngIf="eventForm.get('title')?.errors?.['minlength']">Mínimo 5 caracteres requeridos</span>
+                                </div>
+                                <div class="character-counter" [class.is-invalid]="eventForm.get('title')?.touched && eventForm.get('title')?.invalid">
+                                    {{ eventForm.get('title')?.value?.length || 0 }} / 100
+                                </div>
+                            </div>
+                        </div>
 
-            <!-- Actions -->
-            <div class="form-actions-row">
-                <button mat-raised-button
-                        type="submit"
-                        [disabled]="isSubmitting || eventForm.invalid || !selectedImage"
-                        class="custom-btn-submit">
-                    {{ isSubmitting ? 'Procesando...' : 'Publicar Evento' }}
-                </button>
-                <button mat-button
-                        type="button"
-                        (click)="cancel()"
-                        class="custom-btn-cancel">
-                    Cancelar
-                </button>
-            </div>
+                        <div class="form-group custom-field-wrapper">
+                            <label for="description">Descripción</label>
+                            <mat-form-field appearance="outline" class="custom-mat-form-field textarea-field" [class.field-invalid]="eventForm.get('description')?.touched && eventForm.get('description')?.invalid" subscriptSizing="dynamic">
+                                <textarea matInput id="description" formControlName="description" placeholder="Cuéntale a la gente de qué trata tu evento..." maxlength="500"></textarea>
+                            </mat-form-field>
+                            
+                            <div class="field-footer">
+                                <div class="field-error-wrapper" *ngIf="eventForm.get('description')?.touched && eventForm.get('description')?.invalid">
+                                    <mat-icon class="error-icon">error_outline</mat-icon>
+                                    <span *ngIf="eventForm.get('description')?.errors?.['required']">La descripción es obligatoria</span>
+                                    <span *ngIf="eventForm.get('description')?.errors?.['minlength']">Mínimo 20 caracteres requeridos</span>
+                                </div>
+                                <div class="character-counter" [class.is-invalid]="eventForm.get('description')?.touched && eventForm.get('description')?.invalid">
+                                    {{ eventForm.get('description')?.value?.length || 0 }} / 500
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        </form>
+                <!-- Categories -->
+                <div class="form-group custom-field-wrapper mt-24">
+                    <label>Categorías</label>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                        <mat-select formControlName="categoryIds" placeholder="Selecciona una o más categorías" multiple>
+                            @if (isLoadingCategories) {
+                                <mat-option disabled>Cargando categorías...</mat-option>
+                            }
+                            @for (cat of categories; track cat.id) {
+                                <mat-option [value]="cat.id">
+                                    {{cat.name}}
+                                </mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <!-- Start Date and Time -->
+                <div class="form-group custom-field-wrapper mt-24">
+                    <app-date-time-picker
+                        formControlName="startDate"
+                        label="Inicio del Evento"
+                        [minDate]="today">
+                    </app-date-time-picker>
+                </div>
+
+                <!-- End Date and Time -->
+                <div class="form-group custom-field-wrapper mt-24">
+                    <app-date-time-picker
+                        formControlName="endDate"
+                        label="Finalización del Evento"
+                        [minDate]="today"
+                        [afterDate]="startDateValue">
+                    </app-date-time-picker>
+                </div>
+
+                <!-- Cross-field validation error -->
+                @if (eventForm.hasError('endBeforeStart') && eventForm.get('endDate')?.touched) {
+                    <div class="cross-field-error">
+                        <mat-icon>error_outline</mat-icon>
+                        <span>La fecha de finalización debe ser posterior a la fecha de inicio.</span>
+                    </div>
+                }
+
+                <!-- Resale configuration -->
+                <div class="form-group custom-field-wrapper mt-24">
+                    <label>Configuración de Venta y Reventa de Entradas</label>
+                    
+                    <div class="resale-config-container" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 20px; margin-top: 8px; gap: 16px; display: flex; flex-direction: column;">
+                        
+                        <div class="form-group custom-field-wrapper">
+                            <label for="maxPriceResale" style="font-size: 0.9rem;">Tope Máximo de Reventa (%)</label>
+                            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                                <input matInput type="number" id="maxPriceResale" formControlName="maxPriceResale" min="100">
+                                <span matTextSuffix>%</span>
+                            </mat-form-field>
+                            <div class="field-hint" style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 4px;">
+                                Es el porcentaje máximo sobre el precio base al que se podrá revender la entrada. Por ejemplo: 150% significa que una entrada de $100 se podrá revender como máximo a $150.
+                            </div>
+                            @if (eventForm.get('maxPriceResale')?.touched && eventForm.get('maxPriceResale')?.invalid) {
+                                <div class="field-error-wrapper">
+                                    <mat-icon class="error-icon">error_outline</mat-icon>
+                                    <span>El tope es obligatorio y debe ser al menos 100%.</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="form-group custom-field-wrapper mt-16">
+                            <label for="royaltyBps" style="font-size: 0.9rem;">Regalías del Organizador por Reventa (BPS)</label>
+                            <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                                <input matInput type="number" id="royaltyBps" formControlName="royaltyBps" min="0" max="10000">
+                                <span matTextSuffix>BPS</span>
+                            </mat-form-field>
+                            <div class="field-hint" style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 4px;">
+                                Es la ganancia que tendrás por cada reventa. Se mide en Puntos Básicos (BPS). Por ejemplo: 500 BPS = 5% del valor de la reventa irá para ti.
+                            </div>
+                            @if (eventForm.get('royaltyBps')?.touched && eventForm.get('royaltyBps')?.invalid) {
+                                <div class="field-error-wrapper">
+                                    <mat-icon class="error-icon">error_outline</mat-icon>
+                                    <span>Las regalías son obligatorias (0 a 10000).</span>
+                                </div>
+                            }
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Venue -->
+                <div class="form-group venue-group custom-field-wrapper mt-24">
+                    <label for="venue">Lugar (Venue)</label>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                        <mat-select id="venue" formControlName="venue" placeholder="Selecciona el recinto del evento">
+                            <!-- Selected Value Custom Trigger -->
+                            <mat-select-trigger>
+                                @if (eventForm.get('venue')?.value) {
+                                    <span>
+                                        {{ getSelectedVenueDisplay() }}
+                                    </span>
+                                }
+                            </mat-select-trigger>
+
+                            <!-- Search Bar inside Select -->
+                            <div class="select-search-header">
+                                <mat-form-field appearance="outline" class="search-inner-field" subscriptSizing="dynamic">
+                                    <mat-icon matPrefix>search</mat-icon>
+                                    <input matInput placeholder="Buscar por nombre o dirección..."
+                                           [(ngModel)]="venueSearch"
+                                           (ngModelChange)="filterVenues()"
+                                           [ngModelOptions]="{standalone: true}"
+                                           (keydown)="$event.stopPropagation()">
+                                </mat-form-field>
+                            </div>
+
+                            @if (isLoadingVenues) {
+                                <mat-option disabled>
+                                    <span style="color:var(--md-sys-color-on-surface-variant)">Cargando venues...</span>
+                                </mat-option>
+                            }
+
+                            @for (venue of filteredVenues; track venue.id) {
+                                <mat-option [value]="venue.id" class="venue-option">
+                                    <div class="venue-item">
+                                        <span class="venue-name">{{venue.title}}</span>
+                                        <span class="venue-address">{{venue.coordinates}} - Cap: {{venue.capacity | number}}</span>
+                                    </div>
+                                </mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                    <a class="new-venue-link" (click)="openNewVenueDialog()">¿El venue que buscás no está en la lista? Creá uno nuevo.</a>
+                </div>
+
+                <!-- Capacity -->
+                @if (eventForm.get('venue')?.value) {
+                    <div class="form-group custom-field-wrapper mt-24">
+                        <label for="capacity">Capacidad del Evento</label>
+                        <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                            <mat-icon matPrefix style="margin-right:6px;font-size:18px">people</mat-icon>
+                            <input matInput type="number" id="capacity" formControlName="capacity" placeholder="Ej: 500">
+                        </mat-form-field>
+                        <div class="field-hint" style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 4px;">
+                            Capacidad máxima del venue seleccionado: {{ getSelectedVenueCapacity() | number }}
+                        </div>
+                        @if (eventForm.get('capacity')?.touched && eventForm.get('capacity')?.invalid) {
+                            <div class="field-error-wrapper">
+                                <mat-icon class="error-icon">error_outline</mat-icon>
+                                @if (eventForm.get('capacity')?.errors?.['required']) {
+                                    <span>La capacidad es obligatoria</span>
+                                } @else if (eventForm.get('capacity')?.errors?.['min']) {
+                                    <span>Debe ser al menos 1</span>
+                                }
+                            </div>
+                        }
+                        @if (eventForm.hasError('capacityExceedsVenue') && eventForm.get('capacity')?.touched) {
+                            <div class="cross-field-error" style="margin-top: 8px;">
+                                <mat-icon style="vertical-align: middle; margin-right: 4px; color: var(--md-sys-color-error);">error_outline</mat-icon>
+                                <span style="color: var(--md-sys-color-error);">La capacidad del evento no puede superar la capacidad del venue (Máx: {{ getSelectedVenueCapacity() | number }})</span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Actions -->
+                <div class="form-actions-row">
+                    <button mat-raised-button
+                            type="submit"
+                            [disabled]="isSubmitting || eventForm.invalid || !selectedImage"
+                            class="custom-btn-submit">
+                        {{ isSubmitting ? 'Procesando...' : 'Publicar Evento' }}
+                    </button>
+                    <button mat-button
+                            type="button"
+                            (click)="cancel()"
+                            class="custom-btn-cancel">
+                        Cancelar
+                    </button>
+                </div>
+
+            </form>
+        }
     </mat-card>
 </div>

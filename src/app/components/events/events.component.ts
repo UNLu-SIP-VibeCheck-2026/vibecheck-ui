@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject } from "@angular/core";
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, signal, computed, effect } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { MatCardModule } from "@angular/material/card";
@@ -20,6 +20,7 @@ import { EmptyStateComponent } from "../shared/empty-state/empty-state.component
 import { trackLoading } from "../../utils/loading.operator";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatSelectModule } from "@angular/material/select";
+import { trigger, transition, style, animate, query, stagger } from "@angular/animations";
 
 export interface EventSummary {
   id: string;
@@ -55,22 +56,40 @@ export interface EventSummary {
   ],
   templateUrl: "./events.component.html",
   styleUrl: "./events.component.scss",
+  animations: [
+    trigger('listAnimation', [
+      transition('* => *', [
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateY(24px)' }),
+          stagger('40ms', [
+            animate('350ms cubic-bezier(0.25, 1, 0.5, 1)', style({ opacity: 1, transform: 'translateY(0)' }))
+          ])
+        ], { optional: true })
+      ])
+    ]),
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('300ms ease-out', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class EventsComponent implements OnInit, OnDestroy {
   @ViewChild('midCarousel', { read: ElementRef }) midCarousel?: ElementRef<HTMLDivElement>;
   @ViewChild('miniCarousel', { read: ElementRef }) miniCarousel?: ElementRef<HTMLDivElement>;
 
-  // ---- Carousels (sample data for preview) ----
-  rawTier1Events: EventSummary[] = [];
-  rawTier2Events: EventSummary[] = [];
-  rawTier3Events: EventSummary[] = [];
+  // Writable Signals for raw data
+  rawTier1Events = signal<EventSummary[]>([]);
+  rawTier2Events = signal<EventSummary[]>([]);
+  rawTier3Events = signal<EventSummary[]>([]);
+  allEvents = signal<EventSummary[]>([]);
 
-  tier1Events: EventSummary[] = [];
-  tier2Events: EventSummary[] = [];
-  tier3Events: EventSummary[] = [];
-
-  // Carousel state
-  currentIndex1: number = 0;
+  // Carousel state using Writable Signal
+  currentIndex1 = signal<number>(0);
   private carouselTimer1: any;
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
@@ -85,24 +104,57 @@ export class EventsComponent implements OnInit, OnDestroy {
   readonly TIER2_LIMIT = 15;
   readonly TIER3_LIMIT = 20;
 
-  isLoading: boolean = false;
-  viewMode: 'carousel' | 'grid' = 'carousel';
-  searchQuery: string = "";
-  categories: CategoryResponse[] = [];
-  selectedCategoryId: number | null = null;
-  allEvents: EventSummary[] = [];
-  filteredEvents: EventSummary[] = [];
-  pagedEvents: EventSummary[] = [];
+  // Reactivity State with Signals
+  isLoading = signal<boolean>(false);
+  viewMode = signal<'carousel' | 'grid'>('carousel');
+  searchQuery = signal<string>("");
+  categories = signal<CategoryResponse[]>([]);
+  selectedCategoryId = signal<number | null>(null);
 
-  /** Image lookup map id → SafeUrl */
-  imageMap = new Map<number, SafeUrl>();
+  /** Image lookup map id → SafeUrl, as a Signal to trigger UI updates reactively */
+  imageMap = signal<Map<number, SafeUrl>>(new Map<number, SafeUrl>());
 
   /** Venue lookup map id → VenueResponse */
   venueMap = new Map<number, VenueResponse>();
 
-  totalEvents = 0;
-  pageSize = 8;
-  pageIndex = 0;
+  // Pagination Signals
+  pageSize = signal<number>(8);
+  pageIndex = signal<number>(0);
+
+  // Computed Signals for filtered lists (decouples manual triggering of filtering logic)
+  tier1Events = computed(() => this.filterCarousel(this.rawTier1Events()));
+  tier2Events = computed(() => this.filterCarousel(this.rawTier2Events()));
+  tier3Events = computed(() => this.filterCarousel(this.rawTier3Events()));
+
+  filteredEvents = computed(() => {
+    const queryStr = this.searchQuery().toLowerCase();
+    return this.allEvents().filter((e) => {
+      return e.title.toLowerCase().includes(queryStr) || e.venue.toLowerCase().includes(queryStr);
+    });
+  });
+
+  pagedEvents = computed(() => {
+    const start = this.pageIndex() * this.pageSize();
+    const end = start + this.pageSize();
+    return this.filteredEvents().slice(start, end);
+  });
+
+  totalEvents = computed(() => this.filteredEvents().length);
+
+  constructor() {
+    // Automatically manage Carousel 1 timer based on tier1Events signal
+    effect(() => {
+      const events = this.tier1Events();
+      this.currentIndex1.set(0); // Reset index on list changes
+      if (events.length > 1) {
+        this.startCarousel1();
+      } else {
+        if (this.carouselTimer1) {
+          clearInterval(this.carouselTimer1);
+        }
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadVenues();
@@ -122,6 +174,10 @@ export class EventsComponent implements OnInit, OnDestroy {
       next: (page) => {
         this.venueMap.clear();
         page.content.forEach((v) => this.venueMap.set(v.id, v));
+        // Refresh event venue names once venues are loaded
+        if (this.allEvents().length > 0) {
+          this.refreshVenueNames();
+        }
       },
       error: (err) => console.error("Error loading venues:", err)
     });
@@ -130,42 +186,46 @@ export class EventsComponent implements OnInit, OnDestroy {
   loadCategories(): void {
     this.categoryService.getAllCategories().subscribe({
       next: (cats) => {
-        this.categories = cats;
+        this.categories.set(cats);
       },
       error: (err) => console.error("Error loading categories:", err)
     });
   }
 
   onCategoryChange(): void {
-    this.pageIndex = 0;
+    this.pageIndex.set(0);
     this.loadEvents();
   }
 
   toggleViewMode(): void {
-    this.viewMode = this.viewMode === 'carousel' ? 'grid' : 'carousel';
+    this.viewMode.update(mode => mode === 'carousel' ? 'grid' : 'carousel');
   }
 
   startCarousel1(): void {
-    if (this.tier1Events.length <= 1) return;
+    if (this.carouselTimer1) {
+      clearInterval(this.carouselTimer1);
+    }
     this.carouselTimer1 = setInterval(() => {
       this.nextTier1();
-    }, 3000);
+    }, 4000); // 4s allows cleaner readability of large items
   }
 
   prevTier1(): void {
-    if (this.tier1Events.length <= 1) return;
-    this.currentIndex1 = (this.currentIndex1 + this.tier1Events.length - 1) % this.tier1Events.length;
+    const len = this.tier1Events().length;
+    if (len <= 1) return;
+    this.currentIndex1.update(idx => (idx + len - 1) % len);
   }
 
   nextTier1(): void {
-    if (this.tier1Events.length <= 1) return;
-    this.currentIndex1 = (this.currentIndex1 + 1) % this.tier1Events.length;
+    const len = this.tier1Events().length;
+    if (len <= 1) return;
+    this.currentIndex1.update(idx => (idx + 1) % len);
   }
 
   private scrollContainer(carousel?: ElementRef<HTMLDivElement>, direction: number = 1): void {
     if (!carousel) return;
     const container = carousel.nativeElement;
-    const distance = container.clientWidth * direction;
+    const distance = container.clientWidth * direction * 0.85; // slightly less scroll distance for smoother feel
 
     container.scrollBy({
       left: distance,
@@ -182,12 +242,11 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   loadEvents(): void {
-    this.eventService.findAllEvents(0, 100, this.selectedCategoryId || undefined, ['startDate,asc'])
-      .pipe(trackLoading((loading) => (this.isLoading = loading)))
+    this.eventService.findAllEvents(0, 100, this.selectedCategoryId() || undefined, ['startDate,asc'])
+      .pipe(trackLoading((loading) => this.isLoading.set(loading)))
       .subscribe({
         next: (page) => {
-          console.log("Eventos cargados:", page);
-          this.allEvents = page.content.map((backendEvent) => {
+          const mapped = page.content.map((backendEvent) => {
             return {
               id: backendEvent.id.toString(),
               title: backendEvent.title,
@@ -203,30 +262,52 @@ export class EventsComponent implements OnInit, OnDestroy {
             };
           });
 
-          // Cargar imágenes de eventos que tienen imagen
+          this.allEvents.set(mapped);
           this.loadEventImages(page.content);
-          this.applyFilter();
         },
-        error: (err) =>  this.snackBar.open(err?.error?.message || "Error fetching events:", "Cerrar", { duration: 4000 }),
+        error: (err) => this.snackBar.open(err?.error?.message || "Error al buscar eventos:", "Cerrar", { duration: 4000 }),
       });
+  }
+
+  private refreshVenueNames(): void {
+    this.allEvents.update(events => events.map(e => ({
+      ...e,
+      venue: this.getVenueName(e.venueId)
+    })));
+    this.rawTier1Events.update(events => events.map(e => ({
+      ...e,
+      venue: this.getVenueName(e.venueId)
+    })));
+    this.rawTier2Events.update(events => events.map(e => ({
+      ...e,
+      venue: this.getVenueName(e.venueId)
+    })));
+    this.rawTier3Events.update(events => events.map(e => ({
+      ...e,
+      venue: this.getVenueName(e.venueId)
+    })));
   }
 
   loadEventImages(events: any[]): void {
     events.forEach((event) => {
-      if (event.hasImage) {
+      if (event.hasImage && !this.imageMap().has(event.id)) {
         this.eventService.getEventImage(event.id).subscribe({
           next: (blob) => {
             const url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
-            this.imageMap.set(event.id, url);
+            this.imageMap.update(map => {
+              const newMap = new Map(map);
+              newMap.set(event.id, url);
+              return newMap;
+            });
           },
-          error: (err) =>  this.snackBar.open(err?.error?.message || "Ocurrió un error", "Cerrar", { duration: 4000 }),
+          error: (err) => console.warn(`Error al cargar imagen del evento ${event.id}:`, err)
         });
       }
     });
   }
 
   getEventImage(eventId: string): SafeUrl | null {
-    return this.imageMap.get(Number(eventId)) || null;
+    return this.imageMap().get(Number(eventId)) || null;
   }
 
   getVenueName(venueId: number | null | undefined): string {
@@ -235,40 +316,9 @@ export class EventsComponent implements OnInit, OnDestroy {
     return v ? v.title : `Venue #${venueId}`;
   }
 
-  applyFilter(): void {
-    const sQuery = this.searchQuery.toLowerCase();
-    
-    // Filter grid data
-    this.filteredEvents = this.allEvents.filter((e) => {
-      const matchSearch = e.title.toLowerCase().includes(sQuery) || e.venue.toLowerCase().includes(sQuery);
-      return matchSearch;
-    });
-    this.totalEvents = this.filteredEvents.length;
-    this.updatePagedEvents();
-    
-    // Filter carousel data
-    const filterCarousel = (raw: EventSummary[]) => raw.filter(e => {
-      const matchSearch = e.title.toLowerCase().includes(sQuery) || e.venue.toLowerCase().includes(sQuery);
-      const matchCat = this.selectedCategoryId ? e.categoryIds?.includes(this.selectedCategoryId) : true;
-      return matchSearch && matchCat;
-    });
-    
-    this.tier1Events = filterCarousel(this.rawTier1Events);
-    this.tier2Events = filterCarousel(this.rawTier2Events);
-    this.tier3Events = filterCarousel(this.rawTier3Events);
-    this.currentIndex1 = 0;
-  }
-
-  updatePagedEvents(): void {
-    const start = this.pageIndex * this.pageSize;
-    const end = start + this.pageSize;
-    this.pagedEvents = this.filteredEvents.slice(start, end);
-  }
-
   onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.updatePagedEvents();
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
   }
 
   navigateToEvent(id: string): void {
@@ -282,8 +332,6 @@ export class EventsComponent implements OnInit, OnDestroy {
   loadPromotedEvents(): void {
     this.eventService.getUpcomingPromotedEventsGroupedByTier().subscribe({
       next: (grouped) => {
-        console.log("Promoted events grouped by tier loaded:", grouped);
-
         const mapBackendEvent = (backendEvent: any, level: 'HIGH' | 'MEDIUM' | 'LOW'): EventSummary => {
           return {
             id: backendEvent.id.toString(),
@@ -321,11 +369,9 @@ export class EventsComponent implements OnInit, OnDestroy {
           .slice(0, this.TIER3_LIMIT)
           .map((e) => mapBackendEvent(e, 'LOW'));
 
-        this.rawTier1Events = highEvents;
-        this.rawTier2Events = mediumEvents;
-        this.rawTier3Events = lowEvents;
-        
-        this.applyFilter();
+        this.rawTier1Events.set(highEvents);
+        this.rawTier2Events.set(mediumEvents);
+        this.rawTier3Events.set(lowEvents);
 
         const allPromotedRaw = [
           ...(grouped['high'] || grouped['premium'] || grouped['mega'] || []),
@@ -334,7 +380,6 @@ export class EventsComponent implements OnInit, OnDestroy {
         ];
 
         this.loadPromotedEventImages(allPromotedRaw);
-        this.startCarousel1();
       },
       error: (err) => {
         console.error("Error loading promoted events:", err);
@@ -344,23 +389,30 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   loadPromotedEventImages(rawEvents: any[]): void {
     rawEvents.forEach((raw) => {
-      if (raw.hasImage) {
+      if (raw.hasImage && !this.imageMap().has(raw.id)) {
         this.eventService.getEventImage(raw.id).subscribe({
           next: (blob) => {
             const url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
-            this.imageMap.set(raw.id, url);
-
-            const idStr = raw.id.toString();
-            const t1 = this.tier1Events.find(e => e.id === idStr);
-            if (t1) t1.imageUrl = url;
-            const t2 = this.tier2Events.find(e => e.id === idStr);
-            if (t2) t2.imageUrl = url;
-            const t3 = this.tier3Events.find(e => e.id === idStr);
-            if (t3) t3.imageUrl = url;
+            this.imageMap.update(map => {
+              const newMap = new Map(map);
+              newMap.set(raw.id, url);
+              return newMap;
+            });
           },
           error: (err) => console.warn(`Error loading image for promoted event ${raw.id}:`, err)
         });
       }
     });
   }
+
+  private filterCarousel(raw: EventSummary[]): EventSummary[] {
+    const sQuery = this.searchQuery().toLowerCase();
+    const catId = this.selectedCategoryId();
+    return raw.filter(e => {
+      const matchSearch = e.title.toLowerCase().includes(sQuery) || e.venue.toLowerCase().includes(sQuery);
+      const matchCat = catId ? e.categoryIds?.includes(catId) : true;
+      return matchSearch && matchCat;
+    });
+  }
 }
+
