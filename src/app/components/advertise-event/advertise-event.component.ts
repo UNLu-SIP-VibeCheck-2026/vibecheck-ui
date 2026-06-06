@@ -566,7 +566,7 @@ export class AdvertiseEventComponent implements OnInit {
         this.plans = plans.map(p => {
           let id = 'cool';
           let icon = 'waves';
-          let description = 'Posicionamiento básico en categorías recomendadas.';
+          let description = 'Posicionamiento básico en búsquedas y categorías recomendadas.';
 
           const nameUpper = p.name.toUpperCase();
           if (nameUpper.includes('MEDIUM') || nameUpper.includes('DESTACADO')) {
