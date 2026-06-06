@@ -3,6 +3,12 @@ export enum VenueVisibility {
   PRIVATE = "PRIVATE"
 }
 
+export enum VenueStatus {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED"
+}
+
 export interface VenueCreateRequest {
   title: string;
   coordinates: string;
@@ -24,4 +30,6 @@ export interface VenueResponse {
   capacity: number;
   visibility: VenueVisibility;
   ownerId: number;
+  status: VenueStatus;
+  rejectionReason?: string;
 }

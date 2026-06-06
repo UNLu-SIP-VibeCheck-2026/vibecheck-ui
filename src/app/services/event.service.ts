@@ -113,4 +113,19 @@ export class EventService {
   getOrganizerMetrics(id: number): Observable<OrganizerEventMetrics> {
     return this.http.get<OrganizerEventMetrics>(`${this.apiUrl}/${id}/organizer-metrics`);
   }
+
+  findPendingEvents(page: number, size: number): Observable<Page<EventResponse>> {
+    let params = new HttpParams()
+      .set("page", page.toString())
+      .set("size", size.toString());
+    return this.http.get<Page<EventResponse>>(`${this.apiUrl}/pending`, { params });
+  }
+
+  approveEvent(id: number): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/approve`, {});
+  }
+
+  rejectEvent(id: number, rejectionReason: string): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/reject`, { rejectionReason });
+  }
 }

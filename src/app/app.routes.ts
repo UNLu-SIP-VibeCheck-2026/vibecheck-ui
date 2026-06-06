@@ -140,6 +140,22 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "admin-venues/approvals",
+    loadComponent: () =>
+      import(
+        "./components/admin-venues-approval/admin-venues-approval.component"
+      ).then((m) => m.AdminVenuesApprovalComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: "admin-events/approvals",
+    loadComponent: () =>
+      import(
+        "./components/admin-events-approval/admin-events-approval.component"
+      ).then((m) => m.AdminEventsApprovalComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: "event/:id",
     component: EventComponent,
   },

@@ -85,6 +85,10 @@ export class DashboardComponent implements OnInit {
     return this.userRole === 'ceo';
   }
 
+  get isAdminVenues(): boolean {
+    return this.userRole === 'admin_venues';
+  }
+
   navigateTo(path: string): void {
     this.router.navigate([path]);
   }
