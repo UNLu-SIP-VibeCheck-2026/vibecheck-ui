@@ -10,32 +10,72 @@
   margin: 0 auto;
 }
 
-.header-section {
+.page-header {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: var(--space-8);
-  position: relative;
+  gap: var(--space-4);
 
-  .back-btn {
-    position: absolute;
-    left: 0;
-    color: var(--md-sys-color-on-surface-variant) !important;
+  .header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
 
-    &:hover {
-      color: var(--md-sys-color-primary) !important;
-      background-color: rgba(168, 85, 247, 0.08) !important;
-    }
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 }
 
-.main-title {
-  font-size: var(--text-headline);
-  font-weight: 700;
-  color: var(--md-sys-color-on-background);
-  text-align: center;
+.back-btn {
+  color: var(--md-sys-color-on-surface-variant) !important;
+  margin-top: 8px;
+
+  &:hover {
+    color: var(--md-sys-color-primary) !important;
+    background-color: rgba(168, 85, 247, 0.08) !important;
+  }
+}
+
+.brand-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 40px;
+  font-weight: 800;
+  color: #ffffff;
   margin: 0;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.header-subtitle {
+  font-size: var(--text-body-md);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+}
+
+.btn-new {
+  background: var(--gradient-brand) !important;
+  color: #ffffff !important;
+  font-size: var(--text-body-md) !important;
+  font-weight: 700 !important;
+  height: 48px !important;
+  border-radius: var(--md-sys-shape-corner-small) !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-2) !important;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3) !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 4px;
+
+  &:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
 }
 
 /* Search and Filter Section */
@@ -156,28 +196,7 @@
   }
 }
 
-.actions-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: var(--space-6);
-}
 
-.create-btn {
-  background: var(--gradient-brand) !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
-  padding: 0 var(--space-8) !important;
-  height: 44px !important;
-  border-radius: var(--md-sys-shape-corner-small) !important;
-  text-transform: none !important;
-  border: none !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  box-shadow: 0 4px 14px rgba(124,58,237,0.3) !important;
-
-  &:hover { filter: brightness(1.1); transform: translateY(-1px); }
-}
 
 /* Loading */
 .loading-container {
@@ -676,4 +695,13 @@
   .image-col {
     display: none;
   }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+
+    .btn-new { width: 100%; justify-content: center !important; }
+  }
+
+  .brand-title { font-size: 28px; }
 }

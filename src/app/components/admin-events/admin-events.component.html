@@ -1,9 +1,19 @@
 <div class="admin-container">
-    <div class="header-section">
-        <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
-            <mat-icon>arrow_back</mat-icon>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <div class="header-text">
+                <h1 class="brand-title">Gestión de <span class="text-gradient">Eventos</span></h1>
+                <p class="header-subtitle">Administrá los eventos y espectáculos disponibles</p>
+            </div>
+        </div>
+        <button mat-raised-button class="btn-new" (click)="createEvent()">
+            <mat-icon>add_circle_outline</mat-icon>
+            Crear Evento
         </button>
-        <h1 class="main-title">Administrar <span class="text-gradient">Eventos</span></h1>
     </div>
 
     <!-- Search and Filter Section -->
@@ -21,13 +31,6 @@
                 <span>{{ totalElements }} {{ totalElements === 1 ? 'evento' : 'eventos' }}</span>
             </div>
         </div>
-    </div>
-
-    <div class="actions-header">
-        <button mat-raised-button class="create-btn" (click)="createEvent()">
-            <mat-icon>add_circle_outline</mat-icon>
-            Crear Evento
-        </button>
     </div>
 
     <!-- Loading State -->
