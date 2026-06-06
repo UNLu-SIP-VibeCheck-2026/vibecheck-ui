@@ -22,6 +22,7 @@ export class ContractsService {
     "function cancel(uint256 listingId) external",
     "function buyWithUSDC(uint256 listingId) external",
     "function buyWithVBK(uint256 listingId) external",
+    "function giftTicket(address eventNFT, uint256 tokenId, address recipient) external",
     "event Listed(uint256 indexed listingId, address indexed seller, address indexed eventNFT, uint256 tokenId, uint256 priceUSDC)",
     "event Cancelled(uint256 indexed listingId)",
     "event TicketResoldUSDC(uint256 indexed listingId, address indexed buyer, address indexed seller, uint256 amountPaid, uint256 royaltyPaid, uint256 feePaid)",
@@ -33,7 +34,8 @@ export class ContractsService {
     "function getApproved(uint256 tokenId) external view returns (address)",
     "function tokenTier(uint256 tokenId) external view returns (uint256)",
     "function tierOf(uint256 tokenId) external view returns (uint256)",
-    "function tiers(uint256 index) external view returns (string name, uint256 priceUSDC, uint256 supply, uint256 sold)"
+    "function tiers(uint256 index) external view returns (string name, uint256 priceUSDC, uint256 supply, uint256 sold)",
+    "function ownerOf(uint256 tokenId) external view returns (address)"
   ];
 
   private readonly OFFERING_ABI = [

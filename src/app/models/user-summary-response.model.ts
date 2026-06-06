@@ -9,4 +9,5 @@ export interface UserSummaryResponse {
   role: string;
   active: boolean;
   hasImage?: boolean;
+  walletAddress?: string;
 }

@@ -150,25 +150,60 @@
                             <div class="action-buttons">
                                 <!-- Principal Action Button -->
                                 <ng-container [ngSwitch]="element.status?.toUpperCase()">
-                                    <!-- Draft/Rejected: Request approval -->
-                                    <button mat-raised-button 
-                                            class="primary-action-btn publish-btn-accent"
-                                            (click)="publishEvent(element)"
-                                            [disabled]="publishingId === element.id"
-                                            *ngSwitchCase="'DRAFT'">
-                                        <mat-spinner *ngIf="publishingId === element.id" diameter="16" class="inline-spinner"></mat-spinner>
-                                        <mat-icon *ngIf="publishingId !== element.id">send</mat-icon>
-                                        <span>Enviar a Aprobar</span>
-                                    </button>
-                                    <button mat-raised-button 
-                                            class="primary-action-btn publish-btn-accent"
-                                            (click)="publishEvent(element)"
-                                            [disabled]="publishingId === element.id"
-                                            *ngSwitchCase="'REJECTED'">
-                                        <mat-spinner *ngIf="publishingId === element.id" diameter="16" class="inline-spinner"></mat-spinner>
-                                        <mat-icon *ngIf="publishingId !== element.id">send</mat-icon>
-                                        <span>Enviar a Aprobar</span>
-                                    </button>
+                                    <!-- Draft/Rejected: Request approval and/or tickets configuration -->
+                                    <ng-container *ngSwitchCase="'DRAFT'">
+                                        <div class="stacked-buttons" *ngIf="hasTicketTypes(element.id); else noTicketsDraft">
+                                            <button mat-raised-button 
+                                                    class="primary-action-btn publish-btn-accent"
+                                                    (click)="publishEvent(element)"
+                                                    [disabled]="publishingId === element.id">
+                                                <mat-spinner *ngIf="publishingId === element.id" diameter="16" class="inline-spinner"></mat-spinner>
+                                                <mat-icon *ngIf="publishingId !== element.id">send</mat-icon>
+                                                <span>Enviar a Aprobar</span>
+                                            </button>
+                                            <button mat-raised-button 
+                                                    class="primary-action-btn tickets-btn-accent"
+                                                    (click)="viewStats(element)">
+                                                <mat-icon>confirmation_number</mat-icon>
+                                                <span>Categorías y Tickets</span>
+                                            </button>
+                                        </div>
+                                        <ng-template #noTicketsDraft>
+                                            <button mat-raised-button 
+                                                    class="primary-action-btn tickets-btn-accent"
+                                                    (click)="viewStats(element)">
+                                                <mat-icon>confirmation_number</mat-icon>
+                                                <span>Categorías y Tickets</span>
+                                            </button>
+                                        </ng-template>
+                                    </ng-container>
+
+                                    <ng-container *ngSwitchCase="'REJECTED'">
+                                        <div class="stacked-buttons" *ngIf="hasTicketTypes(element.id); else noTicketsRejected">
+                                            <button mat-raised-button 
+                                                    class="primary-action-btn publish-btn-accent"
+                                                    (click)="publishEvent(element)"
+                                                    [disabled]="publishingId === element.id">
+                                                <mat-spinner *ngIf="publishingId === element.id" diameter="16" class="inline-spinner"></mat-spinner>
+                                                <mat-icon *ngIf="publishingId !== element.id">send</mat-icon>
+                                                <span>Enviar a Aprobar</span>
+                                            </button>
+                                            <button mat-raised-button 
+                                                    class="primary-action-btn tickets-btn-accent"
+                                                    (click)="viewStats(element)">
+                                                <mat-icon>confirmation_number</mat-icon>
+                                                <span>Categorías y Tickets</span>
+                                            </button>
+                                        </div>
+                                        <ng-template #noTicketsRejected>
+                                            <button mat-raised-button 
+                                                    class="primary-action-btn tickets-btn-accent"
+                                                    (click)="viewStats(element)">
+                                                <mat-icon>confirmation_number</mat-icon>
+                                                <span>Categorías y Tickets</span>
+                                            </button>
+                                        </ng-template>
+                                    </ng-container>
 
                                     <!-- Approved: Pay and Publish (metaMask) -->
                                     <button mat-raised-button 

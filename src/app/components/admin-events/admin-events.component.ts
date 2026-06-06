@@ -92,6 +92,9 @@ export class AdminEventsComponent implements OnInit {
   // Owner lookup map id → username
   ownerMap = new Map<number, string>();
 
+  // Ticket types count map: eventId → number
+  ticketTypesCountMap = new Map<number, number>();
+
   searchQuery = "";
   isLoading = false;
   deletingId: number | null = null;
@@ -133,6 +136,7 @@ export class AdminEventsComponent implements OnInit {
           this.allEvents = page.content;
           this.loadEventImages(page.content);
           this.loadOwners(page.content);
+          this.loadTicketTypesCount(page.content);
           this.applyFilter();
         },
         error: (err) => {
@@ -166,6 +170,24 @@ export class AdminEventsComponent implements OnInit {
         });
       }
     });
+  }
+
+  loadTicketTypesCount(events: EventResponse[]): void {
+    events.forEach((event) => {
+      this.ticketTypeService.findTicketTypesByEvent(event.id).subscribe({
+        next: (ticketTypes) => {
+          this.ticketTypesCountMap.set(event.id, ticketTypes.length);
+        },
+        error: (err) => {
+          console.error(`Error cargando ticket types para evento ${event.id}:`, err);
+          this.ticketTypesCountMap.set(event.id, 0);
+        }
+      });
+    });
+  }
+
+  hasTicketTypes(eventId: number): boolean {
+    return (this.ticketTypesCountMap.get(eventId) ?? 0) > 0;
   }
 
   // -------------------------------------------------------------------------

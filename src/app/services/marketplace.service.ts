@@ -10,6 +10,12 @@ import {
   PurchaseConfirmRequest,
   PurchaseConfirmResponse,
 } from "../models/listing.model";
+import {
+  GiftValidateRequest,
+  GiftValidateResponse,
+  GiftConfirmRequest
+} from "../models/gift.model";
+import { TicketResponse } from "../models/ticket.model";
 
 @Injectable({
   providedIn: "root",
@@ -55,6 +61,20 @@ export class MarketplaceService {
   confirmPurchase(req: PurchaseConfirmRequest): Observable<PurchaseConfirmResponse> {
     return this.http.post<PurchaseConfirmResponse>(
       `${environment.apiBaseUrl}/marketplace/purchases/confirm`,
+      req
+    );
+  }
+
+  validateGift(req: GiftValidateRequest): Observable<GiftValidateResponse> {
+    return this.http.post<GiftValidateResponse>(
+      `${environment.apiBaseUrl}/marketplace/gifts/validate`,
+      req
+    );
+  }
+
+  confirmGift(req: GiftConfirmRequest): Observable<TicketResponse> {
+    return this.http.post<TicketResponse>(
+      `${environment.apiBaseUrl}/marketplace/gifts/confirm`,
       req
     );
   }

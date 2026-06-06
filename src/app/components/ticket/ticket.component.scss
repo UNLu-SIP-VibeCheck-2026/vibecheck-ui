@@ -60,7 +60,13 @@
       font-weight: 900;
       color: white;
       margin: 0 0 var(--space-2) 0;
-      line-height: 1;
+      line-height: 1.1;
+      word-break: break-word;
+      overflow-wrap: break-word;
+
+      @media (max-width: 600px) {
+        font-size: 2rem;
+      }
     }
 
     .venue-info {
@@ -77,12 +83,13 @@
 .detail-grid {
   display: grid;
   grid-template-columns: 1fr 320px;
-  gap: var(--space-10);
+  gap: var(--space-8);
   padding: var(--space-8);
 
-  @include mobile {
+  @media (max-width: 960px) {
     grid-template-columns: 1fr;
     padding: var(--space-6);
+    gap: var(--space-6);
   }
 }
 
@@ -106,6 +113,8 @@
       line-height: 1.6;
       font-size: 1.1rem;
       margin-bottom: var(--space-6);
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
   }
 

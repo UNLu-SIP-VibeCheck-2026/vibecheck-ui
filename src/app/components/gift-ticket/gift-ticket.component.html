@@ -1,26 +1,81 @@
 <div class="gift-container">
   <div class="header">
-    <button mat-icon-button (click)="goBack()">
+    <button mat-icon-button (click)="goBack()" [disabled]="txStep !== 'idle' && txStep !== 'success'">
       <mat-icon>arrow_back</mat-icon>
     </button>
     <h1 class="display-medium">Regalar Entrada</h1>
   </div>
 
-  <div class="gift-layout">
-    <mat-card class="search-card">
-      <h2 class="headline-small">Buscar Destinatario</h2>
+  <!-- Success State -->
+  <div class="success-container" *ngIf="txStep === 'success'">
+    <mat-card class="success-card brutalist-card">
+      <div class="success-content">
+        <div class="success-icon-wrapper">
+          <mat-icon class="success-icon">check_circle</mat-icon>
+        </div>
+        <h2 class="headline-medium">¡Entrada Regalada Exitosamente!</h2>
+        <p class="success-message">
+          La entrada ha sido transferida de forma segura al destinatario en la red Sepolia y se actualizó en la plataforma.
+        </p>
+
+        <div class="recipient-badge" *ngIf="selectedUser">
+          <img [src]="getUserImageUrl(selectedUser.username)" class="badge-photo" *ngIf="selectedUser.hasImage">
+          <div class="user-avatar-fallback badge-photo" *ngIf="!selectedUser.hasImage">
+            <mat-icon>person</mat-icon>
+          </div>
+          <div class="badge-info">
+            <span class="badge-name">{{ selectedUser.fullName }}</span>
+            <span class="badge-user">&#64;{{ selectedUser.username }}</span>
+            <span class="badge-wallet">{{ selectedUser.wallet | slice:0:6 }}...{{ selectedUser.wallet | slice:-4 }}</span>
+          </div>
+        </div>
+
+        <button mat-raised-button class="success-btn brutalist-btn-primary" (click)="goToMyTickets()">
+          IR A MIS ENTRADAS
+        </button>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading && txStep === 'idle'">
+    <div class="spinner"></div>
+    <p>Cargando detalles de la entrada...</p>
+  </div>
+
+  <!-- Normal Stepper Flow -->
+  <div class="gift-layout" *ngIf="!isLoading && txStep !== 'success' && ticket">
+    <mat-card class="search-card brutalist-card">
+      <h2 class="headline-small title-section">Buscar Destinatario</h2>
       <mat-form-field appearance="outline" class="search-field">
-        <mat-label>Nombre de usuario o amigo</mat-label>
-        <input matInput [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" placeholder="Ej: juan_perez">
-        <mat-icon matSuffix>search</mat-icon>
+        <mat-label>Nombre de usuario o dirección de wallet</mat-label>
+        <input matInput [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Ej: juan_perez o 0x..." [disabled]="txStep !== 'idle'">
+        <button mat-icon-button matSuffix (click)="onSearch()" [disabled]="txStep !== 'idle'" type="button" style="color: white;">
+          <mat-icon>search</mat-icon>
+        </button>
       </mat-form-field>
 
+      <!-- Manual wallet address found -->
+      <div class="manual-address-card brutalist-card-interactive" *ngIf="isManualAddressValid" (click)="selectManualAddress()">
+        <div class="manual-info">
+          <mat-icon>account_balance_wallet</mat-icon>
+          <div class="text">
+            <span class="label">Dirección de Wallet Ingresada</span>
+            <span class="wallet-val">{{ searchQuery }}</span>
+          </div>
+        </div>
+        <mat-icon class="arrow-icon">chevron_right</mat-icon>
+      </div>
+
       <div class="users-list-section">
-        <h3>Tus Amigos</h3>
-        <mat-selection-list [multiple]="false" (selectionChange)="selectUser($event.options[0].value)">
-          <mat-list-option *ngFor="let friend of filteredFriends" [value]="friend">
+        <h3>Usuarios Registrados</h3>
+        <mat-selection-list [multiple]="false" (selectionChange)="selectUser($event.options[0].value)" [disabled]="txStep !== 'idle'">
+          <mat-list-option *ngFor="let friend of filteredFriends" [value]="friend" [selected]="selectedUser?.wallet === friend.wallet">
             <div class="user-item">
-              <img [src]="friend.photo" class="user-photo">
+              <img [src]="getUserImageUrl(friend.username)" class="user-photo" *ngIf="friend.hasImage">
+              <div class="user-avatar-fallback user-photo" *ngIf="!friend.hasImage">
+                <mat-icon>person</mat-icon>
+              </div>
               <div class="user-info">
                 <span class="username">&#64;{{ friend.username }}</span>
                 <span class="fullname">{{ friend.fullName }}</span>
@@ -29,34 +84,92 @@
           </mat-list-option>
         </mat-selection-list>
         
-        <div class="empty-state" *ngIf="filteredFriends.length === 0">
+        <div class="empty-state" *ngIf="filteredFriends.length === 0 && !isManualAddressValid">
           <mat-icon>person_search</mat-icon>
-          <p>No se encontraron usuarios</p>
+          <p>No se encontraron usuarios con wallet vinculada</p>
         </div>
       </div>
     </mat-card>
 
-    <mat-card class="confirm-card" [class.is-empty]="!selectedUser">
-      <h2 class="headline-small">Confirmar Envío</h2>
+    <mat-card class="confirm-card brutalist-card" [class.is-empty]="!selectedUser">
+      <h2 class="headline-small title-section">Detalles y Confirmación</h2>
       
       <ng-container *ngIf="selectedUser; else emptyConfirm">
         <div class="destinatary-preview">
-          <p>Vas a regalar tu entrada a:</p>
-          <div class="selected-user-card">
-            <img [src]="selectedUser.photo" alt="User">
+          <p class="preview-label">Vas a regalar tu entrada a:</p>
+          <div class="selected-user-card brutalist-inner-card">
+            <img [src]="getUserImageUrl(selectedUser.username)" alt="User" *ngIf="selectedUser.hasImage">
+            <div class="user-avatar-fallback selected-user-avatar" *ngIf="!selectedUser.hasImage">
+              <mat-icon>person</mat-icon>
+            </div>
             <div class="meta">
               <span class="name">{{ selectedUser.fullName }}</span>
               <span class="user">&#64;{{ selectedUser.username }}</span>
+              <span class="wallet">{{ selectedUser.wallet | slice:0:6 }}...{{ selectedUser.wallet | slice:-4 }}</span>
             </div>
           </div>
         </div>
 
-        <div class="warning-box">
-          <mat-icon>warning</mat-icon>
-          <p><strong>Atención:</strong> Una vez enviada la entrada, perderás el acceso a la misma y no podrás deshacer esta acción.</p>
+        <!-- Ticket Card Preview -->
+        <div class="ticket-preview-box brutalist-inner-card">
+          <div class="ticket-type-tag">TICKET VC</div>
+          <div class="ticket-info">
+            <span class="event-title">{{ ticket.ticketType.name }}</span>
+            <span class="ticket-id">Token ID: #{{ ticket.tokenId }}</span>
+            <span class="seat" *ngIf="ticket.seatRow">Fila: {{ ticket.seatRow }} | Asiento: {{ ticket.seatNumber }}</span>
+          </div>
         </div>
 
-        <button mat-raised-button class="gift-btn" (click)="confirmGift()">
+        <!-- Costs breakdown -->
+        <div class="costs-breakdown brutalist-inner-card">
+          <h4 class="cost-title">Costo del Regalo (10% en USDC)</h4>
+          <div class="cost-row">
+            <span>Precio Original</span>
+            <span>{{ ticket.ticketType.priceUsdc | number:'1.2-2' }} USDC</span>
+          </div>
+          <div class="cost-row">
+            <span>Comisión de Plataforma (5%)</span>
+            <span>{{ platformFee | number:'1.2-2' }} USDC</span>
+          </div>
+          <div class="cost-row">
+            <span>Regalía de Organizador (5%)</span>
+            <span>{{ royaltyFee | number:'1.2-2' }} USDC</span>
+          </div>
+          <div class="cost-total">
+            <span>Total a Pagar</span>
+            <span class="total-val">{{ totalFee | number:'1.2-2' }} USDC</span>
+          </div>
+        </div>
+
+        <!-- Stepper and Status reporting -->
+        <div class="transaction-status-wrapper" *ngIf="txStep !== 'idle'">
+          <div class="status-description brutalist-inner-card">
+            <div class="spinner-sm"></div>
+            <div class="desc-text">
+              <span class="desc-title" *ngIf="txStep === 'validating'">Verificando destinatario...</span>
+              <span class="desc-title" *ngIf="txStep === 'approving-nft'">Aprobando NFT (Paso 1 de 3)...</span>
+              <span class="desc-title" *ngIf="txStep === 'approving-usdc'">Aprobando USDC (Paso 2 de 3)...</span>
+              <span class="desc-title" *ngIf="txStep === 'gifting'">Regalando Entrada (Paso 3 de 3)...</span>
+              <span class="desc-title" *ngIf="txStep === 'confirming'">Sincronizando con VibeCheck...</span>
+              <span class="desc-subtitle">Por favor, confirma la transacción en tu wallet y espera.</span>
+            </div>
+          </div>
+
+          <app-tx-status [txState]="currentTxState" *ngIf="currentTxState"></app-tx-status>
+        </div>
+
+        <!-- Error box -->
+        <div class="warning-box" *ngIf="errorMessage">
+          <mat-icon>error_outline</mat-icon>
+          <p><strong>Error:</strong> {{ errorMessage }}</p>
+        </div>
+
+        <div class="warning-box info-box" *ngIf="txStep === 'idle'">
+          <mat-icon>warning</mat-icon>
+          <p><strong>Atención:</strong> Al transferir la entrada, perderás el acceso a la misma de forma permanente. Deberás pagar las comisiones en USDC.</p>
+        </div>
+
+        <button mat-raised-button class="gift-btn brutalist-btn-primary" (click)="confirmGift()" *ngIf="txStep === 'idle'">
           <mat-icon>card_giftcard</mat-icon>
           CONFIRMAR Y REGALAR
         </button>
@@ -65,7 +178,7 @@
       <ng-template #emptyConfirm>
         <div class="empty-confirm-state">
           <mat-icon>person_add</mat-icon>
-          <p>Seleccioná un destinatario de tu lista de amigos para regalar tu entrada.</p>
+          <p>Seleccioná un destinatario de la lista de usuarios o ingresá una wallet válida para regalar tu entrada.</p>
         </div>
       </ng-template>
     </mat-card>

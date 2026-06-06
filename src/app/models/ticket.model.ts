@@ -10,6 +10,7 @@ export interface TicketResponse {
   tokenId: number | null;
   mintTxHash: string | null;
   ownerWallet: string | null;
+  eventNftAddress: string | null;
   createdAt: string;
 }
 
