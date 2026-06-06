@@ -55,23 +55,26 @@
   <div class="venues-grid" *ngIf="!isLoading && pagedVenues.length > 0">
     <mat-card class="venue-card" *ngFor="let venue of pagedVenues">
 
-      <!-- Visibility badge -->
-      <div class="visibility-badge"
-           [class.badge-public]="venue.visibility === 'PUBLIC'"
-           [class.badge-private]="venue.visibility === 'PRIVATE'">
-        <mat-icon>{{ venue.visibility === 'PUBLIC' ? 'public' : 'lock' }}</mat-icon>
-        {{ visibilityLabel(venue.visibility) }}
-      </div>
+      <!-- Badges row -->
+      <div class="badges-row">
+        <!-- Visibility badge -->
+        <div class="visibility-badge"
+             [class.badge-public]="venue.visibility === 'PUBLIC'"
+             [class.badge-private]="venue.visibility === 'PRIVATE'">
+          <mat-icon>{{ venue.visibility === 'PUBLIC' ? 'public' : 'lock' }}</mat-icon>
+          {{ visibilityLabel(venue.visibility) }}
+        </div>
 
-      <!-- Status badge -->
-      <div class="status-badge"
-           [class.badge-pending]="venue.status === 'PENDING'"
-           [class.badge-approved]="venue.status === 'APPROVED'"
-           [class.badge-rejected]="venue.status === 'REJECTED'">
-        <mat-icon *ngIf="venue.status === 'PENDING'">schedule</mat-icon>
-        <mat-icon *ngIf="venue.status === 'APPROVED'">check_circle</mat-icon>
-        <mat-icon *ngIf="venue.status === 'REJECTED'">cancel</mat-icon>
-        {{ venue.status }}
+        <!-- Status badge -->
+        <div class="status-badge"
+             [class.badge-pending]="venue.status === 'PENDING'"
+             [class.badge-approved]="venue.status === 'APPROVED'"
+             [class.badge-rejected]="venue.status === 'REJECTED'">
+          <mat-icon *ngIf="venue.status === 'PENDING'">schedule</mat-icon>
+          <mat-icon *ngIf="venue.status === 'APPROVED'">check_circle</mat-icon>
+          <mat-icon *ngIf="venue.status === 'REJECTED'">cancel</mat-icon>
+          {{ venue.status }}
+        </div>
       </div>
 
       <div class="venue-card-body">
