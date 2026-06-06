@@ -8,10 +8,22 @@ import { EventService } from '../../services/event.service';
 import { EventResponse } from '../../models/event.model';
 import { Page } from '../../models/page.model';
 
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
   selector: 'app-admin-events-approval',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, MatSnackBarModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    MatSnackBarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule
+  ],
   templateUrl: './admin-events-approval.component.html',
   styleUrls: ['./admin-events-approval.component.scss']
 })
@@ -137,5 +149,9 @@ export class AdminEventsApprovalComponent implements OnInit {
       default:
         return '';
     }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

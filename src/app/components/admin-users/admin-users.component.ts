@@ -28,6 +28,8 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { AuthService } from "../../services/auth.service";
 import { Router } from "@angular/router";
 
+import { MatTooltipModule } from "@angular/material/tooltip";
+
 @Component({
   selector: "app-admin-users",
   standalone: true,
@@ -45,7 +47,8 @@ import { Router } from "@angular/router";
     MatSortModule,
     LoadingStateComponent,
     EmptyStateComponent,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatTooltipModule
   ],
   templateUrl: "./admin-users.component.html",
   styleUrl: "./admin-users.component.scss",
@@ -189,5 +192,9 @@ export class AdminUsersComponent implements OnInit {
         });
       }
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

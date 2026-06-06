@@ -23,6 +23,8 @@ import { trackLoading } from '../../utils/loading.operator';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
   selector: 'app-admin-permissions',
   standalone: true,
@@ -39,7 +41,8 @@ import { Router } from '@angular/router';
     FormsModule,
     MatDialogModule,
     LoadingStateComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
+    MatTooltipModule
   ],
   templateUrl: './admin-permissions.component.html',
   styleUrl: './admin-permissions.component.scss'
@@ -201,5 +204,9 @@ export class AdminPermissionsComponent implements OnInit {
         });
       }
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

@@ -35,7 +35,7 @@
 }
 
 // --- Header ---
-.statistics-header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -43,17 +43,57 @@
   position: relative;
   z-index: 10;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: 20px;
+}
 
-  .header-content {
-    .statistics-title {
-      margin: 0;
-      line-height: 1.1;
-    }
-    .statistics-subtitle {
-      margin: var(--space-2) 0 0 0;
-      color: #94a3b8;
-      font-size: var(--text-body-lg);
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-btn {
+  color: #f97316 !important;
+  background: rgba(249, 115, 22, 0.1) !important;
+
+  &:hover {
+    background: rgba(249, 115, 22, 0.2) !important;
+  }
+}
+
+.header-text {
+  .brand-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .header-subtitle {
+    font-size: var(--text-body-lg);
+    color: #94a3b8;
+    margin: var(--space-2) 0 0 0;
+  }
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #7c3aed 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-text {
+    .brand-title {
+      font-size: 24px;
     }
   }
 }
