@@ -103,7 +103,7 @@ export interface VenueDialogData {
                 [disabled]="venueForm.invalid || isSubmitting"
                 (click)="onSubmit()">
           <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
-          <span *ngIf="!isSubmitting">{{ isEditMode ? 'Guardar cambios' : 'Crear Venue' }}</span>
+          <span *ngIf="!isSubmitting">{{ isEditMode && data.venue?.status !== 'REJECTED' ? 'Guardar cambios' : 'Enviar a Aprobación' }}</span>
         </button>
         <button mat-button class="btn-cancel" (click)="onCancel()">Cancelar</button>
       </mat-dialog-actions>
