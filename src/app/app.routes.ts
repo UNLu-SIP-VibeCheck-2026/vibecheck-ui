@@ -35,6 +35,7 @@ import { SwapComponent } from "./components/swap/swap.component";
 import { MyListingsComponent } from "./components/my-listings/my-listings.component";
 import { MarketplaceListComponent } from "./components/marketplace-list/marketplace-list.component";
 import { MarketplaceDetailComponent } from "./components/marketplace-detail/marketplace-detail.component";
+import { ValidatorManagementComponent } from "./components/validator-management/validator-management.component";
 
 
 export const routes: Routes = [
@@ -223,6 +224,11 @@ export const routes: Routes = [
   {
     path: "marketplace/:listingId",
     component: MarketplaceDetailComponent,
+  },
+  {
+    path: "admin-events/:id/validators",
+    component: ValidatorManagementComponent,
+    canActivate: [authGuard],
   },
   { path: "**", component: NotFoundComponent },
 ];

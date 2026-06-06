@@ -37,6 +37,24 @@ export class ErrorService {
     console.error('Error capturado:', error);
     
     let message = defaultMessage;
+    let title = 'Ha ocurrido un error';
+
+    // Handle specific scope validation error for validators
+    if (error && error.status === 403) {
+      if (error.error && typeof error.error === 'string') {
+        try {
+          const parsed = JSON.parse(error.error);
+          if (parsed.message && parsed.message.includes('scope') || parsed.message.includes('assignedEventId')) {
+            title = 'Error de Validación de Alcance';
+            message = 'No tienes permiso para validar entradas de este evento. Los validadores solo pueden canjear entradas del evento al que están asignados.';
+            this.showError(message, title);
+            return;
+          }
+        } catch {
+          // If parsing fails, continue with default handling
+        }
+      }
+    }
 
     if (error && error.error) {
       if (typeof error.error === 'string') {
@@ -53,6 +71,6 @@ export class ErrorService {
       message = error.message;
     }
 
-    this.showError(message);
+    this.showError(message, title);
   }
 }

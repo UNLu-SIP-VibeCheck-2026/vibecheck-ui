@@ -336,6 +336,10 @@ export class AdminEventsComponent implements OnInit {
     this.router.navigate(["/advertise-event", event.id]);
   }
 
+  manageValidators(event: EventResponse): void {
+    this.router.navigate(["/admin-events", event.id, "validators"]);
+  }
+
   // -------------------------------------------------------------------------
   // Edit dialog
   // -------------------------------------------------------------------------

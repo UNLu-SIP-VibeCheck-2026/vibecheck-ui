@@ -266,6 +266,12 @@
                                         <span>Categorías y Tickets</span>
                                     </button>
 
+                                    <!-- 2.5. Gestionar Validadores (always available, but only if not cancelled) -->
+                                    <button mat-menu-item (click)="manageValidators(element)">
+                                        <mat-icon>badge</mat-icon>
+                                        <span>Gestionar Validadores</span>
+                                    </button>
+
                                     <!-- 3. Publicidad y Finanzas: only if Published/Public/In Progress/etc -->
                                     <button mat-menu-item 
                                             (click)="viewFinance(element)"

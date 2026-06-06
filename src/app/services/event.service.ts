@@ -8,6 +8,11 @@ import {
   EventResponse,
   EventDeployRegisterRequest,
 } from "../models/event.model";
+import {
+  ValidatorCreateRequest,
+  ValidatorPasswordRotateRequest,
+  ValidatorResponse,
+} from "../models/validator-request.model";
 import { Page } from "../models/page.model";
 import { OrganizerEventMetrics } from "../models/organizer-metrics.model";
 
@@ -127,5 +132,13 @@ export class EventService {
 
   rejectEvent(id: number, rejectionReason: string): Observable<EventResponse> {
     return this.http.post<EventResponse>(`${this.apiUrl}/${id}/reject`, { rejectionReason });
+  }
+
+  createValidator(eventId: number, request: ValidatorCreateRequest): Observable<ValidatorResponse> {
+    return this.http.post<ValidatorResponse>(`${this.apiUrl}/${eventId}/validators`, request);
+  }
+
+  rotateValidatorPassword(eventId: number, request: ValidatorPasswordRotateRequest): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${eventId}/validators/password`, request);
   }
 }

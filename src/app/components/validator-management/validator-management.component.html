@@ -1,0 +1,133 @@
+<div class="validator-management-container">
+  <div class="header">
+    <h1>Gestión de Validadores</h1>
+    <button mat-raised-button color="primary" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </button>
+  </div>
+
+  <div class="content">
+    <!-- Create Validator Section -->
+    <mat-card class="create-validator-card">
+      <mat-card-header>
+        <mat-card-title>Crear Nueva Cuenta de Validador</mat-card-title>
+        <mat-card-subtitle>Las cuentas de validador están vinculadas exclusivamente a este evento</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="createValidatorForm" class="validator-form">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nombre de Usuario</mat-label>
+              <input matInput formControlName="username" placeholder="Ej: rockfest-val">
+              <mat-error>El nombre de usuario es obligatorio (4-50 caracteres)</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Contraseña</mat-label>
+              <input matInput type="password" formControlName="password">
+              <mat-error>La contraseña es obligatoria (mínimo 6 caracteres)</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="name">
+              <mat-error>El nombre es obligatorio</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Apellido</mat-label>
+              <input matInput formControlName="lastName">
+              <mat-error>El apellido es obligatorio</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Fecha de Nacimiento</mat-label>
+              <input matInput type="date" formControlName="birthdate">
+              <mat-error>La fecha de nacimiento es obligatoria</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button 
+              mat-raised-button 
+              color="primary" 
+              (click)="onCreateValidator()"
+              [disabled]="createValidatorForm.invalid || isCreating">
+              <mat-icon *ngIf="isCreating" class="spinner">refresh</mat-icon>
+              {{ isCreating ? 'Creando...' : 'Crear Validador' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Validators List Section -->
+    <mat-card class="validators-list-card">
+      <mat-card-header>
+        <mat-card-title>Validadores Asignados</mat-card-title>
+        <mat-card-subtitle>Cuentas de validador para este evento</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="isLoading" class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Cargando validadores...</p>
+        </div>
+
+        <div *ngIf="!isLoading && validators.length === 0" class="empty-state">
+          <mat-icon>person_add</mat-icon>
+          <p>No hay validadores asignados a este evento</p>
+        </div>
+
+        <table mat-table [dataSource]="validators" class="validators-table" *ngIf="!isLoading && validators.length > 0">
+          <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef>Usuario</th>
+            <td mat-cell *matCellDef="let validator">{{ validator.username }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Nombre</th>
+            <td mat-cell *matCellDef="let validator">{{ validator.name }} {{ validator.lastName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let validator">{{ validator.email }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="active">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let validator">
+              <span [class.active]="validator.active" [class.inactive]="!validator.active">
+                {{ validator.active ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let validator">
+              <button 
+                mat-icon-button 
+                color="primary" 
+                matTooltip="Rotar Contraseña"
+                (click)="onRotatePassword(validator)"
+                [disabled]="isRotating">
+                <mat-icon>vpn_key</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

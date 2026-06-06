@@ -45,6 +45,13 @@ export class ChangePasswordComponent implements OnInit {
   ngOnInit() {
     const user = this.authService.getCurrentUserValue();
     if (user) {
+      // Block validators from changing their own password
+      if (user.role === 'VALIDADOR' || user.role === 'VALIDATOR') {
+        this.snackBar.open('Los validadores no pueden cambiar su propia contraseña. Contacte al organizador.', 'Cerrar', { duration: 5000 });
+        this.router.navigate(['/dashboard']);
+        return;
+      }
+      
       this.recoveryForm.patchValue({ username: user.username });
       this.recoveryForm.get('username')?.disable(); // Lock if user is known
     }

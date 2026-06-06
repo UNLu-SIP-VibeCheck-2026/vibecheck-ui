@@ -37,5 +37,9 @@ export class TicketService {
   redeemConfirm(id: number, txHash: string): Observable<TicketResponse> {
     return this.http.post<TicketResponse>(`${this.apiUrl}/${id}/redeem-confirm`, { txHash });
   }
+
+  redeemTicket(id: number): Observable<TicketResponse> {
+    return this.http.post<TicketResponse>(`${this.apiUrl}/${id}/redeem`, {});
+  }
 }
 
