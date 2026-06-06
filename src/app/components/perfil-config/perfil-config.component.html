@@ -62,7 +62,7 @@
           </svg>
         </button>
 
-        <button class="config-card" mat-ripple *ngIf="!isAdmin && !isCeo" (click)="openChangeRole()">
+        <button class="config-card" mat-ripple *ngIf="!isAdmin && !isCeo && !isValidador" (click)="openChangeRole()">
           <div class="card-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M17 21V19C17 16.7909 15.2091 15 13 15H5C2.79086 15 1 16.7909 1 19V21" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>

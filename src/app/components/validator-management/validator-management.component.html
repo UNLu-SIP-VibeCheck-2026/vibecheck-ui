@@ -1,91 +1,138 @@
-<div class="validator-management-container">
-  <div class="header">
-    <h1>Gestión de Validadores</h1>
-    <button mat-raised-button color="primary" (click)="goBack()">
-      <mat-icon>arrow_back</mat-icon>
-      Volver
-    </button>
+<div class="admin-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver a Eventos">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="brand-title">Gestión de <span class="text-gradient">Validadores</span></h1>
+        <p class="header-subtitle">Administrá las cuentas de validador para este evento</p>
+      </div>
+    </div>
+    <div class="stats-badge" *ngIf="validators.length > 0">
+      <mat-icon>badge</mat-icon>
+      <span>{{ validators.length }} {{ validators.length === 1 ? 'validador asignado' : 'validadores asignados' }}</span>
+    </div>
   </div>
 
-  <div class="content">
-    <!-- Create Validator Section -->
-    <mat-card class="create-validator-card">
-      <mat-card-header>
-        <mat-card-title>Crear Nueva Cuenta de Validador</mat-card-title>
-        <mat-card-subtitle>Las cuentas de validador están vinculadas exclusivamente a este evento</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <form [formGroup]="createValidatorForm" class="validator-form">
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nombre de Usuario</mat-label>
-              <input matInput formControlName="username" placeholder="Ej: rockfest-val">
-              <mat-error>El nombre de usuario es obligatorio (4-50 caracteres)</mat-error>
+  <div class="content-grid">
+    <!-- Create Validator Form -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2 class="section-title">Crear Validador</h2>
+        <p class="section-subtitle">Las cuentas de validador están vinculadas exclusivamente a este evento</p>
+      </div>
+
+      <form [formGroup]="createValidatorForm" class="validator-form">
+        <div class="field-row">
+          <div class="field-group">
+            <label for="val-username">Usuario *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>alternate_email</mat-icon>
+              <input matInput id="val-username" formControlName="username" placeholder="Ej: rockfest-val">
             </mat-form-field>
+            <div class="field-errors" *ngIf="usernameCtrl.touched && usernameCtrl.invalid">
+              <span *ngIf="usernameCtrl.hasError('required')">⚠ Requerido</span>
+              <span *ngIf="usernameCtrl.hasError('minlength')">⚠ Mínimo 3 caracteres</span>
+              <span *ngIf="usernameCtrl.hasError('pattern')">⚠ Solo letras, números, _ . -</span>
+              <span *ngIf="usernameCtrl.hasError('maxlength')">⚠ Máximo 50 caracteres</span>
+            </div>
           </div>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Contraseña</mat-label>
-              <input matInput type="password" formControlName="password">
-              <mat-error>La contraseña es obligatoria (mínimo 6 caracteres)</mat-error>
+          <div class="field-group">
+            <label for="val-password">Contraseña *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>lock_outline</mat-icon>
+              <input matInput [type]="showPassword ? 'text' : 'password'" id="val-password" formControlName="password" placeholder="Mínimo 8 caracteres">
+              <button mat-icon-button matSuffix type="button" (click)="togglePassword()">
+                <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
             </mat-form-field>
+            <div class="field-errors" *ngIf="passwordCtrl.touched && passwordCtrl.invalid">
+              <span *ngIf="passwordCtrl.hasError('required')">⚠ Requerida</span>
+              <span *ngIf="passwordCtrl.hasError('minlength')">⚠ Mínimo 8 caracteres</span>
+              <span *ngIf="passwordCtrl.hasError('passwordRequirements')">⚠ Debe tener al menos una mayúscula, una minúscula, un número y un carácter especial</span>
+            </div>
+            <!-- Strength bar -->
+            <div class="strength-bar-wrapper" *ngIf="passwordCtrl.value">
+              <div class="strength-bar" [attr.data-strength]="passwordStrength">
+                <div class="strength-bar-fill"></div>
+              </div>
+              <span class="strength-label" [attr.data-strength]="passwordStrength">
+                {{ passwordStrength === 'weak' ? 'Débil' : passwordStrength === 'medium' ? 'Media' : 'Fuerte' }}
+              </span>
+            </div>
           </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="half-width">
-              <mat-label>Nombre</mat-label>
-              <input matInput formControlName="name">
-              <mat-error>El nombre es obligatorio</mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="half-width">
-              <mat-label>Apellido</mat-label>
-              <input matInput formControlName="lastName">
-              <mat-error>El apellido es obligatorio</mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Fecha de Nacimiento</mat-label>
-              <input matInput type="date" formControlName="birthdate">
-              <mat-error>La fecha de nacimiento es obligatoria</mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-actions">
-            <button 
-              mat-raised-button 
-              color="primary" 
-              (click)="onCreateValidator()"
-              [disabled]="createValidatorForm.invalid || isCreating">
-              <mat-icon *ngIf="isCreating" class="spinner">refresh</mat-icon>
-              {{ isCreating ? 'Creando...' : 'Crear Validador' }}
-            </button>
-          </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- Validators List Section -->
-    <mat-card class="validators-list-card">
-      <mat-card-header>
-        <mat-card-title>Validadores Asignados</mat-card-title>
-        <mat-card-subtitle>Cuentas de validador para este evento</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <div *ngIf="isLoading" class="loading-container">
-          <mat-spinner diameter="40"></mat-spinner>
-          <p>Cargando validadores...</p>
         </div>
 
-        <div *ngIf="!isLoading && validators.length === 0" class="empty-state">
-          <mat-icon>person_add</mat-icon>
-          <p>No hay validadores asignados a este evento</p>
+        <div class="field-row">
+          <div class="field-group">
+            <label for="val-name">Nombre *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>person_outline</mat-icon>
+              <input matInput id="val-name" formControlName="name" placeholder="Nombre">
+            </mat-form-field>
+            <div class="field-errors" *ngIf="createValidatorForm.get('name')?.touched && createValidatorForm.get('name')?.invalid">
+              <span>⚠ Requerido</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="val-lastname">Apellido *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>badge</mat-icon>
+              <input matInput id="val-lastname" formControlName="lastName" placeholder="Apellido">
+            </mat-form-field>
+            <div class="field-errors" *ngIf="createValidatorForm.get('lastName')?.touched && createValidatorForm.get('lastName')?.invalid">
+              <span>⚠ Requerido</span>
+            </div>
+          </div>
         </div>
 
-        <table mat-table [dataSource]="validators" class="validators-table" *ngIf="!isLoading && validators.length > 0">
+        <div class="field-row">
+          <div class="field-group full-width">
+            <app-birthdate-picker formControlName="birthdate" label="Fecha de Nacimiento *"></app-birthdate-picker>
+            <div class="field-errors" *ngIf="birthdateCtrl.touched && birthdateCtrl.invalid">
+              <span *ngIf="birthdateCtrl.hasError('required')">⚠ Requerida</span>
+              <span *ngIf="birthdateCtrl.hasError('underAge')">⚠ Debés tener al menos 13 años</span>
+              <span *ngIf="birthdateCtrl.hasError('tooOld')">⚠ Debés tener no más de 100 años</span>
+              <span *ngIf="birthdateCtrl.hasError('invalidBirthdate')">⚠ Fecha inválida</span>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          type="button"
+          (click)="onCreateValidator()"
+          [disabled]="createValidatorForm.invalid || isCreating"
+          class="btn-cta btn-submit">
+          <span class="btn-cta__label">
+            {{ isCreating ? 'CREANDO VALIDADOR...' : 'CREAR VALIDADOR' }}
+          </span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Validators List -->
+    <div class="list-section">
+      <div class="section-header">
+        <h2 class="section-title">Validadores Asignados</h2>
+        <p class="section-subtitle">Cuentas de validador para este evento</p>
+      </div>
+
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando validadores...</p>
+      </div>
+
+      <div *ngIf="!isLoading && validators.length === 0" class="empty-state">
+        <mat-icon>person_add</mat-icon>
+        <p>No hay validadores asignados a este evento</p>
+      </div>
+
+      <div class="table-container mat-elevation-z0" *ngIf="!isLoading && validators.length > 0">
+        <table mat-table [dataSource]="dataSource" class="custom-table">
           <ng-container matColumnDef="username">
             <th mat-header-cell *matHeaderCellDef>Usuario</th>
             <td mat-cell *matCellDef="let validator">{{ validator.username }}</td>
@@ -104,22 +151,24 @@
           <ng-container matColumnDef="active">
             <th mat-header-cell *matHeaderCellDef>Estado</th>
             <td mat-cell *matCellDef="let validator">
-              <span [class.active]="validator.active" [class.inactive]="!validator.active">
+              <mat-chip class="custom-chip" [ngClass]="validator.active ? 'active-chip' : 'inactive-chip'">
                 {{ validator.active ? 'Activo' : 'Inactivo' }}
-              </span>
+              </mat-chip>
             </td>
           </ng-container>
 
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Acciones</th>
-            <td mat-cell *matCellDef="let validator">
+            <td mat-cell *matCellDef="let validator" class="action-cell">
               <button 
                 mat-icon-button 
-                color="primary" 
+                class="circle-btn edit" 
                 matTooltip="Rotar Contraseña"
                 (click)="onRotatePassword(validator)"
                 [disabled]="isRotating">
-                <mat-icon>vpn_key</mat-icon>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
               </button>
             </td>
           </ng-container>
@@ -127,7 +176,7 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
-      </mat-card-content>
-    </mat-card>
+      </div>
+    </div>
   </div>
 </div>

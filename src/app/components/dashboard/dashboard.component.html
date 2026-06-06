@@ -48,7 +48,7 @@
           <ng-container *ngIf="isAdmin || isAdminUsuarios || isAdminEventos || isAdminVenues">Panel de administración</ng-container>
           <ng-container *ngIf="isCeo">Panel de auditoría</ng-container>
         </h2>
-        <span class="coming-soon-badge" *ngIf="isCliente || isValidador">PROXIMAMENTE</span>
+        <span class="coming-soon-badge" *ngIf="isCliente">PROXIMAMENTE</span>
       </div>
 
     <div class="events-carousel">
@@ -118,11 +118,11 @@
 
       <!-- Case: Validador -->
       <ng-container *ngIf="isValidador">
-        <div class="event-card placeholder">
+        <div class="event-card clickable" (click)="openCameraScanner()">
           <div class="event-icon">
             <mat-icon>qr_code_scanner</mat-icon>
           </div>
-          <h3 class="event-title">Escanear entradas</h3>
+          <h3 class="event-title">Escaneá una entrada</h3>
           <p class="event-description">Validá los tickets de los asistentes de forma rápida.</p>
         </div>
       </ng-container>

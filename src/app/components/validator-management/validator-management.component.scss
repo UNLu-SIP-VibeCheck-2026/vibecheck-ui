@@ -1,66 +1,373 @@
-.validator-management-container {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
+// =============================================================================
+// ValidatorManagementComponent — Styles
+// VibeCheck visual style based on register and admin-users components
+// =============================================================================
+
+:host {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--md-sys-color-background, #09010f);
 }
 
-.header {
+.admin-container {
+  width: 100%;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+// ---------------------------------------------------------------------------
+// Page Header
+// ---------------------------------------------------------------------------
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-
-  h1 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 500;
-  }
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
   gap: 24px;
 }
 
-.create-validator-card,
-.validators-list-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.header-text {
+  .brand-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 900;
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+  }
+
+  .header-subtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+  }
+}
+
+.stats-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 20px;
+  color: rgba(168, 85, 247, 0.9);
+  font-size: 13px;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Content Grid
+// ---------------------------------------------------------------------------
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Form Section
+// ---------------------------------------------------------------------------
+.form-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 32px;
+}
+
+.section-header {
+  margin-bottom: 32px;
+
+  .section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: #ffffff;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+  }
 }
 
 .validator-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
-.form-row {
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+
+  &.single {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field-group {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 8px;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
 }
 
-.full-width {
-  flex: 1;
+// ---------------------------------------------------------------------------
+// Material Form Fields (from register component)
+// ---------------------------------------------------------------------------
+.reg-field {
+  width: 100%;
+
+  ::ng-deep {
+    .mat-mdc-form-field-flex {
+      height: 56px !important;
+      align-items: center !important;
+      background-color: rgba(255, 255, 255, 0.04) !important;
+      border-radius: 10px !important;
+      padding: 0 !important;
+    }
+
+    .mat-mdc-form-field-infix {
+      padding: 0 12px !important;
+      min-height: auto !important;
+      width: 100%;
+      display: flex !important;
+      align-items: center !important;
+      box-sizing: border-box !important;
+    }
+
+    .mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper {
+      padding-right: 0 !important;
+    }
+
+    .mat-mdc-input-element {
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+      color: #ffffff !important;
+      font-size: 14px !important;
+      caret-color: var(--md-sys-color-primary) !important;
+    }
+
+    .mat-mdc-input-element::placeholder {
+      color: rgba(255, 255, 255, 0.25) !important;
+    }
+
+    .mat-mdc-form-field-prefix,
+    .mat-mdc-form-field-suffix {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    mat-icon {
+      color: rgba(255, 255, 255, 0.35) !important;
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+      margin-right: 6px !important;
+    }
+
+    .mat-mdc-icon-button {
+      color: rgba(255, 255, 255, 0.4) !important;
+      width: 36px !important;
+      height: 36px !important;
+
+      mat-icon {
+        font-size: 18px !important;
+        margin-right: 0 !important;
+      }
+
+      &:hover {
+        color: rgba(255, 255, 255, 0.8) !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+      }
+    }
+  }
 }
 
-.half-width {
-  flex: 1;
+:host ::ng-deep .mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper {
+  padding-right: 0 !important;
 }
 
-.form-actions {
+.field-errors {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: -2px;
+
+  span {
+    font-size: 11px;
+    color: #f87171;
+    font-weight: 500;
+  }
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
-  margin-right: 8px;
+// ---------------------------------------------------------------------------
+// Password strength bar (from register component)
+// ---------------------------------------------------------------------------
+.strength-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.strength-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+
+  .strength-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+  }
+
+  &[data-strength="weak"] .strength-bar-fill {
+    width: 33%;
+    background: #f87171;
+  }
+
+  &[data-strength="medium"] .strength-bar-fill {
+    width: 66%;
+    background: #fbbf24;
+  }
+
+  &[data-strength="strong"] .strength-bar-fill {
+    width: 100%;
+    background: #4ade80;
+  }
+}
+
+.strength-label {
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &[data-strength="weak"]   { color: #f87171; }
+  &[data-strength="medium"] { color: #fbbf24; }
+  &[data-strength="strong"] { color: #4ade80; }
+}
+
+// ---------------------------------------------------------------------------
+// Submit Button (from register component)
+// ---------------------------------------------------------------------------
+.btn-submit,
+.btn-cta {
+  width: 100%;
+  height: 56px;
+  padding: 0 3rem;
+  border-radius: 16px;
+  font-family: "Outfit", sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  background: var(--gradient-brand);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.btn-submit:hover:not(:disabled),
+.btn-cta:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.55);
+  filter: brightness(1.1);
+}
+
+.btn-submit:disabled,
+.btn-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+// ---------------------------------------------------------------------------
+// Green Success Button
+// ---------------------------------------------------------------------------
+.btn-success {
+  background: #4ade80;
+  color: #09010f;
+  
+  &:hover:not(:disabled) {
+    background: #22c55e;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(74, 222, 128, 0.4);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// List Section
+// ---------------------------------------------------------------------------
+.list-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 32px;
 }
 
 .loading-container {
@@ -68,8 +375,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 60px 32px;
   gap: 16px;
+  color: rgba(255, 255, 255, 0.5);
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
 }
 
 .empty-state {
@@ -77,27 +390,140 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 60px 32px;
   gap: 16px;
-  color: rgba(0, 0, 0, 0.54);
+  color: rgba(255, 255, 255, 0.5);
 
   mat-icon {
     font-size: 48px;
     width: 48px;
     height: 48px;
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
   }
 }
 
-.validators-table {
+// ---------------------------------------------------------------------------
+// Table (from admin-users component)
+// ---------------------------------------------------------------------------
+.table-container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.custom-table {
   width: 100%;
+
+  ::ng-deep {
+    .mat-mdc-table {
+      background: transparent;
+    }
+
+    .mat-mdc-header-row {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .mat-mdc-header-cell {
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .mat-mdc-cell {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .mat-mdc-row:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+  }
 }
 
-.active {
-  color: #4caf50;
-  font-weight: 500;
+.action-cell {
+  text-align: right;
 }
 
-.inactive {
-  color: #f44336;
-  font-weight: 500;
+.circle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &.edit {
+    color: rgba(168, 85, 247, 0.8);
+    background: rgba(168, 85, 247, 0.1);
+
+    &:hover {
+      color: rgba(168, 85, 247, 1);
+      background: rgba(168, 85, 247, 0.2);
+      transform: scale(1.1);
+    }
+  }
+
+  svg {
+    stroke: currentColor;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Chips (from admin-users component)
+// ---------------------------------------------------------------------------
+.custom-chip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.active-chip {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.inactive-chip {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+// ---------------------------------------------------------------------------
+// Responsive
+// ---------------------------------------------------------------------------
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 16px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .content-grid {
+    gap: 24px;
+  }
+
+  .form-section,
+  .list-section {
+    padding: 24px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

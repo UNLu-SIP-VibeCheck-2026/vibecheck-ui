@@ -74,7 +74,7 @@ export class DashboardComponent implements OnInit {
   }
 
   get canChangeRole(): boolean {
-    return this.isCliente || this.isOrganizador || this.isValidador;
+    return this.isCliente || this.isOrganizador;
   }
 
   get isAdmin(): boolean {
@@ -175,5 +175,43 @@ export class DashboardComponent implements OnInit {
 
   navigateToStatistics() {
     this.router.navigate(['/admin/statistics']);
+  }
+
+  openCameraScanner(): void {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      this.errorService.handleError(
+        { message: 'Tu navegador no soporta acceso a la cámara' },
+        'Error al acceder a la cámara'
+      );
+      return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then((stream) => {
+        // Stop the stream immediately since we're just checking permission
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Navigate to the scanner page (you'll need to create this route/component)
+        this.router.navigate(['/scanner']);
+      })
+      .catch((err) => {
+        console.error('Error al acceder a la cámara:', err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          this.errorService.handleError(
+            { message: 'Permiso de cámara denegado. Por favor habilita el acceso a la cámara en tu navegador.' },
+            'Permiso de cámara denegado'
+          );
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          this.errorService.handleError(
+            { message: 'No se encontró ninguna cámara en el dispositivo.' },
+            'Cámara no encontrada'
+          );
+        } else {
+          this.errorService.handleError(
+            { message: 'Error al acceder a la cámara: ' + err.message },
+            'Error al acceder a la cámara'
+          );
+        }
+      });
   }
 }

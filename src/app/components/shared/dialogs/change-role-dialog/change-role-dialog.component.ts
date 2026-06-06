@@ -37,8 +37,6 @@ export class ChangeRoleDialogComponent implements OnInit {
         this.selectedRole = "comprar";
       else if (currentRole.includes("organizador"))
         this.selectedRole = "crear";
-      else if (currentRole.includes("validador"))
-        this.selectedRole = "validar";
     }
 
     this.rolesService.getFinalRoles().subscribe({
@@ -78,10 +76,6 @@ export class ChangeRoleDialogComponent implements OnInit {
         case "crear":
           targetNames = ["organizador", "Organizador", "ORGANIZADOR"];
           fallbackId = 6;
-          break;
-        case "validar":
-          targetNames = ["validador", "Validador", "VALIDADOR"];
-          fallbackId = 7;
           break;
       }
 

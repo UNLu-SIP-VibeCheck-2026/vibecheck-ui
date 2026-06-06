@@ -138,6 +138,10 @@ export class EventService {
     return this.http.post<ValidatorResponse>(`${this.apiUrl}/${eventId}/validators`, request);
   }
 
+  getEventValidators(eventId: number): Observable<ValidatorResponse[]> {
+    return this.http.get<ValidatorResponse[]>(`${this.apiUrl}/${eventId}/validators`);
+  }
+
   rotateValidatorPassword(eventId: number, request: ValidatorPasswordRotateRequest): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${eventId}/validators/password`, request);
   }

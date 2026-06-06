@@ -83,6 +83,11 @@ export class PerfilConfigComponent implements OnInit {
     return user?.role === 'ceo' || user?.role === 'CEO';
   }
 
+  get isValidador(): boolean {
+    const user = this.authService.getCurrentUserValue();
+    return user?.role === 'validador' || user?.role === 'VALIDADOR' || user?.role === 'VALIDATOR';
+  }
+
   get greeting(): string {
     return this.authService.getCurrentUserValue()?.username ?? 'Usuario';
   }
