@@ -20,7 +20,7 @@ import { AdminVenuesComponent } from "./components/admin-venues/admin-venues.com
 import { AdminTicketsComponent } from "./components/admin-tickets/admin-tickets.component";
 import { AdvertiseEventComponent } from "./components/advertise-event/advertise-event.component";
 import { EventComponent } from "./components/event/event.component";
-import { SelectTicketsComponent } from "./components/select-tickets/select-tickets.component";
+import { TicketPurchaseComponent } from "./components/select-tickets/select-tickets.component";
 import { MyTicketsComponent } from "./components/my-tickets/my-tickets.component";
 import { TicketComponent } from "./components/ticket/ticket.component";
 import { TicketMarketplaceComponent } from "./components/ticket-marketplace/ticket-marketplace.component";
@@ -31,6 +31,11 @@ import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
 import { ResetPasswordComponent } from "./components/reset-password/reset-password.component";
 import { NotFoundComponent } from "./components/not-found/not-found.component";
+import { SwapComponent } from "./components/swap/swap.component";
+import { MyListingsComponent } from "./components/my-listings/my-listings.component";
+import { MarketplaceListComponent } from "./components/marketplace-list/marketplace-list.component";
+import { MarketplaceDetailComponent } from "./components/marketplace-detail/marketplace-detail.component";
+
 
 export const routes: Routes = [
   {
@@ -89,6 +94,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "admin/statistics",
+    loadComponent: () =>
+      import(
+        "./components/admin-statistics/admin-statistics.component"
+      ).then((m) => m.AdminStatisticsComponent),
+    canActivate: [authGuard],
+    data: { roles: ["CEO", "ADMIN"] },
+  },
+  {
     path: "system-logs",
     component: SystemLogsComponent,
     canActivate: [authGuard],
@@ -113,18 +127,48 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "admin-events/:id/metrics",
+    loadComponent: () =>
+      import(
+        "./components/organizer-metrics/organizer-metrics.component"
+      ).then((m) => m.OrganizerMetricsComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: "admin-venues",
     component: AdminVenuesComponent,
     canActivate: [authGuard],
   },
   {
-    path: "event/:id",
-    component: EventComponent,
+    path: "admin-venues/approvals",
+    loadComponent: () =>
+      import(
+        "./components/admin-venues-approval/admin-venues-approval.component"
+      ).then((m) => m.AdminVenuesApprovalComponent),
     canActivate: [authGuard],
   },
   {
+    path: "admin-events/approvals",
+    loadComponent: () =>
+      import(
+        "./components/admin-events-approval/admin-events-approval.component"
+      ).then((m) => m.AdminEventsApprovalComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: "event/:id",
+    component: EventComponent,
+  },
+  {
+    path: "event/:id/purchase-options",
+    loadComponent: () =>
+      import(
+        "./components/purchase-options/purchase-options.component"
+      ).then((m) => m.PurchaseOptionsComponent),
+  },
+  {
     path: "select-tickets/:id",
-    component: SelectTicketsComponent,
+    component: TicketPurchaseComponent,
     canActivate: [authGuard],
   },
   {
@@ -158,6 +202,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "my-listings",
+    component: MyListingsComponent,
+    canActivate: [authGuard],
+  },
+  {
     path: "admin-tickets/:id",
     component: AdminTicketsComponent,
     canActivate: [authGuard],
@@ -166,6 +215,14 @@ export const routes: Routes = [
     path: "advertise-event/:id",
     component: AdvertiseEventComponent,
     canActivate: [authGuard],
+  },
+  {
+    path: "marketplace",
+    component: MarketplaceListComponent,
+  },
+  {
+    path: "marketplace/:listingId",
+    component: MarketplaceDetailComponent,
   },
   { path: "**", component: NotFoundComponent },
 ];

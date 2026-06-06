@@ -46,4 +46,19 @@ export class VenueService {
   findVenueById(id: number): Observable<VenueResponse> {
     return this.http.get<VenueResponse>(`${this.apiUrl}/${id}`);
   }
+
+  findPendingVenues(page: number, size: number): Observable<Page<VenueResponse>> {
+    const params = new HttpParams()
+      .set("page", page.toString())
+      .set("size", size.toString());
+    return this.http.get<Page<VenueResponse>>(`${this.apiUrl}/pending`, { params });
+  }
+
+  approveVenue(id: number): Observable<VenueResponse> {
+    return this.http.post<VenueResponse>(`${this.apiUrl}/${id}/approve`, {});
+  }
+
+  rejectVenue(id: number, rejectionReason: string): Observable<VenueResponse> {
+    return this.http.post<VenueResponse>(`${this.apiUrl}/${id}/reject`, { rejectionReason });
+  }
 }

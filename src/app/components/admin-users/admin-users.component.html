@@ -1,6 +1,19 @@
 <div class="admin-container">
-    <div class="header-section">
-        <h1 class="main-title">Administrar Usuarios</h1>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <div class="header-text">
+                <h1 class="brand-title">Administrar <span class="text-gradient">Usuarios</span></h1>
+                <p class="header-subtitle">Gestioná los usuarios y roles del sistema</p>
+            </div>
+        </div>
+        <div class="stats-badge" *ngIf="totalElements > 0">
+            <mat-icon>people</mat-icon>
+            <span>{{ totalElements }} {{ totalElements === 1 ? 'usuario registrado' : 'usuarios registrados' }}</span>
+        </div>
     </div>
 
     <!-- Search and Filter Section -->

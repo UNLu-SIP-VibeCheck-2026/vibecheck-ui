@@ -52,6 +52,7 @@ export class AdminTicketsComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   eventId: number = 0;
+  event: EventResponse | null = null;
   eventStartDate: string | null = null;
   dataSource = new MatTableDataSource<TicketTypeResponse>([]);
   displayedColumns: string[] = [
@@ -69,22 +70,92 @@ export class AdminTicketsComponent implements OnInit {
   isLoading = false;
   deletingId: number | null = null;
 
+  get isEventPublished(): boolean {
+    return this.event ? (this.event.status !== 'DRAFT' && this.event.status !== 'REJECTED') : false;
+  }
+
+  getStatusClass(status: string): string {
+    switch (status?.toUpperCase()) {
+      case "DRAFT":
+      case "BORRADOR":
+        return "draft-chip";
+      case "PENDING_APPROVAL":
+      case "PENDIENTE":
+      case "PENDIENTE_APROBACION":
+        return "pending-chip";
+      case "APPROVED":
+      case "APROBADO":
+        return "approved-chip";
+      case "REJECTED":
+      case "RECHAZADO":
+        return "rejected-chip";
+      case "DEPLOYED":
+      case "DEPLOYADO":
+        return "deployed-chip";
+      case "PUBLIC":
+      case "PÚBLICO":
+      case "SCHEDULED":
+      case "PROGRAMADO":
+      case "IN_PROGRESS":
+      case "EN_CURSO":
+        return "inprogress-chip";
+      case "FINISHED":
+      case "FINALIZADO":
+      case "COMPLETED":
+        return "finished-chip";
+      case "CANCELLED":
+      case "CANCELADO":
+        return "cancelled-chip";
+      default:
+        return "";
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      DRAFT: "BORRADOR",
+      PENDING_APPROVAL: "PENDIENTE DE APROBACIÓN",
+      APPROVED: "APROBADO",
+      REJECTED: "RECHAZADO",
+      DEPLOYED: "DEPLOYADO",
+      PUBLIC: "PÚBLICO",
+      SCHEDULED: "PÚBLICO",
+      IN_PROGRESS: "EN CURSO",
+      FINISHED: "FINALIZADO",
+      COMPLETED: "FINALIZADO",
+      CANCELLED: "CANCELADO",
+      BORRADOR: "BORRADOR",
+      PENDIENTE: "PENDIENTE DE APROBACIÓN",
+      PENDIENTE_APROBACION: "PENDIENTE DE APROBACIÓN",
+      APROBADO: "APROBADO",
+      RECHAZADO: "RECHAZADO",
+      DEPLOYADO: "DEPLOYADO",
+      PÚBLICO: "PÚBLICO",
+      PROGRAMADO: "PÚBLICO",
+      EN_CURSO: "EN CURSO",
+      FINALIZADO: "FINALIZADO",
+      CANCELADO: "CANCELADO",
+    };
+    return map[status?.toUpperCase()] ?? status ?? "—";
+  }
+
   ngOnInit(): void {
     const eventIdParam = this.route.snapshot.paramMap.get('id');
     this.eventId = eventIdParam ? +eventIdParam : 0;
     if (this.eventId) {
       this.loadTicketTypes();
-      this.loadEventStartDate();
+      this.loadEvent();
     }
   }
 
-  private loadEventStartDate(): void {
+  private loadEvent(): void {
     this.eventService.findByIdEvent(this.eventId).subscribe({
       next: (event: EventResponse) => {
+        this.event = event;
         this.eventStartDate = event.startDate;
       },
       error: (err) => {
-        console.error('Error loading event start date:', err);
+        console.error('Error loading event:', err);
       },
     });
   }
@@ -108,6 +179,7 @@ export class AdminTicketsComponent implements OnInit {
   }
 
   addTicket() {
+    if (this.isEventPublished) return;
     const dialogRef = this.dialog.open(TicketDialogComponent, {
       width: "900px",
       maxWidth: "95vw",
@@ -130,7 +202,10 @@ export class AdminTicketsComponent implements OnInit {
     const dialogRef = this.dialog.open(TicketDialogComponent, {
       width: "1000px",
       maxWidth: "95vw",
-      data: { ticket },
+      data: { 
+        ticket,
+        isReadOnly: this.isEventPublished
+      },
       autoFocus: false,
     });
 
@@ -145,6 +220,10 @@ export class AdminTicketsComponent implements OnInit {
         }
       }
     });
+  }
+
+  viewTicketMetrics(ticket: TicketTypeResponse) {
+    this.router.navigate(["/admin-events", this.eventId, "metrics"]);
   }
 
   deleteTicket(ticket: TicketTypeResponse) {

@@ -20,6 +20,10 @@ import { PermissionResponse } from '../../models/permission-response.model';
 import { LoadingStateComponent } from '../shared/loading-state/loading-state.component';
 import { EmptyStateComponent } from '../shared/empty-state/empty-state.component';
 import { trackLoading } from '../../utils/loading.operator';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-admin-permissions',
@@ -37,7 +41,8 @@ import { trackLoading } from '../../utils/loading.operator';
     FormsModule,
     MatDialogModule,
     LoadingStateComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
+    MatTooltipModule
   ],
   templateUrl: './admin-permissions.component.html',
   styleUrl: './admin-permissions.component.scss'
@@ -46,6 +51,8 @@ export class AdminPermissionsComponent implements OnInit {
   private dialog = inject(MatDialog);
   private permissionsService = inject(PermissionsService);
   private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -62,6 +69,7 @@ export class AdminPermissionsComponent implements OnInit {
   private searchSubject = new Subject<string>();
 
   ngOnInit(): void {
+    this.checkRole();
     this.searchSubject.pipe(
       debounceTime(350),
       distinctUntilChanged()
@@ -70,6 +78,15 @@ export class AdminPermissionsComponent implements OnInit {
       this.loadPermissions();
     });
     this.loadPermissions();
+  }
+
+  private checkRole(): void {
+    const user = this.authService.getCurrentUserValue();
+    const role = user?.role?.toLowerCase();
+    if (role !== 'admin' && role !== 'admin_usuarios') {
+      this.snackBar.open('No tienes permiso para acceder a esta página', 'Cerrar', { duration: 3000 });
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   onSearchChange(): void {
@@ -187,5 +204,9 @@ export class AdminPermissionsComponent implements OnInit {
         });
       }
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

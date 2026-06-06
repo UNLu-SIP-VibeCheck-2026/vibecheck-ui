@@ -43,7 +43,7 @@
             </mat-form-field>
             <div class="field-errors" *ngIf="usernameCtrl.touched && usernameCtrl.invalid">
               <span *ngIf="usernameCtrl.hasError('required')">⚠ Requerido</span>
-              <span *ngIf="usernameCtrl.hasError('minlength')">⚠ Mínimo 3 caracteres</span>
+              <span *ngIf="usernameCtrl.hasError('minlength')">⚠ Mínimo 3 caracteres.</span>
               <span *ngIf="usernameCtrl.hasError('pattern')">⚠ Solo letras, números, _ . -</span>
             </div>
           </div>
@@ -56,8 +56,8 @@
                      placeholder="vos@ejemplo.com" autocomplete="email">
             </mat-form-field>
             <div class="field-errors" *ngIf="emailCtrl.touched && emailCtrl.invalid">
-              <span *ngIf="emailCtrl.hasError('required')">⚠ Requerido</span>
-              <span *ngIf="emailCtrl.hasError('email')">⚠ Email inválido</span>
+              <span *ngIf="emailCtrl.hasError('required')">⚠ Requerido.</span>
+              <span *ngIf="emailCtrl.hasError('email')">⚠ Email inválido.</span>
             </div>
           </div>
 
@@ -73,7 +73,7 @@
               <input matInput id="reg-name" formControlName="name" placeholder="Nombre">
             </mat-form-field>
             <div class="field-errors" *ngIf="nameCtrl.touched && nameCtrl.invalid">
-              <span>⚠ Requerido</span>
+              <span>⚠ Requerido.</span>
             </div>
           </div>
 
@@ -84,7 +84,7 @@
               <input matInput id="reg-lastname" formControlName="lastName" placeholder="Apellido">
             </mat-form-field>
             <div class="field-errors" *ngIf="lastNameCtrl.touched && lastNameCtrl.invalid">
-              <span>⚠ Requerido</span>
+              <span>⚠ Requerido.</span>
             </div>
           </div>
 
@@ -100,13 +100,20 @@
               <input matInput type="tel" id="reg-phone" formControlName="phoneNumber"
                      placeholder="+54 9 11 1234 5678">
             </mat-form-field>
+            <div class="field-errors" *ngIf="phoneCtrl.touched && phoneCtrl.invalid">
+              <span *ngIf="phoneCtrl.hasError('invalidPhoneFormat')">⚠ Solo números, espacios y '+'.</span>
+              <span *ngIf="phoneCtrl.hasError('invalidPhoneLength')">⚠ El número debe tener entre 10 y 13 dígitos.</span>
+            </div>
           </div>
 
           <div class="field-group">
             <app-birthdate-picker formControlName="birthdate" label="Fecha de Nacimiento *">
             </app-birthdate-picker>
             <div class="field-errors" *ngIf="birthdateCtrl.touched && birthdateCtrl.invalid">
-              <span>⚠ Seleccioná tu fecha de nacimiento</span>
+              <span *ngIf="birthdateCtrl.hasError('required')">⚠ Requerida.</span>
+              <span *ngIf="birthdateCtrl.hasError('underAge')">⚠ Debés tener al menos 13 años para registrarte.</span>
+              <span *ngIf="birthdateCtrl.hasError('tooOld')">⚠ Debés tener no más de 100 años para registrarte.</span>
+              <span *ngIf="birthdateCtrl.hasError('invalidBirthdate')">⚠ Fecha inválida.</span>
             </div>
           </div>
 
@@ -128,8 +135,9 @@
               </button>
             </mat-form-field>
             <div class="field-errors" *ngIf="passwordCtrl.touched && passwordCtrl.invalid">
-              <span *ngIf="passwordCtrl.hasError('required')">⚠ Requerida</span>
-              <span *ngIf="passwordCtrl.hasError('minlength')">⚠ Mínimo 8 caracteres</span>
+              <span *ngIf="passwordCtrl.hasError('required')">⚠ Requerida.</span>
+              <span *ngIf="passwordCtrl.hasError('minlength')">⚠ Mínimo 8 caracteres.</span>
+              <span *ngIf="passwordCtrl.hasError('passwordRequirements')">⚠ Debe tener al menos una mayúscula, una minúscula, un número y un carácter especial.</span>
             </div>
             <!-- Strength bar -->
             <div class="strength-bar-wrapper" *ngIf="passwordCtrl.value">
@@ -154,8 +162,9 @@
                 <mat-icon>{{ showRepeatPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </mat-form-field>
-            <div class="field-errors mismatch" *ngIf="passwordMismatch">
-              ⚠ Las contraseñas no coinciden
+            <div class="field-errors" *ngIf="repeatPasswordCtrl.touched && repeatPasswordCtrl.invalid">
+              <span *ngIf="repeatPasswordCtrl.hasError('required')">⚠ Requerida.</span>
+              <span *ngIf="passwordMismatch">⚠ Las contraseñas no coinciden</span>
             </div>
           </div>
 

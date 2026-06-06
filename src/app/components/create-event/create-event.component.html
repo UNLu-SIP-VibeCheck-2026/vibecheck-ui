@@ -110,7 +110,7 @@
             <div class="form-group custom-field-wrapper mt-24">
                 <label>Configuración de Venta y Reventa de Entradas</label>
                 
-                <div class="resale-config-container" style="background: var(--md-sys-color-surface-variant); border-radius: 12px; padding: 16px; margin-top: 8px;">
+                <div class="resale-config-container" style="background: var(--md-sys-color-surface-variant); border-radius: 12px; padding: 16px; margin-top: 8px; gap: 16px; display: flex; flex-direction: column;">
                     
                     <div class="form-group custom-field-wrapper">
                         <label for="maxPriceResale" style="font-size: 0.9rem;">Tope Máximo de Reventa (%)</label>
@@ -180,6 +180,26 @@
                     </mat-select>
                 </mat-form-field>
                 <a class="new-venue-link" (click)="openNewVenueDialog()">¿El venue que buscás no está en la lista? Creá uno nuevo.</a>
+            </div>
+
+            <!-- Capacity -->
+            <div class="form-group custom-field-wrapper mt-24" *ngIf="eventForm.get('venue')?.value">
+                <label for="capacity">Capacidad del Evento</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                    <mat-icon matPrefix style="margin-right:6px;font-size:18px">people</mat-icon>
+                    <input matInput type="number" id="capacity" formControlName="capacity" placeholder="Ej: 500">
+                </mat-form-field>
+                <div class="field-hint" style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 4px;">
+                    Capacidad máxima del venue seleccionado: {{ getSelectedVenueCapacity() | number }}
+                </div>
+                <div class="field-error" *ngIf="eventForm.get('capacity')?.touched && eventForm.get('capacity')?.invalid">
+                    <span *ngIf="eventForm.get('capacity')?.errors?.['required']">La capacidad es obligatoria</span>
+                    <span *ngIf="eventForm.get('capacity')?.errors?.['min']">Debe ser al menos 1</span>
+                </div>
+                <div class="cross-field-error" *ngIf="eventForm.hasError('capacityExceedsVenue') && eventForm.get('capacity')?.touched" style="margin-top: 8px;">
+                    <mat-icon style="vertical-align: middle; margin-right: 4px; color: var(--md-sys-color-error);">error_outline</mat-icon>
+                    <span style="color: var(--md-sys-color-error);">La capacidad del evento no puede superar la capacidad del venue (Máx: {{ getSelectedVenueCapacity() | number }})</span>
+                </div>
             </div>
 
             <!-- Actions -->

@@ -1,0 +1,484 @@
+<div class="statistics-container">
+  <!-- Header & Title -->
+  <div class="page-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="brand-title">Consola <span class="text-gradient">Financiera</span></h1>
+        <p class="header-subtitle">Métricas, reportes e informes de VibeCheck para Administración</p>
+      </div>
+    </div>
+    
+    <!-- Period Selector -->
+    <div class="period-selector-container">
+      <div class="period-buttons">
+        <button type="button" [class.active]="selectedPeriod === 'today'" (click)="onPeriodChange('today')">Hoy</button>
+        <button type="button" [class.active]="selectedPeriod === 'week'" (click)="onPeriodChange('week')">Semana</button>
+        <button type="button" [class.active]="selectedPeriod === 'month'" (click)="onPeriodChange('month')">Mes</button>
+        <button type="button" [class.active]="selectedPeriod === '30days'" (click)="onPeriodChange('30days')">Últimos 30d</button>
+        <button type="button" [class.active]="selectedPeriod === 'custom'" (click)="selectedPeriod = 'custom'">Custom</button>
+      </div>
+
+      <div class="custom-dates" *ngIf="selectedPeriod === 'custom'">
+        <input type="date" [(ngModel)]="startDate" class="date-input" />
+        <input type="date" [(ngModel)]="endDate" class="date-input" />
+        <button type="button" (click)="loadData()" class="btn-filter-custom">
+          <mat-icon>filter_alt</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="alert-error" *ngIf="errorMessage">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Actualizando estadísticas...</p>
+  </div>
+
+  <!-- Dashboard Tabs -->
+  <mat-tab-group class="custom-tabs" animationDuration="0ms">
+    
+    <!-- TAB 1: FINANZAS -->
+    <mat-tab label="Finanzas / Ingresos">
+      <div class="tab-content" *ngIf="financialSummary">
+        
+        <!-- KPI Cards Grid -->
+        <div class="kpi-grid">
+          <!-- Card 1: Total Revenue -->
+          <div class="kpi-card glow-purple">
+            <div class="kpi-header">
+              <span class="kpi-title">Ingresos Totales (Período)</span>
+              <mat-icon class="kpi-icon color-purple">account_balance_wallet</mat-icon>
+            </div>
+            <div class="kpi-value">${{ totalRevenueUsd | number:'1.2-2' }} <span class="usd-label">USD</span></div>
+            <div class="kpi-footer">
+              <span class="trend-indicator pos">+12.4% vs mes anterior</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Ad Revenue -->
+          <div class="kpi-card glow-orange">
+            <div class="kpi-header">
+              <span class="kpi-title">Ingresos por Publicidad</span>
+              <mat-icon class="kpi-icon color-orange">campaign</mat-icon>
+            </div>
+            <div class="kpi-value">${{ totalAdvertisingUsd | number:'1.2-2' }} <span class="usd-label">USD</span></div>
+            <div class="kpi-subvalues">
+              <span>{{ financialSummary.advertisingUsdc | number:'1.2-2' }} USDC</span>
+              <span>•</span>
+              <span>{{ financialSummary.advertisingVbk | number:'1.0-0' }} VBK</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Ticket Sale Fees -->
+          <div class="kpi-card glow-green">
+            <div class="kpi-header">
+              <span class="kpi-title">Fees Venta Entradas</span>
+              <mat-icon class="kpi-icon color-green">confirmation_number</mat-icon>
+            </div>
+            <div class="kpi-value">${{ financialSummary.ticketFeesUsdc | number:'1.2-2' }} <span class="usd-label">USD</span></div>
+            <div class="kpi-footer">
+              <span class="trend-indicator pos">Ventas directas (USDC)</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Resale Fees -->
+          <div class="kpi-card glow-cyan">
+            <div class="kpi-header">
+              <span class="kpi-title">Fees Reventa Marketplace</span>
+              <mat-icon class="kpi-icon color-cyan">storefront</mat-icon>
+            </div>
+            <div class="kpi-value">${{ financialSummary.resaleFees | number:'1.2-2' }} <span class="usd-label">USD</span></div>
+            <div class="kpi-footer">
+              <span class="trend-indicator pos">Comisión 10% reventa</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-grid">
+          <!-- Time Series Line Chart -->
+          <div class="chart-card">
+            <h3 class="chart-title">Evolución de Ingresos Publicitarios</h3>
+            <div class="chart-container">
+              <canvas baseChart
+                      [data]="lineChartData"
+                      [options Pall]="lineChartOptions"
+                      [type]="'line'">
+              </canvas>
+            </div>
+          </div>
+
+          <!-- Doughnut Distribution Chart -->
+          <div class="chart-card">
+            <h3 class="chart-title">Distribución de Ingresos por Concepto</h3>
+            <div class="chart-container">
+              <canvas baseChart
+                      [data]="doughnutChartData"
+                      [options]="doughnutChartOptions"
+                      [type]="'doughnut'">
+              </canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Details Table -->
+        <div class="data-card">
+          <h3 class="card-title">Detalle de Cuentas Consolidadas</h3>
+          <div class="table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Concepto / Fuente</th>
+                  <th>Monto (USDC / USD)</th>
+                  <th>Monto (Token $VBK)</th>
+                  <th>Comisión Aplicada</th>
+                  <th>Estado en MVP</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Campañas de Publicidad (Destacados/Slots)</td>
+                  <td>${{ financialSummary.advertisingUsdc | number:'1.2-2' }}</td>
+                  <td>{{ financialSummary.advertisingVbk | number:'1.0-0' }} VBK</td>
+                  <td>Precio por slot (LOW/MED/HIGH)</td>
+                  <td><span class="status-badge real">REAL (Base de Datos)</span></td>
+                </tr>
+                <tr>
+                  <td>Venta Primaria de Entradas (USDC)</td>
+                  <td>${{ financialSummary.ticketFeesUsdc | number:'1.2-2' }}</td>
+                  <td>-</td>
+                  <td>7% USDC</td>
+                  <td><span class="status-badge real">REAL (On-Chain)</span></td>
+                </tr>
+                <tr>
+                  <td>Comisión por Reventa en Marketplace</td>
+                  <td>${{ financialSummary.resaleFees | number:'1.2-2' }}</td>
+                  <td>-</td>
+                  <td>10% sobre reventa</td>
+                  <td><span class="status-badge real">REAL (On-Chain)</span></td>
+                </tr>
+                <tr class="row-mock">
+                  <td>Pagos Internos (Consumiciones / Merch) <span class="mock-marker">*</span></td>
+                  <td>${{ financialSummary.internalPaymentFees | number:'1.2-2' }}</td>
+                  <td>-</td>
+                  <td>3% de consumo</td>
+                  <td><span class="status-badge mock-badge">MOCK (Simulado)</span></td>
+                </tr>
+                <tr class="row-mock">
+                  <td>Fees sobre Propinas a Artistas <span class="mock-marker">*</span></td>
+                  <td>${{ financialSummary.artistTipFees | number:'1.2-2' }}</td>
+                  <td>-</td>
+                  <td>2% por propina</td>
+                  <td><span class="status-badge mock-badge">MOCK (Simulado)</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-footnote">
+            <span class="mock-marker">*</span> Los pagos internos y propinas operan con simulación para estimar viabilidad económica comercial.
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+
+    <!-- TAB 2: TOKEN VBK -->
+    <mat-tab label="Token $VBK">
+      <div class="tab-content" *ngIf="tokenStats">
+        
+        <!-- Token KPIs -->
+        <div class="kpi-grid">
+          <!-- Quemados -->
+          <div class="kpi-card glow-red">
+            <div class="kpi-header">
+              <span class="kpi-title">VBK Quemados (Total)</span>
+              <mat-icon class="kpi-icon color-red font-fire">local_fire_department</mat-icon>
+            </div>
+            <div class="kpi-value">{{ tokenStats.totalBurned | number:'1.2-2' }} <span class="token-label">VBK</span></div>
+            <div class="kpi-footer">
+              <span class="trend-indicator neg">Quemas reales on-chain</span>
+            </div>
+          </div>
+
+          <!-- Staking -->
+          <div class="kpi-card glow-purple">
+            <div class="kpi-header">
+              <span class="kpi-title">VBK en Staking Activo</span>
+              <mat-icon class="kpi-icon color-purple">lock_open</mat-icon>
+            </div>
+            <div class="kpi-value">{{ tokenStats.totalStaked | number:'1.2-2' }} <span class="token-label">VBK</span></div>
+            <div class="kpi-footer">
+              <span class="trend-indicator pos">Staking indexado</span>
+            </div>
+          </div>
+
+          <!-- Supply -->
+          <div class="kpi-card glow-blue">
+            <div class="kpi-header">
+              <span class="kpi-title">Circulating Supply VBK</span>
+              <mat-icon class="kpi-icon color-blue">toll</mat-icon>
+            </div>
+            <div class="kpi-value">{{ tokenStats.circulatingSupply | number:'1.2-2' }} <span class="token-label">VBK</span></div>
+            <div class="kpi-footer">
+              <span class="supply-percentage">{{ (tokenStats.circulatingSupply / 100000000 * 100) | number:'1.1-2' }}% del total supply (100M)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Token Charts -->
+        <div class="charts-grid">
+          <!-- Supply Line Chart -->
+          <div class="chart-card">
+            <h3 class="chart-title">Evolución del Supply Circulante (Efecto Burn)</h3>
+            <div class="chart-container">
+              <canvas baseChart
+                      [data]="supplyChartData"
+                      [options]="supplyChartOptions"
+                      [type]="'line'">
+              </canvas>
+            </div>
+          </div>
+
+          <!-- Staking Doughnut Chart -->
+          <div class="chart-card">
+            <h3 class="chart-title">Distribución de Staking por Plazo</h3>
+            <div class="chart-container">
+              <canvas baseChart
+                      [data]="stakingChartData"
+                      [options]="stakingChartOptions"
+                      [type]="'doughnut'">
+              </canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+
+    <!-- TAB 3: OPERACIONES -->
+    <mat-tab label="Métricas Operativas">
+      <div class="tab-content" *ngIf="operationalSummary">
+        
+        <!-- Operational KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card glow-cyan">
+            <div class="kpi-header">
+              <span class="kpi-title">Usuarios Registrados</span>
+              <mat-icon class="kpi-icon color-cyan">people</mat-icon>
+            </div>
+            <div class="kpi-value">{{ operationalSummary.totalUsers }}</div>
+            <div class="kpi-footer">
+              <span>Activos hoy: {{ operationalSummary.activeUsers }} ({{ (operationalSummary.activeUsers / operationalSummary.totalUsers * 100) | number:'1.0-1' }}%)</span>
+            </div>
+          </div>
+
+          <div class="kpi-card glow-green">
+            <div class="kpi-header">
+              <span class="kpi-title">Entradas Vendidas (Netas)</span>
+              <mat-icon class="kpi-icon color-green">confirmation_number</mat-icon>
+            </div>
+            <div class="kpi-value">{{ operationalSummary.totalTicketsSold | number }}</div>
+            <div class="kpi-footer">
+              <span>Emitidas en DB: {{ operationalSummary.totalTickets | number }}</span>
+            </div>
+          </div>
+
+          <div class="kpi-card glow-purple">
+            <div class="kpi-header">
+              <span class="kpi-title">Ocupación Promedio Eventos</span>
+              <mat-icon class="kpi-icon color-purple">insights</mat-icon>
+            </div>
+            <div class="kpi-value">{{ operationalSummary.occupancyRate | number:'1.1-1' }}%</div>
+            <div class="kpi-footer">
+              <span>Capacidad total: {{ operationalSummary.totalCapacity | number }} asistentes</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Operations Layout -->
+        <div class="charts-grid-alt">
+          <!-- Event Status Bar Chart -->
+          <div class="chart-card">
+            <h3 class="chart-title">Distribución de Eventos por Estado</h3>
+            <div class="chart-container">
+              <canvas baseChart
+                      [data]="eventStatusChartData"
+                      [options]="eventStatusChartOptions"
+                      [type]="'bar'">
+              </canvas>
+            </div>
+          </div>
+
+          <!-- Basic operational data list -->
+          <div class="chart-card font-details">
+            <h3 class="chart-title">Datos Rápidos del Sistema</h3>
+            <div class="quick-details-list">
+              <div class="details-item">
+                <span class="label">Eventos en DRAFT (Borrador):</span>
+                <span class="val">{{ operationalSummary.eventsByStatus['DRAFT'] || 0 }}</span>
+              </div>
+              <div class="details-item">
+                <span class="label">Eventos en PUBLIC (Activos):</span>
+                <span class="val highlight-green">{{ operationalSummary.eventsByStatus['PUBLIC'] || 0 }}</span>
+              </div>
+              <div class="details-item">
+                <span class="label">Eventos en COMPLETED (Finalizados):</span>
+                <span class="val">{{ operationalSummary.eventsByStatus['COMPLETED'] || 0 }}</span>
+              </div>
+              <div class="details-item">
+                <span class="label">Eventos en CANCELLED (Cancelados):</span>
+                <span class="val color-red">{{ operationalSummary.eventsByStatus['CANCELLED'] || 0 }}</span>
+              </div>
+              <div class="divider"></div>
+              <div class="details-item">
+                <span class="label">Tickets ACTIVE:</span>
+                <span class="val">{{ operationalSummary.ticketsByStatus['ACTIVE'] || 0 }}</span>
+              </div>
+              <div class="details-item">
+                <span class="label">Tickets REDEEMED (Acreditados):</span>
+                <span class="val highlight-cyan">{{ operationalSummary.ticketsByStatus['REDEEMED'] || 0 }}</span>
+              </div>
+              <div class="details-item">
+                <span class="label">Tickets CANCELLED:</span>
+                <span class="val color-red">{{ operationalSummary.ticketsByStatus['CANCELLED'] || 0 }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events Ranking Table -->
+        <div class="data-card">
+          <div class="card-header-actions">
+            <h3 class="card-title">Top Eventos con Mayor Demanda y Ventas</h3>
+            <div class="limit-selector">
+              <label>Mostrar:</label>
+              <select [(ngModel)]="rankingLimit" (change)="loadData()">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="table-container">
+            <table class="custom-table" *ngIf="eventsRanking.length > 0; else emptyRanking">
+              <thead>
+                <tr>
+                  <th>Nombre del Evento</th>
+                  <th>Estado</th>
+                  <th>Entradas Vendidas</th>
+                  <th>Capacidad Máxima</th>
+                  <th style="width: 250px;">Tasa de Ocupación</th>
+                  <th>Ingresos Publicidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of eventsRanking">
+                  <td class="font-semibold">{{ item.eventName }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="item.status.toLowerCase()">{{ item.status }}</span>
+                  </td>
+                  <td>{{ item.totalTicketsSold | number }}</td>
+                  <td>{{ item.capacity | number }}</td>
+                  <td>
+                    <div class="occupancy-progress-container">
+                      <span class="percentage-text">{{ item.occupancyRate | number:'1.0-1' }}%</span>
+                      <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" [style.width.%]="item.occupancyRate > 100 ? 100 : item.occupancyRate"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="color-green font-semibold">${{ item.advertisingRevenue | number:'1.2-2' }} USDC</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <ng-template #emptyRanking>
+              <div class="empty-state">
+                <mat-icon class="empty-icon">analytics</mat-icon>
+                <p>No se encontraron eventos con ventas registradas en la base de datos.</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+
+    <!-- TAB 4: AUDITORÍA (SCALPING) -->
+    <mat-tab label="Auditoría de Seguridad">
+      <div class="tab-content">
+        
+        <!-- Info banner -->
+        <div class="info-banner info">
+          <mat-icon class="banner-icon">shield</mat-icon>
+          <div class="banner-text">
+            <h4>Módulo de Seguridad y Detección de Anomalías</h4>
+            <p>Consolidación de alertas de reventa abusiva (scalping) y transacciones de alta frecuencia.</p>
+          </div>
+        </div>
+
+        <!-- Real Table for Scalping Warnings -->
+        <div class="data-card border-glow-red">
+          <h3 class="card-title text-red">Alertas de Reventa Sospechosa (Scalping / Arbitraje)</h3>
+          
+          <div class="table-container">
+            <table class="custom-table" *ngIf="scalpingWarnings.length > 0">
+              <thead>
+                <tr>
+                  <th>ID Ticket</th>
+                  <th>Wallet Comprador</th>
+                  <th>Evento</th>
+                  <th>Fecha Compra</th>
+                  <th>Fecha Publicación</th>
+                  <th>Diferencia (Min)</th>
+                  <th>Precio Mint</th>
+                  <th>Precio Reventa</th>
+                  <th>Nivel Severidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of scalpingWarnings">
+                  <td>{{ item.ticketId ? '#' + item.ticketId : 'N/A (Lote)' }}</td>
+                  <td title="{{ item.buyerWallet }}">{{ item.buyerWallet | slice:0:6 }}...{{ item.buyerWallet | slice:-4 }}</td>
+                  <td class="font-semibold">{{ item.eventName }}</td>
+                  <td>{{ item.purchasedAt ? (item.purchasedAt | date:'dd/MM/yyyy HH:mm:ss') : 'N/A' }}</td>
+                  <td>{{ item.listedForResaleAt ? (item.listedForResaleAt | date:'dd/MM/yyyy HH:mm:ss') : 'N/A' }}</td>
+                  <td class="font-semibold">{{ item.minutesBetween != null ? item.minutesBetween + ' min' : 'N/A' }}</td>
+                  <td>{{ item.priceOriginal ? '$' + (item.priceOriginal | number:'1.2-2') + ' USDC' : 'N/A' }}</td>
+                  <td>
+                    <!-- Si ticketId es null, es Regla 2 (cantidad de tickets) -->
+                    <span *ngIf="item.ticketId">{{ item.priceResale ? '$' + (item.priceResale | number:'1.2-2') + ' USDC' : 'N/A' }}</span>
+                    <span *ngIf="!item.ticketId" class="font-semibold color-red">{{ item.priceResale | number:'1.0-0' }} tickets</span>
+                  </td>
+                  <td>
+                    <span class="severity-badge" [ngClass]="item.severityLevel.toLowerCase()">
+                      {{ item.severityLevel === 'CRITICAL' ? 'CRÍTICO' : (item.severityLevel === 'HIGH' ? 'ALTO' : 'MEDIO') }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Empty State for warnings -->
+            <div class="empty-state" *ngIf="scalpingWarnings.length === 0">
+              <mat-icon class="empty-icon text-green">verified_user</mat-icon>
+              <h3 class="text-green">No se detectaron anomalías</h3>
+              <p>El motor de seguridad no ha registrado comportamientos sospechosos de scalping ni acaparamiento en el período actual.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

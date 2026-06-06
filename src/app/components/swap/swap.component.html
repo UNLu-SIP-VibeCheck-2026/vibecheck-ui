@@ -1,0 +1,261 @@
+<div class="luxury-card form-card">
+  
+  <!-- STEP: INTERACTIVE FORM (IDLE) -->
+  <ng-container *ngIf="step() === 'idle'">
+    <div class="form-header">
+      <h2>Intercambio de Activos (Swap)</h2>
+      <p class="subtitle">Convertí de forma directa USDC y VBK a través de Uniswap V2 sobre Sepolia Testnet.</p>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="premium-tabs">
+      <button class="tab-btn" [class.active]="activeTab() === 'buy'" (click)="activeTab.set('buy')">
+        <mat-icon>add_shopping_cart</mat-icon> Comprar VBK (USDC → VBK)
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'sell'" (click)="activeTab.set('sell')">
+        <mat-icon>monetization_on</mat-icon> Vender VBK (VBK → USDC)
+      </button>
+    </div>
+
+    <!-- PESTAÑA: COMPRAR VBK -->
+    <div class="tab-content" *ngIf="activeTab() === 'buy'">
+      <div class="swap-form">
+        <!-- Balance Indicator -->
+        <div class="balance-row">
+          <span class="balance-label">Tus USDC disponibles:</span>
+          <span class="balance-value">{{ usdcBalance() }} USDC</span>
+        </div>
+
+        <!-- Input USDC -->
+        <div class="form-group">
+          <label>Monto a entregar (USDC)</label>
+          <div class="input-with-icon">
+            <mat-icon class="input-prefix">attach_money</mat-icon>
+            <input 
+              type="number" 
+              [ngModel]="usdcAmountInput()" 
+              (ngModelChange)="onInputUsdc($event)" 
+              placeholder="0.00" 
+              class="glass-input pl-10"
+              min="0"
+              step="0.1">
+            <span class="input-suffix">USDC</span>
+          </div>
+        </div>
+
+        <!-- Quote Result VBK -->
+        <div class="quote-container" *ngIf="usdcAmountInput() && !isConvertDisabled">
+          <div class="quote-header">
+            <span>Recibirás aproximadamente:</span>
+            <div class="quote-loader" *ngIf="isLoadingQuote()">
+              <mat-icon class="spin-slow">sync</mat-icon> <span>Cotizando...</span>
+            </div>
+            <div class="quote-timer" *ngIf="!isLoadingQuote() && quotedVbk()">
+              <mat-icon>schedule</mat-icon>
+              <span>Actualizando en {{ secondsToRefresh() }}s</span>
+            </div>
+          </div>
+          
+          <div class="quote-value-row" *ngIf="!isLoadingQuote() && quotedVbk()">
+            <span class="quote-amount">{{ formattedQuoteVbk }}</span>
+            <span class="quote-symbol">VBK</span>
+          </div>
+
+          <div class="quote-rate" *ngIf="!isLoadingQuote() && quotedVbk()">
+            <span>Tasa de cambio: 1 USDC = {{ exchangeRateBuy }} VBK</span>
+          </div>
+        </div>
+
+        <!-- Warnings & Notes -->
+        <div class="warnings-wrapper">
+          <!-- Price Impact Warning -->
+          <div class="alert-box warning-box" *ngIf="showPriceImpactWarning">
+            <mat-icon>warning</mat-icon>
+            <div>
+              <strong>Alto impacto de precio:</strong> El monto ingresado supera el 5% de la liquidez disponible en el pool. La tasa de cambio podría verse afectada de forma muy desfavorable.
+            </div>
+          </div>
+
+          <!-- Slippage Note -->
+          <div class="info-note">
+            <mat-icon>info_outline</mat-icon>
+            <span>El tipo de cambio es dinámico y puede variar hasta un 2% entre la cotización y la ejecución (slippage).</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          class="luxury-btn primary-btn submit-btn" 
+          [disabled]="isConvertDisabled" 
+          (click)="onConvert()">
+          <mat-icon>swap_horiz</mat-icon> Convertir USDC a VBK
+        </button>
+      </div>
+    </div>
+
+    <!-- PESTAÑA: VENDER VBK -->
+    <div class="tab-content" *ngIf="activeTab() === 'sell'">
+      <div class="swap-form">
+        <!-- Balance Indicator -->
+        <div class="balance-row">
+          <span class="balance-label">Tus VBK disponibles:</span>
+          <span class="balance-value">{{ vbkBalance() }} VBK</span>
+        </div>
+
+        <!-- Input VBK -->
+        <div class="form-group">
+          <label>Monto a entregar (VBK)</label>
+          <div class="input-with-icon">
+            <mat-icon class="input-prefix">toll</mat-icon>
+            <input 
+              type="number" 
+              [ngModel]="vbkAmountInput()" 
+              (ngModelChange)="onInputVbk($event)" 
+              placeholder="0.00" 
+              class="glass-input pl-10"
+              min="0"
+              step="1">
+            <span class="input-suffix">VBK</span>
+          </div>
+        </div>
+
+        <!-- Quote Result USDC -->
+        <div class="quote-container" *ngIf="vbkAmountInput() && !isConvertDisabled">
+          <div class="quote-header">
+            <span>Cotización de Mercado:</span>
+            <div class="quote-loader" *ngIf="isLoadingQuote()">
+              <mat-icon class="spin-slow">sync</mat-icon> <span>Cotizando...</span>
+            </div>
+            <div class="quote-timer" *ngIf="!isLoadingQuote() && quotedUsdc()">
+              <mat-icon>schedule</mat-icon>
+              <span>Actualizando en {{ secondsToRefresh() }}s</span>
+            </div>
+          </div>
+          
+          <div class="quote-value-row" *ngIf="!isLoadingQuote() && quotedUsdc()">
+            <span class="quote-amount-strike">{{ formattedQuoteUsdc }} USDC</span>
+          </div>
+
+          <!-- Deterrent Fee Warning -->
+          <div class="alert-box deterrent-fee-box" *ngIf="!isLoadingQuote() && quotedUsdc()">
+            <mat-icon>gavel</mat-icon>
+            <div>
+              <strong>Fee de Penalización (15%):</strong> La venta directa de VBK incurre en una tasa punitoria. Recibirás un neto estimado de:
+              <div class="net-receive-amount">{{ formattedQuoteUsdcNet }} USDC</div>
+            </div>
+          </div>
+
+          <div class="quote-rate" *ngIf="!isLoadingQuote() && quotedUsdc()">
+            <span>Tasa de cambio bruta: 1 VBK = {{ exchangeRateSell }} USDC</span>
+          </div>
+        </div>
+
+        <!-- Warnings & Notes -->
+        <div class="warnings-wrapper">
+          <!-- Price Impact Warning -->
+          <div class="alert-box warning-box" *ngIf="showPriceImpactWarning">
+            <mat-icon>warning</mat-icon>
+            <div>
+              <strong>Alto impacto de precio:</strong> El monto ingresado supera el 5% de la liquidez disponible en el pool. La tasa de cambio podría verse afectada de forma muy desfavorable.
+            </div>
+          </div>
+
+          <!-- Slippage Note -->
+          <div class="info-note">
+            <mat-icon>info_outline</mat-icon>
+            <span>El tipo de cambio es dinámico y puede variar hasta un 2% entre la cotización y la ejecución (slippage).</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          class="luxury-btn primary-btn submit-btn" 
+          [disabled]="isConvertDisabled" 
+          (click)="onSell()">
+          <mat-icon>swap_horiz</mat-icon> Vender VBK a USDC
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- STEP: APPROVING (STEP 1/2) -->
+  <div class="stepper-container center-content" *ngIf="step() === 'approving'">
+    <div class="loader-circle pulse-orange">
+      <mat-icon class="huge-icon spin">sync</mat-icon>
+    </div>
+    <h2>Paso 1 de 2: Autorización</h2>
+    <p class="subtitle">Aprobando el uso de tus tokens para el protocolo Uniswap V2 Router...</p>
+    
+    <div class="status-indicator">
+      <div class="indicator-step active">1. Aprobar Contrato</div>
+      <div class="indicator-line"></div>
+      <div class="indicator-step">2. Intercambio</div>
+    </div>
+
+    <p class="metamask-notice">Por favor, firmá la aprobación en la ventana emergente de tu billetera MetaMask.</p>
+  </div>
+
+  <!-- STEP: SWAPPING (STEP 2/2) -->
+  <div class="stepper-container center-content" *ngIf="step() === 'swapping'">
+    <div class="loader-circle pulse-purple">
+      <mat-icon class="huge-icon spin">sync</mat-icon>
+    </div>
+    <h2>Paso 2 de 2: Intercambio en Progreso</h2>
+    <p class="subtitle">Ejecutando la transacción de intercambio en la red Sepolia...</p>
+    
+    <div class="status-indicator">
+      <div class="indicator-step done"><mat-icon>check</mat-icon> Autorizado</div>
+      <div class="indicator-line done-line"></div>
+      <div class="indicator-step active">2. Intercambio</div>
+    </div>
+
+    <p class="metamask-notice">Confirmá el swap y verificá el gas en la ventana emergente de MetaMask.</p>
+  </div>
+
+  <!-- STEP: SUCCESS -->
+  <div class="success-container center-content" *ngIf="step() === 'success'">
+    <div class="success-icon-wrapper">
+      <mat-icon class="huge-icon success-color">check_circle</mat-icon>
+    </div>
+    <h2>¡Conversión exitosa!</h2>
+    <p class="subtitle">La transacción se ha confirmado correctamente sobre el contrato inteligente.</p>
+
+    <div class="receipt-card">
+      <span class="receipt-label">Recibiste de forma neta:</span>
+      <div class="receipt-amount-row">
+        <span class="receipt-value">{{ receivedAmount() }}</span>
+        <span class="receipt-symbol">{{ activeTab() === 'buy' ? 'VBK' : 'USDC' }}</span>
+      </div>
+    </div>
+
+    <div class="success-actions">
+      <a href="https://sepolia.etherscan.io/tx/{{ txHash() }}" target="_blank" class="luxury-btn secondary-btn">
+        <mat-icon>launch</mat-icon> Ver en Etherscan
+      </a>
+      <button class="luxury-btn primary-btn" (click)="resetForm()">
+        Hacer otra conversión
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP: ERROR -->
+  <div class="error-container center-content" *ngIf="step() === 'error'">
+    <div class="error-icon-wrapper">
+      <mat-icon class="huge-icon error-color">error_outline</mat-icon>
+    </div>
+    <h2>Fallo en la Conversión</h2>
+    <p class="subtitle">No se pudo concretar el intercambio debido a un error en el flujo de la transacción.</p>
+
+    <div class="error-details">
+      <span>Detalles del error:</span>
+      <p>{{ errorMessage() }}</p>
+    </div>
+
+    <div class="error-actions">
+      <button class="luxury-btn secondary-btn" (click)="resetForm()">
+        <mat-icon>refresh</mat-icon> Volver a intentar
+      </button>
+    </div>
+  </div>
+
+</div>

@@ -1,9 +1,19 @@
 <div class="admin-container">
-    <div class="header-section">
-        <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
-            <mat-icon>arrow_back</mat-icon>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <div class="header-text">
+                <h1 class="brand-title">Gestión de <span class="text-gradient">Eventos</span></h1>
+                <p class="header-subtitle">Administrá los eventos y espectáculos disponibles</p>
+            </div>
+        </div>
+        <button mat-raised-button class="btn-new" (click)="createEvent()">
+            <mat-icon>add_circle_outline</mat-icon>
+            Crear Evento
         </button>
-        <h1 class="main-title">Administrar <span class="text-gradient">Eventos</span></h1>
     </div>
 
     <!-- Search and Filter Section -->
@@ -21,13 +31,6 @@
                 <span>{{ totalElements }} {{ totalElements === 1 ? 'evento' : 'eventos' }}</span>
             </div>
         </div>
-    </div>
-
-    <div class="actions-header">
-        <button mat-raised-button class="create-btn" (click)="createEvent()">
-            <mat-icon>add_circle_outline</mat-icon>
-            Crear Evento
-        </button>
     </div>
 
     <!-- Loading State -->
@@ -85,6 +88,10 @@
                                 <label>Descripción</label>
                                 <p class="detail-value description">{{ element.description || 'Sin descripción' }}</p>
                             </div>
+                            <div class="rejection-box" *ngIf="element.status === 'REJECTED' && element.rejectionReason">
+                                <mat-icon>warning</mat-icon>
+                                <span><strong>Motivo de rechazo:</strong> {{ element.rejectionReason }}</span>
+                            </div>
                             <div class="detail-group">
                                 <label>Capacidad</label>
                                 <span class="detail-value">
@@ -141,50 +148,151 @@
                         <!-- Actions -->
                         <div class="actions-col">
                             <div class="action-buttons">
-                                <button mat-icon-button class="circle-btn"
-                                        (click)="editEvent(element)"
-                                        matTooltip="Editar evento">
-                                    <mat-icon>edit</mat-icon>
+                                <!-- Principal Action Button -->
+                                <ng-container [ngSwitch]="element.status?.toUpperCase()">
+                                    <!-- Draft/Rejected: Request approval -->
+                                    <button mat-raised-button 
+                                            class="primary-action-btn publish-btn-accent"
+                                            (click)="publishEvent(element)"
+                                            [disabled]="publishingId === element.id"
+                                            *ngSwitchCase="'DRAFT'">
+                                        <mat-spinner *ngIf="publishingId === element.id" diameter="16" class="inline-spinner"></mat-spinner>
+                                        <mat-icon *ngIf="publishingId !== element.id">send</mat-icon>
+                                        <span>Enviar a Aprobar</span>
+                                    </button>
+                                    <button mat-raised-button 
+                                            class="primary-action-btn publish-btn-accent"
+                                            (click)="publishEvent(element)"
+                                            [disabled]="publishingId === element.id"
+                                            *ngSwitchCase="'REJECTED'">
+                                        <mat-spinner *ngIf="publishingId === element.id" diameter="16" class="inline-spinner"></mat-spinner>
+                                        <mat-icon *ngIf="publishingId !== element.id">send</mat-icon>
+                                        <span>Enviar a Aprobar</span>
+                                    </button>
+
+                                    <!-- Approved: Pay and Publish (metaMask) -->
+                                    <button mat-raised-button 
+                                            class="primary-action-btn pay-btn-accent"
+                                            (click)="publishEvent(element)"
+                                            [disabled]="publishingId === element.id"
+                                            *ngSwitchCase="'APPROVED'">
+                                        <mat-spinner *ngIf="publishingId === element.id" diameter="16" class="inline-spinner"></mat-spinner>
+                                        <mat-icon *ngIf="publishingId !== element.id">account_balance_wallet</mat-icon>
+                                        <span>Publicar</span>
+                                    </button>
+
+                                    <!-- Deployed (fallback): Publish -->
+                                    <button mat-raised-button 
+                                            class="primary-action-btn publish-btn-accent"
+                                            (click)="publishEvent(element)"
+                                            [disabled]="publishingId === element.id"
+                                            *ngSwitchCase="'DEPLOYED'">
+                                        <mat-spinner *ngIf="publishingId === element.id" diameter="16" class="inline-spinner"></mat-spinner>
+                                        <mat-icon *ngIf="publishingId !== element.id">publish</mat-icon>
+                                        <span>Publicar</span>
+                                    </button>
+
+                                    <!-- Public/In Progress/Finished: View Metrics -->
+                                    <button mat-raised-button 
+                                            class="primary-action-btn metrics-btn-accent"
+                                            (click)="viewEventMetrics(element)"
+                                            *ngSwitchCase="'PUBLIC'">
+                                        <mat-icon>bar_chart</mat-icon>
+                                        <span>Ventas</span>
+                                    </button>
+                                    <button mat-raised-button 
+                                            class="primary-action-btn metrics-btn-accent"
+                                            (click)="viewEventMetrics(element)"
+                                            *ngSwitchCase="'PROGRAMADO'">
+                                        <mat-icon>bar_chart</mat-icon>
+                                        <span>Ventas</span>
+                                    </button>
+                                    <button mat-raised-button 
+                                            class="primary-action-btn metrics-btn-accent"
+                                            (click)="viewEventMetrics(element)"
+                                            *ngSwitchCase="'IN_PROGRESS'">
+                                        <mat-icon>bar_chart</mat-icon>
+                                        <span>Ventas</span>
+                                    </button>
+                                    <button mat-raised-button 
+                                            class="primary-action-btn metrics-btn-accent"
+                                            (click)="viewEventMetrics(element)"
+                                            *ngSwitchCase="'EN_CURSO'">
+                                        <mat-icon>bar_chart</mat-icon>
+                                        <span>Ventas</span>
+                                    </button>
+                                    <button mat-raised-button 
+                                            class="primary-action-btn metrics-btn-accent"
+                                            (click)="viewEventMetrics(element)"
+                                            *ngSwitchCase="'FINISHED'">
+                                        <mat-icon>bar_chart</mat-icon>
+                                        <span>Ventas</span>
+                                    </button>
+                                    <button mat-raised-button 
+                                            class="primary-action-btn metrics-btn-accent"
+                                            (click)="viewEventMetrics(element)"
+                                            *ngSwitchCase="'FINALIZADO'">
+                                        <mat-icon>bar_chart</mat-icon>
+                                        <span>Ventas</span>
+                                    </button>
+
+                                    <!-- Cancelled: Show label only -->
+                                    <span class="status-cancelled-label" *ngSwitchCase="'CANCELLED'">
+                                        <mat-icon class="inline-icon">block</mat-icon> Cancelado
+                                    </span>
+                                </ng-container>
+
+                                <!-- Secondary Actions Menu Button -->
+                                <button mat-icon-button 
+                                        [matMenuTriggerFor]="actionMenu"
+                                        class="more-actions-btn"
+                                        *ngIf="element.status?.toUpperCase() !== 'CANCELLED'"
+                                        matTooltip="Más acciones">
+                                    <mat-icon>more_vert</mat-icon>
                                 </button>
 
-                                <button mat-icon-button class="circle-btn"
-                                        (click)="viewStats(element)"
-                                        matTooltip="Ver tickets">
-                                    <mat-icon>confirmation_number</mat-icon>
-                                </button>
+                                <mat-menu #actionMenu="matMenu" class="custom-action-menu">
+                                    <!-- 1. Editar Evento: only if Draft or Rejected -->
+                                    <button mat-menu-item 
+                                            (click)="editEvent(element)"
+                                            *ngIf="element.status === 'DRAFT' || element.status === 'REJECTED'">
+                                        <mat-icon>edit</mat-icon>
+                                        <span>Editar Detalles</span>
+                                    </button>
 
-                                <button mat-icon-button class="circle-btn"
-                                        (click)="viewFinance(element)"
-                                        matTooltip="Publicidad / Finanzas">
-                                    <mat-icon>campaign</mat-icon>
-                                </button>
+                                    <!-- 2. Categorías de Entrada (always available, but only if not cancelled) -->
+                                    <button mat-menu-item (click)="viewStats(element)">
+                                        <mat-icon>confirmation_number</mat-icon>
+                                        <span>Categorías y Tickets</span>
+                                    </button>
 
-                                <button mat-icon-button class="circle-btn publish-btn"
-                                        (click)="publishEvent(element)"
-                                        [disabled]="publishingId === element.id"
-                                        matTooltip="Publicar evento"
-                                        *ngIf="element.status === 'DRAFT' || element.status === 'DEPLOYED'">
-                                    <mat-spinner *ngIf="publishingId === element.id" diameter="16"></mat-spinner>
-                                    <mat-icon *ngIf="publishingId !== element.id">publish</mat-icon>
-                                </button>
+                                    <!-- 3. Publicidad y Finanzas: only if Published/Public/In Progress/etc -->
+                                    <button mat-menu-item 
+                                            (click)="viewFinance(element)"
+                                            *ngIf="element.status !== 'DRAFT' && element.status !== 'REJECTED' && element.status !== 'PENDING_APPROVAL' && element.status !== 'APPROVED' && element.status !== 'DEPLOYED'">
+                                        <mat-icon>campaign</mat-icon>
+                                        <span>Configurar Publicidad</span>
+                                    </button>
 
-                                <button mat-icon-button class="circle-btn circle-btn-delete"
-                                        (click)="deleteEvent(element)"
-                                        [disabled]="deletingId === element.id"
-                                        matTooltip="Eliminar evento"
-                                        *ngIf="element.status === 'DRAFT'">
-                                    <mat-spinner *ngIf="deletingId === element.id" diameter="16"></mat-spinner>
-                                    <mat-icon *ngIf="deletingId !== element.id">delete_outline</mat-icon>
-                                </button>
+                                    <!-- 4. Cancelar Evento: only if active, and not Draft/Pending/Approved/Cancelled/Finished -->
+                                    <button mat-menu-item 
+                                            (click)="cancelEvent(element)"
+                                            [disabled]="cancellingId === element.id"
+                                            *ngIf="element.status !== 'DRAFT' && element.status !== 'REJECTED' && element.status !== 'PENDING_APPROVAL' && element.status !== 'APPROVED' && element.status !== 'CANCELLED' && element.status !== 'FINISHED' && element.active">
+                                        <mat-icon>block</mat-icon>
+                                        <span>Cancelar Evento</span>
+                                    </button>
 
-                                <button mat-icon-button class="circle-btn circle-btn-cancel"
-                                        (click)="cancelEvent(element)"
-                                        [disabled]="cancellingId === element.id"
-                                        matTooltip="Cancelar evento"
-                                        *ngIf="element.status !== 'DRAFT' && element.status !== 'CANCELLED' && element.status !== 'FINISHED' && element.active">
-                                    <mat-spinner *ngIf="cancellingId === element.id" diameter="16"></mat-spinner>
-                                    <mat-icon *ngIf="cancellingId !== element.id">block</mat-icon>
-                                </button>
+                                    <!-- 5. Eliminar Evento: only if Draft or Rejected -->
+                                    <button mat-menu-item 
+                                            (click)="deleteEvent(element)"
+                                            class="menu-item-delete"
+                                            [disabled]="deletingId === element.id"
+                                            *ngIf="element.status === 'DRAFT' || element.status === 'REJECTED'">
+                                        <mat-icon class="color-delete">delete_outline</mat-icon>
+                                        <span class="color-delete">Eliminar Evento</span>
+                                    </button>
+                                </mat-menu>
                             </div>
                         </div>
                     </div>

@@ -8,4 +8,5 @@ export interface UserSummaryResponse {
   birthdate: string;
   role: string;
   active: boolean;
+  hasImage?: boolean;
 }

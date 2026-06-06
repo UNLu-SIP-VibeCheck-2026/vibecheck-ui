@@ -1,127 +1,334 @@
-<div class="loading-state" *ngIf="isLoading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh;">
-  <mat-spinner diameter="50"></mat-spinner>
-  <p style="margin-top: 20px; color: #aaa;">Cargando información del evento...</p>
-</div>
+<div class="purchase-page-wrapper">
+  <!-- STEPPER VISUAL -->
+  <div class="stepper-container">
+    <div class="step-item" [class.active]="currentStep() === 1" [class.completed]="currentStep() > 1">
+      <div class="step-badge">
+        <mat-icon *ngIf="currentStep() > 1">check</mat-icon>
+        <span *ngIf="currentStep() <= 1">1</span>
+      </div>
+      <span class="step-label">Conectar</span>
+    </div>
+    <div class="step-line" [class.completed]="currentStep() > 1"></div>
 
-<div class="error-state" *ngIf="errorMessage" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh;">
-  <mat-icon color="warn" style="font-size: 48px; width: 48px; height: 48px;">error</mat-icon>
-  <p style="margin-top: 20px; color: #ff5252; font-size: 1.2rem;">{{ errorMessage }}</p>
-  <button mat-stroked-button color="primary" style="margin-top: 20px;" (click)="goBack()">Volver</button>
-</div>
+    <div class="step-item" [class.active]="currentStep() === 2" [class.completed]="currentStep() > 2" [class.pending]="currentStep() < 2">
+      <div class="step-badge">
+        <mat-icon *ngIf="currentStep() > 2">check</mat-icon>
+        <span *ngIf="currentStep() <= 2">2</span>
+      </div>
+      <span class="step-label">Vincular</span>
+    </div>
+    <div class="step-line" [class.completed]="currentStep() > 2"></div>
 
-<div class="select-tickets-container" *ngIf="!isLoading && !errorMessage && event">
-  <div class="header">
-    <button mat-icon-button (click)="goBack()">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <span class="header-title">Seleccionar Entradas</span>
+    <div class="step-item" [class.active]="currentStep() === 3" [class.completed]="currentStep() > 3" [class.pending]="currentStep() < 3">
+      <div class="step-badge">
+        <mat-icon *ngIf="currentStep() > 3">check</mat-icon>
+        <span *ngIf="currentStep() <= 3">3</span>
+      </div>
+      <span class="step-label">Elegir</span>
+    </div>
+    <div class="step-line" [class.completed]="currentStep() > 3"></div>
+
+    <div class="step-item" [class.active]="currentStep() === 4" [class.completed]="currentStep() > 4" [class.pending]="currentStep() < 4">
+      <div class="step-badge">
+        <mat-icon *ngIf="currentStep() > 4">check</mat-icon>
+        <span *ngIf="currentStep() <= 4">4</span>
+      </div>
+      <span class="step-label">Comprar</span>
+    </div>
+    <div class="step-line" [class.completed]="currentStep() > 5"></div>
+
+    <div class="step-item" [class.active]="currentStep() === 5" [class.completed]="currentStep() >= 5 && successTicket()" [class.pending]="currentStep() < 5">
+      <div class="step-badge">
+        <mat-icon *ngIf="currentStep() >= 5 && successTicket()">check</mat-icon>
+        <span *ngIf="currentStep() < 5 || !successTicket()">5</span>
+      </div>
+      <span class="step-label">Confirmar</span>
+    </div>
   </div>
 
-  <div class="main-layout">
-    <!-- LEFT COLUMN: Ticket Selection -->
-    <div class="selection-column">
-      <div class="ticket-list">
-        <mat-card class="ticket-card" *ngFor="let ticket of ticketTypes" [class.sold-out]="ticket.status === 'SOLD_OUT'">
-          <mat-card-content>
-            <div class="ticket-info">
-              <div class="ticket-details">
-                <span class="ticket-name">{{ ticket.name }}</span>
-                <span class="ticket-location">
-                  <mat-icon>info</mat-icon> {{ ticket.description }}
-                </span>
-                <div class="price-info">
-                  <div class="price-item">
-                    <label>Precio</label>
-                    <span class="price-value">{{ ticket.priceUsdc | currency:'$':'symbol':'1.0-0' }}</span>
-                  </div>
-                  <div class="price-item">
-                    <label>Tope Reventa</label>
-                    <span class="resale-value">{{ (event.maxResalePriceBps || 10000) / 100 }}%</span>
-                  </div>
-                </div>
-              </div>
+  <!-- ERROR DISPLAY UNDER ACTIVE STEP -->
+  <div class="error-banner" *ngIf="errorMessage()">
+    <mat-icon>error_outline</mat-icon>
+    <div class="error-content">
+      <p class="error-text">{{ errorMessage() }}</p>
+      <!-- Offer manual network check or back button if appropriate -->
+      <button *ngIf="currentStep() === 1 && errorMessage().includes('Sepolia')" (click)="checkNetwork()" class="retry-btn">
+        Verificar Red Sepolia
+      </button>
+    </div>
+  </div>
 
-              <div class="ticket-actions">
-                <div class="status-tag" *ngIf="ticket.status === 'SOLD_OUT'">AGOTADO</div>
-                <div class="quantity-selector" *ngIf="ticket.status !== 'SOLD_OUT'">
-                  <button mat-icon-button (click)="decrementQuantity(ticket)" [disabled]="ticket.quantity === 0">
-                    <mat-icon>remove_circle_outline</mat-icon>
-                  </button>
-                  <span class="quantity-value">{{ ticket.quantity }}</span>
-                  <button mat-icon-button (click)="incrementQuantity(ticket)">
-                    <mat-icon>add_circle_outline</mat-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div class="selected-seats-preview" *ngIf="ticket.hasSeats && ticket.selectedSeats?.length" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
-              <span class="seat-badge" *ngFor="let seat of ticket.selectedSeats" style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
-                Fila: {{seat.row}} | Asiento: {{seat.number}}
-              </span>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
+  <!-- STEP CONTENT SWITCH -->
+  <div class="step-content-container">
 
-      <div class="summary-section">
-        <h3 class="section-title">Método de Pago</h3>
-        <mat-radio-group [(ngModel)]="selectedPaymentMethod" class="payment-methods">
-          <mat-radio-button *ngFor="let method of paymentMethods" [value]="method.id" [disabled]="!method.enabled">
-            {{ method.name }} <span *ngIf="!method.enabled" class="coming-soon">(Próximamente)</span>
-          </mat-radio-button>
-        </mat-radio-group>
-
-        <div class="totals-card">
-          <div class="total-row">
-            <span>Subtotal</span>
-            <span>{{ subtotal | currency:'$':'symbol':'1.0-0' }}</span>
-          </div>
-          <div class="total-row">
-            <span>Cargo de Servicio (10%)</span>
-            <span>{{ serviceCharge | currency:'$':'symbol':'1.0-0' }}</span>
-          </div>
-          <div class="total-row grand-total">
-            <span>Total</span>
-            <span class="total-amount">{{ total | currency:'$':'symbol':'1.0-0' }}</span>
-          </div>
-          
-          <button mat-raised-button color="primary" class="pay-btn" [disabled]="!canPay" (click)="processPayment()">
-            <mat-icon>payments</mat-icon>
-            Pagar {{ total | currency:'$':'symbol':'1.0-0' }}
+    <!-- STEP 1: CONECTAR WALLET -->
+    <div class="step-view" *ngIf="currentStep() === 1">
+      <div class="card-prompt">
+        <div class="icon-avatar">
+          <mat-icon>account_balance_wallet</mat-icon>
+        </div>
+        <h2>Conectá tu Wallet</h2>
+        <p>Para comprar entradas tokenizadas en VibeCheck, primero necesitás conectar tu billetera MetaMask en la red Sepolia.</p>
+        
+        <div class="wallet-actions">
+          <button (click)="connectWallet()" class="btn-cta" [disabled]="isLoading()">
+            <mat-icon>extension</mat-icon>
+            <span>Conectar MetaMask</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT COLUMN: Event Summary -->
-    <div class="event-column">
-      <mat-card class="event-summary-card">
-        <div class="event-image-container">
-          <div class="placeholder-img" *ngIf="!event.image">
-            <mat-icon>image</mat-icon>
-          </div>
-          <img *ngIf="event.image" [src]="event.image" alt="Event Cover">
+    <!-- STEP 2: VINCULAR WALLET SIWE -->
+    <div class="step-view" *ngIf="currentStep() === 2">
+      <div class="card-prompt">
+        <div class="icon-avatar">
+          <mat-icon>verified_user</mat-icon>
         </div>
-        <mat-card-content class="event-details">
-          <h1 class="event-title">{{ event.title }}</h1>
-          
-          <div class="event-meta">
-            <div class="meta-item">
+        <h2>Vinculación con SIWE</h2>
+        <p class="address-muted">Billetera conectada: <code>{{ truncateAddress(connectedAddress()) }}</code></p>
+        <p>Confirmá que sos el dueño de esta billetera firmando un mensaje seguro sin costo de gas (SIWE).</p>
+
+        <div class="challenge-box" *ngIf="siweMessage()">
+          <span class="challenge-title">Mensaje a firmar:</span>
+          <pre class="challenge-text">{{ siweMessage() }}</pre>
+        </div>
+
+        <div class="wallet-actions">
+          <button (click)="signAndVerify()" class="btn-cta" [disabled]="isLoading() || !siweMessage()">
+            <mat-icon>gesture</mat-icon>
+            <span>Firmar y Vincular Billetera</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: LIST EVENT AND TIERS -->
+    <div class="step-view" *ngIf="currentStep() === 3">
+      <!-- Event Summary Card -->
+      <div class="event-hero" *ngIf="mappedEvent() as evt">
+        <div class="event-hero-overlay">
+          <div class="event-badge-live">On-Chain</div>
+          <h1>{{ evt.name }}</h1>
+          <div class="event-meta-row">
+            <span class="meta-item">
               <mat-icon>calendar_today</mat-icon>
-              <span>{{ event.startDate }} - {{ event.endDate }}</span>
+              <span>{{ evt.startDate | date:'longDate':'':'es-AR' }}</span>
+            </span>
+            <span class="meta-item">
+              <mat-icon>token</mat-icon>
+              <code class="contract-addr" [title]="evt.eventNftAddress">{{ truncateAddress(evt.eventNftAddress) }}</code>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tiers Grid -->
+      <div class="tiers-grid">
+        <div class="tier-card" *ngFor="let tier of mappedTiers()" [class.out-of-stock]="(tier.maxQuantity - tier.quantitySold) <= 0">
+          <div class="tier-badge" *ngIf="(tier.maxQuantity - tier.quantitySold) > 0">Disponible</div>
+          <div class="tier-badge sold-out-badge" *ngIf="(tier.maxQuantity - tier.quantitySold) <= 0">Agotado</div>
+          
+          <div class="tier-header">
+            <h3>{{ tier.name }}</h3>
+          </div>
+
+          <div class="tier-info-body">
+            <!-- USDC Price Breakdown -->
+            <div class="price-section">
+              <div class="info-row">
+                <span class="label">Entrada USDC</span>
+                <span class="val usdc-val">{{ tier.priceUsdc | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="info-row fee-row">
+                <span class="label">Cargo servicio (7%)</span>
+                <span class="val usdc-fee">+{{ (tier.priceUsdc * 0.07) | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="info-row total-row">
+                <span class="label">Total USDC</span>
+                <span class="val usdc-total">{{ (tier.priceUsdc * 1.07) | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
             </div>
-            <div class="meta-item">
-              <mat-icon>location_on</mat-icon>
-              <span>{{ event.venueId ? 'Sede ID: ' + event.venueId : 'Sede a confirmar' }}</span>
+
+            <div class="divider-line"></div>
+
+            <!-- VBK Price Breakdown -->
+            <div class="price-section">
+              <div class="info-row">
+                <div class="label-wrapper">
+                  <span class="label">Entrada VBK</span>
+                  <span class="discount-badge">3% OFF Fee</span>
+                </div>
+                <span class="val vbk-val">
+                  <ng-container *ngIf="vbkQuotes()[tier.ticketTypeId] as quote; else loadingQuote">
+                    <span *ngIf="quote !== 'Error'">{{ parseFloat(quote) | number:'1.2-4' }}</span>
+                    <span *ngIf="quote === 'Error'" class="error-text">No disponible</span>
+                  </ng-container>
+                  <ng-template #loadingQuote>
+                    <span class="quote-spinner-text">Calculando...</span>
+                  </ng-template>
+                </span>
+              </div>
+              
+              <ng-container *ngIf="vbkQuotes()[tier.ticketTypeId] as quote">
+                <ng-container *ngIf="quote !== 'Error'">
+                  <div class="info-row fee-row">
+                    <span class="label">Cargo servicio (4%)</span>
+                    <span class="val vbk-fee">+{{ (parseFloat(quote) * 0.04) | number:'1.2-4' }}</span>
+                  </div>
+                  <div class="info-row total-row">
+                    <span class="label">Total VBK</span>
+                    <span class="val vbk-total">{{ (parseFloat(quote) * 1.04) | number:'1.2-4' }}</span>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+
+            <div class="info-row separator">
+              <span class="label">Disponibles</span>
+              <span class="val stock-val">
+                {{ (tier.maxQuantity - tier.quantitySold) > 0 ? (tier.maxQuantity - tier.quantitySold) : 0 }} / {{ tier.maxQuantity }}
+              </span>
             </div>
           </div>
 
-          <div class="event-description">
-            <p>{{ event.description }}</p>
+          <div class="tier-actions">
+            <ng-container *ngIf="(tier.maxQuantity - tier.quantitySold) > 0; else soldOutActions">
+              <button (click)="buyWithUSDC(tier)" class="btn-buy buy-usdc" [disabled]="isLoading()">
+                <mat-icon>credit_card</mat-icon>
+                <span>Comprar con USDC</span>
+              </button>
+              
+              <button (click)="buyWithVBK(tier)" class="btn-buy buy-vbk" [disabled]="isLoading() || vbkQuotes()[tier.ticketTypeId] === 'Error' || !vbkQuotes()[tier.ticketTypeId]">
+                <mat-icon>local_activity</mat-icon>
+                <span>Comprar con VBK</span>
+              </button>
+            </ng-container>
+            <ng-template #soldOutActions>
+              <button class="btn-buy btn-disabled" disabled>
+                <span>Agotado</span>
+              </button>
+            </ng-template>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button (click)="goBack()" class="btn-secondary">
+          <mat-icon>arrow_back</mat-icon>
+          <span>Volver al Evento</span>
+        </button>
+      </div>
     </div>
+
+    <!-- STEP 4: ON-CHAIN TRANSACTION IN PROGRESS -->
+    <div class="step-view" *ngIf="currentStep() === 4">
+      <div class="card-prompt transaction-prompt">
+        <div class="spinner-container">
+          <div class="pulse-loader"></div>
+          <mat-spinner diameter="50"></mat-spinner>
+        </div>
+        <h2>Transacción en Progreso</h2>
+        <p>Aprobando y procesando la compra de tu ticket en la red Ethereum Sepolia...</p>
+        <p class="warning-alert">
+          <mat-icon>warning</mat-icon>
+          <span>Por favor, no cierres esta ventana ni recargues la página. Esto puede tardar entre 15 y 30 segundos por la confirmación de bloques.</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- STEP 5: BACKEND CONFIRMATION AND SUCCESS -->
+    <div class="step-view" *ngIf="currentStep() === 5">
+      <!-- Pending backend register -->
+      <div class="card-prompt" *ngIf="isLoading() && !successTicket()">
+        <mat-spinner diameter="40" style="margin: 0 auto;"></mat-spinner>
+        <h2 style="margin-top: 20px;">Registrando Ticket</h2>
+        <p>Confirmando la transacción con nuestros servidores para registrar tu entrada...</p>
+      </div>
+
+      <!-- Success Screen -->
+      <div class="success-screen" *ngIf="successTicket() as ticket">
+        <div class="success-badge">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <h2>¡Compra Confirmada!</h2>
+        <p class="success-subtitle">Tu entrada ha sido adquirida on-chain y registrada con éxito.</p>
+
+        <div class="ticket-receipt">
+          <div class="receipt-header">
+            <h3>Comprobante de Ticket</h3>
+          </div>
+          <div class="receipt-body">
+            <div class="receipt-row">
+              <span class="label">Evento:</span>
+              <span class="val font-highlight">{{ ticket.eventName }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Categoría/Tier:</span>
+              <span class="val font-highlight">{{ ticket.ticketTypeName }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Token ID (NFT):</span>
+              <span class="val code-badge">#{{ ticket.tokenId }}</span>
+            </div>
+            <div class="receipt-row separator">
+              <span class="label">Estado:</span>
+              <span class="val status-confirmed">{{ ticket.status }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Transacción:</span>
+              <span class="val">
+                <a [href]="'https://sepolia.etherscan.io/tx/' + ticket.txHash" target="_blank" class="etherscan-link">
+                  <span>{{ truncateAddress(ticket.txHash) }}</span>
+                  <mat-icon>open_in_new</mat-icon>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="success-actions">
+          <button (click)="router.navigate(['/my-tickets'])" class="btn-cta">
+            <mat-icon>style</mat-icon>
+            <span>Ver Mis Tickets</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error / Support screen when transaction went through but backend failed -->
+      <div class="error-screen" *ngIf="!isLoading() && !successTicket() && errorMessage()">
+        <div class="error-badge">
+          <mat-icon>warning</mat-icon>
+        </div>
+        <h2>Error de Registro</h2>
+        <p class="error-msg-bold">{{ errorMessage() }}</p>
+        
+        <div class="error-support-info">
+          <p>Tu ticket fue comprado en la blockchain pero falló el registro en nuestra base de datos. Por favor copiá tu Tx Hash y contactá a nuestro soporte:</p>
+          <div class="hash-box">
+            <code>{{ purchaseTxHash() }}</code>
+          </div>
+          <a [href]="'https://sepolia.etherscan.io/tx/' + purchaseTxHash()" target="_blank" class="etherscan-link-large">
+            <span>Ver Transacción en Etherscan</span>
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+        </div>
+
+        <div class="success-actions">
+          <button (click)="router.navigate(['/my-tickets'])" class="btn-cta btn-secondary">
+            <span>Ir a Mis Tickets</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- GLOBAL SPINNER OVERLAY -->
+<div class="global-overlay" *ngIf="isLoading() && currentStep() !== 4 && currentStep() !== 5">
+  <div class="overlay-content">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Procesando operación en MetaMask...</p>
   </div>
 </div>

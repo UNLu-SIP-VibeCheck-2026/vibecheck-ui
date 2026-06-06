@@ -1,6 +1,19 @@
 <div class="admin-container">
-    <div class="header-section">
-        <h1 class="main-title">Administrar Permisos</h1>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <div class="header-text">
+                <h1 class="brand-title">Administrar <span class="text-gradient">Permisos</span></h1>
+                <p class="header-subtitle">Gestioná los permisos y restricciones del sistema</p>
+            </div>
+        </div>
+        <div class="stats-badge" *ngIf="totalElements > 0">
+            <mat-icon>key</mat-icon>
+            <span>{{ totalElements }} {{ totalElements === 1 ? 'permiso registrado' : 'permisos registrados' }}</span>
+        </div>
     </div>
 
     <!-- Search Section -->

@@ -17,6 +17,7 @@ import { MatSelectModule } from "@angular/material/select";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatMenuModule } from "@angular/material/menu";
 import { Router } from "@angular/router";
 import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
 import { EventDialogComponent } from "../shared/dialogs/event-dialog/event-dialog.component";
@@ -35,6 +36,7 @@ import { EmptyStateComponent } from "../shared/empty-state/empty-state.component
 import { trackLoading } from "../../utils/loading.operator";
 import { environment } from "../../../environments/environment";
 import { ethers } from "ethers";
+import { MatNativeDateModule } from "@angular/material/core";
 
 @Component({
   selector: "app-admin-events",
@@ -54,8 +56,10 @@ import { ethers } from "ethers";
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule,
+    MatMenuModule,
     LoadingStateComponent,
     EmptyStateComponent,
+    MatNativeDateModule,
   ],
   templateUrl: "./admin-events.component.html",
   styleUrl: "./admin-events.component.scss",
@@ -229,6 +233,16 @@ export class AdminEventsComponent implements OnInit {
       case "DRAFT":
       case "BORRADOR":
         return "draft-chip";
+      case "PENDING_APPROVAL":
+      case "PENDIENTE":
+      case "PENDIENTE_APROBACION":
+        return "pending-chip";
+      case "APPROVED":
+      case "APROBADO":
+        return "approved-chip";
+      case "REJECTED":
+      case "RECHAZADO":
+        return "rejected-chip";
       case "DEPLOYED":
       case "DEPLOYADO":
         return "deployed-chip";
@@ -254,6 +268,9 @@ export class AdminEventsComponent implements OnInit {
   getStatusLabel(status: string): string {
     const map: Record<string, string> = {
       DRAFT: "BORRADOR",
+      PENDING_APPROVAL: "PENDIENTE DE APROBACIÓN",
+      APPROVED: "APROBADO",
+      REJECTED: "RECHAZADO",
       DEPLOYED: "DEPLOYADO",
       PUBLIC: "PÚBLICO",
       SCHEDULED: "PÚBLICO",
@@ -262,6 +279,10 @@ export class AdminEventsComponent implements OnInit {
       COMPLETED: "FINALIZADO",
       CANCELLED: "CANCELADO",
       BORRADOR: "BORRADOR",
+      PENDIENTE: "PENDIENTE DE APROBACIÓN",
+      PENDIENTE_APROBACION: "PENDIENTE DE APROBACIÓN",
+      APROBADO: "APROBADO",
+      RECHAZADO: "RECHAZADO",
       DEPLOYADO: "DEPLOYADO",
       PÚBLICO: "PÚBLICO",
       PROGRAMADO: "PÚBLICO",
@@ -305,6 +326,10 @@ export class AdminEventsComponent implements OnInit {
 
   viewStats(event: EventResponse): void {
     this.router.navigate(["/admin-tickets", event.id]);
+  }
+
+  viewEventMetrics(event: EventResponse): void {
+    this.router.navigate(["/admin-events", event.id, "metrics"]);
   }
 
   viewFinance(event: EventResponse): void {
@@ -376,13 +401,58 @@ export class AdminEventsComponent implements OnInit {
   // -------------------------------------------------------------------------
 
   publishEvent(event: EventResponse): void {
-    const isOnChainDeployNeeded = event.status === 'DRAFT';
+    if (event.status === 'DRAFT' || event.status === 'REJECTED') {
+      this.requestApproval(event);
+      return;
+    }
 
-    const dialogRef = this.dialog.open(PublishConfirmDialogComponent, {
-      width: "500px",
+    if (event.status === 'APPROVED') {
+      const dialogRef = this.dialog.open(PublishConfirmDialogComponent, {
+        width: "500px",
+        data: {
+          eventTitle: event.title,
+          onChain: true
+        },
+        autoFocus: false
+      });
+
+      dialogRef.afterClosed().subscribe((confirmed) => {
+        if (!confirmed) return;
+
+        this.publishingId = event.id;
+        this.deployAndPublishEvent(event);
+      });
+      return;
+    }
+
+    if (event.status === 'DEPLOYED') {
+      const dialogRef = this.dialog.open(PublishConfirmDialogComponent, {
+        width: "500px",
+        data: {
+          eventTitle: event.title,
+          onChain: false
+        },
+        autoFocus: false
+      });
+
+      dialogRef.afterClosed().subscribe((confirmed) => {
+        if (!confirmed) return;
+
+        this.publishingId = event.id;
+        this.executePublishOnly(event);
+      });
+      return;
+    }
+  }
+
+  private requestApproval(event: EventResponse): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "450px",
       data: {
-        eventTitle: event.title,
-        onChain: isOnChainDeployNeeded
+        title: "Solicitar Aprobación",
+        message: `¿Enviar el evento "${event.title}" a aprobación? Una vez enviado, no podrás modificar sus datos ni categorías de entradas hasta que sea revisado por un administrador.`,
+        confirmText: "Enviar a Aprobar",
+        cancelText: "Cancelar",
       },
       autoFocus: false
     });
@@ -391,12 +461,7 @@ export class AdminEventsComponent implements OnInit {
       if (!confirmed) return;
 
       this.publishingId = event.id;
-
-      if (isOnChainDeployNeeded) {
-        this.deployAndPublishEvent(event);
-      } else {
-        this.executePublishOnly(event);
-      }
+      this.executePublishOnly(event);
     });
   }
 

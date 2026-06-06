@@ -4,62 +4,20 @@
         {{ isEditMode ? 'Modificar Evento' : 'Crear Evento' }}
     </h2>
 
-    <mat-dialog-content>
-        <form [formGroup]="eventForm">
+    <mat-dialog-content class="custom-dialog-content">
+        <form [formGroup]="eventForm" class="dialog-form">
 
-            <!-- Title -->
-            <div class="form-group">
-                <label for="dlg-title">Título del Evento</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                    <input matInput id="dlg-title" formControlName="title" placeholder="Ej: Festival de Verano 2026">
-                </mat-form-field>
-            </div>
-
-            <!-- Description -->
-            <div class="form-group description-field">
-                <label for="dlg-desc">Descripción</label>
-                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                    <textarea matInput id="dlg-desc" formControlName="description" rows="4"
-                              placeholder="Descripción del evento..."></textarea>
-                </mat-form-field>
-            </div>
-
-            <!-- Start date -->
-            <div class="form-group">
-                <app-date-time-picker
-                    formControlName="startDate"
-                    label="Fecha y Hora de Inicio"
-                    [minDate]="today">
-                </app-date-time-picker>
-            </div>
-
-            <!-- End date -->
-            <div class="form-group">
-                <app-date-time-picker
-                    formControlName="endDate"
-                    label="Fecha y Hora de Fin"
-                    [minDate]="today"
-                    [afterDate]="startDateValue">
-                </app-date-time-picker>
-            </div>
-
-            <!-- Cross-field error -->
-            <div class="cross-error" *ngIf="eventForm.hasError('endBeforeStart') && eventForm.get('endDate')?.touched">
-                <mat-icon>error_outline</mat-icon>
-                <span>La fecha de fin debe ser posterior a la de inicio.</span>
-            </div>
-
-            <div class="multi-row">
-                <div class="form-group half">
-                    <label for="dlg-capacity">Capacidad</label>
+            <!-- Row 1: Title and Publication Status -->
+            <div class="form-row">
+                <div class="form-group flex-2">
+                    <label for="dlg-title">Título del Evento</label>
                     <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
-                        <mat-icon matPrefix style="margin-right:6px;font-size:18px">people</mat-icon>
-                        <input matInput type="number" id="dlg-capacity" formControlName="capacity" placeholder="0">
+                        <input matInput id="dlg-title" formControlName="title" placeholder="Ej: Festival de Verano 2026">
                     </mat-form-field>
                 </div>
-
-                <div class="form-group half">
-                    <label>Estado de Publicación</label>
+                
+                <div class="form-group flex-1">
+                    <label>Estado</label>
                     <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
                         <mat-select formControlName="active">
                             <mat-option [value]="true">✅ Activo</mat-option>
@@ -69,31 +27,83 @@
                 </div>
             </div>
 
-            <!-- Venue selector -->
-            <div class="form-group venue-group">
-                <label for="dlg-venue">Venue</label>
-                <mat-form-field appearance="outline" class="custom-mat-select" subscriptSizing="dynamic">
-                    <mat-select id="dlg-venue" formControlName="venueId" placeholder="Seleccionar venue...">
-                        <!-- Search inside select -->
-                        <div class="select-search-header">
-                            <mat-form-field appearance="outline" class="search-inner-field" subscriptSizing="dynamic">
-                                <mat-icon matPrefix>search</mat-icon>
-                                <input matInput placeholder="Buscar venue..."
-                                       [(ngModel)]="venueSearch"
-                                       (ngModelChange)="filterVenues()"
-                                       [ngModelOptions]="{standalone: true}"
-                                       (keydown)="$event.stopPropagation()">
-                            </mat-form-field>
-                        </div>
+            <!-- Row 2: Start and End Dates -->
+            <div class="form-row">
+                <div class="form-group flex-1">
+                    <app-date-time-picker
+                        formControlName="startDate"
+                        label="Fecha y Hora de Inicio"
+                        [minDate]="today">
+                    </app-date-time-picker>
+                </div>
 
-                        <mat-option [value]="null">— Sin venue —</mat-option>
-                        <mat-option *ngFor="let v of filteredVenues" [value]="v.id" class="venue-option">
-                            <div class="venue-item">
-                                <span class="venue-name">{{ v.title }}</span>
-                                <span class="venue-address">{{ v.coordinates }} &bull; Cap: {{ v.capacity | number }}</span>
+                <div class="form-group flex-1">
+                    <app-date-time-picker
+                        formControlName="endDate"
+                        label="Fecha y Hora de Fin"
+                        [minDate]="today"
+                        [afterDate]="startDateValue">
+                    </app-date-time-picker>
+                </div>
+            </div>
+
+            <!-- Cross-field error (Dates) -->
+            <div class="cross-error" *ngIf="eventForm.hasError('endBeforeStart') && eventForm.get('endDate')?.touched">
+                <mat-icon>error_outline</mat-icon>
+                <span>La fecha de fin debe ser posterior a la de inicio.</span>
+            </div>
+
+            <!-- Row 3: Venue and Capacity -->
+            <div class="form-row">
+                <div class="form-group flex-2 venue-group">
+                    <label for="dlg-venue">Lugar (Venue)</label>
+                    <mat-form-field appearance="outline" class="custom-mat-select" subscriptSizing="dynamic">
+                        <mat-select id="dlg-venue" formControlName="venueId" placeholder="Seleccionar venue...">
+                            <!-- Search inside select -->
+                            <div class="select-search-header">
+                                <mat-form-field appearance="outline" class="search-inner-field" subscriptSizing="dynamic">
+                                    <mat-icon matPrefix>search</mat-icon>
+                                    <input matInput placeholder="Buscar venue..."
+                                           [(ngModel)]="venueSearch"
+                                           (ngModelChange)="filterVenues()"
+                                           [ngModelOptions]="{standalone: true}"
+                                           (keydown)="$event.stopPropagation()">
+                                </mat-form-field>
                             </div>
-                        </mat-option>
-                    </mat-select>
+
+                            <mat-option [value]="null">— Sin venue —</mat-option>
+                            <mat-option *ngFor="let v of filteredVenues" [value]="v.id" class="venue-option">
+                                <div class="venue-item">
+                                    <span class="venue-name">{{ v.title }}</span>
+                                    <span class="venue-address">{{ v.coordinates }} &bull; Cap: {{ v.capacity | number }}</span>
+                                </div>
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-group flex-1">
+                    <label for="dlg-capacity">Capacidad</label>
+                    <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                        <mat-icon matPrefix style="margin-right:6px;font-size:18px">people</mat-icon>
+                        <input matInput type="number" id="dlg-capacity" formControlName="capacity" placeholder="0">
+                    </mat-form-field>
+                    <div class="field-error" *ngIf="eventForm.get('capacity')?.touched && eventForm.get('capacity')?.invalid">
+                        <span *ngIf="eventForm.get('capacity')?.errors?.['required']">Obligatorio</span>
+                        <span *ngIf="eventForm.get('capacity')?.errors?.['min']">Mínimo: 1</span>
+                    </div>
+                    <div class="field-error" *ngIf="eventForm.hasError('capacityExceedsVenue') && eventForm.get('capacity')?.touched">
+                        <span>Máx: {{ getSelectedVenueCapacity() | number }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group description-field">
+                <label for="dlg-desc">Descripción</label>
+                <mat-form-field appearance="outline" class="custom-mat-form-field" subscriptSizing="dynamic">
+                    <textarea matInput id="dlg-desc" formControlName="description" rows="3"
+                              placeholder="Descripción del evento..."></textarea>
                 </mat-form-field>
             </div>
 

@@ -1,0 +1,98 @@
+<div class="approval-container">
+  <!-- Header -->
+  <div class="page-header">
+      <div class="header-left">
+          <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+              <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div class="header-text">
+              <h1 class="brand-title">Aprobación de <span class="text-gradient">Eventos</span></h1>
+              <p class="header-subtitle">Gestioná la aprobación de eventos pendientes</p>
+          </div>
+      </div>
+      <div class="stats-badge" *ngIf="totalElements > 0">
+          <mat-icon>event</mat-icon>
+          <span>{{ totalElements }} {{ totalElements === 1 ? 'evento pendiente' : 'eventos pendientes' }}</span>
+      </div>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Cargando eventos pendientes...
+  </div>
+
+  <div *ngIf="!loading && events.length === 0" class="empty-state">
+    <p>No hay eventos pendientes de aprobación</p>
+  </div>
+
+  <div *ngIf="!loading && events.length > 0" class="events-list">
+    <div class="events-grid">
+      <div *ngFor="let event of events" class="event-card">
+        <div class="event-header">
+          <h3>{{ event.title }}</h3>
+          <span class="status-badge" [ngClass]="getStatusClass(event.status)">
+            {{ event.status === 'PENDING_APPROVAL' ? 'Pendiente' : event.status }}
+          </span>
+        </div>
+
+        <div class="event-details">
+          <p><strong>Descripción:</strong> {{ event.description || 'Sin descripción' }}</p>
+          <p><strong>Fecha inicio:</strong> {{ event.startDate | date:'medium' }}</p>
+          <p><strong>Fecha fin:</strong> {{ event.endDate | date:'medium' }}</p>
+          <p><strong>Capacidad:</strong> {{ event.capacity }}</p>
+          <p><strong>Venue ID:</strong> {{ event.venueId }}</p>
+        </div>
+
+        <div class="event-actions">
+          <button (click)="approveEvent(event)" class="btn btn-approve" [disabled]="loading">
+            <span class="icon">✓</span> Aprobar
+          </button>
+          <button (click)="openRejectDialog(event)" class="btn btn-reject" [disabled]="loading">
+            <span class="icon">✕</span> Rechazar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="previousPage()" class="btn btn-secondary" [disabled]="currentPage === 0 || loading">
+        ← Anterior
+      </button>
+      <span class="page-info">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+      <button (click)="nextPage()" class="btn btn-secondary" [disabled]="currentPage === totalPages - 1 || loading">
+        Siguiente →
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="showRejectDialog" class="dialog-overlay" (click)="closeRejectDialog()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>Rechazar Evento</h2>
+        <button (click)="closeRejectDialog()" class="btn-close">×</button>
+      </div>
+      <div class="dialog-body">
+        <p>Estás a punto de rechazar el evento: <strong>{{ selectedEvent?.title }}</strong></p>
+        <div class="form-group">
+          <label for="rejectionReason">Motivo del rechazo:</label>
+          <textarea
+            id="rejectionReason"
+            [(ngModel)]="rejectionReason"
+            rows="4"
+            placeholder="Ingresa el motivo del rechazo..."
+            required
+          ></textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button (click)="closeRejectDialog()" class="btn btn-secondary">Cancelar</button>
+        <button (click)="rejectEvent()" class="btn btn-reject" [disabled]="!rejectionReason.trim() || loading">
+          Rechazar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

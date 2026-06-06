@@ -4,12 +4,16 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { jwtInterceptor } from './app/interceptors/jwt.interceptor';
+import { errorInterceptor } from './app/interceptors/error.interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptors([jwtInterceptor])),
-    provideAnimations()
+    provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor])),
+    provideAnimations(),
+    provideNativeDateAdapter()
   ]
 }).catch((err: Error) => console.error(err));
+

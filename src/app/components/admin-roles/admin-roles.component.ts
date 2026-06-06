@@ -20,10 +20,13 @@ import {
   MatPaginatorModule,
   PageEvent,
 } from "@angular/material/paginator";
+import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
 import { trackLoading } from "../../utils/loading.operator";
+import { AuthService } from "../../services/auth.service";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-admin-roles",
@@ -40,7 +43,8 @@ import { trackLoading } from "../../utils/loading.operator";
     MatPaginatorModule,
     MatSnackBarModule,
     LoadingStateComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
+    MatTooltipModule
   ],
   templateUrl: "./admin-roles.component.html",
   styleUrl: "./admin-roles.component.scss",
@@ -49,6 +53,8 @@ export class AdminRolesComponent implements OnInit {
   private dialog = inject(MatDialog);
   private rolesService = inject(RolesService);
   private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -62,7 +68,17 @@ export class AdminRolesComponent implements OnInit {
   pageIndex = 0;
 
   ngOnInit(): void {
+    this.checkRole();
     this.loadRoles();
+  }
+
+  private checkRole(): void {
+    const user = this.authService.getCurrentUserValue();
+    const role = user?.role?.toLowerCase();
+    if (role !== 'admin' && role !== 'admin_usuarios') {
+      this.snackBar.open('No tienes permiso para acceder a esta página', 'Cerrar', { duration: 3000 });
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   loadRoles(): void {
@@ -177,5 +193,9 @@ export class AdminRolesComponent implements OnInit {
         });
       }
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

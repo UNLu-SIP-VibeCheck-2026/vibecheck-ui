@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,23 +10,50 @@ import { AuthService } from '../../services/auth.service';
 import { UsersService } from '../../services/users.service';
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
+import { UserPublicResponse } from '../../models/user-public-response.model';
+import { AvatarComponent } from '../shared/avatar/avatar.component';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule, AvatarComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   authService = inject(AuthService);
   usersService = inject(UsersService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private errorService = inject(ErrorService);
   router = inject(Router);
   private route = inject(ActivatedRoute);
 
   user$ = this.authService.currentUser$;
+  fullUserProfile: UserPublicResponse | null = null;
+
+  ngOnInit(): void {
+    this.loadFullUserProfile();
+  }
+
+  private loadFullUserProfile(): void {
+    const user = this.authService.getCurrentUserValue();
+    if (user?.username) {
+      this.usersService.getUserByUsername(user.username).subscribe({
+        next: (profile) => {
+          this.fullUserProfile = profile;
+        },
+        error: () => {
+          // If we can't load the full profile, we'll just use the basic user info
+        }
+      });
+    }
+  }
+
+  onProfilePhotoChanged(): void {
+    this.loadFullUserProfile();
+  }
 
   get userRole(): string {
     const roleParam = this.route.snapshot.queryParamMap.get('role');
@@ -56,6 +83,18 @@ export class DashboardComponent {
 
   get isCeo(): boolean {
     return this.userRole === 'ceo';
+  }
+
+  get isAdminVenues(): boolean {
+    return this.userRole === 'admin_venues';
+  }
+
+  get isAdminUsuarios(): boolean {
+    return this.userRole === 'admin_usuarios';
+  }
+
+  get isAdminEventos(): boolean {
+    return this.userRole === 'admin_eventos';
   }
 
   navigateTo(path: string): void {
@@ -102,19 +141,19 @@ export class DashboardComponent {
                   },
                   error: (err) => {
                     console.error('Error al refrescar el token:', err);
-                    this.snackBar.open('Rol actualizado, por favor reinicia sesión para ver los cambios', 'Cerrar', { duration: 5000 });
+                    this.errorService.handleError(err, 'Rol actualizado, por favor reinicia sesión para ver los cambios');
                   }
                 });
               },
               error: (err) => {
                 console.error('Error al cambiar el rol:', err);
-                this.snackBar.open('Error al actualizar el rol', 'Cerrar', { duration: 5000 });
+                this.errorService.handleError(err, 'Error al actualizar el rol');
               }
             });
           }
         });
       },
-      error: (err) => this.snackBar.open(err?.error?.message || 'Error al obtener perfil para cambio de rol:', 'Cerrar', { duration: 4000 })
+      error: (err) => this.errorService.handleError(err, 'Error al obtener perfil para cambio de rol:')
     });
   }
 
@@ -132,5 +171,9 @@ export class DashboardComponent {
 
   navigateToSystemLogs() {
     this.router.navigate(['/system-logs']);
+  }
+
+  navigateToStatistics() {
+    this.router.navigate(['/admin/statistics']);
   }
 }

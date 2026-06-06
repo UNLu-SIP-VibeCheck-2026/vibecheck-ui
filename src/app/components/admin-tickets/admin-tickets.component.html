@@ -1,14 +1,22 @@
 <div class="admin-container">
     <div class="header-section">
         <div class="title-row">
-            <button mat-icon-button (click)="goBack()" class="back-btn">
+            <button mat-icon-button (click)="goBack()" class="back-btn" title="Volver a Eventos">
                 <mat-icon>arrow_back</mat-icon>
             </button>
-            <h1 class="main-title">Administrar Categorías de Entrada - Evento: {{eventId}}</h1>
+            <div class="title-text-group">
+                <h1 class="main-title">Categorías de Entrada</h1>
+                <h2 class="subtitle" *ngIf="event">
+                    <span class="event-name">{{ event.title }}</span>
+                    <span class="status-badge" [ngClass]="getStatusClass(event.status)">
+                        {{ getStatusLabel(event.status) }}
+                    </span>
+                </h2>
+            </div>
         </div>
     </div>
 
-    <div class="actions-header">
+    <div class="actions-header" *ngIf="!isEventPublished">
         <button mat-raised-button class="create-btn" (click)="addTicket()">
             Agregar Categoría de Entrada
         </button>
@@ -29,7 +37,7 @@
         [icon]="'receipt_long'"
         [title]="'No se encontraron categorías'"
         [description]="'Este evento no tiene categorías de entrada configuradas aún.'"
-        [actionText]="'Agregar Categoría'"
+        [actionText]="isEventPublished ? '' : 'Agregar Categoría'"
         (actionClick)="addTicket()">
     </app-empty-state>
 
@@ -83,13 +91,16 @@
             </ng-container>
 
             <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef> </th>
+                <th mat-header-cell *matHeaderCellDef> Acciones </th>
                 <td mat-cell *matCellDef="let element" class="action-cell">
                     <div class="action-buttons-wrapper">
-                        <button mat-icon-button class="circle-btn" (click)="editTicket(element)" title="Editar Categoría">
-                            <mat-icon>edit</mat-icon>
+                        <button mat-icon-button class="circle-btn" (click)="editTicket(element)" [title]="isEventPublished ? 'Ver Categoría' : 'Editar Categoría'">
+                            <mat-icon>{{ isEventPublished ? 'visibility' : 'edit' }}</mat-icon>
                         </button>
-                        <button mat-icon-button class="circle-btn delete" (click)="deleteTicket(element)" title="Eliminar Categoría" [disabled]="deletingId === element.id">
+                        <button mat-icon-button class="circle-btn" *ngIf="isEventPublished" (click)="viewTicketMetrics(element)" title="Ver Ventas/Métricas">
+                            <mat-icon>bar_chart</mat-icon>
+                        </button>
+                        <button mat-icon-button class="circle-btn delete" *ngIf="!isEventPublished" (click)="deleteTicket(element)" title="Eliminar Categoría" [disabled]="deletingId === element.id">
                             <mat-icon *ngIf="deletingId !== element.id">delete</mat-icon>
                             <mat-spinner *ngIf="deletingId === element.id" diameter="18"></mat-spinner>
                         </button>

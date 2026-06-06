@@ -390,19 +390,20 @@
 
 .price-panel-wrapper {
   display: flex;
-  justify-content: center;
+  justify-content: left;
   margin-top: var(--space-4);
 }
 
 .large-price-panel {
   display: flex;
   gap: var(--space-3);
-  align-items: baseline;
+  align-items: center;
   justify-content: right;
   flex-wrap: wrap;
-  width: 100%;
   text-align: right;
   max-width: 320px;
+  margin-bottom: 16px;
+  padding-left: 16px;
 }
 
 .price-label {

@@ -9,6 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { UsersService } from '../../services/users.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-change-password',
@@ -30,6 +31,7 @@ export class ChangePasswordComponent implements OnInit {
   private usersService = inject(UsersService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private errorService = inject(ErrorService);
 
   recoveryForm: FormGroup = this.fb.group({
     username: ['', [Validators.required]],
@@ -69,7 +71,7 @@ export class ChangePasswordComponent implements OnInit {
       },
       error: (err) => {
         this.isSubmitting = false;
-        this.snackBar.open('Error al cambiar contraseña. Verifica tus datos.', 'Cerrar', { duration: 5000 });
+        this.errorService.handleError(err, 'Error al cambiar contraseña. Verifica tus datos.');
       }
     });
   }

@@ -25,25 +25,22 @@
 
 .dtp-row {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   width: 100%;
 }
 
 .dtp-date-field {
-  flex: 2.5;
+  width: 100%;
 }
 
 .dtp-time-field {
-  flex: 1;
+  width: 100%;
 }
 
 .dtp-separator {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--md-sys-color-on-surface-variant);
-  user-select: none;
-  padding-bottom: 2px;
+  display: none;
 }
 
 // ---------------------------------------------------------------------------
@@ -53,6 +50,7 @@
   width: 100%;
 
   ::ng-deep {
+
     .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
     .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
     .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
@@ -72,12 +70,18 @@
       border-width: 2px !important;
     }
 
+    .mdc-text-field--outlined {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+
     .mat-mdc-form-field-flex {
       background-color: rgba(255, 255, 255, 0.03) !important;
       border-radius: var(--md-sys-shape-corner-extra-small) !important;
       align-items: center !important;
       display: flex !important;
       height: 52px !important;
+      padding: 0 !important;
     }
 
     .mat-mdc-input-element,
@@ -87,11 +91,25 @@
       align-items: center !important;
     }
 
+    .mat-mdc-input-element {
+      &[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(1) opacity(0.6);
+        cursor: pointer;
+        transition: opacity 150ms ease;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+
     .mat-mdc-form-field-infix {
       display: flex !important;
       align-items: center !important;
       padding: 0 12px !important;
       min-height: auto !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
     }
 
     .mat-mdc-select-arrow-wrapper {
@@ -102,6 +120,11 @@
     // Datepicker toggle icon colour
     .mat-datepicker-toggle {
       color: var(--md-sys-color-primary);
+    }
+
+    .mat-mdc-form-field-icon-suffix,
+    [dir="rtl"] .mat-mdc-form-field-icon-prefix {
+      padding: 0 8px 0 4px !important;
     }
   }
 }
@@ -131,41 +154,29 @@
 }
 
 @keyframes dtp-shake {
-  0%, 100% { transform: translateX(0); }
-  20%      { transform: translateX(-4px); }
-  40%      { transform: translateX(4px); }
-  60%      { transform: translateX(-3px); }
-  80%      { transform: translateX(2px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-4px);
+  }
+
+  40% {
+    transform: translateX(4px);
+  }
+
+  60% {
+    transform: translateX(-3px);
+  }
+
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Responsive
+// End of Styles
 // ---------------------------------------------------------------------------
-@media (max-width: 600px) {
-  .dtp-row {
-    flex-wrap: wrap;
-  }
-
-  .dtp-date-field {
-    flex: 1 1 100%;
-  }
-
-  .dtp-time-field {
-    flex: 1 1 40%;
-  }
-
-  .dtp-separator {
-    display: none;
-  }
-}
-
-@media (max-width: 379px) {
-  .dtp-time-field {
-    flex: 1 1 100%;
-  }
-
-  .dtp-label {
-    font-size: var(--text-label-sm);
-  }
-}
-

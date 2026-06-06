@@ -8,7 +8,16 @@
         <mat-icon>arrow_back</mat-icon>
       </button>
       <div class="config-header">
-        <div class="avatar">{{ user.username[0].toUpperCase() }}</div>
+        <app-avatar
+          *ngIf="fullUserProfile"
+          [username]="fullUserProfile.username"
+          [name]="fullUserProfile.name"
+          [lastName]="fullUserProfile.lastName"
+          [hasImage]="fullUserProfile.hasImage || false"
+          [clickable]="true"
+          [size]="'medium'"
+          (photoChanged)="onProfilePhotoChanged()"
+        ></app-avatar>
         <div class="header-info">
           <h1 class="config-title">{{ user.username }}</h1>
           <span class="config-role">{{ user.role }}</span>
@@ -73,8 +82,8 @@
       </div>
     </section>
 
-    <!-- Sección: Administración (solo admin) -->
-    <section class="config-section" *ngIf="isAdmin">
+    <!-- Sección: Administración -->
+    <section class="config-section" *ngIf="isAdmin || isAdminUsuarios">
       <h2 class="section-title">Administración</h2>
       <div class="config-cards">
         <button class="config-card" mat-ripple (click)="navigateToAdminUsers()">

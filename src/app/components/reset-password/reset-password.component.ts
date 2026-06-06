@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { UsersService } from '../../services/users.service';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -31,6 +32,7 @@ export class ResetPasswordComponent implements OnInit {
   private router = inject(Router);
   private usersService = inject(UsersService);
   private snackBar = inject(MatSnackBar);
+  private errorService = inject(ErrorService);
 
   resetForm: FormGroup = this.fb.group({
     newPassword: ['', [Validators.required, Validators.minLength(8)]],
@@ -45,9 +47,7 @@ export class ResetPasswordComponent implements OnInit {
     this.token = this.route.snapshot.queryParamMap.get('token');
     if (!this.token) {
       this.hasTokenError = true;
-      this.snackBar.open('Token de recuperación no válido o inexistente.', 'Cerrar', {
-        duration: 5000
-      });
+      this.errorService.showError('Token de recuperación no válido o inexistente.');
     }
   }
 
@@ -74,10 +74,7 @@ export class ResetPasswordComponent implements OnInit {
       },
       error: (err) => {
         this.isSubmitting = false;
-        const msg = err?.error?.message || 'Error al restablecer la contraseña. Es posible que el token haya expirado o ya se haya utilizado.';
-        this.snackBar.open(msg, 'Cerrar', {
-          duration: 5000
-        });
+        this.errorService.handleError(err, 'Error al restablecer la contraseña. Es posible que el token haya expirado o ya se haya utilizado.');
       }
     });
   }

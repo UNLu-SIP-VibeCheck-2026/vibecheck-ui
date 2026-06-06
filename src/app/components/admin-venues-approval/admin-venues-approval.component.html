@@ -1,0 +1,109 @@
+<div class="admin-venues-approval-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="brand-title">Aprobación de <span class="text-gradient">Venues</span></h1>
+        <p class="header-subtitle">Revisá y aprobá las solicitudes de nuevos recintos</p>
+      </div>
+    </div>
+    <div class="stats-badge">
+      <mat-icon>pending_actions</mat-icon>
+      <span>{{ totalVenues }} {{ totalVenues === 1 ? 'venue pendiente' : 'venues pendientes' }}</span>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando solicitudes...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && venues.length === 0">
+    <h3>No hay solicitudes pendientes</h3>
+    <p>Todas las solicitudes de venues han sido procesadas.</p>
+    <button mat-raised-button class="btn-back" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver al Dashboard
+    </button>
+  </div>
+
+  <!-- Venues grid -->
+  <div class="venues-grid" *ngIf="!isLoading && venues.length > 0">
+    <mat-card class="venue-card" *ngFor="let venue of venues">
+
+      <!-- Status badge -->
+      <div class="status-badge badge-pending">
+        <mat-icon>schedule</mat-icon>
+        PENDIENTE
+      </div>
+
+      <div class="venue-card-body">
+        <div class="venue-icon-wrapper">
+          <mat-icon class="venue-icon">stadium</mat-icon>
+        </div>
+
+        <div class="venue-info">
+          <h3 class="venue-title">{{ venue.title }}</h3>
+          <p class="venue-coord">
+            <mat-icon class="inline-icon">location_on</mat-icon>
+            {{ venue.coordinates }}
+          </p>
+          <p class="venue-capacity">
+            <mat-icon class="inline-icon">people</mat-icon>
+            Capacidad: <strong>{{ venue.capacity | number }}</strong>
+          </p>
+          <p class="venue-visibility">
+            <mat-icon class="inline-icon">{{ venue.visibility === 'PUBLIC' ? 'public' : 'lock' }}</mat-icon>
+            {{ venue.visibility === 'PUBLIC' ? 'Público' : 'Privado' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Rejection dialog (inline) -->
+      <div class="rejection-dialog" *ngIf="rejectingVenue?.id === venue.id">
+        <div class="rejection-content">
+          <h4>Motivo del rechazo</h4>
+          <mat-form-field appearance="outline" class="rejection-input">
+            <textarea matInput [(ngModel)]="rejectionReason" placeholder="Describí el motivo del rechazo..." rows="3"
+              maxlength="255"></textarea>
+            <mat-hint align="end">{{ rejectionReason.length }}/255</mat-hint>
+          </mat-form-field>
+          <div class="rejection-actions">
+            <button mat-stroked-button class="btn-cancel" (click)="cancelReject()">
+              Cancelar
+            </button>
+            <button mat-raised-button class="btn-confirm-reject" (click)="confirmReject()">
+              <mat-icon>cancel</mat-icon>
+              Rechazar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="venue-card-actions" *ngIf="rejectingVenue?.id !== venue.id">
+        <button mat-raised-button class="btn-approve" (click)="approveVenue(venue)" matTooltip="Aprobar venue">
+          <mat-icon>check_circle</mat-icon>
+          Aprobar
+        </button>
+        <button mat-stroked-button class="btn-reject" (click)="openRejectDialog(venue)" matTooltip="Rechazar venue">
+          <mat-icon>cancel</mat-icon>
+          Rechazar
+        </button>
+      </div>
+
+    </mat-card>
+  </div>
+
+  <!-- Paginator -->
+  <mat-paginator *ngIf="!isLoading && totalVenues > pageSize" [length]="totalVenues" [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 20]" [pageIndex]="pageIndex" (page)="onPageChange($event)" class="custom-paginator">
+  </mat-paginator>
+
+</div>

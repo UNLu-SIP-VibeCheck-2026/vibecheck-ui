@@ -1,0 +1,54 @@
+<div class="tx-status-wrapper" *ngIf="txState">
+  <mat-card class="tx-card" [ngClass]="txState.status">
+    <div class="tx-content">
+      
+      <!-- Pending State -->
+      <ng-container *ngIf="txState.status === 'pending'">
+        <div class="status-indicator">
+          <mat-spinner diameter="40" color="primary" class="spinner"></mat-spinner>
+        </div>
+        <div class="status-text-group">
+          <h4 class="status-title">Transacción en progreso</h4>
+          <p class="status-desc">Procesando en Sepolia, espera un momento...</p>
+        </div>
+      </ng-container>
+
+      <!-- Confirmed State -->
+      <ng-container *ngIf="txState.status === 'confirmed'">
+        <div class="status-indicator success">
+          <mat-icon class="status-icon">check_circle</mat-icon>
+        </div>
+        <div class="status-text-group">
+          <h4 class="status-title success">Transacción Confirmada ✓</h4>
+          <p class="status-desc">El proceso se completó correctamente on-chain.</p>
+        </div>
+      </ng-container>
+
+      <!-- Failed State -->
+      <ng-container *ngIf="txState.status === 'failed'">
+        <div class="status-indicator error">
+          <mat-icon class="status-icon">error</mat-icon>
+        </div>
+        <div class="status-text-group">
+          <h4 class="status-title error">Transacción Fallida ✗</h4>
+          <p class="status-desc" *ngIf="!txState.error?.message?.includes('ACTION_REJECTED')">
+            Ocurrió un error al procesar la transacción.
+          </p>
+          <p class="status-desc" *ngIf="txState.error?.message?.includes('ACTION_REJECTED') || txState.error?.code === 'ACTION_REJECTED'">
+            Transacción cancelada por el usuario.
+          </p>
+        </div>
+      </ng-container>
+
+    </div>
+
+    <!-- Etherscan Link -->
+    <div class="tx-footer" *ngIf="txState.hash">
+      <a [href]="etherscanUrl" target="_blank" rel="noopener noreferrer" class="etherscan-link">
+        <mat-icon class="link-icon">open_in_new</mat-icon>
+        Ver en Sepolia Etherscan
+      </a>
+    </div>
+
+  </mat-card>
+</div>

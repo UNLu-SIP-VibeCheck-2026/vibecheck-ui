@@ -23,6 +23,7 @@ export interface TicketDialogData {
   ticket?: TicketTypeResponse;
   eventId?: number;
   eventStartDate?: string;
+  isReadOnly?: boolean;
 }
 
 @Component({
@@ -54,13 +55,18 @@ export class TicketDialogComponent implements OnInit {
 
   ticketForm!: FormGroup;
   isEditMode: boolean = false;
+  isReadOnly: boolean = false;
   isSubmitting: boolean = false;
   errorMessage: string = '';
   minDate: Date = new Date();
 
   ngOnInit(): void {
     this.isEditMode = !!this.data?.ticket;
+    this.isReadOnly = !!this.data?.isReadOnly;
     this.initForm();
+    if (this.isReadOnly) {
+      this.ticketForm.disable();
+    }
   }
 
   private initForm(): void {

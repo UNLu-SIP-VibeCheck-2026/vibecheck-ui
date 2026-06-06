@@ -1,24 +1,40 @@
 <div class="dashboard-container" *ngIf="user$ | async as user; else noUser">
   <!-- Welcome Header -->
   <div class="welcome-section">
+    <div class="welcome-avatar">
+      <app-avatar
+        *ngIf="fullUserProfile"
+        [username]="fullUserProfile.username"
+        [name]="fullUserProfile.name"
+        [lastName]="fullUserProfile.lastName"
+        [hasImage]="fullUserProfile.hasImage || false"
+        [clickable]="true"
+        [size]="'medium'"
+        (photoChanged)="onProfilePhotoChanged()"
+      ></app-avatar>
+    </div>
     <div class="welcome-content">
       <h1 class="welcome-title text-gradient display-md">¡Hola, {{ user.username }}!</h1>
       <p class="welcome-subtitle">Bienvenido de nuevo a VibeCheck</p>
-      </div>
-      <div class="role-action">
-        <div *ngIf="!canChangeRole" class="user-badge user-badge-static" aria-hidden="true">
-          <span class="badge-text">{{ user.role }}</span>
+    </div>
+    <div class="role-action">
+      <div class="role-label">ROL:</div>
+      <div class="role-badge">
+          <div *ngIf="!canChangeRole" class="user-badge user-badge-static" aria-hidden="true">
+            <span class="badge-text">{{ user.role }}</span>
+          </div>
+          <span *ngIf="canChangeRole" class="badge-arrow badge-arrow-right">&gt;</span>
+          <button
+            *ngIf="canChangeRole"
+            type="button"
+            class="user-badge user-badge-button"
+            (click)="openChangeRole()"
+            aria-label="Cambiar mi rol activo"
+          >
+            <span class="badge-text">{{ user.role }}</span>
+          </button>
+          <span *ngIf="canChangeRole" class="badge-arrow badge-arrow-left">&lt;</span>
         </div>
-        <span *ngIf="canChangeRole" class="badge-arrow">&gt;</span>
-        <button
-          *ngIf="canChangeRole"
-          type="button"
-          class="user-badge user-badge-button"
-          (click)="openChangeRole()"
-          aria-label="Cambiar mi rol activo"
-        >
-          <span class="badge-text">{{ user.role }}</span>
-        </button>
       </div>
     </div>
 
@@ -29,7 +45,7 @@
           <ng-container *ngIf="isCliente">Próximos Eventos</ng-container>
           <ng-container *ngIf="isOrganizador">Tus Eventos</ng-container>
           <ng-container *ngIf="isValidador">Validación de entradas</ng-container>
-          <ng-container *ngIf="isAdmin">Panel de administración</ng-container>
+          <ng-container *ngIf="isAdmin || isAdminUsuarios || isAdminEventos || isAdminVenues">Panel de administración</ng-container>
           <ng-container *ngIf="isCeo">Panel de auditoría</ng-container>
         </h2>
         <span class="coming-soon-badge" *ngIf="isCliente || isValidador">PROXIMAMENTE</span>
@@ -111,28 +127,49 @@
         </div>
       </ng-container>
 
-      <!-- Case: ADMIN -->
-      <ng-container *ngIf="isAdmin">
-        <div class="event-card clickable" (click)="navigateToAdminUsers()">
+      <!-- Case: ADMIN or Specific Admins -->
+      <ng-container *ngIf="isAdmin || isAdminUsuarios || isAdminEventos || isAdminVenues">
+        <div class="event-card clickable" *ngIf="isAdmin || isAdminUsuarios" (click)="navigateToAdminUsers()">
           <div class="event-icon">
             <mat-icon>manage_accounts</mat-icon>
           </div>
           <h3 class="event-title">Administrar usuarios</h3>
           <p class="event-description">Gestión de cuentas, estados y perfiles de usuario.</p>
         </div>
-        <div class="event-card clickable" (click)="navigateToAdminRoles()">
+        <div class="event-card clickable" *ngIf="isAdmin || isAdminUsuarios" (click)="navigateToAdminRoles()">
           <div class="event-icon">
             <mat-icon>admin_panel_settings</mat-icon>
           </div>
           <h3 class="event-title">Administrar roles</h3>
           <p class="event-description">Definición y asignación de roles del sistema.</p>
         </div>
-        <div class="event-card clickable" (click)="navigateToAdminPermissions()">
+        <div class="event-card clickable" *ngIf="isAdmin || isAdminUsuarios" (click)="navigateToAdminPermissions()">
           <div class="event-icon">
             <mat-icon>vpn_key</mat-icon>
           </div>
           <h3 class="event-title">Administrar permisos</h3>
           <p class="event-description">Control detallado de accesos y facultades.</p>
+        </div>
+        <div class="event-card clickable" *ngIf="isAdmin || isAdminVenues" (click)="navigateTo('/admin-venues/approvals')">
+          <div class="event-icon">
+            <mat-icon>domain_verification</mat-icon>
+          </div>
+          <h3 class="event-title">Aprobar Venues</h3>
+          <p class="event-description">Revisar y aprobar solicitudes de nuevos venues.</p>
+        </div>
+        <div class="event-card clickable" *ngIf="isAdmin || isAdminEventos" (click)="navigateTo('/admin-events/approvals')">
+          <div class="event-icon">
+            <mat-icon>event_available</mat-icon>
+          </div>
+          <h3 class="event-title">Aprobar Eventos</h3>
+          <p class="event-description">Revisar y aprobar solicitudes de nuevos eventos.</p>
+        </div>
+        <div class="event-card clickable" *ngIf="isAdmin" (click)="navigateToStatistics()">
+          <div class="event-icon">
+            <mat-icon>query_stats</mat-icon>
+          </div>
+          <h3 class="event-title">Consola Financiera</h3>
+          <p class="event-description">Informes, estadísticas e ingresos de la plataforma.</p>
         </div>
       </ng-container>
 
@@ -144,6 +181,13 @@
           </div>
           <h3 class="event-title">Ver Logs del sistema</h3>
           <p class="event-description">Auditoría completa de actividad y eventos técnicos.</p>
+        </div>
+        <div class="event-card clickable" (click)="navigateToStatistics()">
+          <div class="event-icon">
+            <mat-icon>query_stats</mat-icon>
+          </div>
+          <h3 class="event-title">Consola Financiera</h3>
+          <p class="event-description">Visualización de ingresos, quema y staking.</p>
         </div>
       </ng-container>
 
@@ -176,6 +220,18 @@
         <div class="card-content">
           <h3 class="card-title text-center">Mis Entradas</h3>
           <p class="card-description">Ver y administrar tus tickets adquiridos</p>
+        </div>
+        <mat-icon class="card-arrow">arrow_forward</mat-icon>
+      </mat-card>
+
+      <!-- Mis Reventas -->
+      <mat-card class="action-card" *ngIf="isCliente" (click)="navigateTo('/my-listings')">
+        <div class="card-icon">
+          <mat-icon>sell</mat-icon>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title text-center">Mis Reventas</h3>
+          <p class="card-description">Administrá tus tickets publicados en el marketplace</p>
         </div>
         <mat-icon class="card-arrow">arrow_forward</mat-icon>
       </mat-card>

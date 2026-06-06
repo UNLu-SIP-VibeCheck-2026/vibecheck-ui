@@ -78,6 +78,9 @@
       <button class="tab-btn" [class.active]="activeTab === 'send'" (click)="switchTab('send')">
         <mat-icon>send</mat-icon> Transferir
       </button>
+      <button class="tab-btn" [class.active]="activeTab === 'swap'" (click)="switchTab('swap')">
+        <mat-icon>swap_horiz</mat-icon> Intercambiar
+      </button>
     </div>
 
     <!-- PESTAÑA: SALDOS -->
@@ -185,6 +188,11 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- PESTAÑA: INTERCAMBIAR -->
+    <div class="tab-content fade-in" *ngIf="activeTab === 'swap'">
+      <app-swap></app-swap>
     </div>
 
   </div>

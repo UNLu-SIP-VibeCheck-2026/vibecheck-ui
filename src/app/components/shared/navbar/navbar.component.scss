@@ -54,8 +54,15 @@
   align-items: center;
 }
 
-.user-menu-btn {
+.user-menu-btn, .marketplace-btn {
   color: var(--md-sys-color-on-background) !important;
+
+  ::ng-deep .mdc-button__label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px;
+    height: 100%;
+  }
 }
 
 @media (max-width: 599px) {

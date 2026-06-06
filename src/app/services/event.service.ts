@@ -9,6 +9,7 @@ import {
   EventDeployRegisterRequest,
 } from "../models/event.model";
 import { Page } from "../models/page.model";
+import { OrganizerEventMetrics } from "../models/organizer-metrics.model";
 
 @Injectable({
   providedIn: "root",
@@ -48,10 +49,18 @@ export class EventService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  findAllEvents(page: number, size: number): Observable<Page<EventResponse>> {
+  findAllEvents(page: number, size: number, categoryId?: number, sort?: string[]): Observable<Page<EventResponse>> {
     let params = new HttpParams()
       .set("page", page.toString())
       .set("size", size.toString());
+    if (categoryId !== undefined && categoryId !== null) {
+      params = params.set("categoryId", categoryId.toString());
+    }
+    if (sort && sort.length > 0) {
+      sort.forEach(s => {
+        params = params.append("sort", s);
+      });
+    }
     return this.http.get<Page<EventResponse>>(`${this.apiUrl}/public/all`, {
       params,
     });
@@ -78,7 +87,7 @@ export class EventService {
   }
 
   getEventImage(id: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/public/${id}/image`, {
+    return this.http.get(`${this.apiUrl}/${id}/image`, {
       responseType: "blob",
     });
   }
@@ -95,5 +104,28 @@ export class EventService {
       `${this.apiUrl}/${id}/register-deploy`,
       request,
     );
+  }
+
+  getUpcomingPromotedEventsGroupedByTier(): Observable<Record<string, EventResponse[]>> {
+    return this.http.get<Record<string, EventResponse[]>>(`${this.apiUrl}/promoted/grouped-by-tier`);
+  }
+
+  getOrganizerMetrics(id: number): Observable<OrganizerEventMetrics> {
+    return this.http.get<OrganizerEventMetrics>(`${this.apiUrl}/${id}/organizer-metrics`);
+  }
+
+  findPendingEvents(page: number, size: number): Observable<Page<EventResponse>> {
+    let params = new HttpParams()
+      .set("page", page.toString())
+      .set("size", size.toString());
+    return this.http.get<Page<EventResponse>>(`${this.apiUrl}/pending`, { params });
+  }
+
+  approveEvent(id: number): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/approve`, {});
+  }
+
+  rejectEvent(id: number, rejectionReason: string): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/reject`, { rejectionReason });
   }
 }

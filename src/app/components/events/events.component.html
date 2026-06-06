@@ -3,82 +3,84 @@
     <div class="title-row">
       <div class="title-search-wrapper">
         <h1 class="display-medium">Eventos</h1>
-        <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-          <input matInput placeholder="Buscar por evento o locación..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
-          <span matSuffix class="search-icon-wrapper">
-            <mat-icon>search</mat-icon>
-          </span>
-        </mat-form-field>
+        <div class="search-filters-container">
+          <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+            <input matInput placeholder="Buscar por evento o locación..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
+            <span matSuffix class="search-icon-wrapper">
+              <mat-icon>search</mat-icon>
+            </span>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="category-filter-field" subscriptSizing="dynamic">
+            <mat-select placeholder="Todas las categorías" [(ngModel)]="selectedCategoryId" (selectionChange)="onCategoryChange()">
+              <mat-option [value]="null">Todas las categorías</mat-option>
+              <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
       </div>
-      <div class="pills-container">
-        <button 
-          class="pill-button" 
-          [class.active]="selectedPill === 'Próximos eventos'"
-          (click)="selectPill('Próximos eventos')">
-          Próximos eventos
-        </button>
-        <button 
-          class="pill-button" 
-          [class.active]="selectedPill === 'Recomendados'"
-          (click)="selectPill('Recomendados')">
-          Recomendados
-        </button>
-        <button 
-          class="pill-button" 
-          [class.active]="selectedPill === 'Cerca tuyo'"
-          (click)="selectPill('Cerca tuyo')">
-          Cerca tuyo
-        </button>
-        <button 
-          class="pill-button special" 
-          [class.active]="selectedPill === 'Marketplace'"
-          (click)="selectPill('Marketplace')">
-          Marketplace
-        </button>
+      <div class="actions-container">
+        <div class="view-toggle">
+          <button class="toggle-btn" [class.active]="viewMode === 'carousel'" (click)="viewMode = 'carousel'" title="Vista Carrusel">
+            <mat-icon>view_carousel</mat-icon>
+          </button>
+          <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Vista Grilla">
+            <mat-icon>grid_view</mat-icon>
+          </button>
+        </div>
       </div>
     </div>
-    <h2 class="headline-medium selected-pill-title">{{ selectedPill }}</h2>
   </div>
 
     <!-- Carousels for showcased/promoted events -->
-    <div class="carousels">
+    <div class="carousels" *ngIf="viewMode === 'carousel'">
       <!-- Large single-item carousel (auto-slide cada 3s) -->
       <section *ngIf="tier1Events.length" class="carousel carousel-large">
         <div class="carousel-viewport">
           <div class="carousel-track" [style.transform]="'translateX(-' + (currentIndex1 * 100) + '%)'" [style.width]="tier1Events.length * 100 + '%'">
             <div class="carousel-item" *ngFor="let ev of tier1Events" (click)="navigateToEvent(ev.id)">
-              <div class="large-card">
+              <div class="large-card" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
                 <div class="large-image-container">
-                  <img class="large-image" [src]="ev.imageUrl" [alt]="ev.title">
+                  <img class="large-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
+                  <div class="no-image-placeholder-large" *ngIf="!getEventImage(ev.id)">
+                    <mat-icon>event</mat-icon>
+                  </div>
                 </div>
                 <div class="large-info">
-                <h2 class="large-title">{{ ev.title }}</h2>
-                <div class="large-data-panel">
-                  <div class="large-data-item">
-                    <span class="data-label">Inicio</span>
-                    <span class="data-value">{{ ev.startDate }}</span>
+                  <div class="large-header-block">
+                    <div class="card-badges">
+                      <span class="category-badge" *ngFor="let cat of ev.realCategories">{{ cat }}</span>
+                    </div>
+                    <h2 class="large-title">{{ ev.title }}</h2>
                   </div>
-                  <div class="large-data-item">
-                    <span class="data-label">Fin</span>
-                    <span class="data-value">{{ ev.endDate || ev.startDate }}</span>
+                  <div class="large-data-panel">
+                    <div class="large-data-item">
+                      <span class="data-label">Inicio</span>
+                      <span class="data-value">{{ ev.startDate }}</span>
+                    </div>
+                    <div class="large-data-item">
+                      <span class="data-label">Fin</span>
+                      <span class="data-value">{{ ev.endDate || ev.startDate }}</span>
+                    </div>
+                    <div class="large-data-item">
+                      <span class="data-label">Venue</span>
+                      <span class="data-value">{{ ev.venue }}</span>
+                    </div>
+                    <div class="large-data-item">
+                      <span class="data-label">Capacidad</span>
+                      <span class="data-value">{{ (ev.capacity || 0) | number }} personas</span>
+                    </div>
                   </div>
-                  <div class="large-data-item">
-                    <span class="data-label">Venue</span>
-                    <span class="data-value">{{ ev.venue }}</span>
-                  </div>
-                  <div class="large-data-item">
-                    <span class="data-label">Capacidad</span>
-                    <span class="data-value">{{ (ev.capacity || 0) | number }} personas</span>
-                  </div>
+                  <p class="large-desc">{{ ev.description }}</p>
                 </div>
-                <p class="large-desc">{{ ev.description }}</p>
-                <div class="large-price-panel">
-                  <span class="price-label">Desde</span>
-                  <span class="price-value">{{ ev.price | currency:'$':'symbol':'1.0-0' }} USDC</span>
-                </div>
-              </div>
               </div>
             </div>
+          </div>
+          <div class="carousel-dots">
+            <button *ngFor="let _ of tier1Events; let i = index" 
+                    class="carousel-dot" 
+                    [class.active]="i === currentIndex1"
+                    (click)="currentIndex1 = i">
+            </button>
           </div>
           <button class="carousel-nav prev" type="button" (click)="prevTier1()">
             <mat-icon>chevron_left</mat-icon>
@@ -91,23 +93,28 @@
 
       <!-- Mid carousel: 3 items per viewport, less info -->
       <section *ngIf="tier2Events.length" class="carousel carousel-mid">
+        <div class="carousel-section-header">
+          <h3 class="carousel-section-title">Eventos Recomendados</h3>
+        </div>
         <div class="carousel-scroll" #midCarousel>
-          <div class="mid-item" *ngFor="let ev of tier2Events" (click)="navigateToEvent(ev.id)">
+          <div class="mid-item" *ngFor="let ev of tier2Events" (click)="navigateToEvent(ev.id)" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
             <div class="mid-image-container">
-              <img class="mid-image" [src]="ev.imageUrl" [alt]="ev.title">
+              <img class="mid-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
+              <div class="no-image-placeholder-mid" *ngIf="!getEventImage(ev.id)">
+                <mat-icon>event</mat-icon>
+              </div>
             </div>
             <div class="mid-info">
-                <h3 class="mid-title">{{ ev.title }}</h3>
-                <div class="mid-data">
-                  <div class="mid-data-row">{{ ev.venue }}</div>
-                  <div class="mid-data-row">Capacidad: {{ (ev.capacity || 0) | number }} personas</div>
-                  <div class="mid-data-row">{{ ev.startDate }}</div>
-                </div>
-                <div class="price-panel">
-                  <span class="price-label">Desde</span>
-                  <span class="price-value">{{ ev.price | currency:'$':'symbol':'1.0-0' }} USDC</span>
-                </div>
+              <div class="card-badges">
+                <span class="category-badge mini" *ngFor="let cat of ev.realCategories">{{ cat }}</span>
               </div>
+              <h3 class="mid-title">{{ ev.title }}</h3>
+              <div class="mid-data">
+                <div class="mid-data-row">{{ ev.venue }}</div>
+                <div class="mid-data-row">Capacidad: {{ (ev.capacity || 0) | number }} personas</div>
+                <div class="mid-data-row">{{ ev.startDate }}</div>
+              </div>
+            </div>
           </div>
         </div>
         <button class="carousel-nav prev" type="button" (click)="scrollTier2(-1)">
@@ -118,11 +125,23 @@
         </button>
       </section>
 
-      <!-- Mini carousel: 6 images per viewport (solo imagen) -->
+      <!-- Mini carousel: 6 images per viewport (con titulo y overlay de info) -->
       <section *ngIf="tier3Events.length" class="carousel carousel-mini">
+        <div class="carousel-section-header">
+          <h3 class="carousel-section-title">Más Eventos</h3>
+        </div>
         <div class="mini-scroll" #miniCarousel>
-          <div class="mini-item" *ngFor="let ev of tier3Events" (click)="navigateToEvent(ev.id)">
-            <img class="mini-image" [src]="ev.imageUrl" [alt]="ev.title">
+          <div class="mini-item" *ngFor="let ev of tier3Events" (click)="navigateToEvent(ev.id)" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
+            <div class="mini-card-inner">
+              <img class="mini-image" *ngIf="getEventImage(ev.id)" [src]="getEventImage(ev.id)" [alt]="ev.title">
+              <div class="no-image-placeholder-mini" *ngIf="!getEventImage(ev.id)">
+                <mat-icon>event</mat-icon>
+              </div>
+              <div class="mini-info-overlay">
+                <span class="mini-event-title">{{ ev.title }}</span>
+                <span class="mini-event-date">{{ ev.startDate }}</span>
+              </div>
+            </div>
           </div>
         </div>
         <button class="carousel-nav prev" type="button" (click)="scrollTier3(-1)">
@@ -140,22 +159,22 @@
     [mode]="'skeleton'" 
     [skeletonType]="'card'" 
     [count]="8"
-    [gridClass]="selectedPill === 'Marketplace' ? 'events-grid marketplace-grid' : 'events-grid'">
+    [gridClass]="'events-grid'">
   </app-loading-state>
 
   <!-- Empty State -->
   <app-empty-state 
     *ngIf="!isLoading && pagedEvents.length === 0" 
-    [icon]="selectedPill === 'Marketplace' ? 'storefront' : 'event_busy'" 
+    [icon]="'event_busy'" 
     [title]="'No se encontraron eventos'" 
-    [description]="searchQuery ? 'No encontramos eventos que coincidan con tu búsqueda: \'' + searchQuery + '\'.' : 'Por el momento no hay eventos disponibles en la categoría: ' + selectedPill + '.'"
+    [description]="searchQuery ? 'No encontramos eventos que coincidan con tu búsqueda: \'' + searchQuery + '\'.' : 'Por el momento no hay eventos disponibles en esta categoría.'"
     [actionText]="searchQuery ? 'Limpiar búsqueda' : ''"
     (actionClick)="searchQuery = ''; applyFilter()">
   </app-empty-state>
 
   <!-- Events Grid -->
-  <div *ngIf="!isLoading && pagedEvents.length > 0" class="events-grid" [class.marketplace-grid]="selectedPill === 'Marketplace'">
-    <div class="event-card" [class.marketplace-card]="selectedPill === 'Marketplace'" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)">
+  <div *ngIf="!isLoading && pagedEvents.length > 0 && viewMode === 'grid'" class="events-grid">
+    <div class="event-card" *ngFor="let event of pagedEvents" (click)="navigateToEvent(event.id)" [class.ad-highlight]="event.advertisementPlanId">
       <div class="event-image-container">
         <img *ngIf="getEventImage(event.id)" [src]="getEventImage(event.id)" [alt]="event.title" class="event-image">
         <div *ngIf="!getEventImage(event.id)" class="no-image-placeholder">
@@ -164,7 +183,10 @@
       </div>
       
       <!-- Regular Info -->
-      <div class="event-info" *ngIf="selectedPill !== 'Marketplace'">
+      <div class="event-info">
+        <div class="card-badges">
+          <span class="category-badge" *ngFor="let cat of event.realCategories">{{ cat }}</span>
+        </div>
         <h3 class="headline-large">{{ event.title }}</h3>
         <div class="event-metadata">
           <div class="metadata-item">
@@ -177,31 +199,10 @@
           </div>
         </div>
       </div>
-
-      <!-- Marketplace Specific Info -->
-      <div class="event-info marketplace-info" *ngIf="selectedPill === 'Marketplace'">
-        <div class="event-main-details">
-          <h3 class="headline-large">{{ event.title }}</h3>
-          <div class="ticket-details">
-            <span class="ticket-type">{{ event.ticketType }}</span>
-            <span class="ticket-location">{{ event.location }}</span>
-          </div>
-        </div>
-
-        <div class="marketplace-footer">
-          <div class="seller-info">
-            <img [src]="event.sellerPhoto" class="seller-photo" [alt]="event.sellerName">
-            <span class="seller-name">{{ event.sellerName }}</span>
-          </div>
-          <div class="price-tag">
-            {{ event.price | currency:'$':'symbol':'1.0-0' }}
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
-  <div *ngIf="!isLoading && pagedEvents.length > 0" class="pagination-container">
+  <div *ngIf="!isLoading && pagedEvents.length > 0 && viewMode === 'grid'" class="pagination-container">
     <mat-paginator 
       [length]="totalEvents"
       [pageSize]="pageSize"

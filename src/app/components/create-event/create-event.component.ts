@@ -23,9 +23,10 @@ import { EventService } from "../../services/event.service";
 import { VenueService } from "../../services/venue.service";
 import { CategoryService } from "../../services/category.service";
 import { EventCreateRequest } from "../../models/event.model";
-import { VenueResponse } from "../../models/venue.model";
+import { VenueResponse, VenueStatus } from "../../models/venue.model";
 import { CategoryResponse } from "../../models/category.model";
 import { DateTimePickerComponent } from "../shared/date-time-picker/date-time-picker.component";
+import { MatNativeDateModule } from "@angular/material/core";
 import {
   VenueDialogComponent,
   VenueDialogData,
@@ -46,6 +47,7 @@ import {
     MatProgressSpinnerModule,
     FormsModule,
     DateTimePickerComponent,
+    MatNativeDateModule,
   ],
   templateUrl: "./create-event.component.html",
   styleUrl: "./create-event.component.scss",
@@ -68,11 +70,12 @@ export class CreateEventComponent implements OnInit {
       startDate: ["", Validators.required],
       endDate: ["", Validators.required],
       venue: [null, Validators.required],
+      capacity: [1000, [Validators.required, Validators.min(1)]],
       categoryIds: [[], Validators.required],
       maxPriceResale: [150, [Validators.required, Validators.min(100)]],
       royaltyBps: [500, [Validators.required, Validators.min(0), Validators.max(10000)]],
     },
-    { validators: [this.endAfterStartValidator] }
+    { validators: [this.endAfterStartValidator, (g) => this.venueCapacityValidator(g)] }
   );
 
   isSubmitting = false;
@@ -94,6 +97,20 @@ export class CreateEventComponent implements OnInit {
   ngOnInit(): void {
     this.loadVenues();
     this.loadCategories();
+    this.setupVenueListener();
+  }
+
+  setupVenueListener(): void {
+    this.eventForm.get("venue")?.valueChanges.subscribe((venueId) => {
+      const venue = this.venues.find((v) => v.id === venueId);
+      if (venue) {
+        const capacityCtrl = this.eventForm.get("capacity");
+        if (capacityCtrl && (capacityCtrl.value > venue.capacity || capacityCtrl.value === 1000 || capacityCtrl.pristine)) {
+          capacityCtrl.setValue(venue.capacity);
+          capacityCtrl.markAsTouched();
+        }
+      }
+    });
   }
 
   loadCategories(): void {
@@ -114,7 +131,7 @@ export class CreateEventComponent implements OnInit {
     this.isLoadingVenues = true;
     this.venueService.findAllVenues(0, 200).subscribe({
       next: (page) => {
-        this.venues = page.content;
+        this.venues = page.content.filter(v => v.status !== VenueStatus.REJECTED);
         this.filteredVenues = [...this.venues];
         this.isLoadingVenues = false;
       },
@@ -131,6 +148,26 @@ export class CreateEventComponent implements OnInit {
     const end = group.get("endDate")?.value;
     if (!start || !end) return null;
     return new Date(end) > new Date(start) ? null : { endBeforeStart: true };
+  }
+
+  /** Cross-field validator: capacity must be <= selected venue's capacity */
+  venueCapacityValidator(group: AbstractControl): ValidationErrors | null {
+    const venueId = group.get("venue")?.value;
+    const capacity = group.get("capacity")?.value;
+    if (!venueId || capacity === null || capacity === undefined) return null;
+
+    const venue = this.venues.find((v) => v.id === venueId);
+    if (venue && capacity > venue.capacity) {
+      return { capacityExceedsVenue: true };
+    }
+    return null;
+  }
+
+  getSelectedVenueCapacity(): number {
+    const venueId = this.eventForm?.get("venue")?.value;
+    if (!venueId) return 0;
+    const venue = this.venues.find((v) => v.id === venueId);
+    return venue ? venue.capacity : 0;
   }
 
   /** Helper — returns startDate value for the end picker's afterDate input */
@@ -179,7 +216,7 @@ export class CreateEventComponent implements OnInit {
         description: formValue.description,
         startDate: formValue.startDate,
         endDate: formValue.endDate,
-        capacity: 1000,
+        capacity: Number(formValue.capacity),
         active: true,
         ownerId: 1,
         venueId: formValue.venue ?? null,
