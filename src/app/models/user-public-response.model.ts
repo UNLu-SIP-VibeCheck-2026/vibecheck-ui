@@ -6,4 +6,5 @@ export interface UserPublicResponse {
   role: string;
   tier?: string;
   hasImage?: boolean;
+  walletAddress?: string;
 }
