@@ -31,6 +31,27 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_SA_EMAIL }}
 
+      - name: Debug GitHub context
+        run: |
+          echo "REPO=${{ github.repository }}"
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Dump credentials file
+        run: |
+          cat "$GOOGLE_GHA_CREDS_PATH"
+
+      - name: Debug auth
+        run: |
+          gcloud auth list
+          gcloud config list account
+          gcloud auth print-access-token >/dev/null && echo "TOKEN_OK"
+
+      - name: Debug ADC
+        run: |
+          gcloud auth application-default print-access-token >/dev/null && echo "ADC_OK"
+
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
