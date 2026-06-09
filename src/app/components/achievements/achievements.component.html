@@ -1,0 +1,83 @@
+<div class="achievements-container">
+  <!-- Header Banner -->
+  <div class="achievements-header-card">
+    <div class="header-glow"></div>
+    <div class="header-content">
+      <mat-icon class="header-icon">emoji_events</mat-icon>
+      <h1 class="display-medium page-title">El Baúl de Logros</h1>
+      <p class="subtitle">Superá desafíos, completá metas y demostrá tu compromiso en la comunidad VibeCheck.</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando tus logros...</p>
+    </div>
+  } @else if (error()) {
+    <!-- Error State -->
+    <div class="error-container">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <button mat-flat-button color="primary" (click)="loadAchievements()">Reintentar</button>
+    </div>
+  } @else {
+    <!-- Achievements Grid -->
+    <div class="achievements-grid">
+      @for (achievement of achievements(); track achievement.id) {
+        <mat-card class="achievement-card" [class.completed]="achievement.completed" [class.locked]="!achievement.completed">
+          <!-- Card Content -->
+          <mat-card-content class="card-body">
+            <!-- Icon/Badge Section -->
+            <div class="badge-container">
+              <div class="badge-icon-bg">
+                <mat-icon class="badge-icon">{{ getAchievementIcon(achievement.metric) }}</mat-icon>
+              </div>
+              @if (achievement.completed) {
+                <div class="unlocked-badge">
+                  <mat-icon>check_circle</mat-icon>
+                </div>
+              } @else {
+                <div class="locked-badge">
+                  <mat-icon>lock</mat-icon>
+                </div>
+              }
+            </div>
+
+            <!-- Text Details -->
+            <div class="details-container">
+              <h3 class="achievement-name">{{ achievement.name }}</h3>
+              <p class="achievement-description">{{ achievement.description }}</p>
+
+              <!-- Progress Tracking -->
+              <div class="progress-section">
+                <div class="progress-labels">
+                  <span class="progress-fraction">
+                    {{ achievement.progress }} / {{ achievement.threshold }}
+                  </span>
+                  <span class="progress-percentage">
+                    {{ getProgressPercentage(achievement) }}%
+                  </span>
+                </div>
+                <mat-progress-bar
+                  class="custom-progress-bar"
+                  mode="determinate"
+                  [value]="getProgressPercentage(achievement)">
+                </mat-progress-bar>
+              </div>
+
+              <!-- Unlocked Date -->
+              @if (achievement.completed && achievement.completedAt) {
+                <div class="unlocked-date">
+                  <mat-icon>calendar_today</mat-icon>
+                  <span>Desbloqueado el {{ achievement.completedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

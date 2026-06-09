@@ -36,6 +36,7 @@ import { MyListingsComponent } from "./components/my-listings/my-listings.compon
 import { MarketplaceListComponent } from "./components/marketplace-list/marketplace-list.component";
 import { MarketplaceDetailComponent } from "./components/marketplace-detail/marketplace-detail.component";
 import { ValidatorManagementComponent } from "./components/validator-management/validator-management.component";
+import { AchievementsComponent } from "./components/achievements/achievements.component";
 
 
 export const routes: Routes = [
@@ -92,6 +93,11 @@ export const routes: Routes = [
   {
     path: "dashboard",
     component: DashboardComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "achievements",
+    component: AchievementsComponent,
     canActivate: [authGuard],
   },
   {

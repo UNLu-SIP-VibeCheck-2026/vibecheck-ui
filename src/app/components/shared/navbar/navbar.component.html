@@ -48,6 +48,10 @@
           <mat-icon>manage_accounts</mat-icon>
           <span>Configuración</span>
         </button>
+        <button mat-menu-item (click)="navigateToAchievements()">
+          <mat-icon>emoji_events</mat-icon>
+          <span>Mis Logros</span>
+        </button>
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="logout()">
           <mat-icon color="warn">exit_to_app</mat-icon>
@@ -152,6 +156,10 @@
             <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/perfil-config')">
               <mat-icon>manage_accounts</mat-icon>
               <span>Configuración</span>
+            </button>
+            <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/achievements')">
+              <mat-icon>emoji_events</mat-icon>
+              <span>Mis Logros</span>
             </button>
           }
         </nav>

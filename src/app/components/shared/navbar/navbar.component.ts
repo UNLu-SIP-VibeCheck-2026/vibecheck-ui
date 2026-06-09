@@ -117,6 +117,10 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/my-listings']);
   }
 
+  navigateToAchievements(): void {
+    this.router.navigate(['/achievements']);
+  }
+
   navigateToMarketplace(): void {
     this.router.navigate(['/marketplace']);
   }
