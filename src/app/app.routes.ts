@@ -29,6 +29,7 @@ import { GiftTicketComponent } from "./components/gift-ticket/gift-ticket.compon
 import { ResellTicketComponent } from "./components/resell-ticket/resell-ticket.component";
 import { authGuard } from "./guards/auth.guard";
 import { guestGuard } from "./guards/guest.guard";
+import { roleGuard } from "./guards/role.guard";
 import { ResetPasswordComponent } from "./components/reset-password/reset-password.component";
 import { NotFoundComponent } from "./components/not-found/not-found.component";
 import { SwapComponent } from "./components/swap/swap.component";
@@ -37,6 +38,7 @@ import { MarketplaceListComponent } from "./components/marketplace-list/marketpl
 import { MarketplaceDetailComponent } from "./components/marketplace-detail/marketplace-detail.component";
 import { ValidatorManagementComponent } from "./components/validator-management/validator-management.component";
 import { AchievementsComponent } from "./components/achievements/achievements.component";
+import { QrScannerComponent } from "./components/qr-scanner/qr-scanner.component";
 
 
 export const routes: Routes = [
@@ -235,6 +237,11 @@ export const routes: Routes = [
     path: "admin-events/:id/validators",
     component: ValidatorManagementComponent,
     canActivate: [authGuard],
+  },
+  {
+    path: "scanner",
+    component: QrScannerComponent,
+    canActivate: [authGuard, () => roleGuard(['validador'])],
   },
   { path: "**", component: NotFoundComponent },
 ];

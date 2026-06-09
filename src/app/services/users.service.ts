@@ -6,6 +6,7 @@ import { Page } from "../models/page.model";
 import { UserSummaryResponse } from "../models/user-summary-response.model";
 import { UserUpdateRequest } from "../models/user-update-request.model";
 import { UserPublicResponse } from "../models/user-public-response.model";
+import { EventResponse } from "../models/event.model";
 
 @Injectable({
   providedIn: "root",
@@ -83,6 +84,10 @@ export class UsersService {
     const formData = new FormData();
     formData.append('image', image);
     return this.http.post(`${this.apiUrl}/users/${username}/image`, formData);
+  }
+
+  getAssignedEvent(): Observable<EventResponse | null> {
+    return this.http.get<EventResponse | null>(`${this.apiUrl}/users/me/assigned-event`);
   }
 }
 

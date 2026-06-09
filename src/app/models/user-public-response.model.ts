@@ -7,4 +7,5 @@ export interface UserPublicResponse {
   tier?: string;
   hasImage?: boolean;
   walletAddress?: string;
+  assignedEventId?: number;
 }

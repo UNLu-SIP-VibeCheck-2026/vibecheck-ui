@@ -11,6 +11,7 @@ import { UsersService } from '../../services/users.service';
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
 import { UserPublicResponse } from '../../models/user-public-response.model';
+import { EventResponse } from '../../models/event.model';
 import { AvatarComponent } from '../shared/avatar/avatar.component';
 import { ErrorService } from '../../services/error.service';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -41,6 +42,7 @@ export class DashboardComponent implements OnInit {
 
   user$ = this.authService.currentUser$;
   fullUserProfile: UserPublicResponse | null = null;
+  assignedEvent: EventResponse | null = null;
 
   // Personalized Organizer invitations for Clients
   readonly organizerInviteMessages = [
@@ -55,6 +57,11 @@ export class DashboardComponent implements OnInit {
     this.loadFullUserProfile();
     // Select a random invitation message
     this.selectedInviteMessage = this.organizerInviteMessages[Math.floor(Math.random() * this.organizerInviteMessages.length)];
+
+    // Load assigned event if user is a validator
+    if (this.isValidador) {
+      this.loadAssignedEvent();
+    }
   }
 
   private loadFullUserProfile(): void {
@@ -69,6 +76,18 @@ export class DashboardComponent implements OnInit {
         }
       });
     }
+  }
+
+  private loadAssignedEvent(): void {
+    this.usersService.getAssignedEvent().subscribe({
+      next: (event) => {
+        this.assignedEvent = event;
+      },
+      error: () => {
+        // If we can't load the assigned event, we'll just leave it as null
+        this.assignedEvent = null;
+      }
+    });
   }
 
   onProfilePhotoChanged(): void {

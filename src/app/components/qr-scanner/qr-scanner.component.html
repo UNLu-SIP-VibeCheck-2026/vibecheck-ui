@@ -1,0 +1,120 @@
+<div class="qr-scanner-container">
+  <!-- Header with back button -->
+  <div class="scanner-header">
+    <button mat-button class="back-btn" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      <span>Volver</span>
+    </button>
+    <h1 class="scanner-title">Validar Entrada</h1>
+    <div class="header-spacer"></div>
+  </div>
+
+  <!-- No camera support -->
+  @if (!hasCameraSupport) {
+    <div class="error-state">
+      <mat-icon class="error-icon">videocam_off</mat-icon>
+      <h2>Cámara no disponible</h2>
+      <p>Tu navegador no soporta acceso a la cámara. Por favor usa un navegador moderno o verifica los permisos.</p>
+      <button mat-button class="retry-btn" (click)="goBack()">Volver al Dashboard</button>
+    </div>
+  }
+
+  <!-- Camera permission denied -->
+  @if (hasCameraSupport && !hasCameraPermission) {
+    <div class="error-state">
+      <mat-icon class="error-icon">block</mat-icon>
+      <h2>Permiso de cámara denegado</h2>
+      <p>Por favor habilita el acceso a la cámara en tu navegador y recarga la página.</p>
+      <button mat-button class="retry-btn" (click)="goBack()">Volver al Dashboard</button>
+    </div>
+  }
+
+  <!-- Scanning state -->
+  @if (hasCameraSupport && hasCameraPermission && scanning) {
+    <div class="scanner-view">
+      <div class="scanner-wrapper">
+        <div #reader id="reader" class="scanner"></div>
+
+        <!-- Scanner overlay with guide -->
+        <div class="scanner-overlay">
+          <div class="scan-guide">
+            <div class="scan-corner top-left"></div>
+            <div class="scan-corner top-right"></div>
+            <div class="scan-corner bottom-left"></div>
+            <div class="scan-corner bottom-right"></div>
+          </div>
+          <p class="scan-instruction">Apunta el QR hacia el recuadro</p>
+        </div>
+      </div>
+
+      <!-- Camera switch button -->
+      @if (availableDevices.length > 1) {
+        <button mat-fab class="camera-switch-btn" (click)="switchCamera()">
+          <mat-icon>flip_camera_android</mat-icon>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- QR detected - confirmation state -->
+  @if (hasCameraSupport && hasCameraPermission && !scanning && qrData && !result) {
+    <div class="confirmation-state">
+      <div class="confirmation-content">
+        <mat-icon class="qr-icon">qr_code</mat-icon>
+        <h2>QR Detectado</h2>
+        <div class="qr-data">
+          <p class="qr-data-label">Datos del QR:</p>
+          <p class="qr-data-value">{{ qrData }}</p>
+        </div>
+        <div class="confirmation-actions">
+          <button 
+            mat-button 
+            class="cancel-btn" 
+            (click)="cancelScan()"
+            [disabled]="loading">
+            Cancelar
+          </button>
+          <button 
+            mat-raised-button 
+            class="confirm-btn" 
+            (click)="confirmValidation()"
+            [disabled]="loading">
+            @if (loading) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Confirmar Validación
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Success state -->
+  @if (result === 'success') {
+    <div class="result-state success-state">
+      <div class="result-content">
+        <mat-icon class="result-icon success-icon">check_circle</mat-icon>
+        <h2>¡Entrada Validada!</h2>
+        <p>La entrada ha sido validada correctamente.</p>
+        <button mat-raised-button class="action-btn" (click)="scanAnother()">
+          Validar Otra Entrada
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Error state -->
+  @if (result === 'error') {
+    <div class="result-state error-state">
+      <div class="result-content">
+        <mat-icon class="result-icon error-icon">error</mat-icon>
+        <h2>Error de Validación</h2>
+        <p>{{ errorMessage }}</p>
+        <button mat-raised-button class="action-btn" (click)="retry()">
+          Reintentar
+        </button>
+      </div>
+    </div>
+  }
+</div>

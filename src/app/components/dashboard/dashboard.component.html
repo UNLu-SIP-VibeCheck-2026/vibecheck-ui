@@ -112,13 +112,35 @@
 
         <!-- Validador options -->
         @if (isValidador) {
-          <div class="action-main-card" (click)="openCameraScanner()">
-            <div class="card-icon-main">
-              <mat-icon>qr_code_scanner</mat-icon>
+          @if (assignedEvent) {
+            <div class="action-main-card validator-event-card" (click)="openCameraScanner()">
+              <div class="card-icon-main">
+                <mat-icon>qr_code_scanner</mat-icon>
+              </div>
+              <h3 class="card-title-main">{{ assignedEvent.title }}</h3>
+              <p class="card-desc-main">
+                <span class="event-detail">
+                  <mat-icon class="event-icon">calendar_today</mat-icon>
+                  {{ assignedEvent.startDate | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+                @if (assignedEvent.venueId) {
+                  <span class="event-detail">
+                    <mat-icon class="event-icon">location_on</mat-icon>
+                    Venue ID: {{ assignedEvent.venueId }}
+                  </span>
+                }
+              </p>
+              <button mat-button class="validate-btn">Validar entradas</button>
             </div>
-            <h3 class="card-title-main">Escaneá una entrada</h3>
-            <p class="card-desc-main">Validá los tickets de los asistentes de forma rápida en el ingreso.</p>
-          </div>
+          } @else {
+            <div class="action-main-card validator-empty-card">
+              <div class="card-icon-main">
+                <mat-icon>event_busy</mat-icon>
+              </div>
+              <h3 class="card-title-main">Sin evento asignado</h3>
+              <p class="card-desc-main">No tenés un evento asignado actualmente.</p>
+            </div>
+          }
         }
 
         <!-- Admin options -->

@@ -23,6 +23,7 @@
     "@angular/router": "^19.0.0",
     "@reown/appkit": "^1.8.20",
     "@reown/appkit-adapter-ethers": "^1.8.20",
+    "html5-qrcode": "^2.3.8",
     "chart.js": "^4.5.1",
     "ethers": "^6.16.0",
     "jwt-decode": "^4.0.0",
