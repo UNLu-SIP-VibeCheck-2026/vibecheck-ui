@@ -55,6 +55,8 @@ export class TicketComponent implements OnInit {
     
     this.ticketService.getTicketById(Number(id)).subscribe({
         next: (t) => {
+            const qrPayload = JSON.stringify({ ticketId: t.id });
+
             this.ticket = {
                 id: t.id.toString(),
                 eventTitle: 'Cargando evento...',
@@ -65,7 +67,7 @@ export class TicketComponent implements OnInit {
                 address: 'Cargando dirección...',
                 ticketType: t.ticketType.name,
                 location: t.ticketType.hasSeats ? `Fila ${t.seatRow} - Asiento ${t.seatNumber}` : 'Entrada General',
-                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${t.token || 'VIBECHECK-' + t.id}`
+                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrPayload)}`
             };
 
             // Load event details
