@@ -225,6 +225,37 @@
   transform: translateX(3px);
 }
 
+/* ─── TARJETA DE PREFERENCIA (sin click, con toggle) ─── */
+.preference-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+  position: relative;
+
+  & + .preference-card {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}
+
+.card-icon.notifications {
+  background-color: rgba(45, 212, 191, 0.1);
+  color: #2dd4bf;
+}
+
+.preference-card:hover .card-icon.notifications {
+  background-color: rgba(45, 212, 191, 0.18);
+}
+
+/* ─── mat-slide-toggle dark theme ─── */
+.preference-card mat-slide-toggle {
+  flex-shrink: 0;
+}
+
 /* ─── RESPONSIVE ─── */
 @media (max-width: 600px) {
   :host {
@@ -239,5 +270,9 @@
     width: 52px;
     height: 52px;
     font-size: 20px;
+  }
+
+  .preference-card .card-subtitle {
+    white-space: normal;
   }
 }

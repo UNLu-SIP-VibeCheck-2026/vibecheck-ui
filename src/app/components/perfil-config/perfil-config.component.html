@@ -82,6 +82,30 @@
       </div>
     </section>
 
+    <!-- Sección: Notificaciones -->
+    <section class="config-section" *ngIf="preferences">
+      <h2 class="section-title">Notificaciones</h2>
+      <div class="config-cards">
+        <div class="preference-card">
+          <div class="card-icon notifications">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21S18 15 18 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M13.73 21A2 2 0 0 1 10.27 21" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="card-content">
+            <span class="card-title">Notificaciones de logros</span>
+            <span class="card-subtitle">Recibir un correo electrónico cuando desbloqueás un logro</span>
+          </div>
+          <mat-slide-toggle
+            [checked]="preferences.notifyAchievementUnlocked"
+            [disabled]="savingPreference['notifyAchievementUnlocked']"
+            (change)="onPreferenceChange('notifyAchievementUnlocked', $event.checked)">
+          </mat-slide-toggle>
+        </div>
+      </div>
+    </section>
+
     <!-- Sección: Administración -->
     <section class="config-section" *ngIf="isAdmin || isAdminUsuarios">
       <h2 class="section-title">Administración</h2>

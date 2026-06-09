@@ -3,8 +3,11 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { AuthService } from '../../services/auth.service';
 import { UsersService } from '../../services/users.service';
+import { UserPreferencesService } from '../../services/user-preferences.service';
+import { UserPreferences } from '../../models/user-preferences.model';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
 import { UserPublicResponse } from '../../models/user-public-response.model';
 import { Observable, switchMap } from 'rxjs';
@@ -23,6 +26,7 @@ import { ErrorService } from '../../services/error.service';
     MatButtonModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatSlideToggleModule,
     MatIconModule,
     AvatarComponent
   ],
@@ -32,6 +36,7 @@ import { ErrorService } from '../../services/error.service';
 export class PerfilConfigComponent implements OnInit {
   private authService = inject(AuthService);
   private usersService = inject(UsersService);
+  private userPreferencesService = inject(UserPreferencesService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private dialog = inject(MatDialog);
@@ -40,9 +45,12 @@ export class PerfilConfigComponent implements OnInit {
 
   currentUser$: Observable<{ username: string; role: string } | null> = this.authService.currentUser$;
   fullUserProfile: UserPublicResponse | null = null;
+  preferences: UserPreferences | null = null;
+  savingPreference: Record<string, boolean> = {};
 
   ngOnInit(): void {
     this.loadFullUserProfile();
+    this.loadPreferences();
   }
 
   private loadFullUserProfile(): void {
@@ -61,6 +69,36 @@ export class PerfilConfigComponent implements OnInit {
 
   onProfilePhotoChanged(): void {
     this.loadFullUserProfile();
+  }
+
+  private loadPreferences(): void {
+    this.userPreferencesService.getPreferences().subscribe({
+      next: (prefs) => {
+        this.preferences = prefs;
+      },
+      error: (err) => {
+        this.errorService.handleError(err, 'Error al cargar las preferencias');
+      }
+    });
+  }
+
+  onPreferenceChange(key: string, value: boolean): void {
+    this.savingPreference[key] = true;
+    this.userPreferencesService.updatePreferences({ [key]: value }).subscribe({
+      next: (updatedPrefs) => {
+        this.preferences = updatedPrefs;
+        this.savingPreference[key] = false;
+        this.snackBar.open('Preferencias actualizadas', 'Cerrar', { duration: 3000 });
+      },
+      error: (err) => {
+        this.savingPreference[key] = false;
+        // Revert toggle visually
+        if (this.preferences) {
+          (this.preferences as any)[key] = !value;
+        }
+        this.errorService.handleError(err, 'Error al actualizar las preferencias');
+      }
+    });
   }
 
   get isAdmin(): boolean {
