@@ -7,7 +7,7 @@ on:
 
 env:
   REGION: us-central1
-  PROJECT_ID: vc-core-test
+  PROJECT_ID: vibecheck-unlu-2026
   REGISTRY: us-central1-docker.pkg.dev
   REPOSITORY: app-registry
   IMAGE_NAME: vibecheck-ui
