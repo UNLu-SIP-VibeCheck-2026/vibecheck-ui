@@ -90,15 +90,13 @@ export class Web3WalletComponent implements OnInit {
     });
   }
 
-  get isInstalled(): boolean {
-    return this.web3Service.isMetaMaskInstalled();
-  }
+
 
   async connect() {
     try {
       await this.web3Service.connectWallet();
     } catch (error: any) {
-      alert(error.message || 'Error al conectar MetaMask');
+      alert(error.message || 'Error al conectar la billetera');
     }
   }
 
@@ -106,7 +104,7 @@ export class Web3WalletComponent implements OnInit {
     try {
       await this.web3Service.switchToSepolia();
     } catch (error: any) {
-      alert('No se pudo cambiar a la red Sepolia. Por favor cámbiala manualmente en tu extensión MetaMask.');
+      alert('No se pudo cambiar a la red Sepolia. Por favor cámbiala manualmente en tu billetera.');
     }
   }
 
@@ -154,7 +152,7 @@ export class Web3WalletComponent implements OnInit {
     } catch (error: any) {
       console.error('Error al enviar fondos:', error);
       if (error.code === 'ACTION_REJECTED' || (error.message && error.message.includes('User denied'))) {
-        this.sendError = 'Transacción rechazada en MetaMask.';
+        this.sendError = 'Transacción rechazada en la billetera.';
       } else {
         this.sendError = error.message || 'Ocurrió un error al enviar los fondos.';
       }

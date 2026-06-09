@@ -1,14 +1,35 @@
 import { Injectable, NgZone, inject } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 import { ethers } from "ethers";
+import { WalletService } from "./wallet.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class Web3Service {
   private zone = inject(NgZone);
+  private walletService = inject(WalletService);
 
-  private provider: ethers.BrowserProvider | null = null;
+  private _cachedBrowserProvider: ethers.BrowserProvider | null = null;
+  private _lastEipProvider: any = null;
+
+  private get provider(): ethers.BrowserProvider | null {
+    const eipProvider = this.walletService.getEip1193Provider();
+    if (!eipProvider) {
+      this._cachedBrowserProvider = null;
+      this._lastEipProvider = null;
+      return null;
+    }
+    if (eipProvider !== this._lastEipProvider) {
+      this._lastEipProvider = eipProvider;
+      this._cachedBrowserProvider = new ethers.BrowserProvider(eipProvider);
+    }
+    return this._cachedBrowserProvider;
+  }
+
+  private set provider(value: any) {
+    // Ignore direct assignments from legacy code
+  }
 
   private connectedAddressSubject = new BehaviorSubject<string | null>(null);
   connectedAddress$ = this.connectedAddressSubject.asObservable();
@@ -32,19 +53,13 @@ export class Web3Service {
   isSepolia$ = this.isSepoliaSubject.asObservable();
 
   getSigner(): Promise<ethers.Signer> {
-    if (!this.provider) {
-      if (!this.ethereum) throw new Error("MetaMask no está instalado.");
-      this.provider = new ethers.BrowserProvider(this.ethereum);
-    }
-    return this.provider.getSigner();
+    return this.walletService.getSigner();
   }
 
   getProvider(): ethers.BrowserProvider {
-    if (!this.provider) {
-      if (!this.ethereum) throw new Error("MetaMask no está instalado.");
-      this.provider = new ethers.BrowserProvider(this.ethereum);
-    }
-    return this.provider;
+    const p = this.provider;
+    if (!p) throw new Error("No hay billetera conectada.");
+    return p;
   }
 
   // Smart Contract Addresses
@@ -92,102 +107,86 @@ export class Web3Service {
   ];
 
   constructor() {
-    this.checkIfWalletIsConnected();
-    this.setupListeners();
+    this.setupWalletSubscriptions();
   }
 
-  private get ethereum(): any {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      return (window as any).ethereum;
-    }
-    return null;
-  }
+  private setupWalletSubscriptions() {
+    this.walletService.address$.subscribe((addr) => {
+      this.zone.run(async () => {
+        this.connectedAddressSubject.next(addr);
+        if (addr) {
+          const isSepolia = this.chainId$.getValue() === 11155111;
+          if (isSepolia) {
+            await this.updateBalances(addr);
+          }
+        } else {
+          this.ethBalanceSubject.next("0");
+          this.vbkBalanceSubject.next("0");
+          this.usdcBalanceSubject.next("0");
+        }
+      });
+    });
 
-  isMetaMaskInstalled(): boolean {
-    return !!this.ethereum;
+    this.walletService.isConnected$.subscribe((connected) => {
+      this.zone.run(() => {
+        this.isConnectedSubject.next(connected);
+      });
+    });
+
+    this.walletService.chainId$.subscribe((chainId) => {
+      this.zone.run(async () => {
+        const isSepolia = chainId === 11155111;
+        this.chainId$.next(chainId);
+        this.isSepoliaSubject.next(isSepolia);
+        
+        const addr = this.connectedAddressSubject.getValue();
+        if (addr) {
+          if (isSepolia) {
+            await this.updateBalances(addr);
+          } else {
+            this.ethBalanceSubject.next("0");
+            this.vbkBalanceSubject.next("0");
+            this.usdcBalanceSubject.next("0");
+          }
+        }
+      });
+    });
   }
 
   async connectWallet(): Promise<void> {
-    if (!this.isMetaMaskInstalled()) {
-      throw new Error("MetaMask no está instalado.");
-    }
-
     try {
-      this.provider = new ethers.BrowserProvider(this.ethereum);
-      const accounts = await this.provider.send("eth_requestAccounts", []);
-      if (accounts.length > 0) {
-        await this.handleAccountsChanged(accounts);
-      }
+      await this.walletService.open();
     } catch (error) {
-      console.error("Error conectando a MetaMask:", error);
+      console.error("Error conectando a la wallet:", error);
       throw error;
     }
   }
 
   async checkNetwork(): Promise<boolean> {
-    if (!this.ethereum) return false;
-
-    try {
-      const chainId = await this.ethereum.request({ method: "eth_chainId" });
-      const isSepolia = chainId === this.SEPOLIA_CHAIN_ID;
-      const parsedChainId = parseInt(chainId, 16);
-
-      this.zone.run(() => {
-        this.isSepoliaSubject.next(isSepolia);
-        this.chainId$.next(parsedChainId);
-      });
-
-      if (!isSepolia) {
-        await this.switchToSepolia();
-        return false;
-      }
-      return true;
-    } catch (error) {
-      console.error("Error chequeando la red:", error);
+    const chainId = this.chainId$.getValue();
+    const isSepolia = chainId === 11155111;
+    this.zone.run(() => {
+      this.isSepoliaSubject.next(isSepolia);
+    });
+    if (!isSepolia) {
+      await this.switchToSepolia();
       return false;
     }
+    return true;
   }
 
   async switchToSepolia(): Promise<void> {
-    if (!this.ethereum) return;
     try {
-      await this.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: this.SEPOLIA_CHAIN_ID }],
-      });
-    } catch (switchError: any) {
-      if (switchError.code === 4902) {
-        try {
-          await this.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: this.SEPOLIA_CHAIN_ID,
-                chainName: "Sepolia Test Network",
-                nativeCurrency: {
-                  name: "SepoliaETH",
-                  symbol: "ETH",
-                  decimals: 18,
-                },
-                rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
-                blockExplorerUrls: ["https://sepolia.etherscan.io"],
-              },
-            ],
-          });
-        } catch (addError) {
-          console.error("Error agregando la red Sepolia:", addError);
-          throw addError;
-        }
-      } else {
-        console.error("Error cambiando a la red Sepolia:", switchError);
-        throw switchError;
-      }
+      await this.walletService.switchNetwork();
+    } catch (switchError) {
+      console.error("Error cambiando a la red Sepolia:", switchError);
+      throw switchError;
     }
   }
 
   async updateBalances(address: string): Promise<void> {
     if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(this.ethereum);
+      throw new Error("No hay billetera conectada.");
     }
 
     try {
@@ -265,7 +264,7 @@ export class Web3Service {
 
   async signMessage(message: string): Promise<string> {
     if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(this.ethereum);
+      throw new Error("No hay billetera conectada.");
     }
     const signer = await this.provider.getSigner();
     return await signer.signMessage(message);
@@ -276,7 +275,7 @@ export class Web3Service {
     tierIndex: number,
   ): Promise<bigint> {
     if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(this.ethereum);
+      throw new Error("No hay billetera conectada.");
     }
     const offeringContract = new ethers.Contract(
       this.OFFERING_NFT_ADDRESS,
@@ -455,53 +454,7 @@ export class Web3Service {
     return { eventNftAddress, deployTxHash: receipt.hash ?? tx.hash };
   }
 
-  private async checkIfWalletIsConnected() {
-    if (!this.ethereum) return;
-    try {
-      this.provider = new ethers.BrowserProvider(this.ethereum);
-      const accounts = await this.provider.send("eth_accounts", []);
-      if (accounts.length > 0) {
-        await this.handleAccountsChanged(accounts);
-      }
-    } catch (error) {
-      console.error("Error verificando conexión previa:", error);
-    }
-  }
 
-  private setupListeners() {
-    if (!this.ethereum) return;
-
-    this.ethereum.on("accountsChanged", (accounts: string[]) => {
-      this.zone.run(async () => {
-        await this.handleAccountsChanged(accounts);
-      });
-    });
-
-    this.ethereum.on("chainChanged", () => {
-      this.zone.run(() => {
-        window.location.reload();
-      });
-    });
-  }
-
-  private async handleAccountsChanged(accounts: string[]) {
-    if (accounts.length === 0) {
-      this.connectedAddressSubject.next(null);
-      this.isConnectedSubject.next(false);
-      this.ethBalanceSubject.next("0");
-      this.vbkBalanceSubject.next("0");
-      this.usdcBalanceSubject.next("0");
-      this.chainId$.next(null);
-    } else {
-      const address = accounts[0];
-      this.connectedAddressSubject.next(address);
-      this.isConnectedSubject.next(true);
-      const isSepolia = await this.checkNetwork();
-      if (isSepolia) {
-        await this.updateBalances(address);
-      }
-    }
-  }
 
   // =========================================================================
   // Uniswap V2 Swap Methods (USDC <-> VBK)
@@ -509,7 +462,7 @@ export class Web3Service {
 
   async quoteUsdcToVbk(usdcAmount: number): Promise<bigint> {
     if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(this.ethereum);
+      throw new Error("No hay billetera conectada.");
     }
     const routerContract = new ethers.Contract(
       this.UNISWAP_ROUTER_ADDRESS,
@@ -597,7 +550,7 @@ export class Web3Service {
 
   async quoteVbkToUsdc(vbkAmount: number): Promise<bigint> {
     if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(this.ethereum);
+      throw new Error("No hay billetera conectada.");
     }
     const routerContract = new ethers.Contract(
       this.UNISWAP_ROUTER_ADDRESS,
@@ -648,7 +601,7 @@ export class Web3Service {
     userAddress: string,
   ): Promise<bigint> {
     if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(this.ethereum);
+      throw new Error("No hay billetera conectada.");
     }
     const receipt = await this.provider.getTransactionReceipt(txHash);
     if (!receipt)
@@ -681,7 +634,7 @@ export class Web3Service {
     userAddress: string,
   ): Promise<bigint> {
     if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(this.ethereum);
+      throw new Error("No hay billetera conectada.");
     }
     const receipt = await this.provider.getTransactionReceipt(txHash);
     if (!receipt)

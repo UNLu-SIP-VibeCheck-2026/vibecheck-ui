@@ -489,19 +489,11 @@ export class AdminEventsComponent implements OnInit {
       this.publishingId = event.id;
       this.executePublishOnly(event);
     });
-  }
-
-  private deployAndPublishEvent(event: EventResponse): void {
-    if (!this.web3Service.isMetaMaskInstalled()) {
-      this.showSnack("MetaMask no está instalado. Por favor instálalo para continuar.", "error");
-      this.publishingId = null;
-      return;
-    }
-
+  }  private deployAndPublishEvent(event: EventResponse): void {
     this.web3Service.connectWallet().then(async () => {
       const isSepolia = await this.web3Service.checkNetwork();
       if (!isSepolia) {
-        this.showSnack("Por favor cambia la red de MetaMask a Sepolia.", "error");
+        this.showSnack("Por favor cambia la red a Sepolia.", "error");
         this.publishingId = null;
         return;
       }
@@ -563,7 +555,7 @@ export class AdminEventsComponent implements OnInit {
 
           }).catch((err) => {
             this.publishingId = null;
-            const errorMsg = err?.message || 'Error en la transacción de MetaMask';
+            const errorMsg = err?.message || 'Error en la transacción';
             this.showSnack(errorMsg, "error");
             console.error(err);
           });
@@ -577,11 +569,10 @@ export class AdminEventsComponent implements OnInit {
 
     }).catch((err) => {
       this.publishingId = null;
-      this.showSnack("Error al conectar la billetera MetaMask.", "error");
+      this.showSnack("Error al conectar la billetera.", "error");
       console.error(err);
     });
   }
-
   private executePublishOnly(event: EventResponse): void {
     this.eventService.publishEvent(event.id).subscribe({
       next: (updated) => {
