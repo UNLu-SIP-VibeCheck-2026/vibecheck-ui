@@ -333,6 +333,7 @@ export class TicketPurchaseComponent implements OnInit {
     // Si no está en Sepolia, pedimos el switch y cortamos — el usuario tendrá que
     // volver a tocar el botón una vez que cambie la red.
     const chainId = this.web3Service.chainId$.getValue();
+    alert('chainId actual: ' + chainId + ' | isSepolia signal: ' + this.isSepolia());
     if (chainId !== 11155111) {
       this.errorMessage.set('Cambiá a la red Sepolia antes de comprar.');
       this.web3Service.switchToSepolia();
