@@ -12,16 +12,25 @@ export class Web3Service {
 
   private _cachedBrowserProvider: ethers.BrowserProvider | null = null;
   private _lastEipProvider: any = null;
+  private _cachedChainId: number | null = null;
 
   private get provider(): ethers.BrowserProvider | null {
     const eipProvider = this.walletService.getEip1193Provider();
+    const currentChainId = this.chainId$.getValue();
     if (!eipProvider) {
       this._cachedBrowserProvider = null;
       this._lastEipProvider = null;
+      this._cachedChainId = null;
       return null;
     }
-    if (eipProvider !== this._lastEipProvider) {
+    // Reconstruir si cambió el provider EIP-1193 O si cambió la red.
+    // En WalletConnect mobile, switchNetwork() puede devolver el mismo objeto
+    // EIP-1193 con la red interna cambiada. Si no se reconstruye el BrowserProvider,
+    // ethers mantiene cacheado el chainId anterior (ej. mainnet = 1) y firma todas
+    // las transacciones en esa red, aunque el usuario ya esté en Sepolia.
+    if (eipProvider !== this._lastEipProvider || currentChainId !== this._cachedChainId) {
       this._lastEipProvider = eipProvider;
+      this._cachedChainId = currentChainId;
       this._cachedBrowserProvider = new ethers.BrowserProvider(eipProvider);
     }
     return this._cachedBrowserProvider;
