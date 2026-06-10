@@ -94,7 +94,6 @@ export class TicketPurchaseComponent implements OnInit {
 
   ngOnInit() {
     window.scrollTo(0, 0);
-
     const idParam = this.route.snapshot.paramMap.get('id');
     this.routeEventId = idParam ? parseInt(idParam, 10) : null;
 
@@ -107,14 +106,30 @@ export class TicketPurchaseComponent implements OnInit {
       this.isSepolia.set(sepolia);
       this.checkConnectionState();
     });
+
+    // Suscripción directa al chainId para capturar el switch confirmado por MetaMask
+    this.web3Service.chainId$.subscribe(chainId => {
+      const sepolia = chainId === 11155111;
+      this.isSepolia.set(sepolia);
+      this.checkConnectionState();
+    });
   }
 
   checkConnectionState() {
     const address = this.connectedAddress();
-    const sepolia = this.isSepolia();
+    const chainId = this.web3Service.chainId$.getValue();
+    const sepolia = chainId === 11155111;
+
+    // Actualizar el signal con el valor real del chainId
+    this.isSepolia.set(sepolia);
 
     if (!address || !sepolia) {
       this.currentStep.set(1);
+      if (address && !sepolia) {
+        // Tiene wallet pero red incorrecta: pedir switch
+        this.errorMessage.set('Cambiá a la red Sepolia para continuar.');
+        this.web3Service.switchToSepolia();
+      }
       return;
     }
 
