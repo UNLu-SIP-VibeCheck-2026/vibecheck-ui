@@ -1,133 +1,455 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
+import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TicketService } from '../../services/ticket.service';
-import { environment } from '../../../environments/environment';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+
 import { EventService } from '../../services/event.service';
-import { VenueService } from '../../services/venue.service';
+import { TicketTypeService } from '../../services/ticket-type.service';
+import { Web3Service } from '../../services/web3.service';
+import { ContractsService } from '../../services/contracts.service';
+import { environment } from '../../../environments/environment';
+import { ethers } from 'ethers';
 
 @Component({
-  selector: 'app-ticket',
+  selector: 'app-ticket-purchase',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule],
-  templateUrl: './ticket.component.html',
-  styleUrl: './ticket.component.scss'
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    MatCardModule
+  ],
+  templateUrl: './select-tickets.component.html',
+  styleUrls: ['./select-tickets.component.scss']
 })
-export class TicketComponent implements OnInit {
+export class TicketPurchaseComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  ticket: any = null;
-  isQrVisible = false;
-
-  private ticketService = inject(TicketService);
-  private sanitizer = inject(DomSanitizer);
+  router = inject(Router);
+  private http = inject(HttpClient);
   private eventService = inject(EventService);
-  private venueService = inject(VenueService);
+  private ticketTypeService = inject(TicketTypeService);
+  private web3Service = inject(Web3Service);
+  private contractsService = inject(ContractsService);
 
-  ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    this.loadTicket(id);
-  }
+  @Input() event: {
+    eventId: number;
+    eventNftAddress: string;
+    name: string;
+    startDate: string;
+  } | null = null;
 
-  formatDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return "—";
-    try {
-      const formatted = new Date(dateStr).toLocaleString("es-AR", {
-        weekday: "long",
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-    } catch {
-      return dateStr;
-    }
-  }
+  @Input() tiers: Array<{
+    ticketTypeId: number;
+    name: string;
+    priceUsdc: number;
+    maxQuantity: number;
+    quantitySold: number;
+    tierIndex: number;
+  }> = [];
 
-  loadTicket(id: string | null): void {
-    if (!id) return;
-    
-    this.ticketService.getTicketById(Number(id)).subscribe({
-        next: (t) => {
-            const qrPayload = JSON.stringify({ ticketId: t.id });
+  // Route fallback event ID
+  private routeEventId: number | null = null;
 
-            this.ticket = {
-                id: t.id.toString(),
-                eventTitle: 'Cargando evento...',
-                description: t.ticketType.description,
-                startDate: 'Cargando fecha...',
-                endDate: 'Cargando fecha...',
-                venue: 'Cargando sede...',
-                address: 'Cargando dirección...',
-                ticketType: t.ticketType.name,
-                location: t.ticketType.hasSeats ? `Fila ${t.seatRow} - Asiento ${t.seatNumber}` : 'Entrada General',
-                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrPayload)}`
-            };
+  // Challenge precargado para signAndVerify (mismo patrón que web3-wallet.component).
+  // Evita el HTTP call dentro del handler del tap, que Safari mobile bloquea.
+  private pendingSiweChallenge: { message: string } | null = null;
 
-            // Load event details
-            this.eventService.findByIdEvent(t.ticketType.eventId).subscribe({
-                next: (event) => {
-                    this.ticket.eventTitle = event.title;
-                    this.ticket.description = event.description || t.ticketType.description;
-                    this.ticket.startDate = this.formatDate(event.startDate);
-                    this.ticket.endDate = this.formatDate(event.endDate);
-                    
-                    if (event.venueId) {
-                        this.venueService.findVenueById(event.venueId).subscribe({
-                            next: (venue) => {
-                                this.ticket.venue = venue.title;
-                                this.ticket.address = venue.coordinates || 'Sin dirección registrada';
-                            },
-                            error: () => {
-                                this.ticket.venue = 'Dirección no disponible';
-                                this.ticket.address = 'No disponible';
-                            }
-                        });
-                    } else {
-                        this.ticket.venue = 'Sin sede asignada';
-                        this.ticket.address = 'No disponible';
-                    }
-                },
-                error: (err) => {
-                    this.ticket.eventTitle = 'Evento ID: ' + t.ticketType.eventId;
-                    this.ticket.startDate = this.formatDate(t.ticketType.saleStartDate);
-                    this.ticket.endDate = this.formatDate(t.ticketType.saleEndDate);
-                    this.ticket.venue = 'No disponible';
-                    this.ticket.address = 'No disponible';
-                }
-            });
-            
-            this.eventService.getEventImage(t.ticketType.eventId).subscribe({
-                next: (blob) => this.ticket.imageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob)),
-                error: (err) => console.error("No image found for event", t.ticketType.eventId)
-            });
-        },
-        error: (err) => {
-            console.error('Error fetching ticket', err);
-        }
+  // Component State Signals
+  currentStep = signal<number>(1);
+  isLoading = signal<boolean>(false);
+  errorMessage = signal<string>('');
+  connectedAddress = signal<string | null>(null);
+  isSepolia = signal<boolean>(false);
+  siweMessage = signal<string>('');
+
+  // Event & Tiers display state signals
+  mappedEvent = signal<{
+    eventId: number;
+    eventNftAddress: string;
+    name: string;
+    startDate: string;
+  } | null>(null);
+
+  mappedTiers = signal<Array<{
+    ticketTypeId: number;
+    name: string;
+    priceUsdc: number;
+    maxQuantity: number;
+    quantitySold: number;
+    tierIndex: number;
+  }>>([]);
+
+  vbkQuotes = signal<Record<number, string>>({});
+
+  // Purchase final details signals
+  selectedTierName = signal<string>('');
+  purchaseTxHash = signal<string>('');
+  purchaseTokenId = signal<number | null>(null);
+  successTicket = signal<any | null>(null);
+
+  ngOnInit() {
+    window.scrollTo(0, 0);
+
+    const idParam = this.route.snapshot.paramMap.get('id');
+    this.routeEventId = idParam ? parseInt(idParam, 10) : null;
+
+    this.web3Service.connectedAddress$.subscribe(addr => {
+      this.connectedAddress.set(addr);
+      this.checkConnectionState();
+    });
+
+    this.web3Service.isSepolia$.subscribe(sepolia => {
+      this.isSepolia.set(sepolia);
+      this.checkConnectionState();
     });
   }
 
-  toggleQR(): void {
-    this.isQrVisible = !this.isQrVisible;
+  checkConnectionState() {
+    const address = this.connectedAddress();
+    const sepolia = this.isSepolia();
+
+    if (!address || !sepolia) {
+      this.currentStep.set(1);
+      return;
+    }
+
+    if (this.currentStep() === 1) {
+      this.currentStep.set(2);
+      this.startSiweFlow();
+    }
   }
 
-  giftTicket(): void {
-    this.router.navigate(['/gift-ticket', this.ticket.id]);
+  // Sin async/await: Safari mobile invalida el gesto del usuario en el primer
+  // await, bloqueando el deeplink a MetaMask.
+  connectWallet() {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.web3Service.connectWallet().catch((err: any) => {
+      console.error('Error al conectar wallet:', err);
+      this.errorMessage.set(err.message || 'Error al conectar la billetera.');
+      this.isLoading.set(false);
+    });
   }
 
-  resellTicket(): void {
-    this.router.navigate(['/resell-ticket', this.ticket.id]);
+  checkNetwork() {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.web3Service.switchToSepolia().catch((err: any) => {
+      console.error('Error al cambiar red:', err);
+      this.errorMessage.set('No se pudo cambiar a Sepolia. Cambiala manualmente en tu billetera.');
+      this.isLoading.set(false);
+    });
   }
 
-  goBack(): void {
-    this.router.navigate(['/my-tickets']);
+  startSiweFlow() {
+    const address = this.connectedAddress();
+    if (!address) return;
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.pendingSiweChallenge = null;
+
+    this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/challenge`, { walletAddress: address }).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        // Wallet ya vinculada: saltar directo al paso 3.
+        if (res && res.walletAddress && res.walletAddress.toLowerCase() === address.toLowerCase()) {
+          this.currentStep.set(3);
+          this.loadEventAndTiers();
+          return;
+        }
+        if (res && res.message) {
+          // Precargar el challenge para que signAndVerify no necesite HTTP antes del tap.
+          this.pendingSiweChallenge = { message: res.message };
+          this.siweMessage.set(res.message);
+        } else {
+          this.errorMessage.set('No se pudo obtener el mensaje de firma.');
+        }
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        if (err.status === 409) {
+          this.errorMessage.set('La billetera ya está vinculada a otro usuario.');
+        } else {
+          this.errorMessage.set(err.error?.message || 'Error al solicitar el desafío SIWE.');
+        }
+      }
+    });
+  }
+
+  // signAndVerify: el signMessage tiene que ser la respuesta directa al tap.
+  // No puede haber ningún await antes — Safari mobile lo bloquea.
+  signAndVerify() {
+    const address = this.connectedAddress();
+    const challenge = this.pendingSiweChallenge;
+
+    if (!address || !challenge) {
+      // Challenge no listo: reintentar la precarga.
+      this.errorMessage.set('Preparando firma, intentá de nuevo en un momento...');
+      this.startSiweFlow();
+      return;
+    }
+
+    const message = challenge.message;
+    // Consumir el challenge para evitar reuso del nonce.
+    this.pendingSiweChallenge = null;
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    // Directo al signMessage sin ningún await previo.
+    this.web3Service.signMessage(message).then(signature => {
+      this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/verify`, {
+        walletAddress: address,
+        message,
+        signature
+      }).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.currentStep.set(3);
+          this.loadEventAndTiers();
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          if (err.status === 409) {
+            this.errorMessage.set('La billetera ya está vinculada a otro usuario.');
+          } else {
+            this.errorMessage.set(err.error?.message || 'Error al verificar la firma.');
+          }
+          // Precargar nuevo challenge para que el usuario pueda reintentar.
+          this.startSiweFlow();
+        }
+      });
+    }).catch((e: any) => {
+      this.isLoading.set(false);
+      console.error('Error al firmar:', e);
+      this.errorMessage.set('Firma cancelada o rechazada por el usuario.');
+      // Precargar nuevo challenge para que el usuario pueda reintentar.
+      this.startSiweFlow();
+    });
+  }
+
+  loadEventAndTiers() {
+    const eventInput = this.event;
+    const tiersInput = this.tiers;
+
+    if (eventInput && tiersInput && tiersInput.length > 0) {
+      this.mappedEvent.set(eventInput);
+      this.mappedTiers.set(tiersInput);
+      this.loadOnChainData();
+      return;
+    }
+
+    const eventId = this.routeEventId;
+    if (!eventId) {
+      this.errorMessage.set('ID de evento inválido.');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.eventService.findByIdEvent(eventId).subscribe({
+      next: (eventData) => {
+        this.mappedEvent.set({
+          eventId: eventData.id,
+          eventNftAddress: eventData.eventNftAddress || '',
+          name: eventData.title,
+          startDate: eventData.startDate
+        });
+
+        this.ticketTypeService.findTicketTypesByEvent(eventId).subscribe({
+          next: (tickets) => {
+            this.isLoading.set(false);
+            const mapped = tickets.map(t => ({
+              ticketTypeId: t.id,
+              name: t.name,
+              priceUsdc: t.priceUsdc,
+              maxQuantity: t.maxQuantity,
+              quantitySold: (t as any).quantitySold || 0,
+              tierIndex: t.tierIndex
+            }));
+            this.mappedTiers.set(mapped);
+            this.loadOnChainData();
+          },
+          error: () => {
+            this.isLoading.set(false);
+            this.errorMessage.set('No se pudieron cargar los tipos de tickets.');
+          }
+        });
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set('No se pudo cargar la información del evento.');
+      }
+    });
+  }
+
+  async loadOnChainData() {
+    const currentEvent = this.mappedEvent();
+    if (!currentEvent || !currentEvent.eventNftAddress) return;
+    const currentTiers = this.mappedTiers();
+    const quotes: Record<number, string> = {};
+    const updatedTiers = currentTiers.map(t => ({ ...t }));
+
+    try {
+      const eventNftContract = this.contractsService.getEventNFT(currentEvent.eventNftAddress);
+
+      for (const tier of updatedTiers) {
+        try {
+          const quote = await this.web3Service.getVbkQuote(currentEvent.eventNftAddress, tier.tierIndex);
+          quotes[tier.ticketTypeId] = ethers.formatUnits(quote, 18);
+        } catch (err) {
+          console.error(`Error loading VBK quote for tier ${tier.name}:`, err);
+          quotes[tier.ticketTypeId] = 'Error';
+        }
+
+        try {
+          const onChainTier = await eventNftContract['tiers'](tier.tierIndex);
+          tier.quantitySold = Number(onChainTier[3]);
+        } catch (err) {
+          console.error(`Error loading on-chain tier info for ${tier.name}:`, err);
+        }
+      }
+    } catch (err) {
+      console.error('Error connecting to EventNFT contract:', err);
+    }
+
+    this.mappedTiers.set(updatedTiers);
+    this.vbkQuotes.set(quotes);
+  }
+
+  async buyWithUSDC(tier: any) {
+    const currentEvent = this.mappedEvent();
+    if (!currentEvent || !currentEvent.eventNftAddress) {
+      this.errorMessage.set('El contrato del evento no está configurado.');
+      return;
+    }
+
+    // Verificación síncrona de red: lee el BehaviorSubject sin await.
+    // En mobile MetaMask puede tener la wallet en mainnet aunque AppKit diga Sepolia.
+    // Si no está en Sepolia, pedimos el switch y cortamos — el usuario tendrá que
+    // volver a tocar el botón una vez que cambie la red.
+    const chainId = this.web3Service.chainId$.getValue();
+    if (chainId !== 11155111) {
+      this.errorMessage.set('Cambiá a la red Sepolia antes de comprar.');
+      this.web3Service.switchToSepolia();
+      return;
+    }
+
+    this.currentStep.set(4);
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    try {
+      const result = await this.web3Service.buyTicketWithUSDC(
+        currentEvent.eventNftAddress,
+        tier.tierIndex,
+        tier.priceUsdc
+      );
+      this.purchaseTxHash.set(result.txHash);
+      this.purchaseTokenId.set(result.tokenId);
+      this.selectedTierName.set(tier.name);
+      this.confirmPurchaseOnBackend(tier.ticketTypeId, result.txHash, result.tokenId);
+    } catch (err: any) {
+      this.isLoading.set(false);
+      this.currentStep.set(3);
+      this.handlePurchaseError(err);
+    }
+  }
+
+  async buyWithVBK(tier: any) {
+    const currentEvent = this.mappedEvent();
+    if (!currentEvent || !currentEvent.eventNftAddress) {
+      this.errorMessage.set('El contrato del evento no está configurado.');
+      return;
+    }
+
+    // Misma verificación síncrona de red que buyWithUSDC.
+    const chainId = this.web3Service.chainId$.getValue();
+    if (chainId !== 11155111) {
+      this.errorMessage.set('Cambiá a la red Sepolia antes de comprar.');
+      this.web3Service.switchToSepolia();
+      return;
+    }
+
+    this.currentStep.set(4);
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    try {
+      const result = await this.web3Service.buyTicketWithVBK(
+        currentEvent.eventNftAddress,
+        tier.tierIndex
+      );
+      this.purchaseTxHash.set(result.txHash);
+      this.purchaseTokenId.set(result.tokenId);
+      this.selectedTierName.set(tier.name);
+      this.confirmPurchaseOnBackend(tier.ticketTypeId, result.txHash, result.tokenId);
+    } catch (err: any) {
+      this.isLoading.set(false);
+      this.currentStep.set(3);
+      this.handlePurchaseError(err);
+    }
+  }
+
+  handlePurchaseError(err: any) {
+    console.error('Error durante la compra on-chain:', err);
+    if (err.code === 4001 || err.code === 'ACTION_REJECTED' || (err.message && err.message.includes('rejected'))) {
+      this.errorMessage.set('Transacción cancelada por el usuario.');
+    } else if (
+      err.code === 'INSUFFICIENT_FUNDS' ||
+      (err.message && err.message.toLowerCase().includes('insufficient funds')) ||
+      (err.message && err.message.toLowerCase().includes('transfer amount exceeds balance'))
+    ) {
+      this.errorMessage.set('Saldo insuficiente de USDC/VBK.');
+    } else if (err.reason) {
+      this.errorMessage.set(err.reason);
+    } else {
+      this.errorMessage.set(err.message || 'Ocurrió un error inesperado en la transacción.');
+    }
+  }
+
+  confirmPurchaseOnBackend(ticketTypeId: number, txHash: string, tokenId: number) {
+    this.currentStep.set(5);
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.http.post<any>(`${environment.apiBaseUrl}/tickets/confirm`, {
+      ticketTypeId,
+      txHash,
+      tokenId
+    }).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        this.successTicket.set(res);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set(`La compra se realizó on-chain pero hubo un error al registrarla. Contactá soporte con el txHash: ${txHash}`);
+      }
+    });
+  }
+
+  goBack() {
+    const currentEvent = this.mappedEvent();
+    if (currentEvent && currentEvent.eventId) {
+      this.router.navigate(['/event/', currentEvent.eventId]);
+    } else if (this.routeEventId) {
+      this.router.navigate(['/event/', this.routeEventId]);
+    } else {
+      this.router.navigate(['/']);
+    }
+  }
+
+  truncateAddress(address: string | null): string {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  }
+
+  parseFloat(val: string): number {
+    return parseFloat(val) || 0;
   }
 }
-
