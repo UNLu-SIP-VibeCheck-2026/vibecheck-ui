@@ -55,6 +55,10 @@ export class TicketPurchaseComponent implements OnInit {
   // Route fallback event ID
   private routeEventId: number | null = null;
 
+  // Challenge precargado para signAndVerify (mismo patrón que web3-wallet.component).
+  // Evita el HTTP call dentro del handler del tap, que Safari mobile bloquea.
+  private pendingSiweChallenge: { message: string } | null = null;
+
   // Component State Signals
   currentStep = signal<number>(1);
   isLoading = signal<boolean>(false);
@@ -62,8 +66,8 @@ export class TicketPurchaseComponent implements OnInit {
   connectedAddress = signal<string | null>(null);
   isSepolia = signal<boolean>(false);
   siweMessage = signal<string>('');
-  
-  // Event & Tiers display state signals (mapped from either @Input or fallback service calls)
+
+  // Event & Tiers display state signals
   mappedEvent = signal<{
     eventId: number;
     eventNftAddress: string;
@@ -81,7 +85,7 @@ export class TicketPurchaseComponent implements OnInit {
   }>>([]);
 
   vbkQuotes = signal<Record<number, string>>({});
-  
+
   // Purchase final details signals
   selectedTierName = signal<string>('');
   purchaseTxHash = signal<string>('');
@@ -120,37 +124,26 @@ export class TicketPurchaseComponent implements OnInit {
     }
   }
 
-  async connectWallet() {
+  // Sin async/await: Safari mobile invalida el gesto del usuario en el primer
+  // await, bloqueando el deeplink a MetaMask.
+  connectWallet() {
     this.isLoading.set(true);
     this.errorMessage.set('');
-    try {
-      await this.web3Service.connectWallet();
-      const isSepolia = await this.web3Service.checkNetwork();
-      if (!isSepolia) {
-        this.errorMessage.set('Cambiá a la red Sepolia');
-      }
-    } catch (err: any) {
+    this.web3Service.connectWallet().catch((err: any) => {
       console.error('Error al conectar wallet:', err);
-      this.errorMessage.set(err.message || 'Error al conectar MetaMask.');
-    } finally {
+      this.errorMessage.set(err.message || 'Error al conectar la billetera.');
       this.isLoading.set(false);
-    }
+    });
   }
 
-  async checkNetwork() {
+  checkNetwork() {
     this.isLoading.set(true);
     this.errorMessage.set('');
-    try {
-      const isSepolia = await this.web3Service.checkNetwork();
-      if (!isSepolia) {
-        this.errorMessage.set('Cambiá a la red Sepolia');
-      }
-    } catch (err: any) {
-      console.error('Error al verificar red:', err);
-      this.errorMessage.set('No se pudo verificar la red. Asegurate de estar en Sepolia.');
-    } finally {
+    this.web3Service.switchToSepolia().catch((err: any) => {
+      console.error('Error al cambiar red:', err);
+      this.errorMessage.set('No se pudo cambiar a Sepolia. Cambiala manualmente en tu billetera.');
       this.isLoading.set(false);
-    }
+    });
   }
 
   startSiweFlow() {
@@ -159,17 +152,20 @@ export class TicketPurchaseComponent implements OnInit {
 
     this.isLoading.set(true);
     this.errorMessage.set('');
+    this.pendingSiweChallenge = null;
 
     this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/challenge`, { walletAddress: address }).subscribe({
       next: (res) => {
         this.isLoading.set(false);
+        // Wallet ya vinculada: saltar directo al paso 3.
         if (res && res.walletAddress && res.walletAddress.toLowerCase() === address.toLowerCase()) {
           this.currentStep.set(3);
           this.loadEventAndTiers();
           return;
         }
-
         if (res && res.message) {
+          // Precargar el challenge para que signAndVerify no necesite HTTP antes del tap.
+          this.pendingSiweChallenge = { message: res.message };
           this.siweMessage.set(res.message);
         } else {
           this.errorMessage.set('No se pudo obtener el mensaje de firma.');
@@ -186,22 +182,33 @@ export class TicketPurchaseComponent implements OnInit {
     });
   }
 
-  async signAndVerify() {
+  // signAndVerify: el signMessage tiene que ser la respuesta directa al tap.
+  // No puede haber ningún await antes — Safari mobile lo bloquea.
+  signAndVerify() {
     const address = this.connectedAddress();
-    const message = this.siweMessage();
-    if (!address || !message) return;
+    const challenge = this.pendingSiweChallenge;
 
+    if (!address || !challenge) {
+      // Challenge no listo: reintentar la precarga.
+      this.errorMessage.set('Preparando firma, intentá de nuevo en un momento...');
+      this.startSiweFlow();
+      return;
+    }
+
+    const message = challenge.message;
+    // Consumir el challenge para evitar reuso del nonce.
+    this.pendingSiweChallenge = null;
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    try {
-      const signature = await this.web3Service.signMessage(message);
+    // Directo al signMessage sin ningún await previo.
+    this.web3Service.signMessage(message).then(signature => {
       this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/verify`, {
         walletAddress: address,
         message,
         signature
       }).subscribe({
-        next: (verifyRes) => {
+        next: () => {
           this.isLoading.set(false);
           this.currentStep.set(3);
           this.loadEventAndTiers();
@@ -213,13 +220,17 @@ export class TicketPurchaseComponent implements OnInit {
           } else {
             this.errorMessage.set(err.error?.message || 'Error al verificar la firma.');
           }
+          // Precargar nuevo challenge para que el usuario pueda reintentar.
+          this.startSiweFlow();
         }
       });
-    } catch (e: any) {
+    }).catch((e: any) => {
       this.isLoading.set(false);
       console.error('Error al firmar:', e);
       this.errorMessage.set('Firma cancelada o rechazada por el usuario.');
-    }
+      // Precargar nuevo challenge para que el usuario pueda reintentar.
+      this.startSiweFlow();
+    });
   }
 
   loadEventAndTiers() {
@@ -263,13 +274,13 @@ export class TicketPurchaseComponent implements OnInit {
             this.mappedTiers.set(mapped);
             this.loadOnChainData();
           },
-          error: (err) => {
+          error: () => {
             this.isLoading.set(false);
             this.errorMessage.set('No se pudieron cargar los tipos de tickets.');
           }
         });
       },
-      error: (err) => {
+      error: () => {
         this.isLoading.set(false);
         this.errorMessage.set('No se pudo cargar la información del evento.');
       }
@@ -282,7 +293,7 @@ export class TicketPurchaseComponent implements OnInit {
     const currentTiers = this.mappedTiers();
     const quotes: Record<number, string> = {};
     const updatedTiers = currentTiers.map(t => ({ ...t }));
-    
+
     try {
       const eventNftContract = this.contractsService.getEventNFT(currentEvent.eventNftAddress);
 
@@ -296,8 +307,7 @@ export class TicketPurchaseComponent implements OnInit {
         }
 
         try {
-          const onChainTier = await eventNftContract["tiers"](tier.tierIndex);
-          // onChainTier is [string name, uint256 priceUSDC, uint256 supply, uint256 sold]
+          const onChainTier = await eventNftContract['tiers'](tier.tierIndex);
           tier.quantitySold = Number(onChainTier[3]);
         } catch (err) {
           console.error(`Error loading on-chain tier info for ${tier.name}:`, err);
@@ -306,7 +316,7 @@ export class TicketPurchaseComponent implements OnInit {
     } catch (err) {
       console.error('Error connecting to EventNFT contract:', err);
     }
-    
+
     this.mappedTiers.set(updatedTiers);
     this.vbkQuotes.set(quotes);
   }
@@ -315,6 +325,17 @@ export class TicketPurchaseComponent implements OnInit {
     const currentEvent = this.mappedEvent();
     if (!currentEvent || !currentEvent.eventNftAddress) {
       this.errorMessage.set('El contrato del evento no está configurado.');
+      return;
+    }
+
+    // Verificación síncrona de red: lee el BehaviorSubject sin await.
+    // En mobile MetaMask puede tener la wallet en mainnet aunque AppKit diga Sepolia.
+    // Si no está en Sepolia, pedimos el switch y cortamos — el usuario tendrá que
+    // volver a tocar el botón una vez que cambie la red.
+    const chainId = this.web3Service.chainId$.getValue();
+    if (chainId !== 11155111) {
+      this.errorMessage.set('Cambiá a la red Sepolia antes de comprar.');
+      this.web3Service.switchToSepolia();
       return;
     }
 
@@ -343,6 +364,14 @@ export class TicketPurchaseComponent implements OnInit {
     const currentEvent = this.mappedEvent();
     if (!currentEvent || !currentEvent.eventNftAddress) {
       this.errorMessage.set('El contrato del evento no está configurado.');
+      return;
+    }
+
+    // Misma verificación síncrona de red que buyWithUSDC.
+    const chainId = this.web3Service.chainId$.getValue();
+    if (chainId !== 11155111) {
+      this.errorMessage.set('Cambiá a la red Sepolia antes de comprar.');
+      this.web3Service.switchToSepolia();
       return;
     }
 
@@ -397,7 +426,7 @@ export class TicketPurchaseComponent implements OnInit {
         this.isLoading.set(false);
         this.successTicket.set(res);
       },
-      error: (err) => {
+      error: () => {
         this.isLoading.set(false);
         this.errorMessage.set(`La compra se realizó on-chain pero hubo un error al registrarla. Contactá soporte con el txHash: ${txHash}`);
       }
