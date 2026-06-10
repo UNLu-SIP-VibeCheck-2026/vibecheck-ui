@@ -90,18 +90,26 @@ export class MarketplaceDetailComponent implements OnInit {
       this.checkConnectionState();
     });
 
-    this.web3Service.isSepolia$.subscribe((sepolia) => {
-      this.isSepolia.set(sepolia);
+    // Regla 3: suscripción a chainId$ en vez de isSepolia$ para detectar la red
+    // real de inmediato durante el switch y evitar desincronización.
+    this.web3Service.chainId$.subscribe((chainId) => {
+      this.isSepolia.set(chainId === 11155111);
       this.checkConnectionState();
     });
   }
 
   checkConnectionState(): void {
     const address = this.connectedAddress();
-    const sepolia = this.isSepolia();
+    // Regla 3: leer chainId sincrónico para evitar falsos positivos durante el switch de red
+    const chainId = this.web3Service.chainId$.getValue();
+    const sepolia = chainId === 11155111;
 
     if (!address || !sepolia) {
       this.currentStep.set(1);
+      if (address && !sepolia) {
+        this.errorMessage.set("Cambiá a la red Sepolia para continuar.");
+        this.web3Service.switchToSepolia();
+      }
       return;
     }
 
@@ -111,36 +119,20 @@ export class MarketplaceDetailComponent implements OnInit {
     }
   }
 
-  async connectWallet(): Promise<void> {
-    this.isLoading.set(true);
+  // Regla 1: sin async/await — Safari mobile invalida el gesto del usuario
+  // en el primer await, bloqueando el deeplink a MetaMask.
+  connectWallet(): void {
     this.errorMessage.set("");
-    try {
-      await this.web3Service.connectWallet();
-      const isSepolia = await this.web3Service.checkNetwork();
-      if (!isSepolia) {
-        this.errorMessage.set("Cambiá a la red Sepolia");
-      }
-    } catch (err: any) {
-      console.error("Error al conectar wallet:", err);
-      this.errorMessage.set(err.message || "Error al conectar MetaMask.");
-    } finally {
-      this.isLoading.set(false);
-    }
+    this.web3Service.connectWallet();
   }
 
-  async checkNetwork(): Promise<void> {
-    this.isLoading.set(true);
+  // Regla 3/4: verificación y switch de red sincrónicos — sin await antes de MetaMask.
+  checkNetwork(): void {
     this.errorMessage.set("");
-    try {
-      const isSepolia = await this.web3Service.checkNetwork();
-      if (!isSepolia) {
-        this.errorMessage.set("Cambiá a la red Sepolia");
-      }
-    } catch (err: any) {
-      console.error("Error al verificar red:", err);
-      this.errorMessage.set("No se pudo verificar la red. Asegurate de estar en Sepolia.");
-    } finally {
-      this.isLoading.set(false);
+    const chainId = this.web3Service.chainId$.getValue();
+    if (chainId !== 11155111) {
+      this.errorMessage.set("Cambiá a la red Sepolia");
+      this.web3Service.switchToSepolia();
     }
   }
 
@@ -333,10 +325,12 @@ export class MarketplaceDetailComponent implements OnInit {
     const lst = this.listing();
     if (!lst) return;
 
-    // 0. Verify connected wallet and network
-    const isSepolia = await this.web3Service.checkNetwork();
-    if (!isSepolia) {
+    // Regla 3: verificación sincrónica de red — un await aquí invalida el gesto en
+    // Safari mobile y bloquea el deeplink a MetaMask para la transacción.
+    const chainId = this.web3Service.chainId$.getValue();
+    if (chainId !== 11155111) {
       this.errorMessage.set("Cambiá la red a Sepolia en MetaMask");
+      this.web3Service.switchToSepolia();
       return;
     }
 

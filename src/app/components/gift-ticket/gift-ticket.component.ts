@@ -189,9 +189,11 @@ export class GiftTicketComponent implements OnInit {
     return `${this.apiBaseUrl}/users/public/${username}/image`;
   }
 
-  async confirmGift(): Promise<void> {
+  // Regla 3: sin await antes de MetaMask — Safari mobile invalida el gesto del
+  // usuario en el primer await, bloqueando el deeplink a MetaMask.
+  confirmGift(): void {
     if (!this.ticket || !this.selectedUser) return;
-    
+
     const recipientWallet = this.selectedUser.wallet;
     if (!ethers.isAddress(recipientWallet)) {
       this.errorMessage = 'La dirección del destinatario no es una wallet de Ethereum válida.';
@@ -213,30 +215,24 @@ export class GiftTicketComponent implements OnInit {
     this.txStep = 'validating';
     this.currentTxState = null;
 
-    try {
-      // 0. Verify Network
-      const isSepolia = await this.web3Service.checkNetwork();
-      if (!isSepolia) {
-        this.txStep = 'idle';
-        this.errorMessage = 'Cambiá la red a Sepolia en MetaMask';
-        return;
-      }
-
-      // STEP 0: Validate recipient prior to triggering MetaMask
-      this.marketplaceService.validateGift({ recipientWallet }).subscribe({
-        next: () => {
-          // Success, proceed to step 1
-          this.executeOnChainGiftFlow(eventNftAddress, recipientWallet);
-        },
-        error: (err) => {
-          console.error('Validation error', err);
-          this.txStep = 'idle';
-          this.errorMessage = err.error?.message || 'La wallet destinataria no está registrada en VibeCheck.';
-        }
-      });
-    } catch (err: any) {
-      this.handleError(err);
+    const chainId = this.web3Service.chainId$.getValue();
+    if (chainId !== 11155111) {
+      this.txStep = 'idle';
+      this.errorMessage = 'Cambiá la red a Sepolia en MetaMask';
+      this.web3Service.switchToSepolia();
+      return;
     }
+
+    this.marketplaceService.validateGift({ recipientWallet }).subscribe({
+      next: () => {
+        this.executeOnChainGiftFlow(eventNftAddress, recipientWallet);
+      },
+      error: (err) => {
+        console.error('Validation error', err);
+        this.txStep = 'idle';
+        this.errorMessage = err.error?.message || 'La wallet destinataria no está registrada en VibeCheck.';
+      }
+    });
   }
 
   private async executeOnChainGiftFlow(eventNftAddress: string, recipientWallet: string): Promise<void> {

@@ -490,9 +490,11 @@ export class AdminEventsComponent implements OnInit {
       this.executePublishOnly(event);
     });
   }  private deployAndPublishEvent(event: EventResponse): void {
-    this.web3Service.connectWallet().then(async () => {
-      const isSepolia = await this.web3Service.checkNetwork();
-      if (!isSepolia) {
+    // Regla 1: connectWallet sin await — Safari invalida el gesto en el primer await.
+    // Regla 3: chainId leído sincrónico dentro del .then() — sin await adicional antes de launchEventOnChain.
+    this.web3Service.connectWallet().then(() => {
+      const chainId = this.web3Service.chainId$.getValue();
+      if (chainId !== 11155111) {
         this.showSnack("Por favor cambia la red a Sepolia.", "error");
         this.publishingId = null;
         return;

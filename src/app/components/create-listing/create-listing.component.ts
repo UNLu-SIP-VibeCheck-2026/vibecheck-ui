@@ -136,14 +136,16 @@ export class CreateListingComponent implements OnInit {
     this.txStep = "idle";
     this.currentTxState = null;
 
-    try {
-      // 0. Verify Network
-      const isSepolia = await this.web3Service.checkNetwork();
-      if (!isSepolia) {
-        this.errorMessage = "Cambiá la red a Sepolia en MetaMask";
-        return;
-      }
+    // Regla 3: verificación sincrónica de red — un await antes de MetaMask invalida
+    // el gesto del usuario en Safari mobile y bloquea el deeplink.
+    const chainId = this.web3Service.chainId$.getValue();
+    if (chainId !== 11155111) {
+      this.errorMessage = "Cambiá la red a Sepolia en MetaMask";
+      this.web3Service.switchToSepolia();
+      return;
+    }
 
+    try {
       const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
       const eventNFT = this.contractsService.getEventNFT(eventNftAddress);
 
