@@ -127,22 +127,18 @@ export class TicketPurchaseComponent implements OnInit {
   // Sin async/await: Safari mobile invalida el gesto del usuario en el primer
   // await, bloqueando el deeplink a MetaMask.
   connectWallet() {
-    this.isLoading.set(true);
     this.errorMessage.set('');
     this.web3Service.connectWallet().catch((err: any) => {
       console.error('Error al conectar wallet:', err);
       this.errorMessage.set(err.message || 'Error al conectar la billetera.');
-      this.isLoading.set(false);
     });
   }
 
   checkNetwork() {
-    this.isLoading.set(true);
     this.errorMessage.set('');
     this.web3Service.switchToSepolia().catch((err: any) => {
       console.error('Error al cambiar red:', err);
       this.errorMessage.set('No se pudo cambiar a Sepolia. Cambiala manualmente en tu billetera.');
-      this.isLoading.set(false);
     });
   }
 

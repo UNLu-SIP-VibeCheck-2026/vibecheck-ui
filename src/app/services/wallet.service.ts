@@ -5,7 +5,7 @@ import { createAppKit, AppKit } from "@reown/appkit";
 import { sepolia } from "@reown/appkit/networks";
 import { environment } from "../../environments/environment";
 import { Wallet, Transaction } from '../models/wallet.model';
-import { watchAccount, watchChainId } from '@wagmi/core';
+import { watchAccount, watchChainId, getAccount } from '@wagmi/core';
 // IMPORTANTE: ahora importamos también el adaptador desde wagmi.config.
 // `config` sigue existiendo y es el MISMO objeto que AppKit gestiona internamente,
 // así que el resto de la app (Web3Service, etc.) no necesita cambios.
@@ -78,6 +78,13 @@ export class WalletService {
         analytics: true,
       },
     });
+
+    // Sync initial state to prevent missing chainId/address on load
+    const initialAccount = getAccount(config);
+    this.addressSubject.next(initialAccount.address || null);
+    this.isConnectedSubject.next(initialAccount.isConnected || false);
+    const initialChainId = initialAccount.chainId || config.state.chainId;
+    this.chainIdSubject.next(initialChainId ? Number(initialChainId) : null);
 
     // Subscribe to account/connection changes via Wagmi watchAccount.
     // Ahora SÍ dispara, porque `config` es el wagmiConfig del adaptador
