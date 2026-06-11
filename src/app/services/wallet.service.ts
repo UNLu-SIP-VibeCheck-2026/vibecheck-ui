@@ -52,6 +52,10 @@ export class WalletService {
       description: "VibeCheck UI Platform",
       url: typeof window !== "undefined" ? window.location.origin : "http://localhost:4200",
       icons: ["https://avatars.githubusercontent.com/u/179229932"],
+      redirect: {
+        native: "metamask://", // Fuerza el deep link directo a la app de MetaMask
+        universal: "https://vibecheck.lat" // URL de retorno a tu dApp en producción
+      }
     };
 
     this.modal = createAppKit({
