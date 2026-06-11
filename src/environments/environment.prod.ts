@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiBaseUrl: "api.vibecheck.team",
-  backendUrl: "",
+  apiBaseUrl: "https://api.vibecheck.team/api",
+  backendUrl: "https://api.vibecheck.team",
 };
