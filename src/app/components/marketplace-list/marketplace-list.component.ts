@@ -66,12 +66,18 @@ export class MarketplaceListComponent implements OnInit {
   // View state
   isLoading = signal<boolean>(true);
   errorMessage = signal<string>("");
-  
+  isAuthRequired = signal<boolean>(false);
+
   walletAddress = signal<string | null>(null);
 
   ngOnInit(): void {
     this.web3Service.connectedAddress$.subscribe((addr) => {
+      const prevAddr = this.walletAddress();
       this.walletAddress.set(addr);
+      // Reload when wallet address changes (user logs in or out)
+      if (prevAddr !== addr) {
+        this.loadEventsAndListings();
+      }
     });
 
     this.activatedRoute.queryParams.subscribe((params) => {
@@ -85,6 +91,7 @@ export class MarketplaceListComponent implements OnInit {
   loadEventsAndListings(): void {
     this.isLoading.set(true);
     this.errorMessage.set("");
+    this.isAuthRequired.set(false);
 
     // Fetch public events to populate filters and event mapping
     this.eventService.findAllEvents(0, 100).subscribe({
@@ -125,10 +132,27 @@ export class MarketplaceListComponent implements OnInit {
         // Resolve tiers for new listings
         this.resolveTiersForListings(content);
         this.isLoading.set(false);
+        this.isAuthRequired.set(false);
       },
       error: (err) => {
         console.error("Error loading listings", err);
-        this.errorMessage.set("Error al cargar las publicaciones de reventa.");
+        console.log("Error status:", err.status);
+        console.log("Error code:", err.error?.code);
+        console.log("Error full:", JSON.stringify(err));
+        console.log("Error message:", err.message);
+        // Detect auth error by status, code, or message
+        const isAuthError = err.status === 401 ||
+                           err.error?.code === "AUTHENTICATION_REQUIRED" ||
+                           err.message?.includes("token") ||
+                           err.message?.includes("refresco") ||
+                           err.message?.includes("autentic");
+        if (isAuthError) {
+          this.isAuthRequired.set(true);
+          this.errorMessage.set("");
+        } else {
+          this.errorMessage.set("Error al cargar las publicaciones de reventa.");
+          this.isAuthRequired.set(false);
+        }
         this.isLoading.set(false);
       }
     });
@@ -226,5 +250,9 @@ export class MarketplaceListComponent implements OnInit {
 
   viewDetail(listing: ListingResponse): void {
     this.router.navigate(["/marketplace", listing.onChainListingId]);
+  }
+
+  goToLogin(): void {
+    this.router.navigate(["/login"]);
   }
 }

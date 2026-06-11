@@ -108,6 +108,26 @@
 
   p {
     margin: 0;
+
+    .auth-link {
+      background: var(--gradient-brand-diagonal);
+      border: none;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: var(--text-body-md);
+      font-weight: var(--weight-regular);
+      letter-spacing: var(--tracking-mono);
+      padding: var(--space-1) var(--space-4);
+      margin: var(--space-2) var(--space-2);
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+      }
+    }
   }
 }
 

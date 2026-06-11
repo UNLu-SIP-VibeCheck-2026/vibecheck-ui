@@ -27,8 +27,17 @@
     <p class="body-medium">Buscando publicaciones...</p>
   </div>
 
+  <!-- Authentication Required State -->
+  <div *ngIf="!isLoading() && isAuthRequired()" class="empty-state-card">
+    <div class="empty-icon-container">
+      <mat-icon class="empty-icon">lock</mat-icon>
+    </div>
+    <h2 class="headline-medium">Marketplace solo para usuarios</h2>
+    <p class="body-medium muted">Debés <button (click)="goToLogin()" class="auth-link">ACCEDER</button> para ver las entradas en reventa</p>
+  </div>
+
   <!-- Error Alert -->
-  <div class="alert alert-danger" *ngIf="!isLoading() && errorMessage()">
+  <div class="alert alert-danger" *ngIf="!isLoading() && errorMessage() && !isAuthRequired()">
     <mat-icon class="alert-icon">warning</mat-icon>
     <span class="alert-text">{{ errorMessage() }}</span>
     <button (click)="loadEventsAndListings()" class="btn-cta" style="height: 36px; padding: 0 16px;">
@@ -37,7 +46,7 @@
   </div>
 
   <!-- Main Grid -->
-  <ng-container *ngIf="!isLoading() && !errorMessage()">
+  <ng-container *ngIf="!isLoading() && !isAuthRequired()">
 
     <!-- Empty State -->
     <div *ngIf="listings().length === 0" class="empty-state-card">
