@@ -6,7 +6,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { Web3Service } from "../../services/web3.service";
-import { ethers } from "ethers";
+import { formatUnits, parseUnits } from "viem";
 
 @Component({
   selector: "app-swap",
@@ -139,26 +139,26 @@ export class SwapComponent implements OnInit, OnDestroy {
   // Formatting helpers
   get formattedQuoteVbk(): string {
     const quote = this.quotedVbk();
-    return quote ? parseFloat(ethers.formatUnits(quote, 18)).toFixed(4) : "0.00";
+    return quote ? parseFloat(formatUnits(quote, 18)).toFixed(4) : "0.00";
   }
 
   get formattedQuoteUsdc(): string {
     const quote = this.quotedUsdc();
-    return quote ? parseFloat(ethers.formatUnits(quote, 6)).toFixed(2) : "0.00";
+    return quote ? parseFloat(formatUnits(quote, 6)).toFixed(2) : "0.00";
   }
 
   get formattedQuoteUsdcNet(): string {
     const quote = this.quotedUsdc();
     if (!quote) return "0.00";
     const netQuote = (quote * 85n) / 100n; // 15% penalty fee
-    return parseFloat(ethers.formatUnits(netQuote, 6)).toFixed(2);
+    return parseFloat(formatUnits(netQuote, 6)).toFixed(2);
   }
 
   get exchangeRateBuy(): string {
     const quote = this.quotedVbk();
     const amount = parseFloat(this.usdcAmountInput() || "0");
     if (!quote || amount <= 0) return "0.00";
-    const rate = ethers.formatUnits(quote, 18);
+    const rate = formatUnits(quote, 18);
     return (parseFloat(rate) / amount).toFixed(4);
   }
 
@@ -166,7 +166,7 @@ export class SwapComponent implements OnInit, OnDestroy {
     const quote = this.quotedUsdc();
     const amount = parseFloat(this.vbkAmountInput() || "0");
     if (!quote || amount <= 0) return "0.00";
-    const rate = ethers.formatUnits(quote, 6);
+    const rate = formatUnits(quote, 6);
     return (parseFloat(rate) / amount).toFixed(4);
   }
 
@@ -263,25 +263,25 @@ export class SwapComponent implements OnInit, OnDestroy {
     this.receivedAmount.set("");
 
     try {
-      const amountIn = ethers.parseUnits(amount.toString(), 6);
+      const amountIn = parseUnits(amount.toString(), 6);
       const quoted = this.quotedVbk();
       if (!quoted) throw new Error("No hay cotización disponible.");
       
       const slippagePct = 2;
       const amountOutMin = (quoted * BigInt(100 - slippagePct)) / 100n;
-
+ 
       // Step 1: Approve
       await this.web3Service.approveToken(
         this.web3Service.USDC_ADDRESS,
         this.web3Service.UNISWAP_ROUTER_ADDRESS,
         amountIn
       );
-
+ 
       // Step 2: Swap
       this.step.set('swapping');
       const userAddr = this.connectedAddress();
       if (!userAddr) throw new Error("Billetera no conectada.");
-
+ 
       const deadline = Math.floor(Date.now() / 1000) + 300;
       const hash = await this.web3Service.executeSwap(
         amountIn,
@@ -290,12 +290,12 @@ export class SwapComponent implements OnInit, OnDestroy {
         userAddr,
         deadline
       );
-
+ 
       this.txHash.set(hash);
       
       // Extract received VBK amount
       const received = await this.web3Service.getVbkReceivedFromSwap(hash, userAddr);
-      this.receivedAmount.set(parseFloat(ethers.formatUnits(received, 18)).toFixed(4));
+      this.receivedAmount.set(parseFloat(formatUnits(received, 18)).toFixed(4));
       
       // Update balances
       await this.web3Service.updateBalances(userAddr);
@@ -305,7 +305,7 @@ export class SwapComponent implements OnInit, OnDestroy {
       this.handleSwapError(error, 'buy');
     }
   }
-
+ 
   async onSell() {
     const amount = parseFloat(this.vbkAmountInput());
     const balance = parseFloat(this.vbkBalance());
@@ -314,15 +314,15 @@ export class SwapComponent implements OnInit, OnDestroy {
       this.snackBar.open("Saldo de VBK insuficiente.", "Cerrar", { duration: 3000 });
       return;
     }
-
+ 
     this.stopCountdown();
     this.step.set('approving');
     this.errorMessage.set("");
     this.txHash.set("");
     this.receivedAmount.set("");
-
+ 
     try {
-      const amountIn = ethers.parseUnits(amount.toString(), 18);
+      const amountIn = parseUnits(amount.toString(), 18);
       const quoted = this.quotedUsdc();
       if (!quoted) throw new Error("No hay cotización disponible.");
       
@@ -330,19 +330,19 @@ export class SwapComponent implements OnInit, OnDestroy {
       const afterFee = (quoted * 85n) / 100n;
       const slippagePct = 2;
       const amountOutMin = (afterFee * BigInt(100 - slippagePct)) / 100n;
-
+ 
       // Step 1: Approve
       await this.web3Service.approveToken(
         this.web3Service.VBK_ADDRESS,
         this.web3Service.UNISWAP_ROUTER_ADDRESS,
         amountIn
       );
-
+ 
       // Step 2: Swap
       this.step.set('swapping');
       const userAddr = this.connectedAddress();
       if (!userAddr) throw new Error("Billetera no conectada.");
-
+ 
       const deadline = Math.floor(Date.now() / 1000) + 300;
       const hash = await this.web3Service.executeSwap(
         amountIn,
@@ -351,12 +351,12 @@ export class SwapComponent implements OnInit, OnDestroy {
         userAddr,
         deadline
       );
-
+ 
       this.txHash.set(hash);
       
       // Extract received USDC amount
       const received = await this.web3Service.getUsdcReceivedFromSwap(hash, userAddr);
-      this.receivedAmount.set(parseFloat(ethers.formatUnits(received, 6)).toFixed(2));
+      this.receivedAmount.set(parseFloat(formatUnits(received, 6)).toFixed(2));
       
       // Update balances
       await this.web3Service.updateBalances(userAddr);

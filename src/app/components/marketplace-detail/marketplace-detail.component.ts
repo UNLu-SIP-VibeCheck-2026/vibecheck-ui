@@ -6,8 +6,10 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { writeContract } from "@wagmi/core";
+import { config } from "../../services/wagmi.config";
 import { HttpClient } from "@angular/common/http";
-import { ethers } from "ethers";
+import { formatUnits } from "viem";
 
 import { ListingResponse, PurchaseConfirmResponse } from "../../models/listing.model";
 import { EventResponse } from "../../models/event.model";
@@ -273,17 +275,12 @@ export class MarketplaceDetailComponent implements OnInit {
   async resolveOnChainTier(evt: EventResponse, l: ListingResponse) {
     try {
       const ticketTypes = await this.ticketTypeService.findTicketTypesByEvent(evt.id).toPromise() || [];
-      const eventNFT = this.contractsService.getEventNFT(l.eventNftAddress);
       
       let tierIdxVal: any = null;
       try {
-        tierIdxVal = await eventNFT["tokenTier"](l.tokenId);
-      } catch {
-        try {
-          tierIdxVal = await eventNFT["tierOf"](l.tokenId);
-        } catch (err) {
-          console.warn("Could not retrieve token tier from contract", err);
-        }
+        tierIdxVal = await this.contractsService.getNftTokenTier(l.eventNftAddress, BigInt(l.tokenId));
+      } catch (err) {
+        console.warn("Could not retrieve token tier from contract", err);
       }
 
       if (tierIdxVal !== null && tierIdxVal !== undefined) {
@@ -312,7 +309,7 @@ export class MarketplaceDetailComponent implements OnInit {
       const quote = await this.web3Service.quoteUsdcToVbk(l.priceUsdc);
       if (quote > 0n) {
         this.vbkQuoteBigInt.set(quote);
-        this.vbkPriceEstimate.set(ethers.formatUnits(quote, 18));
+        this.vbkPriceEstimate.set(formatUnits(quote, 18));
         this.isVbkAvailable.set(true);
       }
     } catch (err) {
@@ -344,7 +341,6 @@ export class MarketplaceDetailComponent implements OnInit {
     this.isLoading.set(true);
 
     try {
-      const signer = await this.web3Service.getSigner();
       const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
 
       if (this.selectedToken() === "USDC") {
@@ -353,21 +349,24 @@ export class MarketplaceDetailComponent implements OnInit {
         const amountUsdc = (priceUsdcBig * 10700n) / 10000n;
 
         // 1. Approve USDC if necessary
-        const usdcContract = this.contractsService.getUsdcToken(signer);
-        const currentAllowance = await usdcContract["allowance"](wallet, marketplaceAddress);
+        const currentAllowance = await this.web3Service.getUsdcAllowance(wallet, marketplaceAddress);
 
         if (currentAllowance < amountUsdc) {
           await this.tokenApprovalService.ensureAllowance(usdcAddress, marketplaceAddress, amountUsdc);
         }
 
         // 2. Call buyWithUSDC
-        const marketplace = this.contractsService.getMarketplace(signer);
-        const buyTx = await marketplace["buyWithUSDC"](lst.onChainListingId);
+        const buyTx = await writeContract(config, {
+          address: marketplaceAddress as `0x${string}`,
+          abi: this.contractsService.MARKETPLACE_ABI,
+          functionName: "buyWithUSDC",
+          args: [BigInt(lst.onChainListingId)],
+        } as any);
 
         this.transactionService.track(buyTx).subscribe({
           next: (state) => {
             if (state.status === "confirmed") {
-              const txHash = buyTx.hash || buyTx.transactionHash;
+              const txHash = buyTx;
               this.purchaseTxHash.set(txHash);
               this.confirmPurchaseOnBackend(txHash);
             } else if (state.status === "failed") {
@@ -397,21 +396,24 @@ export class MarketplaceDetailComponent implements OnInit {
         const amountVbk = (vbkNeeded * 10400n) / 10000n;
 
         // 1. Approve VBK if necessary
-        const vbkContract = this.contractsService.getVbkToken(signer);
-        const currentAllowance = await vbkContract["allowance"](wallet, marketplaceAddress);
+        const currentAllowance = await this.web3Service.getVbkAllowance(wallet, marketplaceAddress);
 
         if (currentAllowance < amountVbk) {
           await this.tokenApprovalService.ensureAllowance(vbkAddress, marketplaceAddress, amountVbk);
         }
 
         // 2. Call buyWithVBK
-        const marketplace = this.contractsService.getMarketplace(signer);
-        const buyTx = await marketplace["buyWithVBK"](lst.onChainListingId);
+        const buyTx = await writeContract(config, {
+          address: marketplaceAddress as `0x${string}`,
+          abi: this.contractsService.MARKETPLACE_ABI,
+          functionName: "buyWithVBK",
+          args: [BigInt(lst.onChainListingId)],
+        } as any);
 
         this.transactionService.track(buyTx).subscribe({
           next: (state) => {
             if (state.status === "confirmed") {
-              const txHash = buyTx.hash || buyTx.transactionHash;
+              const txHash = buyTx;
               this.purchaseTxHash.set(txHash);
               this.confirmPurchaseOnBackend(txHash);
             } else if (state.status === "failed") {

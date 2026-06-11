@@ -12,7 +12,7 @@ import { TicketTypeService } from '../../services/ticket-type.service';
 import { Web3Service } from '../../services/web3.service';
 import { ContractsService } from '../../services/contracts.service';
 import { environment } from '../../../environments/environment';
-import { ethers } from 'ethers';
+import { formatUnits } from 'viem';
 
 @Component({
   selector: 'app-ticket-purchase',
@@ -295,20 +295,18 @@ export class TicketPurchaseComponent implements OnInit {
     const updatedTiers = currentTiers.map(t => ({ ...t }));
 
     try {
-      const eventNftContract = this.contractsService.getEventNFT(currentEvent.eventNftAddress);
-
       for (const tier of updatedTiers) {
         try {
           const quote = await this.web3Service.getVbkQuote(currentEvent.eventNftAddress, tier.tierIndex);
-          quotes[tier.ticketTypeId] = ethers.formatUnits(quote, 18);
+          quotes[tier.ticketTypeId] = formatUnits(quote, 18);
         } catch (err) {
           console.error(`Error loading VBK quote for tier ${tier.name}:`, err);
           quotes[tier.ticketTypeId] = 'Error';
         }
 
         try {
-          const onChainTier = await eventNftContract['tiers'](tier.tierIndex);
-          tier.quantitySold = Number(onChainTier[3]);
+          const onChainTier = await this.contractsService.getEventNftTier(currentEvent.eventNftAddress, BigInt(tier.tierIndex));
+          tier.quantitySold = Number(onChainTier.sold);
         } catch (err) {
           console.error(`Error loading on-chain tier info for ${tier.name}:`, err);
         }

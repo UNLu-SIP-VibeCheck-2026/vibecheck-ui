@@ -79,16 +79,13 @@ export class CancelListingComponent {
 
     try {
       // 1. Contract cancel call
-      const signer = await this.web3Service.getSigner();
-      const marketplace = this.contractsService.getMarketplace(signer);
-
-      const cancelTx = await marketplace["cancel"](this.listing.onChainListingId);
+      const cancelTx = await this.web3Service.cancelListing(BigInt(this.listing.onChainListingId));
 
       this.transactionService.track(cancelTx).subscribe({
         next: (state) => {
           this.currentTxState = state;
           if (state.status === "confirmed") {
-            this.confirmCancelBackend(state.receipt);
+            this.confirmCancelBackend(state.receipt || cancelTx);
           } else if (state.status === "failed") {
             this.txStep = "idle";
             this.errorMessage = "La cancelación on-chain falló.";
@@ -107,7 +104,7 @@ export class CancelListingComponent {
     this.txStep = "confirming";
     this.currentTxState = null;
 
-    const txHash = receipt.hash || receipt.transactionHash;
+    const txHash = typeof receipt === "string" ? receipt : (receipt.hash || receipt.transactionHash);
     const req = { txHash };
 
     this.marketplaceService.confirmListingCancel(this.listing.onChainListingId, req).subscribe({

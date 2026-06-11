@@ -35,7 +35,7 @@ import { LoadingStateComponent } from "../shared/loading-state/loading-state.com
 import { EmptyStateComponent } from "../shared/empty-state/empty-state.component";
 import { trackLoading } from "../../utils/loading.operator";
 import { environment } from "../../../environments/environment";
-import { ethers } from "ethers";
+import { parseUnits } from "viem";
 import { MatNativeDateModule } from "@angular/material/core";
 
 @Component({
@@ -523,7 +523,7 @@ export class AdminEventsComponent implements OnInit {
 
           const tiers = ticketTypes.map(tt => ({
             name: tt.name,
-            priceUSDC: ethers.parseUnits(tt.priceUsdc.toString(), 6),
+            priceUSDC: parseUnits(tt.priceUsdc.toString(), 6),
             supply: tt.maxQuantity,
             sold: 0
           }));

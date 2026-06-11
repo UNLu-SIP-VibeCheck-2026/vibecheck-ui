@@ -1,38 +1,43 @@
-import { Injectable, inject } from "@angular/core";
-import { ethers } from "ethers";
-import { Web3Service } from "./web3.service";
+import { Injectable } from "@angular/core";
+import { config } from "./wagmi.config";
+import { readContract, writeContract, getAccount, waitForTransactionReceipt } from "@wagmi/core";
+import { parseAbi } from "viem";
 
 @Injectable({
   providedIn: "root",
 })
 export class TokenApprovalService {
-  private web3Service = inject(Web3Service);
+  private readonly ERC20_ABI = parseAbi([
+    "function allowance(address owner, address spender) view returns (uint256)",
+    "function approve(address spender, uint256 amount) returns (bool)",
+  ]);
 
   async ensureAllowance(
     tokenAddress: string,
     spenderAddress: string,
     amount: bigint
   ): Promise<void> {
-    const signer = await this.web3Service.getSigner();
-    const ownerAddress = await signer.getAddress();
+    const account = getAccount(config);
+    const ownerAddress = account.address;
+    if (!ownerAddress) {
+      throw new Error("No hay billetera conectada.");
+    }
 
-    const tokenContract = new ethers.Contract(
-      tokenAddress,
-      [
-        "function allowance(address owner, address spender) view returns (uint256)",
-        "function approve(address spender, uint256 amount) returns (bool)",
-      ],
-      signer
-    );
-
-    const currentAllowance: bigint = await tokenContract["allowance"](
-      ownerAddress,
-      spenderAddress
-    );
+    const currentAllowance = await readContract(config, {
+      address: tokenAddress as `0x${string}`,
+      abi: this.ERC20_ABI,
+      functionName: "allowance",
+      args: [ownerAddress, spenderAddress as `0x${string}`],
+    } as any) as bigint;
 
     if (currentAllowance < amount) {
-      const tx = await tokenContract["approve"](spenderAddress, amount);
-      await tx.wait();
+      const txHash = await writeContract(config, {
+        address: tokenAddress as `0x${string}`,
+        abi: this.ERC20_ABI,
+        functionName: "approve",
+        args: [spenderAddress as `0x${string}`, amount],
+      } as any);
+      await waitForTransactionReceipt(config, { hash: txHash });
     }
   }
 }

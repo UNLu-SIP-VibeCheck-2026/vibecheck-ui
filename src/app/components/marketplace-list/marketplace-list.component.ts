@@ -187,17 +187,11 @@ export class MarketplaceListComponent implements OnInit {
         }
 
         // Call contract to query tier
-        const eventNFT = this.contractsService.getEventNFT(listing.eventNftAddress);
         let tierIdxVal: any = null;
-
         try {
-          tierIdxVal = await eventNFT["tokenTier"](listing.tokenId);
-        } catch {
-          try {
-            tierIdxVal = await eventNFT["tierOf"](listing.tokenId);
-          } catch (err) {
-            console.warn(`Could not resolve tier for token ${listing.tokenId} on-chain`, err);
-          }
+          tierIdxVal = await this.contractsService.getNftTokenTier(listing.eventNftAddress, BigInt(listing.tokenId));
+        } catch (err) {
+          console.warn(`Could not resolve tier for token ${listing.tokenId} on-chain`, err);
         }
 
         if (tierIdxVal !== null && tierIdxVal !== undefined) {
