@@ -252,8 +252,8 @@ export class Web3Service {
     }
   }
 
-  async signMessage(message: string): Promise<string> {
-    return await signMessage(config, { message } as any);
+  signMessage(message: string): Promise<string> {
+    return signMessage(config, { message } as any);
   }
 
   async getVbkQuote(

@@ -1247,7 +1247,7 @@ export class AdvertiseEventComponent implements OnInit {
     });
   }
 
-  async signAndVerify() {
+  signAndVerify() {
     const address = this.connectedAddress();
     const message = this.siweMessage();
     if (!address || !message) return;
@@ -1255,8 +1255,7 @@ export class AdvertiseEventComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    try {
-      const signature = await this.web3Service.signMessage(message);
+    this.web3Service.signMessage(message).then(signature => {
       this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/verify`, {
         walletAddress: address,
         message,
@@ -1275,11 +1274,11 @@ export class AdvertiseEventComponent implements OnInit {
           }
         }
       });
-    } catch (e: any) {
+    }).catch((e: any) => {
       this.isLoading.set(false);
       console.error('Error al firmar:', e);
       this.errorMessage.set('Firma cancelada o rechazada por el usuario.');
-    }
+    });
   }
 
   loadData() {
