@@ -291,7 +291,6 @@ export class Web3Service {
     const currentProvider = this.getProvider();
     const signer = await currentProvider.getSigner();
 
-    // 1. Approve USDC (6 decimales) — cover priceUSDC + 7% fee
     const usdcContract = new ethers.Contract(
       this.USDC_ADDRESS,
       this.ERC20_ABI,
@@ -299,25 +298,35 @@ export class Web3Service {
     );
     const amountInUnits =
       (ethers.parseUnits(priceUsdc.toString(), 6) * 107n) / 100n;
+
+    // FIX PARA MOBILE: Disparamos el approve de forma directa
     const approveTx = await usdcContract["approve"](
       this.OFFERING_NFT_ADDRESS,
       amountInUnits,
     );
-    await approveTx.wait();
 
-    // 2. Comprar ticket
+    // Esperamos a que se mine la aprobación en la blockchain
+    const approveReceipt = await approveTx.wait();
+
+    // IMPORTANTE: Volvemos a chequear/garantizar el estado del proveedor 
+    // justo antes del segundo trigger para re-enganchar el socket en navegadores externos
+    const freshProvider = this.getProvider();
+    const freshSigner = await freshProvider.getSigner();
+
     const offeringContract = new ethers.Contract(
       this.OFFERING_NFT_ADDRESS,
       this.OFFERING_ABI,
-      signer,
+      freshSigner,
     );
+
+    // Disparamos la compra del ticket
     const buyTx = await offeringContract["buyWithUSDC"](
       eventNftAddress,
       tierIndex,
     );
     const receipt = await buyTx.wait();
 
-    // 3. Extraer tokenId del evento TicketPurchasedUSDC
+    // Extraer tokenId del evento TicketPurchasedUSDC
     let tokenId: number | null = null;
     for (const log of receipt.logs) {
       try {
@@ -347,7 +356,7 @@ export class Web3Service {
     const currentProvider = this.getProvider();
     const signer = await currentProvider.getSigner();
 
-    // 1. Cotizar en VBK
+    // 1. Cotizar en VBK (Se ejecuta de forma reactiva y rápida)
     const quote = await this.getVbkQuote(eventNftAddress, tierIndex);
     const vbkNeeded = (quote * 105n) / 100n; // 5% slippage
     const maxVbkAmount = (vbkNeeded * 104n) / 100n; // 4% fee
@@ -362,14 +371,21 @@ export class Web3Service {
       this.OFFERING_NFT_ADDRESS,
       maxVbkAmount,
     );
+    // Esperamos a que se mine la aprobación
     await approveTx.wait();
+
+    // FIX PARA MOBILE: Volvemos a solicitar un proveedor fresco de la sesión activa 
+    // para restaurar el handshake del bridge antes de disparar la compra
+    const freshProvider = this.getProvider();
+    const freshSigner = await freshProvider.getSigner();
 
     // 3. Comprar ticket
     const offeringContract = new ethers.Contract(
       this.OFFERING_NFT_ADDRESS,
       this.OFFERING_ABI,
-      signer,
+      freshSigner, // <-- Usamos el signer refrescado
     );
+
     const buyTx = await offeringContract["buyWithVBK"](
       eventNftAddress,
       tierIndex,
