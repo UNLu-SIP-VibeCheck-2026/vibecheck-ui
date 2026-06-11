@@ -108,8 +108,6 @@ export class Web3Service {
     "event TicketPurchasedVBK(address indexed buyer, address indexed eventNFT, uint256 indexed tokenId, uint256 tierIdx, uint256 vbkPaid, uint256 vbkFee, uint256 priceUSDC)",
   ];
 
-  // ABI corregido: uint16 para maxResalePriceBps y royaltyBps,
-  // supply (no maxSupply), baseURI (no baseUri)
   private readonly EVENT_FACTORY_ABI = [
     "function launchEvent((string name, string symbol, uint256 eventDate, uint16 maxResalePriceBps, uint16 royaltyBps, address venueSigner, string baseURI) p, (string name, uint256 priceUSDC, uint256 supply, uint256 sold)[] tiers) external returns (address)",
     "event EventLaunched(address indexed organizer, address indexed eventNFT, string name, uint256 eventDate)",
@@ -147,7 +145,7 @@ export class Web3Service {
         const isSepolia = chainId === 11155111;
         this.chainId$.next(chainId);
         this.isSepoliaSubject.next(isSepolia);
-        
+
         const addr = this.connectedAddressSubject.getValue();
         if (addr) {
           if (isSepolia) {
@@ -194,12 +192,10 @@ export class Web3Service {
   }
 
   async updateBalances(address: string): Promise<void> {
-    if (!this.provider) {
-      throw new Error("No hay billetera conectada.");
-    }
+    const currentProvider = this.getProvider();
 
     try {
-      const ethBal = await this.provider.getBalance(address);
+      const ethBal = await currentProvider.getBalance(address);
       const formattedEth = ethers.formatEther(ethBal);
 
       let formattedVbk = "0";
@@ -207,7 +203,7 @@ export class Web3Service {
         const vbkContract = new ethers.Contract(
           this.VBK_ADDRESS,
           this.ERC20_ABI,
-          this.provider,
+          currentProvider,
         );
         const vbkBal = await vbkContract["balanceOf"](address);
         formattedVbk = ethers.formatEther(vbkBal);
@@ -220,7 +216,7 @@ export class Web3Service {
         const usdcContract = new ethers.Contract(
           this.USDC_ADDRESS,
           this.ERC20_ABI,
-          this.provider,
+          currentProvider,
         );
         const usdcBal = await usdcContract["balanceOf"](address);
         const decimals = await usdcContract["decimals"]().catch(() => 6);
@@ -244,11 +240,8 @@ export class Web3Service {
     amount: string,
     asset: "ETH" | "VBK" | "USDC",
   ): Promise<string> {
-    if (!this.provider) {
-      throw new Error("No hay proveedor de Web3 conectado.");
-    }
-
-    const signer = await this.provider.getSigner();
+    const currentProvider = this.getProvider();
+    const signer = await currentProvider.getSigner();
 
     if (asset === "ETH") {
       const tx = await signer.sendTransaction({
@@ -272,10 +265,8 @@ export class Web3Service {
   }
 
   async signMessage(message: string): Promise<string> {
-    if (!this.provider) {
-      throw new Error("No hay billetera conectada.");
-    }
-    const signer = await this.provider.getSigner();
+    const currentProvider = this.getProvider();
+    const signer = await currentProvider.getSigner();
     return await signer.signMessage(message);
   }
 
@@ -283,13 +274,11 @@ export class Web3Service {
     eventNftAddress: string,
     tierIndex: number,
   ): Promise<bigint> {
-    if (!this.provider) {
-      throw new Error("No hay billetera conectada.");
-    }
+    const currentProvider = this.getProvider();
     const offeringContract = new ethers.Contract(
       this.OFFERING_NFT_ADDRESS,
       this.OFFERING_ABI,
-      this.provider,
+      currentProvider,
     );
     return await offeringContract["quoteVBK"](eventNftAddress, tierIndex);
   }
@@ -299,8 +288,8 @@ export class Web3Service {
     tierIndex: number,
     priceUsdc: number,
   ): Promise<{ txHash: string; tokenId: number }> {
-    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
-    const signer = await this.provider.getSigner();
+    const currentProvider = this.getProvider();
+    const signer = await currentProvider.getSigner();
 
     // 1. Approve USDC (6 decimales) — cover priceUSDC + 7% fee
     const usdcContract = new ethers.Contract(
@@ -355,8 +344,8 @@ export class Web3Service {
     eventNftAddress: string,
     tierIndex: number,
   ): Promise<{ txHash: string; tokenId: number }> {
-    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
-    const signer = await this.provider.getSigner();
+    const currentProvider = this.getProvider();
+    const signer = await currentProvider.getSigner();
 
     // 1. Cotizar en VBK
     const quote = await this.getVbkQuote(eventNftAddress, tierIndex);
@@ -415,21 +404,21 @@ export class Web3Service {
     params: {
       name: string;
       symbol: string;
-      eventDate: number; // timestamp UNIX en segundos
-      maxResalePriceBps: number; // ej. 12000 = 120%
-      royaltyBps: number; // ej. 500 = 5%
-      venueSigner: string; // address del venue signer
-      baseURI: string; // prefijo IPFS / URL base
+      eventDate: number;
+      maxResalePriceBps: number;
+      royaltyBps: number;
+      venueSigner: string;
+      baseURI: string;
     },
     tiers: Array<{
       name: string;
-      priceUSDC: bigint; // precio en unidades on-chain (6 decimales): parseUnits("50", 6)
-      supply: number; // cantidad máxima de entradas de este tier
-      sold: number; // siempre 0 al crear
+      priceUSDC: bigint;
+      supply: number;
+      sold: number;
     }>,
   ): Promise<{ eventNftAddress: string; deployTxHash: string }> {
-    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
-    const signer = await this.provider.getSigner();
+    const currentProvider = this.getProvider();
+    const signer = await currentProvider.getSigner();
 
     const factoryContract = new ethers.Contract(
       this.EVENT_FACTORY_ADDRESS,
@@ -463,20 +452,16 @@ export class Web3Service {
     return { eventNftAddress, deployTxHash: receipt.hash ?? tx.hash };
   }
 
-
-
   // =========================================================================
   // Uniswap V2 Swap Methods (USDC <-> VBK)
   // =========================================================================
 
   async quoteUsdcToVbk(usdcAmount: number): Promise<bigint> {
-    if (!this.provider) {
-      throw new Error("No hay billetera conectada.");
-    }
+    const currentProvider = this.getProvider();
     const routerContract = new ethers.Contract(
       this.UNISWAP_ROUTER_ADDRESS,
       this.UNISWAP_ROUTER_ABI,
-      this.provider,
+      currentProvider,
     );
     const amountIn = ethers.parseUnits(usdcAmount.toString(), 6);
     const amounts = await routerContract["getAmountsOut"](amountIn, [
@@ -491,8 +476,8 @@ export class Web3Service {
     spender: string,
     amount: bigint,
   ): Promise<void> {
-    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
-    const signer = await this.provider.getSigner();
+    const currentProvider = this.getProvider();
+    const signer = await currentProvider.getSigner();
     const tokenContract = new ethers.Contract(
       tokenAddress,
       this.ERC20_ABI,
@@ -509,8 +494,8 @@ export class Web3Service {
     to: string,
     deadline: number,
   ): Promise<string> {
-    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
-    const signer = await this.provider.getSigner();
+    const currentProvider = this.getProvider();
+    const signer = await currentProvider.getSigner();
     const routerContract = new ethers.Contract(
       this.UNISWAP_ROUTER_ADDRESS,
       this.UNISWAP_ROUTER_ABI,
@@ -531,14 +516,13 @@ export class Web3Service {
     usdcAmount: number,
     slippagePct: number = 2,
   ): Promise<string> {
-    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
-    const signer = await this.provider.getSigner();
+    const currentProvider = this.getProvider();
+    const signer = await currentProvider.getSigner();
     const userAddress = await signer.getAddress();
 
     const amountIn = ethers.parseUnits(usdcAmount.toString(), 6);
     const quoted = await this.quoteUsdcToVbk(usdcAmount);
 
-    // amountOutMin = quoted * (100 - slippagePct) / 100
     const amountOutMin = (quoted * BigInt(100 - slippagePct)) / 100n;
 
     await this.approveToken(
@@ -558,13 +542,11 @@ export class Web3Service {
   }
 
   async quoteVbkToUsdc(vbkAmount: number): Promise<bigint> {
-    if (!this.provider) {
-      throw new Error("No hay billetera conectada.");
-    }
+    const currentProvider = this.getProvider();
     const routerContract = new ethers.Contract(
       this.UNISWAP_ROUTER_ADDRESS,
       this.UNISWAP_ROUTER_ABI,
-      this.provider,
+      currentProvider,
     );
     const amountIn = ethers.parseUnits(vbkAmount.toString(), 18);
     const amounts = await routerContract["getAmountsOut"](amountIn, [
@@ -578,14 +560,13 @@ export class Web3Service {
     vbkAmount: number,
     slippagePct: number = 2,
   ): Promise<string> {
-    if (!this.provider) throw new Error("No hay proveedor de Web3 conectado.");
-    const signer = await this.provider.getSigner();
+    const currentProvider = this.getProvider();
+    const signer = await currentProvider.getSigner();
     const userAddress = await signer.getAddress();
 
     const amountIn = ethers.parseUnits(vbkAmount.toString(), 18);
     const quoted = await this.quoteVbkToUsdc(vbkAmount);
 
-    // VBK -> USDC with 15% disincentive fee + slippage
     const afterFee = (quoted * 85n) / 100n; // 15% fee
     const amountOutMin = (afterFee * BigInt(100 - slippagePct)) / 100n;
 
@@ -609,10 +590,8 @@ export class Web3Service {
     txHash: string,
     userAddress: string,
   ): Promise<bigint> {
-    if (!this.provider) {
-      throw new Error("No hay billetera conectada.");
-    }
-    const receipt = await this.provider.getTransactionReceipt(txHash);
+    const currentProvider = this.getProvider();
+    const receipt = await currentProvider.getTransactionReceipt(txHash);
     if (!receipt)
       throw new Error("No se pudo obtener el recibo de transacción.");
 
@@ -626,7 +605,7 @@ export class Web3Service {
         log.topics[0] === transferEventTopic &&
         log.topics[2] &&
         log.topics[2].toLowerCase().slice(-40) ===
-          userAddress.toLowerCase().slice(-40)
+        userAddress.toLowerCase().slice(-40)
       ) {
         const decoded = ethers.AbiCoder.defaultAbiCoder().decode(
           ["uint256"],
@@ -642,10 +621,8 @@ export class Web3Service {
     txHash: string,
     userAddress: string,
   ): Promise<bigint> {
-    if (!this.provider) {
-      throw new Error("No hay billetera conectada.");
-    }
-    const receipt = await this.provider.getTransactionReceipt(txHash);
+    const currentProvider = this.getProvider();
+    const receipt = await currentProvider.getTransactionReceipt(txHash);
     if (!receipt)
       throw new Error("No se pudo obtener el recibo de transacción.");
 
@@ -659,7 +636,7 @@ export class Web3Service {
         log.topics[0] === transferEventTopic &&
         log.topics[2] &&
         log.topics[2].toLowerCase().slice(-40) ===
-          userAddress.toLowerCase().slice(-40)
+        userAddress.toLowerCase().slice(-40)
       ) {
         const decoded = ethers.AbiCoder.defaultAbiCoder().decode(
           ["uint256"],

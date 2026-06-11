@@ -131,7 +131,9 @@ export class Web3WalletComponent implements OnInit {
   }
 
   forceSwitchNetwork() {
-    this.web3Service.switchToSepolia();
+    this.web3Service.switchToSepolia().catch(err => {
+      this.snackBar.open('Error al cambiar a Sepolia, verificalo en tu MetaMask.', 'Cerrar', { duration: 3000 });
+    });
   }
 
   truncateAddress(address: string | null): string {
