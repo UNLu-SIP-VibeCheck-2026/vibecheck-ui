@@ -230,10 +230,19 @@
         </div>
         <h2>Transacción en Progreso</h2>
         <p>Aprobando y procesando la compra de tu ticket en la red Ethereum Sepolia...</p>
+        
+        <p class="overlay-hint" style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); max-width: 450px; margin: 10px auto; line-height: 1.5; font-style: italic;">
+          Nota mobile: si tu billetera no se abre automáticamente, ábrela de forma manual para autorizar la transacción.
+        </p>
+
         <p class="warning-alert">
           <mat-icon>warning</mat-icon>
           <span>Por favor, no cierres esta ventana ni recargues la página. Esto puede tardar entre 15 y 30 segundos por la confirmación de bloques.</span>
         </p>
+
+        <button mat-stroked-button (click)="isLoading.set(false); currentStep.set(3);" style="margin-top: 15px; border-color: rgba(255,255,255,0.15); color: #ffffff;">
+          Volver a Selección
+        </button>
       </div>
     </div>
 
@@ -329,6 +338,14 @@
 <div class="global-overlay" *ngIf="isLoading() && currentStep() !== 4 && currentStep() !== 5">
   <div class="overlay-content">
     <mat-spinner diameter="60"></mat-spinner>
-    <p>Procesando operación en MetaMask...</p>
+    <p>Procesando firma en tu billetera...</p>
+    
+    <p class="overlay-hint" style="font-size: 0.85rem; color: rgba(255,255,255,0.6); max-width: 300px; margin: 5px auto; line-height: 1.4;">
+      Si la aplicación de tu billetera (MetaMask) no se abre automáticamente, ábrela manualmente para firmar el mensaje.
+    </p>
+
+    <button mat-stroked-button (click)="isLoading.set(false)" style="margin-top: 15px; border-color: rgba(255,255,255,0.2); color: #ffffff;">
+      Cancelar / Reintentar
+    </button>
   </div>
 </div>

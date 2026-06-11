@@ -66,6 +66,8 @@ export class TicketPurchaseComponent implements OnInit {
   connectedAddress = signal<string | null>(null);
   isSepolia = signal<boolean>(false);
   siweMessage = signal<string>('');
+  usdcBalance = signal<string>('0.00');
+  vbkBalance = signal<string>('0.00');
 
   // Event & Tiers display state signals
   mappedEvent = signal<{
@@ -106,6 +108,14 @@ export class TicketPurchaseComponent implements OnInit {
     this.web3Service.isSepolia$.subscribe(sepolia => {
       this.isSepolia.set(sepolia);
       this.checkConnectionState();
+    });
+
+    this.web3Service.usdcBalance$.subscribe(bal => {
+      this.usdcBalance.set(bal);
+    });
+
+    this.web3Service.vbkBalance$.subscribe(bal => {
+      this.vbkBalance.set(bal);
     });
   }
 
@@ -333,6 +343,13 @@ export class TicketPurchaseComponent implements OnInit {
       return;
     }
 
+    // Verificar saldo de USDC antes de proceder
+    const usdcBal = parseFloat(this.usdcBalance());
+    if (usdcBal < tier.priceUsdc) {
+      this.errorMessage.set(`Saldo insuficiente de USDC. Necesitás ${tier.priceUsdc} USDC pero tenés ${usdcBal} USDC.`);
+      return;
+    }
+
     this.currentStep.set(4);
     this.isLoading.set(true);
     this.errorMessage.set('');
@@ -366,6 +383,15 @@ export class TicketPurchaseComponent implements OnInit {
     if (chainId !== 11155111) {
       this.errorMessage.set('Cambiá a la red Sepolia antes de comprar.');
       this.web3Service.switchToSepolia();
+      return;
+    }
+
+    // Verificar saldo de VBK antes de proceder
+    const vbkBal = parseFloat(this.vbkBalance());
+    const quoteStr = this.vbkQuotes()[tier.ticketTypeId];
+    const needed = quoteStr ? parseFloat(quoteStr) : 0;
+    if (vbkBal < needed) {
+      this.errorMessage.set(`Saldo insuficiente de VBK. Necesitás ${needed.toFixed(4)} VBK pero tenés ${vbkBal.toFixed(4)} VBK.`);
       return;
     }
 
