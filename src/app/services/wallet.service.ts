@@ -5,8 +5,11 @@ import { createAppKit, AppKit } from "@reown/appkit";
 import { sepolia } from "@reown/appkit/networks";
 import { environment } from "../../environments/environment";
 import { Wallet, Transaction } from '../models/wallet.model';
-import { watchAccount, watchChainId, reconnect } from '@wagmi/core';
-import { config } from './wagmi.config';
+import { watchAccount, watchChainId } from '@wagmi/core';
+// IMPORTANTE: ahora importamos también el adaptador desde wagmi.config.
+// `config` sigue existiendo y es el MISMO objeto que AppKit gestiona internamente,
+// así que el resto de la app (Web3Service, etc.) no necesita cambios.
+import { wagmiAdapter, config } from './wagmi.config';
 
 export interface SiweChallengeResponse {
   message: string;
@@ -51,18 +54,22 @@ export class WalletService {
       // Mantenemos el fix de la barra final para evitar el Invalid App Configuration
       url: isProd ? "https://vibecheck.lat/" : "http://localhost:4200/",
       icons: ["https://avatars.githubusercontent.com/u/179229932"],
-      // FIX MULTI-WALLET: Eliminamos 'native' hardcodeado para que AppKit use el deep link de la wallet elegida.
-      // Dejamos solo la URL universal para que la wallet sepa a dónde regresar al usuario tras firmar.
+      // FIX MULTI-WALLET: dejamos solo la URL universal para que la wallet
+      // sepa a dónde regresar al usuario tras firmar.
       redirect: {
         universal: isProd ? "https://vibecheck.lat" : "http://localhost:4200"
       }
     };
 
-    // Reconnect existing Wagmi session
-    reconnect(config);
-
+    // FIX REAL: AppKit v1.x no acepta `wagmiConfig`; requiere `adapters`.
+    // Antes, el `as any` escondía ese error de tipos y AppKit arrancaba en modo
+    // "Core" (WalletConnect interno) desconectado del config de wagmi, por lo
+    // que watchAccount nunca disparaba y writeContract fallaba con
+    // ConnectorNotConnectedError.
+    // Nota: ya NO llamamos a reconnect(config) manualmente; createAppKit
+    // reconecta la sesión existente a través del adaptador.
     this.modal = createAppKit({
-      wagmiConfig: config,
+      adapters: [wagmiAdapter],
       networks: [sepolia],
       defaultNetwork: sepolia,
       metadata,
@@ -70,9 +77,11 @@ export class WalletService {
       features: {
         analytics: true,
       },
-    } as any);
+    });
 
-    // Subscribe to account/connection changes via Wagmi watchAccount
+    // Subscribe to account/connection changes via Wagmi watchAccount.
+    // Ahora SÍ dispara, porque `config` es el wagmiConfig del adaptador
+    // (la misma instancia que usa el modal de AppKit).
     watchAccount(config, {
       onChange: (account) => {
         this.zone.run(() => {
