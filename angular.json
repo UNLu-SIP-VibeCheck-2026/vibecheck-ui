@@ -27,7 +27,19 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "@safe-global/safe-apps-provider",
+              "dayjs",
+              "dayjs/locale/en.js",
+              "dayjs/plugin/relativeTime.js",
+              "dayjs/plugin/updateLocale.js",
+              "buffer",
+              "qrcode",
+              "@safe-global/safe-gateway-typescript-sdk",
+              "@walletconnect/environment",
+              "pino"
+            ]
           },
           "configurations": {
             "production": {
