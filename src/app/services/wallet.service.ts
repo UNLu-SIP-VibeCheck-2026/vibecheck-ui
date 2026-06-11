@@ -42,14 +42,19 @@ export class WalletService {
 
   private initAppKit() {
     const projectId = environment.reownProjectId;
+    // Identificamos si estamos corriendo en producción o en local
+    const isProd = typeof window !== 'undefined' && window.location.hostname === 'vibecheck.lat';
+
     const metadata = {
       name: "VibeCheck UI",
       description: "VibeCheck UI Platform",
-      url: typeof window !== "undefined" ? window.location.origin : "http://localhost:4200",
+      // Mantenemos el fix de la barra final para evitar el Invalid App Configuration
+      url: isProd ? "https://vibecheck.lat/" : "http://localhost:4200/",
       icons: ["https://avatars.githubusercontent.com/u/179229932"],
+      // FIX MULTI-WALLET: Eliminamos 'native' hardcodeado para que AppKit use el deep link de la wallet elegida.
+      // Dejamos solo la URL universal para que la wallet sepa a dónde regresar al usuario tras firmar.
       redirect: {
-        native: "metamask://", // Fuerza el deep link directo a la app de MetaMask
-        universal: "https://vibecheck.lat" // URL de retorno a tu dApp en producción
+        universal: isProd ? "https://vibecheck.lat" : "http://localhost:4200"
       }
     };
 
