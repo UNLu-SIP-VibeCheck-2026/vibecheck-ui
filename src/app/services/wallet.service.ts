@@ -57,6 +57,7 @@ export class WalletService {
     this.modal = createAppKit({
       adapters: [new EthersAdapter()],
       networks: [sepolia],
+      defaultNetwork: sepolia,
       metadata,
       projectId,
       features: {
