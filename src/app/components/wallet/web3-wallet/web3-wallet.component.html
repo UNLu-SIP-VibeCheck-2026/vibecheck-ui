@@ -44,9 +44,9 @@
           </div>
           <div style="display: flex; align-items: center; gap: 16px; margin-top: 4px;">
             <h2 class="address" style="margin: 0;">{{ truncateAddress(connectedAddress$ | async) }}</h2>
-            <button *ngIf="!isLinked" class="luxury-btn primary-btn" (click)="linkWallet()" [disabled]="isLinking" style="font-size: 0.8rem; padding: 4px 12px; height: auto; min-height: unset; margin: 0;">
+            <button *ngIf="!isLinked" class="luxury-btn primary-btn" (click)="linkWallet()" [disabled]="isLinking || isLoadingChallenge" style="font-size: 0.8rem; padding: 4px 12px; height: auto; min-height: unset; margin: 0;">
               <mat-icon style="font-size: 16px; width: 16px; height: 16px; margin-right: 4px;">link</mat-icon>
-              {{ isLinking ? 'Vinculando...' : 'Vincular con VibeCheck' }}
+              {{ isLinking ? 'Vinculando...' : (isLoadingChallenge ? 'Preparando...' : 'Vincular con VibeCheck') }}
             </button>
           </div>
         </div>

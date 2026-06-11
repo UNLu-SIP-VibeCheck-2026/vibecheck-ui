@@ -33,9 +33,8 @@ export class Web3WalletComponent implements OnInit {
   isLinking = false;
   isLinked = false;
 
-  // Challenge precargado para que linkWallet() no necesite un HTTP call
-  // antes del signMessage (evita que Safari mobile invalide el gesto del usuario).
-  private pendingChallenge: SiweChallengeResponse | null = null;
+  siweMessage: string | null = null;
+  isLoadingChallenge = false;
 
   ngOnInit() {
     this.connectedAddress$.subscribe(address => {
@@ -50,7 +49,7 @@ export class Web3WalletComponent implements OnInit {
         this.preloadChallenge(address);
       } else {
         this.isLinked = false;
-        this.pendingChallenge = null;
+        this.siweMessage = null;
       }
     });
   }
@@ -61,14 +60,16 @@ export class Web3WalletComponent implements OnInit {
   }
 
   private preloadChallenge(address: string) {
-    this.pendingChallenge = null;
+    this.siweMessage = null;
+    this.isLoadingChallenge = true;
     this.walletService.requestChallenge(address).subscribe({
       next: (challenge) => {
-        this.pendingChallenge = challenge;
+        this.siweMessage = challenge.message;
+        this.isLoadingChallenge = false;
       },
       error: (err) => {
         console.error('Error precargando challenge SIWE:', err);
-        // No mostrar error al usuario — se reintenta al tocar Vincular.
+        this.isLoadingChallenge = false;
       }
     });
   }
@@ -76,23 +77,23 @@ export class Web3WalletComponent implements OnInit {
   linkWallet() {
     if (!this.currentAddress) return;
 
-    if (!this.pendingChallenge) {
+    if (!this.siweMessage) {
       this.snackBar.open('Preparando vinculación, intentá de nuevo en un momento...', 'Cerrar', { duration: 3000 });
       this.preloadChallenge(this.currentAddress);
       return;
     }
 
-    const challenge = this.pendingChallenge;
-    this.pendingChallenge = null;
+    const message = this.siweMessage;
+    this.siweMessage = null;
     this.isLinking = true;
 
     // FIX DEFINITIVO: Guardamos la firma en una constante DIRECTA. 
     // Al no haber promesas intermedias antes de esta línea, el navegador 
     // reconoce el "gesto del usuario" y abre MetaMask al 100% de las veces.
-    const signingPromise = this.web3Service.signMessage(challenge.message);
+    const signingPromise = this.web3Service.signMessage(message);
 
     signingPromise.then(signature => {
-      this.walletService.verifyChallenge(this.currentAddress!, challenge.message, signature).subscribe({
+      this.walletService.verifyChallenge(this.currentAddress!, message, signature).subscribe({
         next: (verifyResponse) => {
           this.isLinking = false;
           if (verifyResponse.linked) {
