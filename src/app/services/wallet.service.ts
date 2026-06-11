@@ -2,11 +2,11 @@ import { Injectable, NgZone, inject } from "@angular/core";
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from "rxjs";
 import { createAppKit, AppKit } from "@reown/appkit";
-import { EthersAdapter } from "@reown/appkit-adapter-ethers";
 import { sepolia } from "@reown/appkit/networks";
 import { environment } from "../../environments/environment";
-import { ethers } from "ethers";
 import { Wallet, Transaction } from '../models/wallet.model';
+import { watchAccount, watchChainId, reconnect } from '@wagmi/core';
+import { config } from './wagmi.config';
 
 export interface SiweChallengeResponse {
   message: string;
@@ -36,56 +36,59 @@ export class WalletService {
   private chainIdSubject = new BehaviorSubject<number | null>(null);
   chainId$ = this.chainIdSubject.asObservable();
 
-  private providerSubject = new BehaviorSubject<any>(null);
-  provider$ = this.providerSubject.asObservable();
-
-  private eip1193Provider: any = null;
-
   constructor() {
     this.initAppKit();
   }
 
   private initAppKit() {
     const projectId = environment.reownProjectId;
+    // Identificamos si estamos corriendo en producción o en local
+    const isProd = typeof window !== 'undefined' && window.location.hostname === 'vibecheck.lat';
+
     const metadata = {
       name: "VibeCheck UI",
       description: "VibeCheck UI Platform",
-      url: typeof window !== "undefined" ? window.location.origin : "http://localhost:4200",
+      // Mantenemos el fix de la barra final para evitar el Invalid App Configuration
+      url: isProd ? "https://vibecheck.lat/" : "http://localhost:4200/",
       icons: ["https://avatars.githubusercontent.com/u/179229932"],
+      // FIX MULTI-WALLET: Eliminamos 'native' hardcodeado para que AppKit use el deep link de la wallet elegida.
+      // Dejamos solo la URL universal para que la wallet sepa a dónde regresar al usuario tras firmar.
+      redirect: {
+        universal: isProd ? "https://vibecheck.lat" : "http://localhost:4200"
+      }
     };
 
+    // Reconnect existing Wagmi session
+    reconnect(config);
+
     this.modal = createAppKit({
-      adapters: [new EthersAdapter()],
+      wagmiConfig: config,
       networks: [sepolia],
+      defaultNetwork: sepolia,
       metadata,
       projectId,
       features: {
         analytics: true,
       },
+    } as any);
+
+    // Subscribe to account/connection changes via Wagmi watchAccount
+    watchAccount(config, {
+      onChange: (account) => {
+        this.zone.run(() => {
+          this.addressSubject.next(account.address || null);
+          this.isConnectedSubject.next(account.isConnected || false);
+        });
+      }
     });
 
-    // Subscribe to account changes
-    this.modal.subscribeAccount((account) => {
-      this.zone.run(() => {
-        this.addressSubject.next(account.address || null);
-        this.isConnectedSubject.next(account.isConnected || false);
-      });
-    });
-
-    // Subscribe to network changes
-    this.modal.subscribeNetwork((network) => {
-      this.zone.run(() => {
-        this.chainIdSubject.next(network.chainId ? Number(network.chainId) : null);
-      });
-    });
-
-    // Subscribe to EVM provider changes
-    this.modal.subscribeProviders((state) => {
-      this.zone.run(() => {
-        const eipProvider = state["eip155"] || null;
-        this.eip1193Provider = eipProvider;
-        this.providerSubject.next(eipProvider);
-      });
+    // Subscribe to network changes via Wagmi watchChainId
+    watchChainId(config, {
+      onChange: (chainId) => {
+        this.zone.run(() => {
+          this.chainIdSubject.next(chainId ? Number(chainId) : null);
+        });
+      }
     });
   }
 
@@ -97,16 +100,8 @@ export class WalletService {
     await this.modal.disconnect();
   }
 
-  async getSigner(): Promise<ethers.Signer> {
-    if (!this.eip1193Provider) {
-      throw new Error("No hay billetera conectada.");
-    }
-    const browserProvider = new ethers.BrowserProvider(this.eip1193Provider);
-    return await browserProvider.getSigner();
-  }
-
   getEip1193Provider(): any {
-    return this.eip1193Provider;
+    return null; // Deprecated with Wagmi core migration
   }
 
   async switchNetwork(): Promise<void> {

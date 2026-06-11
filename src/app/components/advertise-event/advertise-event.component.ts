@@ -9,7 +9,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
-import { ethers } from 'ethers';
+import { formatUnits } from 'viem';
 import { EventService } from '../../services/event.service';
 import { VenueService } from '../../services/venue.service';
 import { AdvertisementService } from '../../services/advertisement.service';
@@ -1379,7 +1379,7 @@ export class AdvertiseEventComponent implements OnInit {
           try {
             if (p.pricePerDayUsdc > 0) {
               const quoteBig = await this.web3Service.quoteUsdcToVbk(p.pricePerDayUsdc);
-              p.pricePerDayVbk = parseFloat(ethers.formatUnits(quoteBig, 18));
+              p.pricePerDayVbk = parseFloat(formatUnits(quoteBig, 18));
             } else {
               p.pricePerDayVbk = 0;
             }
@@ -1448,7 +1448,7 @@ export class AdvertiseEventComponent implements OnInit {
 
             if (this.finalTotalUsdc > 0) {
               this.web3Service.quoteUsdcToVbk(this.finalTotalUsdc).then(quote => {
-                this.finalTotalVbk = parseFloat(ethers.formatUnits(quote, 18));
+                this.finalTotalVbk = parseFloat(formatUnits(quote, 18));
                 this.originalTotalVbk = this.finalTotalVbk;
                 this.discountVbk = 0;
                 this.isPreviewing = false;
@@ -1531,8 +1531,7 @@ export class AdvertiseEventComponent implements OnInit {
       this.purchaseTxHash.set(txHash);
 
       // Wait for blockchain confirmation receipt
-      const provider = this.web3Service.getProvider();
-      await provider.waitForTransaction(txHash);
+      await this.web3Service.waitForTransaction(txHash);
 
       const request = {
         planId: this.selectedTier.planId,

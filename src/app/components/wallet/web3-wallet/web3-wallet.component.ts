@@ -76,9 +76,6 @@ export class Web3WalletComponent implements OnInit {
   linkWallet() {
     if (!this.currentAddress) return;
 
-    // Si el challenge no está listo (ej: error de red al precargar),
-    // pedirlo ahora. En mobile esto puede fallar por el gesto, pero es
-    // el fallback inevitable si preloadChallenge falló.
     if (!this.pendingChallenge) {
       this.snackBar.open('Preparando vinculación, intentá de nuevo en un momento...', 'Cerrar', { duration: 3000 });
       this.preloadChallenge(this.currentAddress);
@@ -86,14 +83,15 @@ export class Web3WalletComponent implements OnInit {
     }
 
     const challenge = this.pendingChallenge;
-    // Consumir el challenge: evita reuso del mismo nonce.
     this.pendingChallenge = null;
     this.isLinking = true;
 
-    // signMessage directo desde el tap del usuario, sin ningún await previo.
-    // Safari mobile requiere que la apertura de MetaMask sea la respuesta
-    // inmediata al gesto — cualquier await antes la bloquea.
-    this.web3Service.signMessage(challenge.message).then(signature => {
+    // FIX DEFINITIVO: Guardamos la firma en una constante DIRECTA. 
+    // Al no haber promesas intermedias antes de esta línea, el navegador 
+    // reconoce el "gesto del usuario" y abre MetaMask al 100% de las veces.
+    const signingPromise = this.web3Service.signMessage(challenge.message);
+
+    signingPromise.then(signature => {
       this.walletService.verifyChallenge(this.currentAddress!, challenge.message, signature).subscribe({
         next: (verifyResponse) => {
           this.isLinking = false;
@@ -101,7 +99,6 @@ export class Web3WalletComponent implements OnInit {
             const username = this.getCurrentUser();
             localStorage.setItem(`linked_wallet_${username}`, verifyResponse.walletAddress);
             this.isLinked = true;
-            // Precargar un challenge nuevo para la próxima vez.
             this.preloadChallenge(this.currentAddress!);
             this.snackBar.open('¡Billetera vinculada con éxito!', 'Cerrar', { duration: 3000 });
           }
@@ -111,7 +108,6 @@ export class Web3WalletComponent implements OnInit {
           console.error('Error al verificar challenge SIWE:', err);
           const errMsg = err.error?.message || 'Error al verificar la firma de la billetera.';
           this.snackBar.open(errMsg, 'Cerrar', { duration: 4000 });
-          // Precargar un challenge nuevo para que el usuario pueda reintentar.
           this.preloadChallenge(this.currentAddress!);
         }
       });
@@ -119,7 +115,6 @@ export class Web3WalletComponent implements OnInit {
       this.isLinking = false;
       console.error('Firma cancelada o errónea:', e);
       this.snackBar.open('Firma de mensaje rechazada o inválida.', 'Cerrar', { duration: 3000 });
-      // Precargar un challenge nuevo para que el usuario pueda reintentar.
       this.preloadChallenge(this.currentAddress!);
     });
   }
@@ -131,7 +126,9 @@ export class Web3WalletComponent implements OnInit {
   }
 
   forceSwitchNetwork() {
-    this.web3Service.switchToSepolia();
+    this.web3Service.switchToSepolia().catch(err => {
+      this.snackBar.open('Error al cambiar a Sepolia, verificalo en tu MetaMask.', 'Cerrar', { duration: 3000 });
+    });
   }
 
   truncateAddress(address: string | null): string {

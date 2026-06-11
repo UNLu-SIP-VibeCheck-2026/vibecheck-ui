@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
-import { Observable, BehaviorSubject, from } from "rxjs";
-import { catchError, map } from "rxjs/operators";
+import { Observable, BehaviorSubject } from "rxjs";
+import { waitForTransactionReceipt } from "@wagmi/core";
+import { config } from "./wagmi.config";
 
 export interface TxState {
   status: "pending" | "confirmed" | "failed";
@@ -13,81 +14,113 @@ export interface TxState {
   providedIn: "root",
 })
 export class TransactionService {
-  track(txPromise: Promise<any> | any): Observable<TxState> {
-    // Determine initial transaction hash if available
-    let txHash = "";
-    if (typeof txPromise === "object" && txPromise !== null) {
-      txHash = txPromise.hash || txPromise.transactionHash || "";
+  track(txPromise: Promise<any> | string | any): Observable<TxState> {
+    let initialHash = "";
+    if (typeof txPromise === "string") {
+      initialHash = txPromise;
+    } else if (typeof txPromise === "object" && txPromise !== null) {
+      initialHash = txPromise.hash || txPromise.transactionHash || "";
     }
 
     const stateSubject = new BehaviorSubject<TxState>({
       status: "pending",
-      hash: txHash,
+      hash: initialHash,
     });
 
-    // Handle standard ethers.js transaction objects containing wait()
-    if (txPromise && typeof txPromise.wait === "function") {
-      from(txPromise.wait()).pipe(
-        map((receipt: any) => {
-          const finalHash = txHash || (receipt ? (receipt.hash || receipt.transactionHash) : "");
+    const resolveHash = async (resolved: any) => {
+      let hash = "";
+      if (typeof resolved === "string") {
+        hash = resolved;
+      } else if (resolved && typeof resolved === "object") {
+        hash = resolved.hash || resolved.transactionHash || "";
+      }
+      return hash;
+    };
+
+    const waitTx = async (hash: string) => {
+      if (!hash) {
+        throw new Error("Transacción sin hash válido.");
+      }
+      return await waitForTransactionReceipt(config, {
+        hash: hash as `0x${string}`,
+      });
+    };
+
+    if (typeof txPromise === "string") {
+      waitTx(txPromise).then(
+        (receipt) => {
           stateSubject.next({
             status: "confirmed",
-            hash: finalHash,
+            hash: txPromise,
             receipt,
           });
           stateSubject.complete();
-          return receipt;
-        }),
-        catchError((error: any) => {
+        },
+        (error) => {
           stateSubject.next({
             status: "failed",
-            hash: txHash,
+            hash: txPromise,
             error,
           });
           stateSubject.complete();
-          throw error;
-        })
-      ).subscribe();
+        }
+      );
     } else {
-      // If it's a standard promise resolving to a transaction object
-      from(Promise.resolve(txPromise)).subscribe({
-        next: (resolvedTx: any) => {
-          const finalHash = (resolvedTx && (resolvedTx.hash || resolvedTx.transactionHash)) || txHash;
-          stateSubject.next({ status: "pending", hash: finalHash });
-
-          if (resolvedTx && typeof resolvedTx.wait === "function") {
-            resolvedTx.wait().then(
-              (receipt: any) => {
+      Promise.resolve(txPromise)
+        .then(async (resolved) => {
+          if (resolved && typeof resolved.wait === "function") {
+            const hash = resolved.hash || resolved.transactionHash || "";
+            stateSubject.next({ status: "pending", hash });
+            try {
+              const receipt = await resolved.wait();
+              stateSubject.next({
+                status: "confirmed",
+                hash: hash || receipt.transactionHash,
+                receipt,
+              });
+              stateSubject.complete();
+            } catch (err) {
+              stateSubject.next({
+                status: "failed",
+                hash,
+                error: err,
+              });
+              stateSubject.complete();
+            }
+          } else {
+            const hash = await resolveHash(resolved);
+            stateSubject.next({ status: "pending", hash });
+            if (hash) {
+              try {
+                const receipt = await waitTx(hash);
                 stateSubject.next({
                   status: "confirmed",
-                  hash: finalHash || (receipt ? (receipt.hash || receipt.transactionHash) : ""),
+                  hash,
                   receipt,
                 });
                 stateSubject.complete();
-              },
-              (error: any) => {
+              } catch (err) {
                 stateSubject.next({
                   status: "failed",
-                  hash: finalHash,
-                  error,
+                  hash,
+                  error: err,
                 });
                 stateSubject.complete();
               }
-            );
-          } else {
-            stateSubject.next({ status: "confirmed", hash: finalHash });
-            stateSubject.complete();
+            } else {
+              stateSubject.next({ status: "confirmed", hash: "" });
+              stateSubject.complete();
+            }
           }
-        },
-        error: (error: any) => {
+        })
+        .catch((error) => {
           stateSubject.next({
             status: "failed",
-            hash: txHash,
+            hash: initialHash,
             error,
           });
           stateSubject.complete();
-        },
-      });
+        });
     }
 
     return stateSubject.asObservable();

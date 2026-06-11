@@ -10,7 +10,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ethers } from 'ethers';
+import { isAddress } from 'viem';
 
 import { TicketResponse } from '../../models/ticket.model';
 import { TicketService } from '../../services/ticket.service';
@@ -159,7 +159,7 @@ export class GiftTicketComponent implements OnInit {
 
   onSearch(): void {
     const query = this.searchQuery.trim();
-    if (query.startsWith('0x') && ethers.isAddress(query)) {
+    if (query.startsWith('0x') && isAddress(query)) {
       this.isManualAddressValid = true;
       this.filteredFriends = [];
     } else {
@@ -195,7 +195,7 @@ export class GiftTicketComponent implements OnInit {
     if (!this.ticket || !this.selectedUser) return;
 
     const recipientWallet = this.selectedUser.wallet;
-    if (!ethers.isAddress(recipientWallet)) {
+    if (!isAddress(recipientWallet)) {
       this.errorMessage = 'La dirección del destinatario no es una wallet de Ethereum válida.';
       return;
     }
@@ -240,30 +240,32 @@ export class GiftTicketComponent implements OnInit {
     
     try {
       const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
-      const eventNFT = this.contractsService.getEventNFT(eventNftAddress);
       
       // Verify that the connected wallet owns the ticket on-chain
-      const signer = await this.web3Service.getSigner();
-      const connectedWallet = await signer.getAddress();
-      const tokenOwner = await eventNFT["ownerOf"](this.ticket.tokenId);
+      const connectedWallet = this.web3Service.walletAddress$.getValue();
+      if (!connectedWallet) {
+        this.txStep = 'idle';
+        this.errorMessage = 'Por favor conectá tu billetera.';
+        return;
+      }
+
+      const tokenOwner = await this.contractsService.getNftOwner(eventNftAddress, BigInt(this.ticket.tokenId));
       
       if (connectedWallet.toLowerCase() !== tokenOwner.toLowerCase()) {
         this.txStep = 'idle';
-        this.errorMessage = `La billetera conectada en MetaMask (${connectedWallet.slice(0, 6)}...${connectedWallet.slice(-4)}) no es la dueña de esta entrada en la blockchain. Conectate con la billetera dueña (${tokenOwner.slice(0, 6)}...${tokenOwner.slice(-4)}) para poder regalarla.`;
+        this.errorMessage = `La billetera conectada (${connectedWallet.slice(0, 6)}...${connectedWallet.slice(-4)}) no es la dueña de esta entrada en la blockchain. Conectate con la billetera dueña (${tokenOwner.slice(0, 6)}...${tokenOwner.slice(-4)}) para poder regalarla.`;
         return;
       }
       
       // 1. Verify ERC721 Approval
       this.txStep = 'approving-nft';
-      const approvedAddress = await eventNFT["getApproved"](this.ticket.tokenId);
+      const approvedAddress = await this.contractsService.getNftApproved(eventNftAddress, BigInt(this.ticket.tokenId));
       
       if (approvedAddress.toLowerCase() !== marketplaceAddress.toLowerCase()) {
-        const signer = await this.web3Service.getSigner();
-        const eventNFTWithSigner = this.contractsService.getEventNFT(eventNftAddress, signer);
-
-        const approveTx = await eventNFTWithSigner["approve"](
+        const approveTx = await this.web3Service.approveNft(
+          eventNftAddress,
           marketplaceAddress,
-          this.ticket.tokenId
+          BigInt(this.ticket.tokenId)
         );
 
         this.transactionService.track(approveTx).subscribe({
@@ -295,16 +297,18 @@ export class GiftTicketComponent implements OnInit {
       this.currentTxState = null;
 
       const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
-      const usdc = this.contractsService.getUsdcToken();
-      const signer = await this.web3Service.getSigner();
-      const donorWallet = await signer.getAddress();
+      const donorWallet = this.web3Service.walletAddress$.getValue();
+      if (!donorWallet) {
+        this.txStep = 'idle';
+        this.errorMessage = 'Por favor conectá tu billetera.';
+        return;
+      }
       
       const totalFeeOnChain = BigInt(Math.round(this.totalFee * 1_000_000)); // USDC has 6 decimals
-      const currentAllowance: bigint = await usdc["allowance"](donorWallet, marketplaceAddress);
+      const currentAllowance = await this.web3Service.getUsdcAllowance(donorWallet, marketplaceAddress);
 
       if (currentAllowance < totalFeeOnChain) {
-        const usdcWithSigner = this.contractsService.getUsdcToken(signer);
-        const approveUsdcTx = await usdcWithSigner["approve"](marketplaceAddress, totalFeeOnChain);
+        const approveUsdcTx = await this.web3Service.approveUsdc(marketplaceAddress, totalFeeOnChain);
 
         this.transactionService.track(approveUsdcTx).subscribe({
           next: (state) => {
@@ -334,12 +338,9 @@ export class GiftTicketComponent implements OnInit {
       this.txStep = 'gifting';
       this.currentTxState = null;
 
-      const signer = await this.web3Service.getSigner();
-      const marketplace = this.contractsService.getMarketplace(signer);
-
-      const giftTx = await marketplace["giftTicket"](
+      const giftTx = await this.web3Service.giftTicket(
         eventNftAddress,
-        this.ticket.tokenId,
+        BigInt(this.ticket.tokenId),
         recipientWallet
       );
 
@@ -347,7 +348,7 @@ export class GiftTicketComponent implements OnInit {
         next: (state) => {
           this.currentTxState = state;
           if (state.status === 'confirmed') {
-            this.confirmGiftBackend(state.receipt, eventNftAddress, recipientWallet);
+            this.confirmGiftBackend(state.receipt || giftTx, eventNftAddress, recipientWallet);
           } else if (state.status === 'failed') {
             this.txStep = 'idle';
             this.errorMessage = 'La transacción de regalo falló o fue cancelada.';
@@ -366,8 +367,9 @@ export class GiftTicketComponent implements OnInit {
     this.txStep = 'confirming';
     this.currentTxState = null;
 
+    const txHash = typeof receipt === 'string' ? receipt : (receipt.hash || receipt.transactionHash);
     const confirmReq = {
-      txHash: receipt.hash || receipt.transactionHash,
+      txHash,
       tokenId: Number(this.ticket.tokenId),
       eventNftAddress,
       recipientWallet

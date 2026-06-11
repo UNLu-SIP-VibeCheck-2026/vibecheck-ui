@@ -7,7 +7,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { ethers } from "ethers";
+import { decodeEventLog } from "viem";
 
 import { TicketResponse } from "../../models/ticket.model";
 import { EventResponse } from "../../models/event.model";
@@ -147,21 +147,19 @@ export class CreateListingComponent implements OnInit {
 
     try {
       const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
-      const eventNFT = this.contractsService.getEventNFT(eventNftAddress);
 
       // 1. Verify ERC721 Approval
       this.isLoading = true;
-      const approvedAddress = await eventNFT["getApproved"](this.ticket.tokenId);
+      const approvedAddress = await this.contractsService.getNftApproved(eventNftAddress, BigInt(this.ticket.tokenId));
       this.isLoading = false;
 
       if (approvedAddress.toLowerCase() !== marketplaceAddress.toLowerCase()) {
         this.txStep = "approving";
-        const signer = await this.web3Service.getSigner();
-        const eventNFTWithSigner = this.contractsService.getEventNFT(eventNftAddress, signer);
 
-        const approveTx = await eventNFTWithSigner["approve"](
+        const approveTx = await this.web3Service.approveNft(
+          eventNftAddress,
           marketplaceAddress,
-          this.ticket.tokenId
+          BigInt(this.ticket.tokenId)
         );
 
         this.transactionService.track(approveTx).subscribe({
@@ -195,12 +193,9 @@ export class CreateListingComponent implements OnInit {
       const priceUsdc = this.listingForm.value.priceUsdc;
       const priceUsdcOnChain = BigInt(Math.round(priceUsdc * 1_000_000)); // 6 decimals
 
-      const signer = await this.web3Service.getSigner();
-      const marketplace = this.contractsService.getMarketplace(signer);
-
-      const listTx = await marketplace["list"](
+      const listTx = await this.web3Service.listTicket(
         eventNftAddress,
-        this.ticket.tokenId,
+        BigInt(this.ticket.tokenId),
         priceUsdcOnChain
       );
 
@@ -228,14 +223,22 @@ export class CreateListingComponent implements OnInit {
     this.currentTxState = null;
 
     try {
-      const listedTopic = ethers.id("Listed(uint256,address,address,uint256,uint256)");
       let listingId: bigint | null = null;
 
       if (receipt && receipt.logs) {
         for (const log of receipt.logs) {
-          if (log.topics && log.topics[0] === listedTopic) {
-            listingId = BigInt(log.topics[1]);
-            break;
+          try {
+            const decoded = decodeEventLog({
+              abi: this.contractsService.MARKETPLACE_ABI,
+              data: log.data,
+              topics: log.topics,
+            }) as any;
+            if (decoded.eventName === "Listed") {
+              listingId = decoded.args.listingId;
+              break;
+            }
+          } catch (e) {
+            // ignore
           }
         }
       }
