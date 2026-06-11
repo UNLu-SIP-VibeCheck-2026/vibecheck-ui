@@ -1,16 +1,12 @@
 import { createConfig, http } from '@wagmi/core';
 import { sepolia } from '@wagmi/core/chains';
-import { walletConnect } from '@wagmi/core/connectors';
-import { environment } from '../../environments/environment'; // Asegurate de que la ruta a tus environments sea la correcta
+import { environment } from '../../environments/environment'; // <-- CORRECCIÓN: Esto repara el error en rojo de la línea 9
 
 export const config = createConfig({
   chains: [sepolia],
-  connectors: [
-    walletConnect({
-      projectId: environment.reownProjectId,
-      showQrModal: false // Lo dejamos en false porque AppKit (Web3Modal) maneja su propia interfaz visual
-    }),
-  ],
+  // FIX DEFINITIVO PARA VERCEL: Dejamos el array vacío. 
+  // AppKit se encarga de inyectar dinámicamente el puente de WalletConnect en caliente.
+  connectors: [],
   transports: {
     [sepolia.id]: http(),
   },
