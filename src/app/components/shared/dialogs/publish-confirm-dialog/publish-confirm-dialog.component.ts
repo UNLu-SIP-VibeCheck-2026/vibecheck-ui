@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 export interface PublishConfirmDialogData {
   eventTitle: string;
   onChain: boolean;
+  executeDeploy?: () => void;
 }
 
 @Component({
@@ -25,6 +26,9 @@ export class PublishConfirmDialogComponent {
   }
 
   onConfirm(): void {
+    if (this.data.executeDeploy) {
+      this.data.executeDeploy();
+    }
     this.dialogRef.close(true);
   }
 }

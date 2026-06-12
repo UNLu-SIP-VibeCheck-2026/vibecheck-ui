@@ -433,20 +433,35 @@ export class AdminEventsComponent implements OnInit {
     }
 
     if (event.status === 'APPROVED') {
-      const dialogRef = this.dialog.open(PublishConfirmDialogComponent, {
-        width: "500px",
-        data: {
-          eventTitle: event.title,
-          onChain: true
+      this.publishingId = event.id;
+      this.ticketTypeService.findTicketTypesByEvent(event.id).subscribe({
+        next: (ticketTypes) => {
+          this.publishingId = null;
+          if (ticketTypes.length === 0) {
+            this.showSnack("Error: El evento debe tener al menos una categoría de entrada antes de publicarse.", "error");
+            return;
+          }
+
+          const dialogRef = this.dialog.open(PublishConfirmDialogComponent, {
+            width: "500px",
+            data: {
+              eventTitle: event.title,
+              onChain: true,
+              executeDeploy: () => this.deployAndPublishEvent(event, ticketTypes)
+            },
+            autoFocus: false
+          });
+
+          dialogRef.afterClosed().subscribe((confirmed) => {
+            if (!confirmed) return;
+            this.publishingId = event.id;
+          });
         },
-        autoFocus: false
-      });
-
-      dialogRef.afterClosed().subscribe((confirmed) => {
-        if (!confirmed) return;
-
-        this.publishingId = event.id;
-        this.deployAndPublishEvent(event);
+        error: (err) => {
+          this.publishingId = null;
+          this.showSnack("Error al consultar las categorías de entrada del evento.", "error");
+          console.error(err);
+        }
       });
       return;
     }
@@ -489,7 +504,9 @@ export class AdminEventsComponent implements OnInit {
       this.publishingId = event.id;
       this.executePublishOnly(event);
     });
-  }  private deployAndPublishEvent(event: EventResponse): void {
+  }
+
+  private deployAndPublishEvent(event: EventResponse, ticketTypes: any[]): void {
     // Regla 1: connectWallet sin await — Safari invalida el gesto en el primer await.
     // Regla 3: chainId leído sincrónico dentro del .then() — sin await adicional antes de launchEventOnChain.
     this.web3Service.connectWallet().then(() => {
@@ -500,73 +517,58 @@ export class AdminEventsComponent implements OnInit {
         return;
       }
 
-      this.ticketTypeService.findTicketTypesByEvent(event.id).subscribe({
-        next: (ticketTypes) => {
-          if (ticketTypes.length === 0) {
-            this.showSnack("Error: El evento debe tener al menos una categoría de entrada antes de publicarse.", "error");
-            this.publishingId = null;
-            return;
-          }
+      const symbol = event.title.slice(0, 4).toUpperCase().replace(/\s/g, 'E');
+      const eventDateTimestamp = Math.floor(new Date(event.startDate).getTime() / 1000);
+      
+      const params = {
+        name: event.title,
+        symbol: symbol,
+        eventDate: eventDateTimestamp,
+        maxResalePriceBps: event.maxResalePriceBps || 12000,
+        royaltyBps: event.royaltyBps || 500,
+        venueSigner: this.web3Service.VENUE_SIGNER_ADDRESS,
+        baseURI: `${environment.backendUrl}/api/tickets/`
+      };
 
-          const symbol = event.title.slice(0, 4).toUpperCase().replace(/\s/g, 'E');
-          const eventDateTimestamp = Math.floor(new Date(event.startDate).getTime() / 1000);
-          
-          const params = {
-            name: event.title,
-            symbol: symbol,
-            eventDate: eventDateTimestamp,
-            maxResalePriceBps: event.maxResalePriceBps || 12000,
-            royaltyBps: event.royaltyBps || 500,
-            venueSigner: this.web3Service.VENUE_SIGNER_ADDRESS,
-            baseURI: `${environment.backendUrl}/api/tickets/`
-          };
+      const tiers = ticketTypes.map(tt => ({
+        name: tt.name,
+        priceUSDC: parseUnits(tt.priceUsdc.toString(), 6),
+        supply: tt.maxQuantity,
+        sold: 0
+      }));
 
-          const tiers = ticketTypes.map(tt => ({
-            name: tt.name,
-            priceUSDC: parseUnits(tt.priceUsdc.toString(), 6),
-            supply: tt.maxQuantity,
-            sold: 0
-          }));
-
-          this.web3Service.launchEventOnChain(params, tiers).then(({ eventNftAddress, deployTxHash }) => {
-            this.eventService.registerDeploy(event.id, { eventNftAddress, deployTxHash }).subscribe({
-              next: (registeredEvent) => {
-                this.eventService.publishEvent(event.id).subscribe({
-                  next: (publishedEvent) => {
-                    const idx = this.allEvents.findIndex((e) => e.id === publishedEvent.id);
-                    if (idx !== -1) this.allEvents[idx] = publishedEvent;
-                    this.applyFilter();
-                    this.publishingId = null;
-                    this.showSnack(`Evento "${event.title}" deployado y publicado correctamente`);
-                  },
-                  error: (err) => {
-                    this.publishingId = null;
-                    const errorMsg = err?.error?.message || err?.message || 'Error al publicar el evento post-deploy';
-                    this.showSnack(errorMsg, "error");
-                    console.error(err);
-                  }
-                });
+      this.web3Service.launchEventOnChain(params, tiers).then(({ eventNftAddress, deployTxHash }) => {
+        this.eventService.registerDeploy(event.id, { eventNftAddress, deployTxHash }).subscribe({
+          next: (registeredEvent) => {
+            this.eventService.publishEvent(event.id).subscribe({
+              next: (publishedEvent) => {
+                const idx = this.allEvents.findIndex((e) => e.id === publishedEvent.id);
+                if (idx !== -1) this.allEvents[idx] = publishedEvent;
+                this.applyFilter();
+                this.publishingId = null;
+                this.showSnack(`Evento "${event.title}" deployado y publicado correctamente`);
               },
               error: (err) => {
                 this.publishingId = null;
-                const errorMsg = err?.error?.message || err?.message || 'Error al registrar el despliegue del evento';
+                const errorMsg = err?.error?.message || err?.message || 'Error al publicar el evento post-deploy';
                 this.showSnack(errorMsg, "error");
                 console.error(err);
               }
             });
-
-          }).catch((err) => {
+          },
+          error: (err) => {
             this.publishingId = null;
-            const errorMsg = err?.message || 'Error en la transacción';
+            const errorMsg = err?.error?.message || err?.message || 'Error al registrar el despliegue del evento';
             this.showSnack(errorMsg, "error");
             console.error(err);
-          });
-        },
-        error: (err) => {
-          this.publishingId = null;
-          this.showSnack("Error al consultar las categorías de entrada del evento.", "error");
-          console.error(err);
-        }
+          }
+        });
+
+      }).catch((err) => {
+        this.publishingId = null;
+        const errorMsg = err?.message || 'Error en la transacción';
+        this.showSnack(errorMsg, "error");
+        console.error(err);
       });
 
     }).catch((err) => {
