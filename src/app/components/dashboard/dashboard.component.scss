@@ -226,10 +226,6 @@
   flex-direction: column;
   gap: var(--space-3);
   align-items: center;
-
-  @include desktop {
-    flex-direction: row;
-  }
 }
 
 .invite-action-btn {
@@ -257,15 +253,28 @@
   color: var(--md-sys-color-on-surface-variant) !important;
   font-size: var(--text-body-md) !important;
   font-weight: var(--weight-medium) !important;
-  border-radius: var(--md-sys-shape-corner-full) !important;
-  padding: 8px 16px !important;
-  height: 44px !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+  padding: 0 !important;
+  height: auto !important;
+  min-height: auto !important;
+  line-height: 1.4 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
   flex-shrink: 0;
-  transition: all 0.25s ease !important;
+  transition: color 0.25s ease !important;
 
   &:hover {
     color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.08) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  &:focus {
+    background: transparent !important;
+    box-shadow: none !important;
   }
 }
 
