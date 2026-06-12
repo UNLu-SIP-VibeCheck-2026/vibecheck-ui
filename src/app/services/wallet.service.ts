@@ -45,8 +45,9 @@ export class WalletService {
 
   private initAppKit() {
     const projectId = environment.reownProjectId;
-    // Identificamos si estamos corriendo en producción o en local
-    const isProd = typeof window !== 'undefined' && window.location.hostname === 'vibecheck.lat';
+
+    // FIX DOMINIO DEFINITIVO: Identificamos si estamos corriendo en la web oficial .team
+    const isProd = typeof window !== 'undefined' && window.location.hostname === 'vibecheck.team';
 
     const metadata = {
       name: "VibeCheck UI",
@@ -69,7 +70,7 @@ export class WalletService {
     // Nota: ya NO llamamos a reconnect(config) manualmente; createAppKit
     // reconecta la sesión existente a través del adaptador.
     this.modal = createAppKit({
-      adapters: [wagmiAdapter],
+      adapters: [wagmiAdapter], // Usamos el adaptador que exportamos de wagmi.config.ts
       networks: [sepolia],
       defaultNetwork: sepolia,
       metadata,
