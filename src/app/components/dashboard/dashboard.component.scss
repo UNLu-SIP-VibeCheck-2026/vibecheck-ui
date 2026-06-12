@@ -374,6 +374,7 @@
     font-weight: var(--weight-bold);
     color: #ffffff;
     margin: 0 0 6px 0;
+    padding-bottom: 6px;
   }
 
   .card-desc-main {
@@ -381,6 +382,16 @@
     color: var(--md-sys-color-on-surface-variant);
     margin: 0;
     line-height: 1.5;
+    display: flex;
+    flex-flow: column;
+    padding-bottom: 8px;
+
+    .event-detail {
+      display:flex;
+      flex-flow: row;
+      gap: 16px;
+      padding: 4px 0;
+    }
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
