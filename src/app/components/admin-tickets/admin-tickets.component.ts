@@ -60,7 +60,6 @@ export class AdminTicketsComponent implements OnInit {
     "name",
     "priceUsdc",
     "maxQuantity",
-    "maxPerUser",
     "saleStartDate",
     "saleEndDate",
     "active",

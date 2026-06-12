@@ -3,7 +3,6 @@ export interface TicketTypeCreateRequest {
   description: string;
   priceUsdc: number;
   maxQuantity: number;
-  maxPerUser: number;
   saleStartDate: string; // ISO date string
   saleEndDate: string; // ISO date string
   active: boolean;
@@ -20,7 +19,6 @@ export interface TicketTypeUpdateRequest {
   description: string;
   priceUsdc: number;
   maxQuantity: number;
-  maxPerUser: number;
   saleStartDate: string; // ISO date string
   saleEndDate: string; // ISO date string
   active: boolean;
@@ -37,7 +35,6 @@ export interface TicketTypeResponse {
   description: string;
   priceUsdc: number;
   maxQuantity: number;
-  maxPerUser: number;
   saleStartDate: string; // ISO date string
   saleEndDate: string; // ISO date string
   active: boolean;
