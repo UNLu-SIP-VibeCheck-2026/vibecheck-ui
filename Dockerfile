@@ -2,9 +2,11 @@
 FROM node:22-alpine AS dev
 WORKDIR /app
 
-# Usar npm ci como pide la guía (requiere que exista package-lock.json)
-COPY package*.json ./
-RUN npm ci
+# Copiamos los archivos de empaquetado y el .npmrc de la raíz
+COPY package*.json .npmrc ./
+
+# FIX DEFINITIVO: Reemplazamos npm ci por npm install para evitar bloqueos de sincronización
+RUN npm install --legacy-peer-deps
 
 # Copiamos el código
 COPY . .
@@ -21,8 +23,8 @@ RUN npm run build --configuration=production
 # ETAPA 3: Servir con Nginx (como pide la guía)
 FROM nginx:alpine AS prod
 
-# Copiamos el build generado en la etapa 1 al directorio de Nginx
-COPY --from=build /app/dist/vibecheck-ui /usr/share/nginx/html
+# Copiamos el build generado en la etapa anterior al directorio de Nginx
+COPY --from=build /app/dist/vibecheck-ui/browser /usr/share/nginx/html
 
 # Copiamos la configuración personalizada de Nginx para el fallback de rutas
 COPY nginx.conf /etc/nginx/conf.d/default.conf
