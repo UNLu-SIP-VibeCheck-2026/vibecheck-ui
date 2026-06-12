@@ -5,11 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { UsersService } from '../../services/users.service';
 import { AuthService } from '../../services/auth.service';
 import { AchievementService } from '../../services/achievement.service';
-import { TicketService } from '../../services/ticket.service';
-import { EventService } from '../../services/event.service';
-import { VenueService } from '../../services/venue.service';
+import { HistoryService } from '../../services/history.service';
 import { UserPublicResponse } from '../../models/user-public-response.model';
 import { Achievement } from '../../models/achievement.model';
+import { UserHistoryItem } from '../../models/user-history.model';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
@@ -18,19 +17,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AvatarComponent } from '../shared/avatar/avatar.component';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { forkJoin, of, Observable } from 'rxjs';
-import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
-
-export interface UserEventUI {
-  id: number;
-  title: string;
-  startDate: string;
-  venue: string;
-  categories: string[];
-  imageUrl?: SafeUrl | string;
-  location: string; // Seat row/number or general entry
-}
 
 @Component({
   selector: 'app-perfil-user',
@@ -54,12 +40,9 @@ export class PerfilUserComponent implements OnInit {
   private usersService = inject(UsersService);
   private authService = inject(AuthService);
   private achievementService = inject(AchievementService);
-  private ticketService = inject(TicketService);
-  private eventService = inject(EventService);
-  private venueService = inject(VenueService);
+  private historyService = inject(HistoryService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
-  private sanitizer = inject(DomSanitizer);
 
   profile = signal<UserPublicResponse | null>(null);
   isLoading = signal<boolean>(true);
@@ -73,12 +56,10 @@ export class PerfilUserComponent implements OnInit {
   achievements = signal<Achievement[]>([]);
   isLoadingAchievements = signal<boolean>(false);
 
-  // Candy 4: Events
-  attendedEvents = signal<UserEventUI[]>([]);
-  isLoadingEvents = signal<boolean>(false);
-
-  private eventCache = new Map<number, Observable<any>>();
-  private venueCache = new Map<number, Observable<any>>();
+  // Candy 5: Owner history
+  eventHistory = signal<UserHistoryItem[]>([]);
+  isLoadingHistory = signal<boolean>(false);
+  hasHistoryError = signal<boolean>(false);
 
   // Computed properties
   fullName = computed(() => {
@@ -163,8 +144,8 @@ export class PerfilUserComponent implements OnInit {
     // Load achievements
     this.loadAchievements(p.username);
 
-    // Load events
-    this.loadEvents(p.username);
+    // Load attendance history for the profile
+    this.loadHistory(p.username);
   }
 
   loadAchievements(username: string): void {
@@ -228,174 +209,51 @@ export class PerfilUserComponent implements OnInit {
     ];
   }
 
-  loadEvents(username: string): void {
-    this.isLoadingEvents.set(true);
-    if (this.isOwnProfile()) {
-      this.ticketService.getMyTickets(0, 20).subscribe({
-        next: (page) => {
-          if (!page.content || page.content.length === 0) {
-            this.loadMockEvents();
-            this.isLoadingEvents.set(false);
-            return;
-          }
+  loadHistory(username: string): void {
+    this.isLoadingHistory.set(true);
+    this.hasHistoryError.set(false);
 
-          // Fetch details for the latest tickets (limit 4 unique events)
-          const uniqueEventTickets: any[] = [];
-          page.content.forEach((t) => {
-            if (uniqueEventTickets.length < 4 && !uniqueEventTickets.some(et => et.ticketType.eventId === t.ticketType.eventId)) {
-              uniqueEventTickets.push(t);
-            }
-          });
-
-          const eventRequests = uniqueEventTickets.map((t) => {
-            const eventId = t.ticketType.eventId;
-            const locationStr = t.ticketType.hasSeats
-              ? `Fila ${t.seatRow} - Asiento ${t.seatNumber}`
-              : "Entrada General";
-
-            return this.getEventWithImageAndVenue(eventId).pipe(
-              map((details) => ({
-                id: eventId,
-                title: details.event.title,
-                startDate: this.formatEventDate(details.event.startDate),
-                venue: details.venueName,
-                categories: details.event.realCategories || ["Música"],
-                imageUrl: details.imageUrl,
-                location: locationStr
-              })),
-              catchError(() => of({
-                id: eventId,
-                title: "Evento ID: " + eventId,
-                startDate: "Fecha no disponible",
-                venue: "Venue no disponible",
-                categories: ["Música"],
-                imageUrl: undefined,
-                location: locationStr
-              }))
-            );
-          });
-
-          if (eventRequests.length === 0) {
-            this.loadMockEvents();
-            this.isLoadingEvents.set(false);
-          } else {
-            forkJoin(eventRequests).subscribe({
-              next: (results) => {
-                this.attendedEvents.set(results);
-                this.isLoadingEvents.set(false);
-              },
-              error: () => {
-                this.loadMockEvents();
-                this.isLoadingEvents.set(false);
-              }
-            });
-          }
-        },
-        error: () => {
-          this.loadMockEvents();
-          this.isLoadingEvents.set(false);
-        }
-      });
-    } else {
-      this.loadMockEvents();
-      this.isLoadingEvents.set(false);
-    }
-  }
-
-  getEventWithImageAndVenue(eventId: number): Observable<any> {
-    if (!this.eventCache.has(eventId)) {
-      const obs = forkJoin({
-        event: this.eventService.findByIdEvent(eventId),
-        image: this.eventService.getEventImage(eventId).pipe(
-          map(blob => this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob))),
-          catchError(() => of(undefined))
-        )
-      }).pipe(
-        switchMap((res: any) => {
-          if (res.event.venueId) {
-            return this.getVenueName(res.event.venueId).pipe(
-              map(venueName => ({
-                event: res.event,
-                imageUrl: res.image,
-                venueName
-              }))
-            );
-          }
-          return of({
-            event: res.event,
-            imageUrl: res.image,
-            venueName: "Sin sede asignada"
-          });
-        }),
-        shareReplay(1)
-      );
-      this.eventCache.set(eventId, obs);
-    }
-    return this.eventCache.get(eventId)!;
-  }
-
-  getVenueName(venueId: number): Observable<string> {
-    if (!this.venueCache.has(venueId)) {
-      const obs = this.venueService.findVenueById(venueId).pipe(
-        map(venue => venue.title),
-        catchError(() => of("Sede no disponible")),
-        shareReplay(1)
-      );
-      this.venueCache.set(venueId, obs);
-    }
-    return this.venueCache.get(venueId)!;
-  }
-
-  loadMockEvents(): void {
-    this.attendedEvents.set([
-      {
-        id: 101,
-        title: 'WOS DESCARTABLE',
-        startDate: 'Sáb, 20 Junio 2026',
-        venue: 'Estadio Racing Club',
-        categories: ['Música'],
-        location: 'Fila A - Asiento 14'
+    this.historyService.getUserHistory(username, 0, 4, "attendedAt,desc").subscribe({
+      next: (page) => {
+        this.eventHistory.set(page.content ?? []);
+        this.isLoadingHistory.set(false);
       },
-      {
-        id: 102,
-        title: 'FESTIVAL LATIDO SEGUNDO',
-        startDate: 'Dom, 12 Julio 2026',
-        venue: 'Complejo Art Media',
-        categories: ['Festival', 'Arte'],
-        location: 'Entrada General'
-      },
-      {
-        id: 103,
-        title: 'OCTUBRE ELECTRÓNICO',
-        startDate: 'Vie, 09 Octubre 2026',
-        venue: 'Crobar Club',
-        categories: ['Música', 'Electrónica'],
-        location: 'VIP de Pie'
-      },
-      {
-        id: 104,
-        title: 'CONGRESO WEB3 Y DEFI',
-        startDate: 'Lun, 16 Noviembre 2026',
-        venue: 'Centro de Convenciones UBA',
-        categories: ['Tecnología'],
-        location: 'Fila M - Asiento 05'
+      error: () => {
+        this.eventHistory.set([]);
+        this.hasHistoryError.set(true);
+        this.isLoadingHistory.set(false);
       }
-    ]);
+    });
   }
 
-  formatEventDate(dateStr: string): string {
-    if (!dateStr) return "—";
-    try {
-      const formatted = new Date(dateStr).toLocaleString("es-AR", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-      });
-      return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-    } catch {
-      return dateStr;
+  viewAllHistory(): void {
+    const p = this.profile();
+    if (p) {
+      this.router.navigate(['/perfil-user', p.username, 'historial']);
     }
+  }
+
+  formatHistoryDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return "—";
+
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return dateStr;
+
+    const formatted = date.toLocaleString("es-AR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  }
+
+  shortHistoryValue(value: string | number | null | undefined): string {
+    if (value === null || value === undefined || value === '') return "—";
+    const text = String(value);
+    return text.length > 18 ? `${text.slice(0, 10)}...${text.slice(-6)}` : text;
   }
 
   getProgressPercentage(achievement: Achievement): number {
@@ -493,4 +351,3 @@ export class PerfilUserComponent implements OnInit {
     });
   }
 }
-
