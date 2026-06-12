@@ -295,6 +295,14 @@
                                         <span>Editar Detalles</span>
                                     </button>
 
+                                    <!-- 2. Ver Categorías y Tickets: only if not Draft and not Rejected -->
+                                    <button mat-menu-item 
+                                            (click)="viewStats(element)"
+                                            *ngIf="element.status !== 'DRAFT' && element.status !== 'REJECTED'">
+                                        <mat-icon>confirmation_number</mat-icon>
+                                        <span>Ver Categorías y Tickets</span>
+                                    </button>
+
 
                                     <!-- 2.5. Gestionar Validadores (always available, but only if not cancelled) -->
                                     <button mat-menu-item (click)="manageValidators(element)">
