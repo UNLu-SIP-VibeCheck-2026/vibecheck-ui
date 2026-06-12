@@ -103,6 +103,13 @@
             (change)="onPreferenceChange('notifyAchievementUnlocked', $event.checked)">
           </mat-slide-toggle>
         </div>
+      </div>
+    </section>
+
+    <!-- Sección: Preferencias -->
+    <section class="config-section" *ngIf="preferences">
+      <h2 class="section-title">Preferencias</h2>
+      <div class="config-cards">
         <div class="preference-card">
           <div class="card-icon notifications">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
