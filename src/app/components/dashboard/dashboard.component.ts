@@ -58,7 +58,10 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFullUserProfile();
-    this.loadUserPreferences();
+    // Load user preferences only if user is not a validator
+    if (!this.isValidador) {
+      this.loadUserPreferences();
+    }
     // Select a random invitation message
     this.selectedInviteMessage = this.organizerInviteMessages[Math.floor(Math.random() * this.organizerInviteMessages.length)];
 
