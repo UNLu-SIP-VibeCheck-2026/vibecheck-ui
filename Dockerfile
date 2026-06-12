@@ -23,8 +23,8 @@ RUN npm run build --configuration=production
 # ETAPA 3: Servir con Nginx (como pide la guía)
 FROM nginx:alpine AS prod
 
-# Copiamos el build generado en la etapa anterior al directorio de Nginx
-COPY --from=build /app/dist/vibecheck-ui/browser /usr/share/nginx/html
+# Copiamos todo lo que esté en la raíz del dist generado
+COPY --from=build /app/dist/vibecheck-ui /usr/share/nginx/html
 
 # Copiamos la configuración personalizada de Nginx para el fallback de rutas
 COPY nginx.conf /etc/nginx/conf.d/default.conf
