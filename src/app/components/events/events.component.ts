@@ -27,6 +27,7 @@ export interface EventSummary {
   title: string;
   description: string;
   startDate: string;
+  startDateParsed?: Date;
   endDate?: string;
   venue: string;
   venueId?: number;
@@ -106,10 +107,11 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   // Reactivity State with Signals
   isLoading = signal<boolean>(false);
-  viewMode = signal<'carousel' | 'grid'>('carousel');
+  viewMode = signal<'carousel' | 'grid'>('grid');
   searchQuery = signal<string>("");
   categories = signal<CategoryResponse[]>([]);
   selectedCategoryId = signal<number | null>(null);
+  eventTierMap = signal<Map<string, 'HIGH' | 'MEDIUM' | 'LOW'>>(new Map());
 
   /** Image lookup map id → SafeUrl, as a Signal to trigger UI updates reactively */
   imageMap = signal<Map<number, SafeUrl>>(new Map<number, SafeUrl>());
@@ -128,8 +130,15 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   filteredEvents = computed(() => {
     const queryStr = this.searchQuery().toLowerCase();
-    return this.allEvents().filter((e) => {
+    const filtered = this.allEvents().filter((e) => {
       return e.title.toLowerCase().includes(queryStr) || e.venue.toLowerCase().includes(queryStr);
+    });
+
+    // MOBILE & PC: Priorizar eventos boosteados (con advertisementPlanId) al inicio de la lista
+    return [...filtered].sort((a, b) => {
+      const aBoosted = a.advertisementPlanId ? 1 : 0;
+      const bBoosted = b.advertisementPlanId ? 1 : 0;
+      return bBoosted - aBoosted; // los destacados primero
     });
   });
 
@@ -252,6 +261,7 @@ export class EventsComponent implements OnInit, OnDestroy {
               title: backendEvent.title,
               description: backendEvent.description || "Sin descripción",
               startDate: new Date(backendEvent.startDate).toLocaleDateString(),
+              startDateParsed: new Date(backendEvent.startDate),
               venue: this.getVenueName(backendEvent.venueId),
               venueId: backendEvent.venueId,
               capacity: backendEvent.capacity,
@@ -338,6 +348,7 @@ export class EventsComponent implements OnInit, OnDestroy {
             title: backendEvent.title,
             description: backendEvent.description || "Sin descripción",
             startDate: new Date(backendEvent.startDate).toLocaleDateString(),
+            startDateParsed: new Date(backendEvent.startDate),
             endDate: backendEvent.endDate ? new Date(backendEvent.endDate).toLocaleDateString() : undefined,
             venue: this.getVenueName(backendEvent.venueId),
             venueId: backendEvent.venueId,
@@ -353,6 +364,19 @@ export class EventsComponent implements OnInit, OnDestroy {
         const sortByDateAsc = (a: any, b: any) => {
           return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
         };
+
+        // Populate event tier map
+        const tierMap = new Map<string, 'HIGH' | 'MEDIUM' | 'LOW'>();
+        (grouped['high'] || grouped['premium'] || grouped['mega'] || []).forEach((e: any) => {
+          tierMap.set(e.id.toString(), 'HIGH');
+        });
+        (grouped['medium'] || grouped['destacado'] || grouped['super'] || []).forEach((e: any) => {
+          tierMap.set(e.id.toString(), 'MEDIUM');
+        });
+        (grouped['low'] || grouped['básico'] || grouped['cool'] || []).forEach((e: any) => {
+          tierMap.set(e.id.toString(), 'LOW');
+        });
+        this.eventTierMap.set(tierMap);
 
         const highEvents = (grouped['high'] || grouped['premium'] || grouped['mega'] || [])
           .sort(sortByDateAsc)
@@ -403,6 +427,20 @@ export class EventsComponent implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  getEventMonth(date?: Date): string {
+    if (!date) return '---';
+    return date.toLocaleString('es-ES', { month: 'short' }).toUpperCase().replace('.', '');
+  }
+
+  getEventDay(date?: Date): string {
+    if (!date) return '--';
+    return date.getDate().toString();
+  }
+
+  getEventTier(eventId: string): 'HIGH' | 'MEDIUM' | 'LOW' | 'BASIC' {
+    return this.eventTierMap().get(eventId) || 'BASIC';
   }
 
   private filterCarousel(raw: EventSummary[]): EventSummary[] {

@@ -35,7 +35,12 @@
 
     <!-- Cover image area -->
     <div class="image-container">
-      <img *ngIf="eventImage" [src]="eventImage" [alt]="event.title" class="event-cover-image">
+      <ng-container *ngIf="eventImage">
+        <!-- Blurred background cover -->
+        <img [src]="eventImage" class="event-bg-blur" aria-hidden="true">
+        <!-- Contained centered cover -->
+        <img [src]="eventImage" [alt]="event.title" class="event-cover-image">
+      </ng-container>
       <div *ngIf="!eventImage" class="placeholder-img">
         <mat-icon>image</mat-icon>
         <span>Portada del Evento</span>

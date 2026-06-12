@@ -1,6 +1,6 @@
 # VibeCheck — Mobile Responsive Progress
 
-**Última actualización:** 2026-06-12 19:32:00
+**Última actualización:** 2026-06-12 19:50:00
 **Sesión actual:** 1
 **Estado general:** 34 de 34 tareas completadas (100%)
 
@@ -115,6 +115,10 @@
   - Se añadió `overflow-x: hidden` en `.events-container` para contener desbordes.
   - Se rediseñó la cabecera de filtros (`.title-search-wrapper` y `.search-filters-container`) para que sus elementos se apilen en formato columna en pantallas móviles (`max-width: 768px`), de modo que el buscador y la lista scrolleable de categorías no queden forzados horizontalmente uno al lado del otro.
   - Se previno que los botones del paginador de Angular Material desborden en pantallas pequeñas habilitando envoltura flexible (`flex-wrap: wrap`) en el control del paginador.
+  - Se configuró `font-size: 16px` en el input del buscador de eventos para prevenir el zoom automático no deseado en dispositivos iOS.
+- **Priorización y Estilos de Eventos Boosteados (PC & Mobile)**:
+  - Se implementó lógica de ordenamiento en el computed signal `filteredEvents` para priorizar los eventos destacados (aquellos que poseen `advertisementPlanId`) al principio de la grilla de eventos, tanto en dispositivos móviles como en ordenadores.
+  - Se mejoraron los estilos de las tarjetas destacadas (`.ad-highlight`) aplicando un gradiente de fondo ámbar sutil, bordes dorados más pronunciados y efectos de resplandor (`box-shadow` dorado) en estado hover con mayor desplazamiento hacia arriba (`translateY`), incrementando su visibilidad comercial.
 
 ---
 
@@ -122,4 +126,4 @@
 
 | Sesión | Fecha | Archivos completados | Observaciones |
 |--------|-------|----------------------|---------------|
-| 1      | 2026-06-12 | navbar.html/scss, footer.html/scss, events.html/scss, event.html/scss, select-tickets.html/scss, marketplace-checkout.html/scss, marketplace-detail.html/scss, my-tickets.scss, ticket.html/scss | Finalización de optimizaciones y corrección de desborde horizontal (scroll no deseado) en vistas de eventos y tickets. |
+| 1      | 2026-06-12 | navbar.html/scss, footer.html/scss, events.html/scss, event.html/scss, select-tickets.html/scss, marketplace-checkout.html/scss, marketplace-detail.html/scss, my-tickets.scss, ticket.html/scss, events.component.ts | Finalización de optimizaciones y corrección de desborde horizontal en vistas de eventos y tickets, junto con ordenamiento prioritario y estilos premium para eventos boosteados. |
