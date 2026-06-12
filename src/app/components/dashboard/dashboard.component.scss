@@ -221,6 +221,17 @@
   }
 }
 
+.invite-banner-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+
+  @include desktop {
+    flex-direction: row;
+  }
+}
+
 .invite-action-btn {
   background: var(--gradient-brand) !important;
   color: #ffffff !important;
@@ -239,6 +250,22 @@
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5) !important;
     filter: brightness(1.1) !important;
+  }
+}
+
+.invite-dismiss-btn {
+  color: var(--md-sys-color-on-surface-variant) !important;
+  font-size: var(--text-body-md) !important;
+  font-weight: var(--weight-medium) !important;
+  border-radius: var(--md-sys-shape-corner-full) !important;
+  padding: 8px 16px !important;
+  height: 44px !important;
+  flex-shrink: 0;
+  transition: all 0.25s ease !important;
+
+  &:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
   }
 }
 

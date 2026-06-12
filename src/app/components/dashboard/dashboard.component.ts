@@ -8,6 +8,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { UsersService } from '../../services/users.service';
+import { UserPreferencesService } from '../../services/user-preferences.service';
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
 import { UserPublicResponse } from '../../models/user-public-response.model';
@@ -34,6 +35,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 export class DashboardComponent implements OnInit {
   authService = inject(AuthService);
   usersService = inject(UsersService);
+  private userPreferencesService = inject(UserPreferencesService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private errorService = inject(ErrorService);
@@ -43,6 +45,7 @@ export class DashboardComponent implements OnInit {
   user$ = this.authService.currentUser$;
   fullUserProfile: UserPublicResponse | null = null;
   assignedEvent: EventResponse | null = null;
+  showRoleChangeHint = true;
 
   // Personalized Organizer invitations for Clients
   readonly organizerInviteMessages = [
@@ -55,6 +58,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFullUserProfile();
+    this.loadUserPreferences();
     // Select a random invitation message
     this.selectedInviteMessage = this.organizerInviteMessages[Math.floor(Math.random() * this.organizerInviteMessages.length)];
 
@@ -86,6 +90,30 @@ export class DashboardComponent implements OnInit {
       error: () => {
         // If we can't load the assigned event, we'll just leave it as null
         this.assignedEvent = null;
+      }
+    });
+  }
+
+  private loadUserPreferences(): void {
+    this.userPreferencesService.getPreferences().subscribe({
+      next: (prefs) => {
+        this.showRoleChangeHint = prefs.showRoleChangeHint;
+      },
+      error: () => {
+        // If we can't load preferences, default to showing the hint
+        this.showRoleChangeHint = true;
+      }
+    });
+  }
+
+  dismissRoleChangeHint(): void {
+    this.userPreferencesService.updatePreferences({ showRoleChangeHint: false }).subscribe({
+      next: () => {
+        this.showRoleChangeHint = false;
+      },
+      error: (err) => {
+        console.error('Error al actualizar preferencias:', err);
+        this.errorService.handleError(err, 'Error al actualizar preferencias');
       }
     });
   }

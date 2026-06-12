@@ -45,7 +45,7 @@
     </div>
 
     <!-- Organizer Invitation Card (Only for Clients) -->
-    @if (isCliente && !isCualquierAdmin) {
+    @if (isCliente && !isCualquierAdmin && showRoleChangeHint) {
       <div class="organizer-invite-banner">
         <div class="invite-banner-info">
           <div class="invite-icon">
@@ -56,9 +56,14 @@
             <p class="invite-desc">{{ selectedInviteMessage }}</p>
           </div>
         </div>
-        <button mat-button class="invite-action-btn" (click)="openChangeRole()" aria-label="Cambiar rol para crear eventos">
-          SER ORGANIZADOR
-        </button>
+        <div class="invite-banner-actions">
+          <button mat-button class="invite-action-btn" (click)="openChangeRole()" aria-label="Cambiar rol para crear eventos">
+            SER ORGANIZADOR
+          </button>
+          <button mat-button class="invite-dismiss-btn" (click)="dismissRoleChangeHint()" aria-label="No mostrar más este mensaje">
+            Ya sé cómo cambiar de Rol
+          </button>
+        </div>
       </div>
     }
 
