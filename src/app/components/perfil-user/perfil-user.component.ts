@@ -101,10 +101,7 @@ export class PerfilUserComponent implements OnInit {
     switch (tier) {
       case 'SILVER': return 'Plata';
       case 'GOLD': return 'Oro';
-      case 'PLATINUM':
-      case 'DIAMOND':
-      case 'DIAMANTE':
-        return 'Diamante';
+      case 'PLATINUM': return 'Platino';
       case 'BRONZE':
       default:
         return 'Bronce';
@@ -115,8 +112,24 @@ export class PerfilUserComponent implements OnInit {
     const p = this.profile();
     if (!p) return 'BRONZE';
     const tier = (p.tier || 'BRONZE').toUpperCase();
-    if (tier === 'DIAMOND' || tier === 'DIAMANTE') return 'PLATINUM';
-    return tier;
+    
+    // Map Spanish tier names to English for image loading
+    const tierMap: Record<string, string> = {
+      'BRONCE': 'BRONZE',
+      'PLATA': 'SILVER',
+      'ORO': 'GOLD',
+      'PLATINO': 'PLATINUM',
+      'SILVER': 'SILVER',
+      'GOLD': 'GOLD',
+      'PLATINUM': 'PLATINUM'
+    };
+    
+    return tierMap[tier] || 'BRONZE';
+  });
+
+  userTierImage = computed(() => {
+    const tier = this.userTierKey();
+    return `/assets/VC-Tier${tier}.png`;
   });
 
   ngOnInit(): void {

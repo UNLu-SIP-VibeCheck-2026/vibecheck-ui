@@ -336,27 +336,15 @@
   position: relative;
 }
 
-.medal-svg {
+.medal-image {
   width: 100%;
   height: 100%;
+  object-fit: contain;
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
   transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   &:hover {
     transform: scale(1.1) rotate(5deg);
-  }
-
-  &.bronze {
-    filter: drop-shadow(0 4px 12px rgba(205, 127, 50, 0.15));
-  }
-  &.silver {
-    filter: drop-shadow(0 4px 12px rgba(192, 192, 192, 0.15));
-  }
-  &.gold {
-    filter: drop-shadow(0 4px 12px rgba(217, 119, 6, 0.15));
-  }
-  &.platinum {
-    filter: drop-shadow(0 4px 12px rgba(56, 189, 248, 0.15));
   }
 }
 
