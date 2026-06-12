@@ -223,9 +223,10 @@
 
 .invite-banner-actions {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  align-items: center;
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: center;
+    padding-top: 20px;
 }
 
 .invite-action-btn {
