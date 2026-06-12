@@ -11,7 +11,7 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:browser-esbuild",
           "options": {
             "outputPath": "dist/vibecheck-ui",
             "index": "src/index.html",
@@ -28,18 +28,6 @@
               "src/styles.scss"
             ],
             "scripts": [],
-            "allowedCommonJsDependencies": [
-              "@safe-global/safe-apps-provider",
-              "dayjs",
-              "dayjs/locale/en.js",
-              "dayjs/plugin/relativeTime.js",
-              "dayjs/plugin/updateLocale.js",
-              "buffer",
-              "qrcode",
-              "@safe-global/safe-gateway-typescript-sdk",
-              "@walletconnect/environment",
-              "pino"
-            ]
           },
           "configurations": {
             "production": {
@@ -64,12 +52,8 @@
               "outputHashing": "all"
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
@@ -119,7 +103,7 @@
   "cli": {
     "analytics": "5e3e8dd0-e7ec-4a6c-ae91-d1d41744baa1",
     "cache": {
-      "enabled": false
+      "enabled": true
     }
   }
 }
