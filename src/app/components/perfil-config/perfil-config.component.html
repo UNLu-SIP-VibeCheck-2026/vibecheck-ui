@@ -103,6 +103,24 @@
             (change)="onPreferenceChange('notifyAchievementUnlocked', $event.checked)">
           </mat-slide-toggle>
         </div>
+        <div class="preference-card">
+          <div class="card-icon notifications">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C16.4183 22 20 18.4183 20 14C20 9.58172 16.4183 6 12 6C7.58172 6 4 9.58172 4 14C4 18.4183 7.58172 22 12 22Z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 10V14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 18H12.01" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="card-content">
+            <span class="card-title">Sugerencia de cambio de rol</span>
+            <span class="card-subtitle">Mostrar sugerencia cuando puedas cambiar de rol</span>
+          </div>
+          <mat-slide-toggle
+            [checked]="preferences.showRoleChangeHint"
+            [disabled]="savingPreference['showRoleChangeHint']"
+            (change)="onPreferenceChange('showRoleChangeHint', $event.checked)">
+          </mat-slide-toggle>
+        </div>
       </div>
     </section>
 

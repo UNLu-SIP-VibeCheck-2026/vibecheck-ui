@@ -5,8 +5,8 @@
   { "timestamp": "2026-06-10T20:45:05.557158697", "status": 401, "error": "Unauthorized", "code": "AUTHENTICATION_REQUIRED", "message": "Debés autenticarte para acceder a este recurso", "path": "/api/marketplace/listings", "fields": {} }
   Se debe mostrar de una forma más amigable este mensaje. (SIMIL 'Sin publicaciones activas No hay entradas publicadas para el filtro seleccionado.')
 
-* Arreglar la warning del front (./node_modules/ox/_esm/tempo/internal/virtualMasterPool.js:44:14-24 - Warning: Critical dependency: the request of a dependency is an expression).
-* Cuando accedo a /marketplace no logueado, de igual forma se intentan buscar las entradas a la venta. Tras la carga y el error, recién ahí se despliega el mensaje de que el marketplace está disponible solo para usuarios. Modifica el código para que se despliegue el mensaje de una, sin intentar buscar las entradas.
+* [LISTO] Arreglar la warning del front (./node_modules/ox/_esm/tempo/internal/virtualMasterPool.js:44:14-24 - Warning: Critical dependency: the request of a dependency is an expression).
+* [LISTO] Cuando accedo a /marketplace no logueado, de igual forma se intentan buscar las entradas a la venta. Tras la carga y el error, recién ahí se despliega el mensaje de que el marketplace está disponible solo para usuarios. Modifica el código para que se despliegue el mensaje de una, sin intentar buscar las entradas.
 * Quiero hacer la base de la interfaz de los 'candies' de los usuarios en /perfil-user. Quiero que cada candy que te mencione vaya uno debajo del otro en una sola fila (flex-vertical), excepto las 0.N:
   0.1- Primero, a la derecha de la info card del rol, quiero un botón que sea 'Editar Perfil' y lleve a /perfil-config.
   0.2- Quiero que en la info card del rol, reemplaces la info-value role-badge por el botón user-badge-button que hay en /dashboard (sin las arrows, solo el botón) que implemente la misma funcionalidad para cambiar el rol en el perfil (no redirigir a /dashboard, implementar en esta página la misma función). 
@@ -16,9 +16,9 @@
   4- Quiero que se muestren los ultimos 4 eventos en los que el usuario participó. La card debe ser la misma que la que usa en /events en 'vista grilla' (foto adjunta), pero además debe indicarse la ubicación de la entrada en la que el usuario asistió al show.
   Para desarrollar estos componentes básate en los componentes existentes y en los estilos de la aplicación @DESIGN_SYSTEM.md @tokens.scss @styles.scss @_theme.scss.
 * Agregar a /perfil-user 4 eventos favoritos. Se deben modificar varios componentes fullstack.
-* Hay un error de la UI de Notificaciones de Logros en /perfil-config. El card-title y card-subtitle son muy largos sin necesidad y echan de la box (el area visible) al toggle button. Modificalos para que se ajusten al contenido y den lugar al toggle dentro de la box.
-* En /dashboard, la sección ("¿Querés organizar tu propio evento? ¿Tenés un espacio o querés armar un show? Transfórmate en Organizador y publica tu evento gratis en VibeCheck.") se debería o mover o eliminar tras probarla alguna vez. Mínimo una vez por sesión. Otra es poner un botón ("Ya sé como cambiar de Rol") que desactive este comentario para siempre en el perfil (asumo que requiere modificaciones en el backend+bd). Hay que modificar las preferencias de usuario.
-* El botón de explorar eventos es DEMASIADO llamativo. Se morfa toda la interfaz. No está mal de todas formas. Yo cambiaría los iconos amarillos por violetas. PROBAR cambiar el background gradiente a solo el borde gradiente y el bg como los demás botones de dashboard.
+* [LISTO] Hay un error de la UI de Notificaciones de Logros en /perfil-config. El card-title y card-subtitle son muy largos sin necesidad y echan de la box (el area visible) al toggle button. Modificalos para que se ajusten al contenido y den lugar al toggle dentro de la box.
+* En /dashboard, la sección ("¿Querés organizar tu propio evento? ¿Tenés un espacio o querés armar un show? Transfórmate en Organizador y publica tu evento gratis en VibeCheck.") se debería dejar de mostrar una vez el usuario aprenda a hacerlo. Quiero agregar un link ("Ya sé como cambiar de Rol") que desactive este comentario para siempre en el perfil. [MENCIONAR ENDPOINT /api/preferences/me] (asumo que requiere modificaciones en el backend+bd). Hay que modificar las preferencias de usuario.
+* [LISTO] El botón de explorar eventos es DEMASIADO llamativo. Se morfa toda la interfaz. No está mal de todas formas. Yo cambiaría los iconos amarillos por violetas. PROBAR cambiar el background gradiente a solo el borde gradiente y el bg como los demás botones de dashboard.
 * [LISTO] Se debe refrescar la foto del nav cada vez que se cambia también.
 
 
