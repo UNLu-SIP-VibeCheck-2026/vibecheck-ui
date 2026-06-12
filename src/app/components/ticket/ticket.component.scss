@@ -4,6 +4,17 @@
   max-width: 1000px;
   margin: 0 auto;
   padding: var(--space-8) var(--space-4);
+  overflow-x: hidden; /* MOBILE FIX: Evitar scroll horizontal */
+  box-sizing: border-box;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* MOBILE FIX: Evitar que el contenido sea tapado por el qr-card sticky */
+  @media (max-width: 768px) {
+    padding-bottom: 110px !important;
+  }
 
   .header {
     display: flex;
@@ -37,6 +48,11 @@
   height: 350px;
   overflow: hidden;
 
+  /* MOBILE FIX: Reducir altura de la portada en mobile */
+  @media (max-width: 768px) {
+    height: 200px;
+  }
+
   .hero-image {
     width: 100%;
     height: 100%;
@@ -54,6 +70,13 @@
     bottom: var(--space-8);
     left: var(--space-8);
     right: var(--space-8);
+
+    /* MOBILE FIX: Ajustar padding en mobile */
+    @media (max-width: 768px) {
+      bottom: var(--space-4);
+      left: var(--space-4);
+      right: var(--space-4);
+    }
 
     .event-title {
       font-size: 3rem;
@@ -90,6 +113,12 @@
     grid-template-columns: 1fr;
     padding: var(--space-6);
     gap: var(--space-6);
+  }
+
+  /* MOBILE FIX: Reducir espaciado en mobile */
+  @media (max-width: 768px) {
+    padding: var(--space-4);
+    gap: var(--space-4);
   }
 }
 
@@ -226,6 +255,37 @@
     gap: var(--space-6);
     border: 1px solid var(--md-sys-color-outline-variant);
 
+    /* MOBILE FIX: Destacar boton VER QR DE INGRESO como sticky bottom */
+    @media (max-width: 768px) {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      box-sizing: border-box; /* MOBILE FIX: Evitar desborde por padding en elemento fixed */
+      border-radius: 0 !important;
+      border: none !important;
+      border-top: 1px solid var(--md-sys-color-outline-variant) !important;
+      padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom)) var(--space-4) !important;
+      z-index: 99;
+      flex-direction: row !important;
+      justify-content: space-between;
+      gap: var(--space-4) !important;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+      background: rgba(13, 9, 30, 0.96) !important;
+      backdrop-filter: blur(10px);
+
+      .qr-hidden-state {
+        display: none !important;
+      }
+
+      .qr-btn {
+        margin: 0 !important;
+        flex: 1;
+        height: 50px !important;
+        font-size: 1rem !important;
+      }
+    }
+
     .qr-hidden-state {
       display: flex;
       flex-direction: column;
@@ -305,6 +365,16 @@
     gap: var(--space-6);
     animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* MOBILE FIX: Modal QR pantalla completa en mobile */
+    @media (max-width: 768px) {
+      max-width: none;
+      height: 100%;
+      justify-content: center;
+      border-radius: 0;
+      padding: var(--space-4) !important;
+      gap: var(--space-4) !important;
+    }
+
     @include mobile {
       max-width: none;
       height: 100%;
@@ -323,10 +393,25 @@
         margin: 0;
         font-size: var(--text-title-md);
         font-weight: 800;
+
+        /* MOBILE FIX: Reducir tamaño de letra en mobile */
+        @media (max-width: 768px) {
+          font-size: 1.2rem;
+        }
       }
 
       button {
         color: #0d0b1e;
+
+        /* MOBILE FIX: Area de contacto tactil min 44x44px */
+        min-width: 44px !important;
+        min-height: 44px !important;
+        width: 44px !important;
+        height: 44px !important;
+        padding: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
     }
 
@@ -340,10 +425,20 @@
       gap: var(--space-4);
       width: 100%;
 
+      /* MOBILE FIX: Reducir padding en mobile */
+      @media (max-width: 768px) {
+        padding: var(--space-4) !important;
+      }
+
       .large-qr {
         width: 100%;
         max-width: 300px;
         height: auto;
+
+        /* MOBILE FIX: Limitar tamaño de qr en pantallas chicas */
+        @media (max-width: 768px) {
+          max-width: 200px;
+        }
       }
 
       .ticket-simple-info {

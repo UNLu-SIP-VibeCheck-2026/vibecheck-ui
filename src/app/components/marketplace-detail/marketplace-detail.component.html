@@ -1,48 +1,70 @@
 <div class="purchase-page-wrapper">
   <!-- STEPPER VISUAL -->
+  <!-- MOBILE FIX: Stepper responsivo con wrapper para mobile y desktop -->
   <div class="stepper-container">
-    <div class="step-item" [class.active]="currentStep() === 1" [class.completed]="currentStep() > 1">
-      <div class="step-badge">
-        <mat-icon *ngIf="currentStep() > 1">check</mat-icon>
-        <span *ngIf="currentStep() <= 1">1</span>
+    <!-- Desktop-only stepper items -->
+    <div class="stepper-desktop-wrapper">
+      <div class="step-item" [class.active]="currentStep() === 1" [class.completed]="currentStep() > 1">
+        <div class="step-badge">
+          <mat-icon *ngIf="currentStep() > 1">check</mat-icon>
+          <span *ngIf="currentStep() <= 1">1</span>
+        </div>
+        <span class="step-label">Conectar</span>
       </div>
-      <span class="step-label">Conectar</span>
-    </div>
-    <div class="step-line" [class.completed]="currentStep() > 1"></div>
+      <div class="step-line" [class.completed]="currentStep() > 1"></div>
 
-    <div class="step-item" [class.active]="currentStep() === 2" [class.completed]="currentStep() > 2" [class.pending]="currentStep() < 2">
-      <div class="step-badge">
-        <mat-icon *ngIf="currentStep() > 2">check</mat-icon>
-        <span *ngIf="currentStep() <= 2">2</span>
+      <div class="step-item" [class.active]="currentStep() === 2" [class.completed]="currentStep() > 2" [class.pending]="currentStep() < 2">
+        <div class="step-badge">
+          <mat-icon *ngIf="currentStep() > 2">check</mat-icon>
+          <span *ngIf="currentStep() <= 2">2</span>
+        </div>
+        <span class="step-label">Vincular</span>
       </div>
-      <span class="step-label">Vincular</span>
-    </div>
-    <div class="step-line" [class.completed]="currentStep() > 2"></div>
+      <div class="step-line" [class.completed]="currentStep() > 2"></div>
 
-    <div class="step-item" [class.active]="currentStep() === 3" [class.completed]="currentStep() > 3" [class.pending]="currentStep() < 3">
-      <div class="step-badge">
-        <mat-icon *ngIf="currentStep() > 3">check</mat-icon>
-        <span *ngIf="currentStep() <= 3">3</span>
+      <div class="step-item" [class.active]="currentStep() === 3" [class.completed]="currentStep() > 3" [class.pending]="currentStep() < 3">
+        <div class="step-badge">
+          <mat-icon *ngIf="currentStep() > 3">check</mat-icon>
+          <span *ngIf="currentStep() <= 3">3</span>
+        </div>
+        <span class="step-label">Elegir</span>
       </div>
-      <span class="step-label">Elegir</span>
-    </div>
-    <div class="step-line" [class.completed]="currentStep() > 3"></div>
+      <div class="step-line" [class.completed]="currentStep() > 3"></div>
 
-    <div class="step-item" [class.active]="currentStep() === 4" [class.completed]="currentStep() > 4" [class.pending]="currentStep() < 4">
-      <div class="step-badge">
-        <mat-icon *ngIf="currentStep() > 4">check</mat-icon>
-        <span *ngIf="currentStep() <= 4">4</span>
+      <div class="step-item" [class.active]="currentStep() === 4" [class.completed]="currentStep() > 4" [class.pending]="currentStep() < 4">
+        <div class="step-badge">
+          <mat-icon *ngIf="currentStep() > 4">check</mat-icon>
+          <span *ngIf="currentStep() <= 4">4</span>
+        </div>
+        <span class="step-label">Comprar</span>
       </div>
-      <span class="step-label">Comprar</span>
-    </div>
-    <div class="step-line" [class.completed]="currentStep() > 5"></div>
+      <div class="step-line" [class.completed]="currentStep() > 5"></div>
 
-    <div class="step-item" [class.active]="currentStep() === 5" [class.completed]="currentStep() >= 5 && successTicket()" [class.pending]="currentStep() < 5">
-      <div class="step-badge">
-        <mat-icon *ngIf="currentStep() >= 5 && successTicket()">check</mat-icon>
-        <span *ngIf="currentStep() < 5 || !successTicket()">5</span>
+      <div class="step-item" [class.active]="currentStep() === 5" [class.completed]="currentStep() >= 5 && successTicket()" [class.pending]="currentStep() < 5">
+        <div class="step-badge">
+          <mat-icon *ngIf="currentStep() >= 5 && successTicket()">check</mat-icon>
+          <span *ngIf="currentStep() < 5 || !successTicket()">5</span>
+        </div>
+        <span class="step-label">Confirmar</span>
       </div>
-      <span class="step-label">Confirmar</span>
+    </div>
+
+    <!-- MOBILE-ONLY COMPACT STEPPER -->
+    <div class="stepper-mobile-wrapper">
+      <div class="stepper-mobile-info">
+        <span class="step-mobile-count">Paso {{ currentStep() }} de 5</span>
+        <span class="step-mobile-label">
+          {{ 
+            currentStep() === 1 ? 'Conectar Wallet' : 
+            currentStep() === 2 ? 'Vincular SIWE' : 
+            currentStep() === 3 ? 'Configurar Pago' : 
+            currentStep() === 4 ? 'Procesando Compra' : 'Confirmar Compra'
+          }}
+        </span>
+      </div>
+      <div class="stepper-mobile-progress-bar">
+        <div class="progress-bar-fill" [style.width.%]="currentStep() * 20"></div>
+      </div>
     </div>
   </div>
 

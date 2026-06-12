@@ -6,6 +6,7 @@
   margin: 0 auto;
   min-height: calc(100vh - 120px);
   box-sizing: border-box;
+  overflow-x: hidden; /* MOBILE FIX: Evitar scroll horizontal global en la pantalla de eventos */
 
   @include mobile {
     padding: var(--space-4) var(--space-3);
@@ -32,6 +33,14 @@
       flex: 1;
       min-width: 300px;
 
+      /* MOBILE FIX: Apilar titulo y buscador en mobile para evitar desbordes */
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+        min-width: 0;
+      }
+
       h1 {
         margin: 0;
         white-space: nowrap;
@@ -49,8 +58,22 @@
         flex: 1;
         max-width: 700px;
 
+        /* MOBILE FIX: Apilar barra de busqueda y chips de categorias verticalmente */
+        @media (max-width: 768px) {
+          flex-direction: column;
+          align-items: stretch;
+          width: 100%;
+          gap: var(--space-3);
+        }
+
         .search-field {
           flex: 2;
+
+          /* MOBILE FIX: Asegurar ancho completo en mobile */
+          @media (max-width: 768px) {
+            width: 100%;
+            flex: none;
+          }
 
           ::ng-deep .mat-mdc-text-field-wrapper {
             background-color: var(--md-sys-color-surface-container-high) !important;
@@ -91,6 +114,11 @@
           flex: 1.2;
           min-width: 180px;
 
+          @media (max-width: 768px) {
+            /* MOBILE FIX: Ocultar select de categorias en mobile */
+            display: none !important;
+          }
+
           ::ng-deep .mat-mdc-text-field-wrapper {
             background-color: var(--md-sys-color-surface-container-high) !important;
             border-radius: var(--md-sys-shape-corner-medium) !important;
@@ -116,6 +144,51 @@
 
           ::ng-deep .mat-mdc-form-field-subscript-wrapper {
             display: none !important;
+          }
+        }
+
+        .categories-chips-scroll {
+          display: none;
+
+          @media (max-width: 768px) {
+            /* MOBILE FIX: Mostrar chips de categoria scrolleables en mobile */
+            display: flex;
+            gap: var(--space-2);
+            overflow-x: auto;
+            padding: var(--space-2) 0;
+            width: 100%;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
+
+            &::-webkit-scrollbar {
+              display: none;
+            }
+
+            .category-chip {
+              flex: 0 0 auto;
+              background: rgba(255, 255, 255, 0.05);
+              border: 1px solid var(--md-sys-color-outline-variant);
+              color: var(--md-sys-color-on-surface-variant);
+              padding: 6px 14px;
+              border-radius: var(--md-sys-shape-corner-full);
+              font-family: var(--font-ui);
+              font-size: var(--text-body-md);
+              font-weight: var(--weight-medium);
+              cursor: pointer;
+              white-space: nowrap;
+              transition: all 0.2s ease;
+              height: 38px;
+              display: flex;
+              align-items: center;
+
+              &.active {
+                background: var(--gradient-brand);
+                color: #ffffff;
+                border-color: transparent;
+                box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+              }
+            }
           }
         }
       }
@@ -233,6 +306,11 @@
     position: relative;
     border-radius: var(--md-sys-shape-corner-extra-large);
     background: rgba(18, 16, 42, 0.3);
+
+    @media (max-width: 768px) {
+      /* MOBILE FIX: Reducir altura minima en mobile */
+      min-height: 380px;
+    }
     
     @include desktop {
       height: 60vh;
@@ -345,6 +423,11 @@
     position: relative;
     flex-shrink: 0;
 
+    @media (max-width: 768px) {
+      /* MOBILE FIX: Reducir altura de la imagen en destacados */
+      height: 160px;
+    }
+
     @include desktop {
       width: 55%;
       height: 100%;
@@ -367,6 +450,12 @@
     gap: var(--space-4);
     flex: 1;
 
+    @media (max-width: 768px) {
+      /* MOBILE FIX: Reducir espaciado del panel de info en destacados */
+      padding: var(--space-3) !important;
+      gap: var(--space-2) !important;
+    }
+
     @include desktop {
       padding: var(--space-8);
     }
@@ -377,6 +466,11 @@
       font-weight: var(--weight-bold);
       color: #ffffff;
       line-height: 1.2;
+
+      @media (max-width: 768px) {
+        /* MOBILE FIX: Texto mas chico para evitar desbordes */
+        font-size: 18px !important;
+      }
 
       @include desktop {
         font-size: 32px;
@@ -651,6 +745,12 @@
 
   .mini-item {
     flex: 0 0 32%; /* 3 items visible on mobile */
+
+    @media (max-width: 768px) {
+      /* MOBILE FIX: Hacer los items del mini carrusel mas grandes para que entren textos */
+      flex: 0 0 45% !important;
+    }
+
     border-radius: var(--md-sys-shape-corner-medium);
     overflow: hidden;
     cursor: pointer;
@@ -726,6 +826,12 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-6);
   margin-bottom: var(--space-8);
+
+  @media (max-width: 768px) {
+    /* MOBILE FIX: Una sola columna simetrica en pantallas chicas */
+    grid-template-columns: 1fr !important;
+    gap: var(--space-4);
+  }
 }
 
 .event-card {
@@ -853,6 +959,16 @@
   ::ng-deep .mat-mdc-paginator {
     background: transparent !important;
     color: var(--md-sys-color-on-surface) !important;
+
+    /* MOBILE FIX: Permitir envoltura en controles del paginador para pantallas chicas */
+    @media (max-width: 600px) {
+      .mat-mdc-paginator-container {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        padding: 8px !important;
+      }
+    }
   }
 }
 

@@ -62,6 +62,18 @@
 
       <h1 class="event-title">{{ event.title }}</h1>
 
+      <!-- MOBILE FIX: Metadata compacta inline visible solo en mobile -->
+      <div class="mobile-compact-meta">
+        <div class="meta-inline-item">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ formatDate(event.startDate) }}</span>
+        </div>
+        <div class="meta-inline-item">
+          <mat-icon>location_on</mat-icon>
+          <span>{{ venueName }}</span>
+        </div>
+      </div>
+
       <!-- Meta grid -->
       <div class="meta-info">
 
@@ -126,23 +138,26 @@
         </div>
       </div>
 
-      <div class="price-panel-wrapper" *ngIf="event.active && cheapestTicketPrice !== null">
-        <div class="large-price-panel">
-          <span class="price-label">Desde</span>
-          <span class="price-value">{{ cheapestTicketPrice | currency:'$':'symbol':'1.0-0' }} USDC</span>
+      <!-- MOBILE FIX: Contenedor de compra que se vuelve sticky bottom en mobile -->
+      <div class="purchase-sticky-container" *ngIf="event.active">
+        <div class="price-panel-wrapper" *ngIf="cheapestTicketPrice !== null">
+          <div class="large-price-panel">
+            <span class="price-label">Desde</span>
+            <span class="price-value">{{ cheapestTicketPrice | currency:'$':'symbol':'1.0-0' }} USDC</span>
+          </div>
         </div>
-      </div>
 
-      <!-- CTA Actions -->
-      <div class="actions" *ngIf="event.active">
-        <button mat-raised-button class="buy-btn" (click)="buyTickets()">
-          <mat-icon>confirmation_number</mat-icon>
-          Adquirir Entradas
-        </button>
-        <button mat-stroked-button class="share-btn" (click)="shareEvent()">
-          <mat-icon>share</mat-icon>
-          Compartir
-        </button>
+        <!-- CTA Actions -->
+        <div class="actions">
+          <button mat-raised-button class="buy-btn" (click)="buyTickets()">
+            <mat-icon>confirmation_number</mat-icon>
+            Adquirir Entradas
+          </button>
+          <button mat-stroked-button class="share-btn" (click)="shareEvent()">
+            <mat-icon>share</mat-icon>
+            Compartir
+          </button>
+        </div>
       </div>
 
       <!-- Inactive warning -->

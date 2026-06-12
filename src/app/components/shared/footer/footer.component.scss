@@ -89,6 +89,11 @@
   align-items: center;
   gap: var(--space-4);
 
+  @include mobile {
+    /* MOBILE FIX: Ocultar redes sociales en mobile para simplificar */
+    display: none;
+  }
+
   .social-chip {
     @include chip-outlined;
     width: 40px; // Hacerlo circular para iconos
@@ -113,6 +118,11 @@
   text-align: center;
   border-top: 1px solid var(--divider-color);
 
+  @include mobile {
+    /* MOBILE FIX: Reducir padding en mobile */
+    padding: var(--space-3) var(--space-4);
+  }
+
   span {
     font-size: var(--text-label-lg);
     color: var(--md-sys-color-on-surface-variant);
@@ -125,4 +135,9 @@
   width: 100%;
   height: var(--footer-bar-height);
   background: var(--footer-bar-bg);
+
+  @include mobile {
+    /* MOBILE FIX: Ocultar barra decorativa en mobile para ahorrar espacio */
+    display: none;
+  }
 }

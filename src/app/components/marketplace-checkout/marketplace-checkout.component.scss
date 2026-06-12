@@ -5,11 +5,21 @@
   margin: 0 auto;
   padding: var(--space-8) var(--space-6);
 
+  /* MOBILE FIX: Optimizar padding general en mobile */
+  @media (max-width: 768px) {
+    padding: var(--space-4) var(--space-3);
+  }
+
   .checkout-header {
     display: flex;
     align-items: center;
     gap: var(--space-4);
     margin-bottom: var(--space-8);
+
+    /* MOBILE FIX: Reducir margen en cabecera para mobile */
+    @media (max-width: 768px) {
+      margin-bottom: var(--space-4);
+    }
 
     h1 {
       margin: 0;
@@ -17,11 +27,26 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       font-weight: 900;
+
+      /* MOBILE FIX: Ajustar tamaño de titulo en pantallas chicas */
+      @media (max-width: 768px) {
+        font-size: 1.8rem;
+      }
     }
 
     button {
       background: rgba(255, 255, 255, 0.05);
       color: white;
+
+      /* MOBILE FIX: Asegurar area de contacto tactil min 44x44px */
+      min-width: 44px !important;
+      min-height: 44px !important;
+      width: 44px !important;
+      height: 44px !important;
+      padding: 0 !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 }
@@ -30,6 +55,20 @@
   display: grid;
   grid-template-columns: 1fr 400px;
   gap: var(--space-8);
+
+  /* MOBILE FIX: Colapsar en 1 columna e invertir el orden de secciones en mobile (<= 768px) */
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+
+    .payment-section {
+      order: 2;
+    }
+
+    .preview-section {
+      order: 1;
+    }
+  }
 
   @include mobile {
     grid-template-columns: 1fr;
@@ -146,9 +185,19 @@
   position: sticky;
   top: var(--space-8);
 
+  /* MOBILE FIX: Cambiar a static para evitar problemas de posicionamiento y scroll */
+  @media (max-width: 768px) {
+    position: static;
+  }
+
   .preview-image-container {
     height: 200px;
     position: relative;
+
+    /* MOBILE FIX: Reducir altura de imagen en mobile */
+    @media (max-width: 768px) {
+      height: 160px;
+    }
 
     .preview-image {
       width: 100%;
@@ -178,10 +227,20 @@
   .preview-info {
     padding: var(--space-6);
 
+    /* MOBILE FIX: Reducir padding en mobile */
+    @media (max-width: 768px) {
+      padding: var(--space-4);
+    }
+
     h2 {
       margin: 0 0 var(--space-4) 0;
       font-weight: 800;
       color: white;
+
+      /* MOBILE FIX: Reducir tamaño de letra en mobile */
+      @media (max-width: 768px) {
+        font-size: 1.5rem;
+      }
     }
 
     .preview-meta {

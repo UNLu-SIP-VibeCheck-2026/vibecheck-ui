@@ -18,6 +18,18 @@
               }
             </mat-select>
           </mat-form-field>
+
+          <!-- MOBILE FIX: Chips de categoría con scroll horizontal -->
+          <div class="categories-chips-scroll">
+            <button type="button" class="category-chip" [class.active]="selectedCategoryId() === null" (click)="selectedCategoryId.set(null); onCategoryChange()">
+              Todas
+            </button>
+            @for (cat of categories(); track cat.id) {
+              <button type="button" class="category-chip" [class.active]="selectedCategoryId() === cat.id" (click)="selectedCategoryId.set(cat.id); onCategoryChange()">
+                {{ cat.name }}
+              </button>
+            }
+          </div>
         </div>
       </div>
       <div class="actions-container">
