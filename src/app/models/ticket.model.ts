@@ -33,3 +33,13 @@ export interface TicketConfirmRequest {
   seatNumber?: string | null;
 }
 
+export interface RefundRequestResponse {
+  eventNftAddress: string;
+  tokenId: number;
+  holderAddress: string;
+  signature: string;
+  deadline: number;
+  refundSignerAddress: string;
+}
+
+

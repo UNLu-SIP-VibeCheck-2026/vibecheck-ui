@@ -2,7 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "../../environments/environment";
-import { TicketResponse, TicketConfirmRequest } from "../models/ticket.model";
+import { TicketResponse, TicketConfirmRequest, RefundRequestResponse } from "../models/ticket.model";
 import { Page } from "../models/page.model"; // Re-using standard Page wrapper
 
 export interface RedeemSignatureResponse {
@@ -40,6 +40,14 @@ export class TicketService {
 
   redeemTicket(id: number): Observable<TicketResponse> {
     return this.http.post<TicketResponse>(`${this.apiUrl}/${id}/redeem`, {});
+  }
+
+  requestVoluntaryRefund(ticketId: number): Observable<RefundRequestResponse> {
+    return this.http.post<RefundRequestResponse>(`${this.apiUrl}/${ticketId}/refund-request`, {});
+  }
+
+  confirmVoluntaryRefund(ticketId: number, txHash: string): Observable<TicketResponse> {
+    return this.http.post<TicketResponse>(`${this.apiUrl}/${ticketId}/refund-confirm`, { txHash });
   }
 }
 

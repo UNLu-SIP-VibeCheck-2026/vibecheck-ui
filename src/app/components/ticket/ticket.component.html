@@ -20,6 +20,41 @@
       </div>
     </div>
 
+    <!-- Status Alert Cards (Full Width) -->
+    <div class="status-alert-container" *ngIf="ticket.status !== 'ACTIVE'">
+      <div class="status-alert-card refunded" *ngIf="ticket.status === 'REFUNDED'">
+        <mat-icon>undo</mat-icon>
+        <div class="alert-content">
+          <h4>Entrada Reembolsada</h4>
+          <p>Esta entrada ha sido devuelta y anulada permanentemente.</p>
+        </div>
+      </div>
+
+      <div class="status-alert-card redeemed" *ngIf="ticket.status === 'REDEEMED'">
+        <mat-icon>check_circle</mat-icon>
+        <div class="alert-content">
+          <h4>Entrada Usada</h4>
+          <p>Esta entrada ya fue escaneada y redimida en el ingreso.</p>
+        </div>
+      </div>
+
+      <div class="status-alert-card cancelled" *ngIf="ticket.status === 'CANCELLED'">
+        <mat-icon>cancel</mat-icon>
+        <div class="alert-content">
+          <h4>Entrada Cancelada</h4>
+          <p>Esta entrada ha sido cancelada.</p>
+        </div>
+      </div>
+
+      <div class="status-alert-card for-sale" *ngIf="ticket.status === 'FOR_SALE'">
+        <mat-icon>storefront</mat-icon>
+        <div class="alert-content">
+          <h4>En venta en Marketplace</h4>
+          <p>Esta entrada está listada para la venta. Cancela el listing para gestionarla.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="detail-grid">
       <!-- Info Column -->
       <div class="info-column">
@@ -62,7 +97,8 @@
 
       <!-- Actions Column -->
       <div class="actions-column">
-        <mat-card class="qr-card">
+        <!-- QR Card: Only for ACTIVE tickets -->
+        <mat-card class="qr-card" *ngIf="ticket.status === 'ACTIVE'">
           <div class="qr-hidden-state">
             <mat-icon class="lock-icon">qr_code_2</mat-icon>
             <p>Tu código está listo</p>
@@ -73,7 +109,8 @@
           </button>
         </mat-card>
 
-        <div class="secondary-actions">
+        <!-- Secondary Actions: Only for ACTIVE tickets -->
+        <div class="secondary-actions" *ngIf="ticket.status === 'ACTIVE'">
           <button mat-raised-button class="action-btn purple-btn" (click)="giftTicket()">
             <mat-icon>card_giftcard</mat-icon>
             Regalar entrada
@@ -81,6 +118,10 @@
           <button mat-raised-button class="action-btn purple-btn" (click)="resellTicket()">
             <mat-icon>storefront</mat-icon>
             Revender en Marketplace
+          </button>
+          <button mat-raised-button class="action-btn refund-btn" (click)="openRefundModal()">
+            <mat-icon>undo</mat-icon>
+            Solicitar reembolso
           </button>
         </div>
       </div>
@@ -107,4 +148,92 @@
       <button mat-button (click)="toggleQR()" class="close-btn">CERRAR</button>
     </div>
   </div>
+
+  <!-- Full Screen Refund Confirmation Overlay -->
+  <div class="refund-overlay" *ngIf="isRefundModalVisible" (click)="closeRefundModal()">
+    <div class="refund-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Solicitar Reembolso</h2>
+        <button mat-icon-button (click)="closeRefundModal()" [disabled]="isLoadingRefund() && refundStep() !== 'idle'">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="refund-content">
+        <!-- Error alert -->
+        <div class="error-alert" *ngIf="refundError()">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ refundError() }}</span>
+        </div>
+
+        <!-- Idle state details -->
+        <div class="refund-details" *ngIf="refundStep() === 'idle'">
+          <div class="warning-box">
+            <mat-icon>warning</mat-icon>
+            <div class="warning-text">
+              <strong>Acción Irreversible</strong>
+              <p>Al confirmar el reembolso, la entrada se quemará on-chain y el cupo se liberará automáticamente. No podrás recuperar esta entrada.</p>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <mat-icon>info</mat-icon>
+            <div class="info-text">
+              <strong>Política de Reembolso</strong>
+              <p>Se retiene un cargo de reposición del <strong>5%</strong>. El balance restante (95%) será devuelto directamente a tu billetera conectada.</p>
+            </div>
+          </div>
+
+          <div class="ticket-summary">
+            <div class="summary-row">
+              <span class="label">Entrada:</span>
+              <span class="value">{{ ticket.eventTitle }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Tipo:</span>
+              <span class="value">{{ ticket.ticketType }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Token ID:</span>
+              <span class="value">#{{ ticket.tokenId }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress/Loading states -->
+        <div class="refund-loading-state" *ngIf="refundStep() !== 'idle'">
+          <div class="spinner-container" *ngIf="refundStep() !== 'done'">
+            <div class="loading-spinner"></div>
+          </div>
+          
+          <div class="success-icon-container" *ngIf="refundStep() === 'done'">
+            <mat-icon class="done-icon">check_circle</mat-icon>
+          </div>
+
+          <p class="status-msg" [ngSwitch]="refundStep()">
+            <span *ngSwitchCase="'requesting'">Verificando elegibilidad y cargando firmas de autorización...</span>
+            <span *ngSwitchCase="'awaitingWallet'">Esperando confirmación en tu billetera...</span>
+            <span *ngSwitchCase="'confirming'">Confirmando reembolso on-chain y actualizando base de datos...</span>
+            <span *ngSwitchCase="'done'">¡Reembolso completado con éxito! El dinero fue devuelto a tu billetera.</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="modal-actions" *ngIf="refundStep() === 'idle'">
+        <button mat-button class="cancel-btn" (click)="closeRefundModal()" [disabled]="isLoadingRefund()">
+          CANCELAR
+        </button>
+        <button mat-raised-button class="confirm-btn" (click)="confirmRefund()" [disabled]="isLoadingRefund() || !!refundError()">
+          CONFIRMAR REEMBOLSO
+        </button>
+      </div>
+      
+      <div class="modal-actions" *ngIf="refundStep() === 'done'">
+        <button mat-raised-button class="confirm-btn" (click)="closeRefundModal()">
+          ENTENDIDO
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
+

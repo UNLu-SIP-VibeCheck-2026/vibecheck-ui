@@ -393,3 +393,312 @@
     opacity: 1;
   }
 }
+
+// Status Alert Container
+.status-alert-container {
+  padding: var(--space-6) var(--space-8) 0 var(--space-8);
+
+  @media (max-width: 960px) {
+    padding: var(--space-4) var(--space-6) 0 var(--space-6);
+  }
+}
+
+// Status Alert Cards
+.status-alert-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid transparent;
+  margin-bottom: var(--space-4);
+
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
+  .alert-content {
+    h4 {
+      margin: 0 0 var(--space-1) 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      opacity: 0.8;
+      line-height: 1.4;
+    }
+  }
+
+  &.refunded {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    mat-icon { color: #ef4444; }
+  }
+
+  &.redeemed {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    mat-icon { color: #22c55e; }
+  }
+
+  &.cancelled {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    mat-icon { color: #f59e0b; }
+  }
+
+  &.for-sale {
+    background: rgba(109, 40, 217, 0.1);
+    border-color: rgba(109, 40, 217, 0.2);
+    color: #a78bfa;
+    mat-icon { color: #6d28d9; }
+  }
+}
+
+// Refund Button
+.refund-btn {
+  background-color: transparent !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    border-color: #ef4444 !important;
+  }
+}
+
+// Refund Overlay & Modal
+.refund-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 11, 30, 0.95);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(12px);
+  padding: var(--space-4);
+
+  .refund-modal {
+    background: #18162f;
+    width: 100%;
+    max-width: 500px;
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #ffffff;
+
+    .modal-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h2 {
+        margin: 0;
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ffffff;
+      }
+
+      button {
+        color: rgba(255, 255, 255, 0.6);
+        &:hover { color: #ffffff; }
+      }
+    }
+
+    .refund-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+
+      .error-alert {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        padding: var(--space-3);
+        border-radius: 8px;
+        color: #f87171;
+        font-size: 0.95rem;
+
+        mat-icon {
+          color: #ef4444;
+          flex-shrink: 0;
+        }
+      }
+
+      .warning-box {
+        display: flex;
+        gap: var(--space-3);
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        padding: var(--space-4);
+        border-radius: 12px;
+
+        mat-icon {
+          color: #fbbf24;
+          flex-shrink: 0;
+        }
+
+        .warning-text {
+          strong {
+            display: block;
+            color: #fbbf24;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+          }
+          p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.4;
+          }
+        }
+      }
+
+      .info-box {
+        display: flex;
+        gap: var(--space-3);
+        background: rgba(59, 130, 246, 0.08);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        padding: var(--space-4);
+        border-radius: 12px;
+
+        mat-icon {
+          color: #60a5fa;
+          flex-shrink: 0;
+        }
+
+        .info-text {
+          strong {
+            display: block;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+          }
+          p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.4;
+          }
+        }
+      }
+
+      .ticket-summary {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: var(--space-4);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+
+        .summary-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.9rem;
+
+          .label {
+            color: rgba(255, 255, 255, 0.5);
+          }
+          .value {
+            font-weight: 600;
+            color: #ffffff;
+          }
+        }
+      }
+
+      .refund-loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-8) var(--space-4);
+        gap: var(--space-5);
+
+        .spinner-container {
+          position: relative;
+          width: 50px;
+          height: 50px;
+
+          .loading-spinner {
+            width: 100%;
+            height: 100%;
+            border: 4px solid rgba(255, 255, 255, 0.15);
+            border-top-color: var(--md-sys-color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+        }
+
+        .success-icon-container {
+          .done-icon {
+            font-size: 60px;
+            width: 60px;
+            height: 60px;
+            color: #22c55e;
+          }
+        }
+
+        .status-msg {
+          font-size: 1rem;
+          color: rgba(255, 255, 255, 0.85);
+          text-align: center;
+          margin: 0;
+          line-height: 1.5;
+        }
+      }
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-3);
+      margin-top: var(--space-2);
+
+      button {
+        height: 48px;
+        padding: 0 var(--space-6);
+        border-radius: 10px;
+        font-weight: 700;
+      }
+
+      .cancel-btn {
+        color: rgba(255, 255, 255, 0.6) !important;
+        &:hover { color: #ffffff !important; }
+      }
+
+      .confirm-btn {
+        background-color: #ef4444 !important;
+        color: #ffffff !important;
+        
+        &:disabled {
+          background-color: rgba(239, 68, 68, 0.4) !important;
+          color: rgba(255, 255, 255, 0.4) !important;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+

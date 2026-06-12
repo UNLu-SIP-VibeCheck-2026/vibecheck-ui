@@ -101,6 +101,31 @@
     }
   }
 
+  &.inactive {
+    opacity: 0.65;
+
+    .ticket-image-container {
+      filter: grayscale(0.8);
+    }
+
+    &:hover {
+      transform: none;
+      border-color: var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-surface-container);
+      box-shadow: none;
+
+      .ticket-action {
+        background: rgba(255, 255, 255, 0.01);
+        color: var(--md-sys-color-on-surface-variant);
+
+        .chevron {
+          transform: none;
+          color: var(--md-sys-color-on-surface-variant);
+        }
+      }
+    }
+  }
+
   .ticket-image-container {
     width: 200px;
     height: 140px;
@@ -274,9 +299,15 @@
           }
 
           &.cancelled {
-            background: rgba(239, 68, 68, 0.1);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: #f87171 !important;
+            border: 1px solid rgba(239, 68, 68, 0.4) !important;
+          }
+
+          &.refunded {
+            background: rgba(245, 158, 11, 0.15) !important;
+            color: #fbbf24 !important;
+            border: 1px solid rgba(245, 158, 11, 0.4) !important;
           }
         }
       }

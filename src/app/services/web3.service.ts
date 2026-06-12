@@ -75,6 +75,7 @@ export class Web3Service {
     "function buyWithUSDC(address eventNFT, uint256 tierIdx) external returns (uint256)",
     "function buyWithVBK(address eventNFT, uint256 tierIdx, uint256 maxVbkAmount) external returns (uint256)",
     "function quoteVBK(address eventNFT, uint256 tierIdx) external view returns (uint256)",
+    "function refundVoluntary(address eventNFT, uint256 tokenId, uint256 deadline, bytes signature) external",
     "event TicketPurchasedUSDC(address indexed buyer, address indexed eventNFT, uint256 indexed tokenId, uint256 tierIdx, uint256 amountPaid, uint256 feePaid)",
     "event TicketPurchasedVBK(address indexed buyer, address indexed eventNFT, uint256 indexed tokenId, uint256 tierIdx, uint256 vbkPaid, uint256 vbkFee, uint256 priceUSDC)",
   ]);
@@ -656,6 +657,33 @@ export class Web3Service {
       functionName: "approve",
       args: [spender as `0x${string}`, tokenId],
     } as any);
+  }
+
+  async refundVoluntary(
+    eventNft: string,
+    tokenId: bigint | number,
+    deadline: bigint | number,
+    signature: string
+  ): Promise<any> {
+    const chainId = this.chainId$.getValue();
+    if (chainId !== this.SEPOLIA_CHAIN_ID) {
+      await this.switchToSepolia();
+      throw new Error("Cambiá a la red Sepolia antes de continuar.");
+    }
+
+    const txHash = await writeContract(config, {
+      address: this.OFFERING_NFT_ADDRESS as `0x${string}`,
+      abi: this.OFFERING_ABI,
+      functionName: "refundVoluntary",
+      args: [
+        eventNft as `0x${string}`,
+        BigInt(tokenId),
+        BigInt(deadline),
+        signature as `0x${string}`
+      ],
+    } as any);
+
+    return await waitForTransactionReceipt(config, { hash: txHash });
   }
 
   async waitForTransaction(txHash: string): Promise<any> {
