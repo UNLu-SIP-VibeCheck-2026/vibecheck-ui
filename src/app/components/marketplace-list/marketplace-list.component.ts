@@ -18,6 +18,7 @@ import { EventService } from "../../services/event.service";
 import { TicketTypeService } from "../../services/ticket-type.service";
 import { ContractsService } from "../../services/contracts.service";
 import { Web3Service } from "../../services/web3.service";
+import { AuthService } from "../../services/auth.service";
 
 
 @Component({
@@ -47,6 +48,7 @@ export class MarketplaceListComponent implements OnInit {
   private ticketTypeService = inject(TicketTypeService);
   private contractsService = inject(ContractsService);
   private web3Service = inject(Web3Service);
+  private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
 
   // Pagination and lists state
@@ -71,11 +73,21 @@ export class MarketplaceListComponent implements OnInit {
   walletAddress = signal<string | null>(null);
 
   ngOnInit(): void {
+    // Subscribe to auth state to react to login/logout
+    this.authService.currentUser$.subscribe((user) => {
+      if (user) {
+        this.loadEventsAndListings();
+      } else {
+        this.isLoading.set(false);
+        this.isAuthRequired.set(true);
+      }
+    });
+
     this.web3Service.connectedAddress$.subscribe((addr) => {
       const prevAddr = this.walletAddress();
       this.walletAddress.set(addr);
-      // Reload when wallet address changes (user logs in or out)
-      if (prevAddr !== addr) {
+      // Reload when wallet address changes (user logs in or out) and they are authenticated
+      if (prevAddr !== addr && this.authService.isAuthenticated()) {
         this.loadEventsAndListings();
       }
     });
@@ -84,11 +96,20 @@ export class MarketplaceListComponent implements OnInit {
       if (params["eventNftAddress"]) {
         this.selectedEventNftAddress = params["eventNftAddress"];
       }
-      this.loadEventsAndListings();
+      if (this.authService.isAuthenticated()) {
+        this.loadEventsAndListings();
+      }
     });
   }
 
   loadEventsAndListings(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.isLoading.set(false);
+      this.errorMessage.set("");
+      this.isAuthRequired.set(true);
+      return;
+    }
+
     this.isLoading.set(true);
     this.errorMessage.set("");
     this.isAuthRequired.set(false);
