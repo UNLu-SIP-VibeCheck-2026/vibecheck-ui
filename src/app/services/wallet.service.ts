@@ -52,12 +52,12 @@ export class WalletService {
       name: "VibeCheck UI",
       description: "VibeCheck UI Platform",
       // Mantenemos el fix de la barra final para evitar el Invalid App Configuration
-      url: isProd ? "https://vibecheck.lat/" : "http://localhost:4200/",
+      url: isProd ? "https://vibecheck.team/" : "http://localhost:4200/",
       icons: ["https://avatars.githubusercontent.com/u/179229932"],
       // FIX MULTI-WALLET: dejamos solo la URL universal para que la wallet
       // sepa a dónde regresar al usuario tras firmar.
       redirect: {
-        universal: isProd ? "https://vibecheck.lat" : "http://localhost:4200"
+        universal: isProd ? "https://vibecheck.team" : "http://localhost:4200"
       }
     };
 
