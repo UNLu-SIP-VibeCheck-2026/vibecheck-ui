@@ -10,20 +10,87 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
+
+  /* MOBILE FIX: Optimizar padding y gap en mobile */
+  @media (max-width: 768px) {
+    padding: var(--space-4) var(--space-3);
+    gap: var(--space-5);
+  }
 }
 
 /* 1. CUSTOM STEPPER VISUAL */
 .stepper-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   background: rgba(26, 21, 53, 0.6);
   backdrop-filter: blur(12px);
   border: 1px solid var(--md-sys-color-outline-variant);
   padding: var(--space-4) var(--space-6);
   border-radius: var(--md-sys-shape-corner-extra-large);
   margin-bottom: var(--space-4);
-  gap: var(--space-2);
+
+  @media (max-width: 768px) {
+    /* MOBILE FIX: Ajustar padding en mobile */
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .stepper-desktop-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: var(--space-2);
+
+    @media (max-width: 768px) {
+      /* MOBILE FIX: Ocultar stepper de burbujas en mobile */
+      display: none;
+    }
+  }
+
+  .stepper-mobile-wrapper {
+    display: none;
+
+    @media (max-width: 768px) {
+      /* MOBILE FIX: Mostrar stepper lineal responsivo */
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      width: 100%;
+
+      .stepper-mobile-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        .step-mobile-count {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: var(--md-sys-color-primary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .step-mobile-label {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #ffffff;
+        }
+      }
+
+      .stepper-mobile-progress-bar {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: var(--md-sys-shape-corner-full);
+        overflow: hidden;
+
+        .progress-bar-fill {
+          height: 100%;
+          background: var(--gradient-brand);
+          border-radius: var(--md-sys-shape-corner-full);
+          transition: width 0.3s ease;
+        }
+      }
+    }
+  }
 
   .step-item {
     display: flex;
@@ -315,6 +382,12 @@
   gap: var(--space-6);
   align-items: start;
 
+  /* MOBILE FIX: Colapsar grilla en 1 columna para pantallas moviles */
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
@@ -333,6 +406,11 @@
   height: 200px;
   overflow: hidden;
 
+  /* MOBILE FIX: Reducir altura del hero en mobile */
+  @media (max-width: 768px) {
+    height: 160px;
+  }
+
   .event-hero-img {
     width: 100%;
     height: 100%;
@@ -348,6 +426,11 @@
     flex-direction: column;
     justify-content: flex-end;
     gap: var(--space-2);
+
+    /* MOBILE FIX: Reducir padding en mobile */
+    @media (max-width: 768px) {
+      padding: var(--space-4);
+    }
 
     .badge-resale {
       align-self: flex-start;
@@ -366,6 +449,11 @@
       font-size: 1.6rem;
       font-weight: 800;
       line-height: 1.2;
+
+      /* MOBILE FIX: Ajustar tamaño de titulo */
+      @media (max-width: 768px) {
+        font-size: 1.3rem;
+      }
     }
 
     .hero-meta {
@@ -395,6 +483,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+
+  /* MOBILE FIX: Reducir padding en mobile */
+  @media (max-width: 768px) {
+    padding: var(--space-4);
+  }
 
   h3 {
     margin: 0 0 var(--space-1) 0;

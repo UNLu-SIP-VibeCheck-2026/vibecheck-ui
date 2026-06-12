@@ -31,36 +31,296 @@
     <!-- Contenido del perfil -->
     <div class="profile-content">
 
-      <!-- Avatar con foto o iniciales -->
-      <div class="avatar-wrapper">
-        <app-avatar
-          *ngIf="profile()"
-          [username]="profile()?.username || null"
-          [name]="profile()?.name || null"
-          [lastName]="profile()?.lastName || null"
-          [hasImage]="profile()?.hasImage || false"
-          [clickable]="true"
-          [size]="'large'"
-          [isPublic]="true"
-          (photoChanged)="onProfilePhotoChanged()"
-        ></app-avatar>
-      </div>
+      <!-- Cabecera de Identidad y Rol -->
+      <div class="profile-header-card">
+        <div class="header-main-info">
+          <!-- Avatar con foto o iniciales -->
+          <div class="avatar-wrapper">
+            <app-avatar
+              *ngIf="profile()"
+              [username]="profile()?.username || null"
+              [name]="profile()?.name || null"
+              [lastName]="profile()?.lastName || null"
+              [hasImage]="profile()?.hasImage || false"
+              [clickable]="isOwnProfile()"
+              [size]="'large'"
+              [isPublic]="!isOwnProfile()"
+              (photoChanged)="onProfilePhotoChanged()"
+            ></app-avatar>
+          </div>
 
-      <!-- Identidad -->
-      <div class="identity-section">
-        <h1 class="display-name">{{ fullName() }}</h1>
-        <p class="username">&#64;{{ profile()?.username }}</p>
-      </div>
-
-      <!-- Datos públicos -->
-      <div class="info-cards">
-        <div class="info-card">
-          <span class="info-label">Rol</span>
-          <span class="info-value role-badge">{{ profile()?.role }}</span>
+          <!-- Identidad -->
+          <div class="identity-section">
+            <h1 class="display-name">{{ fullName() }}</h1>
+            <p class="username">&#64;{{ profile()?.username }}</p>
+          </div>
         </div>
+
+        <!-- Fila de Controles de Rol y Editar -->
+        <div class="profile-controls">
+          <div class="info-card role-card">
+            <span class="info-label">Rol</span>
+            <div class="role-badge-wrapper">
+              @if (!isOwnProfile()) {
+                <span class="role-badge">{{ profile()?.role }}</span>
+              } @else {
+                <button
+                  type="button"
+                  class="user-badge user-badge-button"
+                  (click)="openChangeRole()"
+                  aria-label="Cambiar mi rol activo"
+                >
+                  <span class="badge-text">{{ profile()?.role }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          @if (isOwnProfile()) {
+            <button mat-flat-button class="edit-profile-btn" (click)="navigateToEditProfile()">
+              <mat-icon>edit</mat-icon>
+              <span>Editar Perfil</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Candies List (Uno debajo del otro en flex-vertical) -->
+      <div class="profile-candies-list">
+        
+        <!-- Candy 1: Biografía -->
+        <div class="candy-card bio-candy">
+          <div class="candy-header">
+            <div class="candy-title">
+              <mat-icon>description</mat-icon>
+              <span>Biografía</span>
+            </div>
+            @if (isOwnProfile() && !isEditingBio()) {
+              <button mat-icon-button class="edit-bio-toggle-btn" (click)="isEditingBio.set(true)" title="Editar biografía">
+                <mat-icon>edit</mat-icon>
+              </button>
+            }
+          </div>
+          <div class="candy-body">
+            @if (isEditingBio()) {
+              <div class="bio-editor">
+                <textarea
+                  class="bio-textarea"
+                  [(ngModel)]="bio"
+                  maxLength="150"
+                  placeholder="Contanos algo sobre vos..."
+                  rows="3"
+                ></textarea>
+                <div class="bio-editor-footer">
+                  <span class="char-count">{{ bio().length }}/150</span>
+                  <div class="editor-actions">
+                    <button class="cancel-btn" (click)="isEditingBio.set(false)">Cancelar</button>
+                    <button class="save-btn" (click)="isEditingBio.set(false)">Guardar</button>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <p class="bio-text" [class.empty]="!bio()">
+                {{ bio() || 'Sin biografía escrita aún.' }}
+              </p>
+            }
+          </div>
+        </div>
+
+        <!-- Candy 2: Tiers de User -->
+        <div class="candy-card tier-candy">
+          <div class="candy-header">
+            <div class="candy-title">
+              <mat-icon>workspace_premium</mat-icon>
+              <span>Nivel de Usuario</span>
+            </div>
+          </div>
+          <div class="candy-body tier-body">
+            <div class="tier-badge-container">
+              <div class="medal-wrapper">
+                <svg viewBox="0 0 100 100" class="medal-svg" [ngClass]="userTierKey().toLowerCase()">
+                  <defs>
+                    <!-- Bronze Gradient -->
+                    <linearGradient id="medalBRONZE" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#CD7F32" />
+                      <stop offset="30%" stop-color="#F3A661" />
+                      <stop offset="70%" stop-color="#8C4612" />
+                      <stop offset="100%" stop-color="#CD7F32" />
+                    </linearGradient>
+                    <linearGradient id="ribbonBRONZE" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#7C2D12" />
+                      <stop offset="50%" stop-color="#EA580C" />
+                      <stop offset="100%" stop-color="#7C2D12" />
+                    </linearGradient>
+
+                    <!-- Silver Gradient -->
+                    <linearGradient id="medalSILVER" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#C0C0C0" />
+                      <stop offset="30%" stop-color="#F3F4F6" />
+                      <stop offset="70%" stop-color="#4B5563" />
+                      <stop offset="100%" stop-color="#C0C0C0" />
+                    </linearGradient>
+                    <linearGradient id="ribbonSILVER" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#374151" />
+                      <stop offset="50%" stop-color="#9CA3AF" />
+                      <stop offset="100%" stop-color="#374151" />
+                    </linearGradient>
+
+                    <!-- Gold Gradient -->
+                    <linearGradient id="medalGOLD" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#D97706" />
+                      <stop offset="30%" stop-color="#FDE047" />
+                      <stop offset="70%" stop-color="#78350F" />
+                      <stop offset="100%" stop-color="#FBBF24" />
+                    </linearGradient>
+                    <linearGradient id="ribbonGOLD" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#78350F" />
+                      <stop offset="50%" stop-color="#FBBF24" />
+                      <stop offset="100%" stop-color="#78350F" />
+                    </linearGradient>
+
+                    <!-- Platinum Gradient -->
+                    <linearGradient id="medalPLATINUM" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#0284C7" />
+                      <stop offset="30%" stop-color="#E0F2FE" />
+                      <stop offset="70%" stop-color="#0F172A" />
+                      <stop offset="100%" stop-color="#38BDF8" />
+                    </linearGradient>
+                    <linearGradient id="ribbonPLATINUM" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#1E3A8A" />
+                      <stop offset="50%" stop-color="#60A5FA" />
+                      <stop offset="100%" stop-color="#1E3A8A" />
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Ribbon -->
+                  <path d="M36 10 L50 42 L64 10 Z" [attr.fill]="'url(#ribbon' + userTierKey() + ')'" />
+                  <path d="M22 10 L36 10 L50 42 L36 42 Z" fill="rgba(255,255,255,0.08)" />
+                  <path d="M78 10 L64 10 L50 42 L64 42 Z" fill="rgba(0,0,0,0.15)" />
+
+                  <!-- Outer Ring -->
+                  <circle cx="50" cy="54" r="30" [attr.fill]="'url(#medal' + userTierKey() + ')'" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
+                  
+                  <!-- Inner Rim -->
+                  <circle cx="50" cy="54" r="24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1" stroke-dasharray="2,2" />
+                  
+                  <!-- Core -->
+                  <circle cx="50" cy="54" r="20" fill="rgba(0,0,0,0.2)" />
+                  
+                  <!-- VC Initials -->
+                  <path d="M42 46 L46 62 L50 62 L45 46 Z" fill="#ffffff" opacity="0.9" />
+                  <path d="M54 46 A 8 8 0 0 0 54 62 A 8 8 0 0 0 58 60 L 56 58 A 5 5 0 0 1 54 59 A 5 5 0 0 1 54 49 A 5 5 0 0 1 58 48 Z" fill="#ffffff" opacity="0.9" />
+                </svg>
+              </div>
+              <div class="tier-info">
+                <span class="tier-prefix">Tier de Usuario:</span>
+                <span class="tier-name" [ngClass]="userTierKey().toLowerCase()">{{ userTierName() }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Candy 3: Últimos Logros -->
+        <div class="candy-card achievements-candy">
+          <div class="candy-header">
+            <div class="candy-title">
+              <mat-icon>emoji_events</mat-icon>
+              <span>Últimos Logros</span>
+            </div>
+          </div>
+          <div class="candy-body">
+            @if (isLoadingAchievements()) {
+              <div class="candy-loading-spinner">Cargando logros...</div>
+            } @else {
+              <div class="achievements-grid">
+                @for (achievement of achievements(); track achievement.id) {
+                  <div class="achievement-item-card" [class.completed]="achievement.completed">
+                    <div class="achievement-icon-box">
+                      <mat-icon>{{ getAchievementIcon(achievement.metric) }}</mat-icon>
+                    </div>
+                    <div class="achievement-details">
+                      <h4 class="achievement-title-text">{{ achievement.name }}</h4>
+                      <p class="achievement-desc-text">{{ achievement.description }}</p>
+                      <div class="achievement-progress-wrapper">
+                        <mat-progress-bar 
+                          mode="determinate" 
+                          [value]="getProgressPercentage(achievement)"
+                          class="achievement-bar"
+                        ></mat-progress-bar>
+                        <span class="progress-ratio">{{ achievement.progress }}/{{ achievement.threshold }}</span>
+                      </div>
+
+                      @if (achievement.completed) {
+                        <span class="completed-badge-text">¡COMPLETADO!</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Candy 4: Últimos Eventos Participados -->
+        <div class="candy-card events-candy">
+          <div class="candy-header">
+            <div class="candy-title">
+              <mat-icon>confirmation_number</mat-icon>
+              <span>Eventos Recientes</span>
+            </div>
+          </div>
+          <div class="candy-body">
+            @if (isLoadingEvents()) {
+              <div class="candy-loading-spinner">Cargando eventos...</div>
+            } @else {
+              <div class="events-grid">
+                @for (ev of attendedEvents(); track ev.id) {
+                  <div class="event-card-compact">
+                    <!-- Image container -->
+                    <div class="event-image-container">
+                      @if (ev.imageUrl) {
+                        <img [src]="ev.imageUrl" [alt]="ev.title" class="event-image">
+                      } @else {
+                        <div class="no-image-placeholder">
+                          <mat-icon>image_not_supported</mat-icon>
+                        </div>
+                      }
+                    </div>
+                    
+                    <!-- Info details -->
+                    <div class="event-info">
+                      <div class="card-badges">
+                        @for (cat of ev.categories; track cat) {
+                          <span class="category-badge">{{ cat }}</span>
+                        }
+                      </div>
+                      <h3 class="event-title-text">{{ ev.title }}</h3>
+                      <div class="event-metadata">
+                        <div class="metadata-item">
+                          <mat-icon>calendar_today</mat-icon>
+                          <span>{{ ev.startDate }}</span>
+                        </div>
+                        <div class="metadata-item">
+                          <mat-icon>location_on</mat-icon>
+                          <span>{{ ev.venue }}</span>
+                        </div>
+                      </div>
+                      
+                      <!-- Seat Location detail -->
+                      <div class="ticket-location-badge">
+                        <mat-icon>airline_seat_recline_extra</mat-icon>
+                        <span>Ubicación: {{ ev.location }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
       </div>
 
     </div>
   }
-
-</div>
+</div>

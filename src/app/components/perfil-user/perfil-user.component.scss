@@ -4,101 +4,662 @@
   align-items: flex-start;
   min-height: calc(100vh - 72px);
   background-color: transparent;
-  padding: 64px 20px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 40px 20px;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--md-sys-color-on-background);
 }
 
 .profile-page {
   width: 100%;
-  max-width: 480px;
+  max-width: 800px; /* Increased to fit grids beautifully */
+  margin: 0 auto;
 }
 
-/* ─── AVATAR ─── */
-.avatar-wrapper {
-  display: flex;
-  justify-content: center;
+/* ─── HEADER CARD ─── */
+.profile-header-card {
+  background: rgba(18, 16, 42, 0.45);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 20px;
+  padding: 24px 32px;
   margin-bottom: 24px;
-}
-
-.avatar {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background-color: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-  font-size: 32px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  letter-spacing: -1px;
-  user-select: none;
-}
-
-/* ─── IDENTIDAD ─── */
-.identity-section {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.display-name {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--md-sys-color-on-background);
-  margin: 0 0 6px 0;
-  letter-spacing: -0.5px;
-}
-
-.username {
-  font-size: 15px;
-  color: var(--md-sys-color-on-surface-variant);
-  margin: 0;
-  font-weight: 400;
-}
-
-/* ─── TARJETAS DE INFO ─── */
-.info-cards {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  background-color: var(--md-sys-color-outline-variant);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--md-sys-color-outline-variant);
+  gap: 20px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  @media (min-width: 600px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
-.info-card {
+.header-main-info {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background-color: var(--md-sys-color-surface);
-  gap: 12px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.info-label {
-  font-size: 14px;
-  color: var(--md-sys-color-on-surface-variant);
-  font-weight: 500;
+.avatar-wrapper {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.info-value {
+.identity-section {
+  .display-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.5px;
+  }
+
+  .username {
+    font-size: 15px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+  }
+}
+
+.profile-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+.role-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  padding: 8px 16px;
+  border-radius: 12px;
+  box-sizing: border-box;
+
+  .info-label {
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .role-badge {
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+}
+
+/* User Badge Button Clone from Dashboard */
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  background: var(--gradient-brand);
+  border-radius: 50px;
+  border: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+
+  .badge-text {
+    font-size: 12px;
+    color: #ffffff;
+  }
+}
+
+.user-badge-button {
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+    filter: brightness(1.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.edit-profile-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  height: 40px !important;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ─── CANDIES CONTAINER ─── */
+.profile-candies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.candy-card {
+  background: rgba(18, 16, 42, 0.45);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.candy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
+
+  .candy-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 18px;
+
+    mat-icon {
+      color: var(--md-sys-color-primary);
+    }
+  }
+}
+
+.candy-loading-spinner {
+  text-align: center;
+  padding: 20px;
+  color: var(--md-sys-color-on-surface-variant);
   font-size: 14px;
-  color: var(--md-sys-color-on-surface);
-  font-weight: 500;
-  text-align: right;
 }
 
-.role-badge {
-  background-color: var(--md-sys-color-surface-container-high);
-  color: var(--md-sys-color-on-surface);
-  padding: 3px 10px;
-  border-radius: 100px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: capitalize;
+/* ─── CANDY 1: BIO ─── */
+.bio-text {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  margin: 0;
+
+  &.empty {
+    color: var(--md-sys-color-on-surface-variant);
+    font-style: italic;
+  }
+}
+
+.edit-bio-toggle-btn {
+  color: var(--md-sys-color-on-surface-variant) !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  &:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.bio-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .bio-textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    padding: 12px;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+    box-sizing: border-box;
+    outline: none;
+
+    &:focus {
+      border-color: var(--md-sys-color-primary);
+    }
+  }
+
+  .bio-editor-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .char-count {
+      font-size: 12px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+
+      button {
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .cancel-btn {
+        background: transparent;
+        color: var(--md-sys-color-on-surface-variant);
+
+        &:hover {
+          color: #ffffff;
+          background: rgba(255, 255, 255, 0.05);
+        }
+      }
+
+      .save-btn {
+        background: var(--md-sys-color-primary);
+        color: #ffffff;
+
+        &:hover {
+          filter: brightness(1.1);
+        }
+      }
+    }
+  }
+}
+
+/* ─── CANDY 2: TIERS DE USER ─── */
+.tier-body {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.tier-badge-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.medal-wrapper {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.medal-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  &.bronze {
+    filter: drop-shadow(0 4px 12px rgba(205, 127, 50, 0.15));
+  }
+  &.silver {
+    filter: drop-shadow(0 4px 12px rgba(192, 192, 192, 0.15));
+  }
+  &.gold {
+    filter: drop-shadow(0 4px 12px rgba(217, 119, 6, 0.15));
+  }
+  &.platinum {
+    filter: drop-shadow(0 4px 12px rgba(56, 189, 248, 0.15));
+  }
+}
+
+.tier-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .tier-prefix {
+    font-size: 13px;
+    color: var(--md-sys-color-on-surface-variant);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .tier-name {
+    font-size: 24px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+
+    &.bronze {
+      background: linear-gradient(90deg, #F3A661, #8C4612);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    &.silver {
+      background: linear-gradient(90deg, #F3F4F6, #6B7280);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    &.gold {
+      background: linear-gradient(90deg, #FDE047, #D97706);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    &.platinum {
+      background: linear-gradient(90deg, #E0F2FE, #0284C7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+}
+
+/* ─── CANDY 3: ULTIMOS LOGROS ─── */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (min-width: 550px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.achievement-item-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  &.completed {
+    border-color: rgba(168, 85, 247, 0.2);
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.03) 0%, rgba(18, 16, 42, 0.4) 100%);
+    
+    .achievement-icon-box {
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--md-sys-color-primary);
+    }
+  }
+
+  .achievement-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--md-sys-color-on-surface-variant);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .achievement-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .achievement-title-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .achievement-desc-text {
+      font-size: 12px;
+      color: var(--md-sys-color-on-surface-variant);
+      margin: 0 0 10px 0;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+
+  .achievement-progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+
+    .achievement-bar {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background-color: rgba(255, 255, 255, 0.1);
+
+      ::ng-deep .mdc-linear-progress__bar-inner {
+        border-color: var(--md-sys-color-primary) !important;
+      }
+    }
+
+    .progress-ratio {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface-variant);
+      white-space: nowrap;
+    }
+  }
+
+  .completed-badge-text {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 8px;
+    font-weight: 800;
+    color: var(--md-sys-color-primary);
+    letter-spacing: 0.1em;
+  }
+}
+
+/* ─── CANDY 4: ULTIMOS EVENTOS ─── */
+.events-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+
+  @media (min-width: 550px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.event-card-compact {
+  background: rgba(18, 16, 42, 0.45);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.15);
+    .event-image {
+      transform: scale(1.03);
+    }
+  }
+
+  .event-image-container {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--md-sys-color-surface-container-high);
+    position: relative;
+  }
+
+  .event-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .no-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-sys-color-on-surface-variant);
+    background: rgba(255, 255, 255, 0.02);
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .event-info {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .card-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+
+    .category-badge {
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      color: #c084fc;
+      padding: 2px 8px;
+      border-radius: 50px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+  }
+
+  .event-title-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .event-metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+
+    .metadata-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        color: var(--md-sys-color-primary);
+      }
+    }
+  }
+
+  .ticket-location-badge {
+    margin-top: auto;
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+  }
 }
 
 /* ─── LOADING SKELETON ─── */
@@ -162,3 +723,4 @@
   color: var(--md-sys-color-on-surface-variant);
   margin: 0;
 }
+

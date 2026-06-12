@@ -127,6 +127,12 @@
 }
 
 .menu-hamburger-btn {
+  /* MOBILE FIX: Aumentar area tactil a min 44x44px */
+  width: 44px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   color: #ffffff !important;
   background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid var(--md-sys-color-outline-variant) !important;
@@ -199,6 +205,12 @@
   }
 
   .close-drawer-btn {
+    /* MOBILE FIX: Aumentar area tactil a min 44x44px */
+    width: 44px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     color: var(--md-sys-color-on-surface-variant) !important;
     
     &:hover {
@@ -358,6 +370,8 @@
 
   .drawer-footer {
     padding: var(--space-5);
+    /* MOBILE FIX: Agregar soporte para notch/safe area en iOS */
+    padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
     border-top: 1px solid var(--md-sys-color-outline-variant);
     flex-shrink: 0;
     
