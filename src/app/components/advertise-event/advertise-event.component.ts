@@ -1145,6 +1145,8 @@ export class AdvertiseEventComponent implements OnInit {
   isLoadingGlobal = true;
 
   // Wallet and Stepper Wizard states
+  private pendingSiweChallenge: { message: string } | null = null;
+
   currentStep = signal<number>(1);
   isLoading = signal<boolean>(false);
   errorMessage = signal<string>('');
@@ -1231,6 +1233,7 @@ export class AdvertiseEventComponent implements OnInit {
         }
 
         if (res && res.message) {
+          this.pendingSiweChallenge = { message: res.message };
           this.siweMessage.set(res.message);
         } else {
           this.errorMessage.set('No se pudo obtener el mensaje de firma.');
@@ -1249,8 +1252,16 @@ export class AdvertiseEventComponent implements OnInit {
 
   signAndVerify() {
     const address = this.connectedAddress();
-    const message = this.siweMessage();
-    if (!address || !message) return;
+    const challenge = this.pendingSiweChallenge;
+
+    if (!address || !challenge) {
+      this.errorMessage.set('Preparando firma, intentá de nuevo en un momento...');
+      this.startSiweFlow();
+      return;
+    }
+
+    const message = challenge.message;
+    this.pendingSiweChallenge = null;
 
     this.isLoading.set(true);
     this.errorMessage.set('');
