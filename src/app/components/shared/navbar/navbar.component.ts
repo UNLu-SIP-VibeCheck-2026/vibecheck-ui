@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, HostListener, signal } from '@angular/core';
+import { Component, inject, OnInit, HostListener, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
@@ -42,6 +43,7 @@ export class NavbarComponent implements OnInit {
   private router = inject(Router);
   authService = inject(AuthService);
   private usersService = inject(UsersService);
+  private destroyRef = inject(DestroyRef);
 
   user$ = this.authService.currentUser$;
   fullUserProfile = signal<UserPublicResponse | null>(null);
@@ -56,15 +58,28 @@ export class NavbarComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe({
-      next: (user) => {
-        if (user?.username) {
-          this.loadFullUserProfile(user.username);
-        } else {
-          this.fullUserProfile.set(null);
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          if (user?.username) {
+            this.loadFullUserProfile(user.username);
+          } else {
+            this.fullUserProfile.set(null);
+          }
         }
-      }
-    });
+      });
+
+    this.usersService.profileUpdated$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (username) => {
+          const user = this.authService.getCurrentUserValue();
+          if (user && user.username === username) {
+            this.loadFullUserProfile(username);
+          }
+        }
+      });
   }
 
   private loadFullUserProfile(username: string): void {

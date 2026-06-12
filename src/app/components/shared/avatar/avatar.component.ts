@@ -1,9 +1,10 @@
-import { Component, Input, computed, signal, inject, Output, EventEmitter } from '@angular/core';
+import { Component, Input, computed, signal, inject, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { UsersService } from '../../../services/users.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ErrorService } from '../../../services/error.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-avatar',
@@ -12,11 +13,12 @@ import { ErrorService } from '../../../services/error.service';
   templateUrl: './avatar.component.html',
   styleUrl: './avatar.component.scss'
 })
-export class AvatarComponent {
+export class AvatarComponent implements OnInit, OnChanges {
   private sanitizer = inject(DomSanitizer);
   private usersService = inject(UsersService);
   private snackBar = inject(MatSnackBar);
   private errorService = inject(ErrorService);
+  private destroyRef = inject(DestroyRef);
 
   @Input() username: string | null = null;
   @Input() name: string | null = null;
@@ -42,6 +44,20 @@ export class AvatarComponent {
 
   ngOnInit(): void {
     if (this.username && this.hasImage) {
+      this.loadProfileImage();
+    }
+
+    this.usersService.profileUpdated$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((updatedUsername) => {
+        if (updatedUsername === this.username && this.hasImage) {
+          this.loadProfileImage();
+        }
+      });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ((changes['username'] || changes['hasImage']) && this.username && this.hasImage) {
       this.loadProfileImage();
     }
   }
@@ -82,6 +98,7 @@ export class AvatarComponent {
         this.snackBar.open('Foto de perfil actualizada', 'Cerrar', { duration: 3000 });
         this.loadProfileImage();
         this.photoChanged.emit();
+        this.usersService.notifyProfileUpdated(this.username);
       },
       error: (err) => {
         this.errorService.handleError(err, 'Error al actualizar la foto');

@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { environment } from "../../environments/environment";
-import { Observable } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { Page } from "../models/page.model";
 import { UserSummaryResponse } from "../models/user-summary-response.model";
 import { UserUpdateRequest } from "../models/user-update-request.model";
@@ -15,7 +15,14 @@ export class UsersService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl;
 
+  private profileUpdatedSubject = new Subject<string>();
+  public profileUpdated$ = this.profileUpdatedSubject.asObservable();
+
   constructor() {}
+
+  notifyProfileUpdated(username: string): void {
+    this.profileUpdatedSubject.next(username);
+  }
 
   getUsers(page: number, size: number, search?: string, role?: string, active?: boolean | string, sortBy?: string, sortDirection?: string): Observable<Page<UserSummaryResponse>> {
     let params: any = { page: page.toString(), size: size.toString() };
