@@ -189,55 +189,73 @@
           </div>
         </div>
 
-        <!-- Candy 4: Últimos Eventos Participados -->
-        <div class="candy-card events-candy">
+        <!-- Candy 5: Historial de eventos asistidos -->
+        <div class="candy-card history-candy">
           <div class="candy-header">
             <div class="candy-title">
-              <mat-icon>confirmation_number</mat-icon>
-              <span>Eventos Recientes</span>
+              <mat-icon>history</mat-icon>
+              <span>Eventos Asistidos</span>
             </div>
+            @if (eventHistory().length > 0) {
+              <button mat-flat-button class="view-all-history-btn" (click)="viewAllHistory()">
+                <span>Ver Todos</span>
+                <mat-icon>arrow_forward</mat-icon>
+              </button>
+            }
           </div>
           <div class="candy-body">
-            @if (isLoadingEvents()) {
-              <div class="candy-loading-spinner">Cargando eventos...</div>
+            @if (isLoadingHistory()) {
+              <div class="candy-loading-spinner">Cargando historial...</div>
+            } @else if (hasHistoryError()) {
+              <div class="history-state error">
+                <mat-icon>error_outline</mat-icon>
+                <span>No se pudo cargar el historial de eventos.</span>
+                <button type="button" class="retry-history-btn" (click)="loadHistory(profile()!.username)">Reintentar</button>
+              </div>
+            } @else if (eventHistory().length === 0) {
+              <div class="history-state empty">
+                <mat-icon>event_available</mat-icon>
+                <span>Todavía no asistió a eventos.</span>
+              </div>
             } @else {
-              <div class="events-grid">
-                @for (ev of attendedEvents(); track ev.id) {
-                  <div class="event-card-compact">
-                    <!-- Image container -->
-                    <div class="event-image-container">
-                      @if (ev.imageUrl) {
-                        <img [src]="ev.imageUrl" [alt]="ev.title" class="event-image">
-                      } @else {
-                        <div class="no-image-placeholder">
-                          <mat-icon>image_not_supported</mat-icon>
-                        </div>
-                      }
+              <div class="history-list">
+                @for (item of eventHistory(); track item.redeemTxHash || item.tokenId || item.eventTitle) {
+                  <div class="history-item-card">
+                    <div class="history-icon-box">
+                      <mat-icon>event_available</mat-icon>
                     </div>
-                    
-                    <!-- Info details -->
-                    <div class="event-info">
-                      <div class="card-badges">
-                        @for (cat of ev.categories; track cat) {
-                          <span class="category-badge">{{ cat }}</span>
-                        }
+                    <div class="history-details">
+                      <div class="history-title-row">
+                        <h3 class="history-event-title">{{ item.eventTitle }}</h3>
+                        <span class="history-ticket-badge">{{ item.ticketTypeName }}</span>
                       </div>
-                      <h3 class="event-title-text">{{ ev.title }}</h3>
-                      <div class="event-metadata">
-                        <div class="metadata-item">
+                      <div class="history-metadata">
+                        <div class="history-metadata-item">
                           <mat-icon>calendar_today</mat-icon>
-                          <span>{{ ev.startDate }}</span>
+                          <span>Evento: {{ formatHistoryDate(item.eventStartDate) }}</span>
                         </div>
-                        <div class="metadata-item">
-                          <mat-icon>location_on</mat-icon>
-                          <span>{{ ev.venue }}</span>
+                        <div class="history-metadata-item">
+                          <mat-icon>how_to_reg</mat-icon>
+                          <span>Asistencia: {{ formatHistoryDate(item.attendedAt) }}</span>
                         </div>
                       </div>
-                      
-                      <!-- Seat Location detail -->
-                      <div class="ticket-location-badge">
-                        <mat-icon>airline_seat_recline_extra</mat-icon>
-                        <span>Ubicación: {{ ev.location }}</span>
+                      <div class="history-chain-data">
+                        <div>
+                          <span class="chain-label">Token ID</span>
+                          <span class="chain-value">{{ item.tokenId ?? '—' }}</span>
+                        </div>
+                        <div>
+                          <span class="chain-label">Wallet redeem</span>
+                          <span class="chain-value" [title]="item.ownerWalletAtRedeem || ''">
+                            {{ shortHistoryValue(item.ownerWalletAtRedeem) }}
+                          </span>
+                        </div>
+                        <div>
+                          <span class="chain-label">Redeem tx</span>
+                          <span class="chain-value" [title]="item.redeemTxHash || ''">
+                            {{ shortHistoryValue(item.redeemTxHash) }}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

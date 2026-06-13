@@ -23,7 +23,7 @@ export class TicketService {
 
   getMyTickets(page: number, size: number): Observable<Page<TicketResponse>> {
     let params = new HttpParams().set("page", page).set("size", size);
-    return this.http.get<Page<TicketResponse>>(`${this.apiUrl}/me`, { params });
+    return this.http.get<Page<TicketResponse>>(`${this.apiUrl}/me/inventory`, { params });
   }
 
   getTicketById(id: number): Observable<TicketResponse> {
@@ -50,4 +50,3 @@ export class TicketService {
     return this.http.post<TicketResponse>(`${this.apiUrl}/${ticketId}/refund-confirm`, { txHash });
   }
 }
-

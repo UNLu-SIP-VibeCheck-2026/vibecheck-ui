@@ -1,0 +1,94 @@
+<div class="history-page">
+  <!-- Back Button Header -->
+  <div class="header">
+    <button mat-icon-button (click)="goBack()" class="back-btn" title="Volver al perfil">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-titles">
+      <span class="header-subtitle">&#64;{{ username() }}</span>
+      <h1 class="header-title">HISTORIAL COMPLETO</h1>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>
+      <p>Cargando historial de eventos...</p>
+    </div>
+  } @else if (hasError()) {
+    <div class="error-state">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h3 class="error-title">Error al cargar historial</h3>
+      <p class="error-desc">Ocurrió un problema al obtener el historial del usuario. Por favor, intentá nuevamente.</p>
+      <button mat-flat-button class="retry-btn" (click)="loadHistoryPage(currentPage())">
+        Reintentar
+      </button>
+    </div>
+  } @else if (historyItems().length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">event_busy</mat-icon>
+      <h3 class="empty-title">Sin eventos registrados</h3>
+      <p class="empty-desc">Este usuario no ha asistido a ningún evento todavía.</p>
+      <button mat-stroked-button class="back-to-profile-btn" (click)="goBack()">
+        Volver al Perfil
+      </button>
+    </div>
+  } @else {
+    <div class="history-content">
+      <div class="history-list">
+        @for (item of historyItems(); track item.redeemTxHash || item.tokenId || item.eventTitle) {
+          <div class="history-item-card">
+            <div class="history-icon-box">
+              <mat-icon>event_available</mat-icon>
+            </div>
+            <div class="history-details">
+              <div class="history-title-row">
+                <h3 class="history-event-title">{{ item.eventTitle }}</h3>
+                <span class="history-ticket-badge">{{ item.ticketTypeName }}</span>
+              </div>
+              <div class="history-metadata">
+                <div class="history-metadata-item">
+                  <mat-icon>calendar_today</mat-icon>
+                  <span>Evento: {{ formatHistoryDate(item.eventStartDate) }}</span>
+                </div>
+                <div class="history-metadata-item">
+                  <mat-icon>how_to_reg</mat-icon>
+                  <span>Asistencia: {{ formatHistoryDate(item.attendedAt) }}</span>
+                </div>
+              </div>
+              <div class="history-chain-data">
+                <div>
+                  <span class="chain-label">Token ID</span>
+                  <span class="chain-value">{{ item.tokenId ?? '—' }}</span>
+                </div>
+                <div>
+                  <span class="chain-label">Wallet redeem</span>
+                  <span class="chain-value" [title]="item.ownerWalletAtRedeem || ''">
+                    {{ item.ownerWalletAtRedeem || '—' }}
+                  </span>
+                </div>
+                <div>
+                  <span class="chain-label">Redeem tx</span>
+                  <span class="chain-value" [title]="item.redeemTxHash || ''">
+                    {{ item.redeemTxHash || '—' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Pagination controls -->
+      <div class="pagination-controls" *ngIf="totalPages() > 1">
+        <button mat-icon-button [disabled]="isFirstPage()" (click)="prevPage()" class="page-nav-btn" title="Página anterior">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="page-indicator">Página {{ currentPage() + 1 }} de {{ totalPages() }}</span>
+        <button mat-icon-button [disabled]="isLastPage()" (click)="nextPage()" class="page-nav-btn" title="Página siguiente">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </div>
+  }
+</div>

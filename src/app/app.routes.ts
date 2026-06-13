@@ -5,6 +5,7 @@ import { ChangePasswordComponent } from "./components/change-password/change-pas
 import { PasswordRecoveryComponent } from "./components/password-recovery/password-recovery.component";
 import { PerfilConfigComponent } from "./components/perfil-config/perfil-config.component";
 import { PerfilUserComponent } from "./components/perfil-user/perfil-user.component";
+import { PerfilUserHistoryComponent } from "./components/perfil-user-history/perfil-user-history.component";
 import { AdminPermissionsComponent } from "./components/admin-permissions/admin-permissions.component";
 import { AdminRolesComponent } from "./components/admin-roles/admin-roles.component";
 import { AdminUsersComponent } from "./components/admin-users/admin-users.component";
@@ -69,6 +70,11 @@ export const routes: Routes = [
   {
     path: "perfil-user/:username",
     component: PerfilUserComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "perfil-user/:username/historial",
+    component: PerfilUserHistoryComponent,
     canActivate: [authGuard],
   },
   {
