@@ -8,6 +8,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { EventService } from '../../services/event.service';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-perfil-user-history',
@@ -27,6 +31,8 @@ export class PerfilUserHistoryComponent implements OnInit {
   private router = inject(Router);
   private historyService = inject(HistoryService);
   private authService = inject(AuthService);
+  private eventService = inject(EventService);
+  private sanitizer = inject(DomSanitizer);
   private snackBar = inject(MatSnackBar);
 
   username = signal<string>('');
@@ -64,13 +70,48 @@ export class PerfilUserHistoryComponent implements OnInit {
 
     this.historyService.getUserHistory(this.username(), page, this.pageSize, 'attendedAt,desc').subscribe({
       next: (res) => {
-        this.historyItems.set(res.content ?? []);
-        this.currentPage.set(res.number);
-        this.totalPages.set(res.totalPages);
-        this.totalElements.set(res.totalElements);
-        this.isFirstPage.set(res.first);
-        this.isLastPage.set(res.last);
-        this.isLoading.set(false);
+        const items = res.content ?? [];
+        
+        const itemsWithImages = items.map((item) => {
+          return this.eventService.getEventImage(item.eventId).pipe(
+            map((blob) => {
+              const imageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+              return { ...item, imageUrl };
+            }),
+            catchError(() => of({ ...item, imageUrl: undefined }))
+          );
+        });
+
+        if (itemsWithImages.length === 0) {
+          this.historyItems.set([]);
+          this.currentPage.set(res.number);
+          this.totalPages.set(res.totalPages);
+          this.totalElements.set(res.totalElements);
+          this.isFirstPage.set(res.first);
+          this.isLastPage.set(res.last);
+          this.isLoading.set(false);
+        } else {
+          forkJoin(itemsWithImages).subscribe({
+            next: (results) => {
+              this.historyItems.set(results);
+              this.currentPage.set(res.number);
+              this.totalPages.set(res.totalPages);
+              this.totalElements.set(res.totalElements);
+              this.isFirstPage.set(res.first);
+              this.isLastPage.set(res.last);
+              this.isLoading.set(false);
+            },
+            error: () => {
+              this.historyItems.set(items);
+              this.currentPage.set(res.number);
+              this.totalPages.set(res.totalPages);
+              this.totalElements.set(res.totalElements);
+              this.isFirstPage.set(res.first);
+              this.isLastPage.set(res.last);
+              this.isLoading.set(false);
+            }
+          });
+        }
       },
       error: (err) => {
         console.error('Error al cargar historial completo:', err);

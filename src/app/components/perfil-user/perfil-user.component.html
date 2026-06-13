@@ -218,56 +218,50 @@
                 <span>Todavía no asistió a eventos.</span>
               </div>
             } @else {
-              <div class="history-list">
-                @for (item of eventHistory(); track item.redeemTxHash || item.tokenId || item.eventTitle) {
-                  <div class="history-item-card">
-                    <div class="history-icon-box">
-                      <mat-icon>event_available</mat-icon>
-                    </div>
-                    <div class="history-details">
-                      <div class="history-title-row">
-                        <h3 class="history-event-title">{{ item.eventTitle }}</h3>
-                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                          <span class="history-ticket-badge">{{ item.ticketTypeName }}</span>
-                          @if (isOwnProfile()) {
-                            <button
-                              mat-icon-button
-                              class="visibility-toggle-btn"
-                              [class.public]="item.publicVisibility"
-                              (click)="toggleVisibility(item)"
-                              [title]="item.publicVisibility ? 'Hacer privado (ocultar)' : 'Hacer público (mostrar)'"
-                            >
-                              <mat-icon>{{ item.publicVisibility ? 'visibility' : 'visibility_off' }}</mat-icon>
-                            </button>
-                          }
+              <div class="events-grid">
+                @for (item of eventHistory(); track item.id) {
+                  <div class="event-card-compact">
+                    <!-- Image container -->
+                    <div class="event-image-container">
+                      @if (item.imageUrl) {
+                        <!-- Blurred background cover -->
+                        <img [src]="item.imageUrl" class="event-bg-blur" aria-hidden="true">
+                        <!-- Contained centered cover -->
+                        <img [src]="item.imageUrl" [alt]="item.eventTitle" class="event-image">
+                      } @else {
+                        <div class="no-image-placeholder">
+                          <mat-icon>image_not_supported</mat-icon>
                         </div>
+                      }
+
+                      <!-- Visibility toggle overlay -->
+                      @if (isOwnProfile()) {
+                        <button
+                          mat-icon-button
+                          class="visibility-toggle-btn overlay"
+                          [class.public]="item.publicVisibility"
+                          (click)="toggleVisibility(item)"
+                          [title]="item.publicVisibility ? 'Hacer privado (ocultar)' : 'Hacer público (mostrar)'"
+                        >
+                          <mat-icon>{{ item.publicVisibility ? 'visibility' : 'visibility_off' }}</mat-icon>
+                        </button>
+                      }
+                    </div>
+                    
+                    <!-- Info details -->
+                    <div class="event-info">
+                      <div class="card-badges">
+                        <span class="category-badge">{{ item.ticketTypeName }}</span>
                       </div>
-                      <div class="history-metadata">
-                        <div class="history-metadata-item">
+                      <h3 class="event-title-text">{{ item.eventTitle }}</h3>
+                      <div class="event-metadata">
+                        <div class="metadata-item">
                           <mat-icon>calendar_today</mat-icon>
                           <span>Evento: {{ formatHistoryDate(item.eventStartDate) }}</span>
                         </div>
-                        <div class="history-metadata-item">
+                        <div class="metadata-item">
                           <mat-icon>how_to_reg</mat-icon>
-                          <span>Asistencia: {{ formatHistoryDate(item.attendedAt) }}</span>
-                        </div>
-                      </div>
-                      <div class="history-chain-data">
-                        <div>
-                          <span class="chain-label">Token ID</span>
-                          <span class="chain-value">{{ item.tokenId ?? '—' }}</span>
-                        </div>
-                        <div>
-                          <span class="chain-label">Wallet redeem</span>
-                          <span class="chain-value" [title]="item.ownerWalletAtRedeem || ''">
-                            {{ shortHistoryValue(item.ownerWalletAtRedeem) }}
-                          </span>
-                        </div>
-                        <div>
-                          <span class="chain-label">Redeem tx</span>
-                          <span class="chain-value" [title]="item.redeemTxHash || ''">
-                            {{ shortHistoryValue(item.redeemTxHash) }}
-                          </span>
+                          <span>Asistido: {{ formatHistoryDate(item.attendedAt) }}</span>
                         </div>
                       </div>
                     </div>

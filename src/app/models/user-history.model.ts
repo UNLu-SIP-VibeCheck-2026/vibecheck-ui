@@ -1,5 +1,7 @@
 export interface UserHistoryItem {
   id: number;
+  eventId: number;
+  imageUrl?: any;
   eventTitle: string;
   eventStartDate: string;
   attendedAt: string;

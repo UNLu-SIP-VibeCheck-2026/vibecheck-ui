@@ -9,7 +9,12 @@
   <div class="content-wrapper">
     <!-- Hero Image -->
     <div class="hero-section">
-      <img [src]="ticket.imageUrl" alt="Event Cover" class="hero-image">
+      <ng-container *ngIf="ticket.imageUrl">
+        <!-- Blurred background cover -->
+        <img [src]="ticket.imageUrl" class="event-bg-blur" aria-hidden="true">
+        <!-- Contained centered cover -->
+        <img [src]="ticket.imageUrl" [alt]="ticket.eventTitle" class="hero-image">
+      </ng-container>
       <div class="overlay"></div>
       <div class="hero-content">
         <h1 class="event-title">{{ ticket.eventTitle }}</h1>
@@ -65,8 +70,15 @@
             <div class="meta-row">
               <mat-icon>calendar_today</mat-icon>
               <div class="meta-text">
-                <label>Fechas</label>
-                <span>{{ ticket.startDate }} al {{ ticket.endDate }}</span>
+                <label>Inicio</label>
+                <span>{{ ticket.startDate }}</span>
+              </div>
+            </div>
+            <div class="meta-row">
+              <mat-icon>event_available</mat-icon>
+              <div class="meta-text">
+                <label>Fin</label>
+                <span>{{ ticket.endDate }}</span>
               </div>
             </div>
             <div class="meta-row">
@@ -83,7 +95,6 @@
           <h3>Datos de tu entrada</h3>
           <div class="ticket-badge-row">
             <span class="type-badge">{{ ticket.ticketType }}</span>
-            <span class="id-badge">ID: {{ ticket.id }}</span>
           </div>
           <div class="location-card">
             <mat-icon>airline_seat_recline_extra</mat-icon>
@@ -138,10 +149,13 @@
         </button>
       </div>
       <div class="qr-display">
-        <img [src]="ticket.qrCode" alt="Ticket QR Code" class="large-qr">
-        <div class="ticket-simple-info">
+        <div class="qr-loader-container" *ngIf="isQrLoading()">
+          <mat-spinner diameter="48"></mat-spinner>
+          <p>Generando código QR...</p>
+        </div>
+        <img [src]="ticket.qrCode" alt="Ticket QR Code" class="large-qr" [class.hidden]="isQrLoading()" (load)="onQrLoad()">
+        <div class="ticket-simple-info" *ngIf="!isQrLoading()">
           <span class="ticket-type">{{ ticket.ticketType }}</span>
-          <span class="ticket-id">ID: {{ ticket.id }}</span>
         </div>
       </div>
       <p class="qr-instructions">Escanea este código en la entrada del evento.</p>
@@ -193,10 +207,7 @@
               <span class="label">Tipo:</span>
               <span class="value">{{ ticket.ticketType }}</span>
             </div>
-            <div class="summary-row">
-              <span class="label">Token ID:</span>
-              <span class="value">#{{ ticket.tokenId }}</span>
-            </div>
+
           </div>
         </div>
 

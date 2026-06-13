@@ -36,7 +36,12 @@
       
       <!-- Left side: image section -->
       <div class="ticket-image-container">
-        <img *ngIf="ticket.imageUrl" [src]="ticket.imageUrl" [alt]="ticket.eventTitle" class="ticket-image">
+        <ng-container *ngIf="ticket.imageUrl">
+          <!-- Blurred background cover -->
+          <img [src]="ticket.imageUrl" class="ticket-bg-blur" aria-hidden="true">
+          <!-- Contained centered cover -->
+          <img [src]="ticket.imageUrl" [alt]="ticket.eventTitle" class="ticket-image">
+        </ng-container>
         <div *ngIf="!ticket.imageUrl" class="ticket-image-fallback">
           <mat-icon>confirmation_number</mat-icon>
         </div>

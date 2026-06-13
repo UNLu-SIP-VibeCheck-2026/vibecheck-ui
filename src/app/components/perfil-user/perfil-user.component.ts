@@ -6,9 +6,13 @@ import { UsersService } from '../../services/users.service';
 import { AuthService } from '../../services/auth.service';
 import { AchievementService } from '../../services/achievement.service';
 import { HistoryService } from '../../services/history.service';
+import { EventService } from '../../services/event.service';
 import { UserPublicResponse } from '../../models/user-public-response.model';
 import { Achievement } from '../../models/achievement.model';
 import { UserHistoryItem } from '../../models/user-history.model';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
@@ -41,6 +45,8 @@ export class PerfilUserComponent implements OnInit {
   private authService = inject(AuthService);
   private achievementService = inject(AchievementService);
   private historyService = inject(HistoryService);
+  private eventService = inject(EventService);
+  private sanitizer = inject(DomSanitizer);
   private router = inject(Router);
   private dialog = inject(MatDialog);
 
@@ -215,8 +221,33 @@ export class PerfilUserComponent implements OnInit {
 
     this.historyService.getUserHistory(username, 0, 4, "attendedAt,desc").subscribe({
       next: (page) => {
-        this.eventHistory.set(page.content ?? []);
-        this.isLoadingHistory.set(false);
+        const items = page.content ?? [];
+        
+        const itemsWithImages = items.map((item) => {
+          return this.eventService.getEventImage(item.eventId).pipe(
+            map((blob) => {
+              const imageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+              return { ...item, imageUrl };
+            }),
+            catchError(() => of({ ...item, imageUrl: undefined }))
+          );
+        });
+
+        if (itemsWithImages.length === 0) {
+          this.eventHistory.set([]);
+          this.isLoadingHistory.set(false);
+        } else {
+          forkJoin(itemsWithImages).subscribe({
+            next: (results) => {
+              this.eventHistory.set(results);
+              this.isLoadingHistory.set(false);
+            },
+            error: () => {
+              this.eventHistory.set(items);
+              this.isLoadingHistory.set(false);
+            }
+          });
+        }
       },
       error: () => {
         this.eventHistory.set([]);

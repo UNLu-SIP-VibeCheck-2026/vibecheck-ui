@@ -11,11 +11,12 @@ import { EventService } from '../../services/event.service';
 import { VenueService } from '../../services/venue.service';
 import { Web3Service } from '../../services/web3.service';
 import { RefundRequestResponse } from '../../models/ticket.model';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-ticket',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule],
   templateUrl: './ticket.component.html',
   styleUrl: './ticket.component.scss'
 })
@@ -24,6 +25,7 @@ export class TicketComponent implements OnInit {
   private router = inject(Router);
   ticket: any = null;
   isQrVisible = false;
+  isQrLoading = signal<boolean>(true);
 
   private ticketService = inject(TicketService);
   private sanitizer = inject(DomSanitizer);
@@ -131,6 +133,13 @@ export class TicketComponent implements OnInit {
 
   toggleQR(): void {
     this.isQrVisible = !this.isQrVisible;
+    if (this.isQrVisible) {
+      this.isQrLoading.set(true);
+    }
+  }
+
+  onQrLoad(): void {
+    this.isQrLoading.set(false);
   }
 
   giftTicket(): void {

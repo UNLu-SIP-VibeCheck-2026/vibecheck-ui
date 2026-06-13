@@ -55,6 +55,9 @@
                   
                   <div class="large-image-container">
                     @if (getEventImage(ev.id)) {
+                      <!-- Blurred background cover -->
+                      <img class="event-bg-blur" [src]="getEventImage(ev.id)" aria-hidden="true">
+                      <!-- Contained centered cover -->
                       <img class="large-image" [src]="getEventImage(ev.id)" [alt]="ev.title">
                     } @else {
                       <div class="no-image-placeholder-large">
@@ -130,6 +133,9 @@
               }
               <div class="mid-image-container">
                 @if (getEventImage(ev.id)) {
+                  <!-- Blurred background cover -->
+                  <img class="event-bg-blur" [src]="getEventImage(ev.id)" aria-hidden="true">
+                  <!-- Contained centered cover -->
                   <img class="mid-image" [src]="getEventImage(ev.id)" [alt]="ev.title">
                 } @else {
                   <div class="no-image-placeholder-mid">
@@ -207,6 +213,9 @@
 
             <div class="event-image-container">
               @if (getEventImage(event.id)) {
+                <!-- Blurred background cover -->
+                <img [src]="getEventImage(event.id)" class="event-bg-blur" aria-hidden="true">
+                <!-- Contained centered cover -->
                 <img [src]="getEventImage(event.id)" [alt]="event.title" class="event-image">
               } @else {
                 <div class="no-image-placeholder">
@@ -220,7 +229,6 @@
                 <span class="day">{{ getEventDay(event.startDateParsed) }}</span>
               </div>
 
-              <!-- Floating Card Badges -->
               <div class="card-badges-overlay">
                 @for (cat of event.realCategories; track cat) {
                   <span class="category-badge">{{ cat }}</span>
