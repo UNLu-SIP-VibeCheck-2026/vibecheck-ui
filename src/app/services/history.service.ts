@@ -48,4 +48,10 @@ export class HistoryService {
 
     return this.http.get<Page<UserHistoryItem>>(`${this.apiUrl}/user/${username}`, { params });
   }
+
+  updateVisibility(id: number | string, publicVisibility: boolean): Observable<UserHistoryItem> {
+    return this.http.put<UserHistoryItem>(`${this.apiUrl}/${id}/visibility`, null, {
+      params: { publicVisibility: String(publicVisibility) }
+    });
+  }
 }

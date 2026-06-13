@@ -1,4 +1,5 @@
 export interface UserHistoryItem {
+  id: number;
   eventTitle: string;
   eventStartDate: string;
   attendedAt: string;
@@ -6,4 +7,5 @@ export interface UserHistoryItem {
   tokenId: number | string | null;
   ownerWalletAtRedeem: string | null;
   redeemTxHash: string | null;
+  publicVisibility: boolean;
 }

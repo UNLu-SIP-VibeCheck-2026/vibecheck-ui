@@ -227,7 +227,20 @@
                     <div class="history-details">
                       <div class="history-title-row">
                         <h3 class="history-event-title">{{ item.eventTitle }}</h3>
-                        <span class="history-ticket-badge">{{ item.ticketTypeName }}</span>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                          <span class="history-ticket-badge">{{ item.ticketTypeName }}</span>
+                          @if (isOwnProfile()) {
+                            <button
+                              mat-icon-button
+                              class="visibility-toggle-btn"
+                              [class.public]="item.publicVisibility"
+                              (click)="toggleVisibility(item)"
+                              [title]="item.publicVisibility ? 'Hacer privado (ocultar)' : 'Hacer público (mostrar)'"
+                            >
+                              <mat-icon>{{ item.publicVisibility ? 'visibility' : 'visibility_off' }}</mat-icon>
+                            </button>
+                          }
+                        </div>
                       </div>
                       <div class="history-metadata">
                         <div class="history-metadata-item">

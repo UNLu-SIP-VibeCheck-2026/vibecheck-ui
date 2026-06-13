@@ -1,11 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HistoryService } from '../../services/history.service';
+import { AuthService } from '../../services/auth.service';
 import { UserHistoryItem } from '../../models/user-history.model';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-perfil-user-history',
@@ -14,7 +16,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
     CommonModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatSnackBarModule
   ],
   templateUrl: './perfil-user-history.component.html',
   styleUrl: './perfil-user-history.component.scss'
@@ -23,11 +26,18 @@ export class PerfilUserHistoryComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private historyService = inject(HistoryService);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
 
   username = signal<string>('');
   historyItems = signal<UserHistoryItem[]>([]);
   isLoading = signal<boolean>(true);
   hasError = signal<boolean>(false);
+
+  isOwnProfile = computed(() => {
+    const currentUser = this.authService.getCurrentUserValue();
+    return this.username().toLowerCase() === currentUser?.username.toLowerCase();
+  });
 
   // Pagination states
   currentPage = signal<number>(0);
@@ -84,6 +94,31 @@ export class PerfilUserHistoryComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/perfil-user', this.username()]);
+  }
+
+  toggleVisibility(item: UserHistoryItem): void {
+    if (!this.isOwnProfile() || !item.id) return;
+
+    const newVisibility = !item.publicVisibility;
+    this.historyService.updateVisibility(item.id, newVisibility).subscribe({
+      next: (updatedItem) => {
+        this.historyItems.update((list) =>
+          list.map((x) => (x.id === item.id ? { ...x, publicVisibility: updatedItem.publicVisibility } : x))
+        );
+        this.snackBar.open(
+          updatedItem.publicVisibility
+            ? 'Entrada configurada como pública'
+            : 'Entrada configurada como privada',
+          'Cerrar',
+          { duration: 2500 }
+        );
+      },
+      error: (err) => {
+        console.error('Error al cambiar visibilidad:', err);
+        const errMsg = err.error?.message || 'Error al cambiar la visibilidad de la entrada';
+        this.snackBar.open(errMsg, 'Cerrar', { duration: 3000 });
+      }
+    });
   }
 
   formatHistoryDate(dateStr: string | null | undefined): string {

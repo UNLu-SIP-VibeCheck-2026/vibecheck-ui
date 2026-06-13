@@ -233,6 +233,31 @@ export class PerfilUserComponent implements OnInit {
     }
   }
 
+  toggleVisibility(item: UserHistoryItem): void {
+    if (!this.isOwnProfile() || !item.id) return;
+
+    const newVisibility = !item.publicVisibility;
+    this.historyService.updateVisibility(item.id, newVisibility).subscribe({
+      next: (updatedItem) => {
+        this.eventHistory.update((list) =>
+          list.map((x) => (x.id === item.id ? { ...x, publicVisibility: updatedItem.publicVisibility } : x))
+        );
+        this.snackBar.open(
+          updatedItem.publicVisibility
+            ? 'Entrada configurada como pública'
+            : 'Entrada configurada como privada',
+          'Cerrar',
+          { duration: 2500 }
+        );
+      },
+      error: (err) => {
+        console.error('Error al cambiar visibilidad:', err);
+        const errMsg = err.error?.message || 'Error al cambiar la visibilidad de la entrada';
+        this.snackBar.open(errMsg, 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
   formatHistoryDate(dateStr: string | null | undefined): string {
     if (!dateStr) return "—";
 
