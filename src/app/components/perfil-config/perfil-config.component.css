@@ -254,7 +254,8 @@
 /* ─── mat-slide-toggle dark theme ─── */
 .preference-card mat-slide-toggle {
   flex-shrink: 0;
-  padding-left: 64px;
+  margin-left: auto;
+  padding-right: 38px;
 }
 
 /* ─── RESPONSIVE ─── */
