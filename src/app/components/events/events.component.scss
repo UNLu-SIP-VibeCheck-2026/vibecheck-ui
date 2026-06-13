@@ -683,12 +683,6 @@
 
   .mini-item {
     flex: 0 0 32%; /* 3 items visible on mobile */
-
-    @media (max-width: 768px) {
-      /* MOBILE FIX: Hacer los items del mini carrusel mas grandes para que entren textos */
-      flex: 0 0 45% !important;
-    }
-
     border-radius: var(--md-sys-shape-corner-medium);
     overflow: hidden;
     cursor: pointer;
@@ -697,6 +691,11 @@
     position: relative;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-sizing: border-box;
+
+    @media (max-width: 768px) {
+      /* MOBILE FIX: Hacer los items del mini carrusel mas grandes para que entren textos */
+      flex: 0 0 45% !important;
+    }
 
     @include tablet {
       flex: 0 0 22%;
