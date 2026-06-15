@@ -113,6 +113,66 @@ export class WalletService {
     await this.modal.open();
   }
 
+  /** True en navegadores móviles, donde el wallet es una app aparte y necesita deep-link. */
+  private isMobile(): boolean {
+    return typeof navigator !== "undefined"
+      && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  /**
+   * Recupera el deep-link (href) del wallet que el usuario eligió al conectar.
+   * WalletConnect lo persiste en localStorage bajo 'WALLETCONNECT_DEEPLINK_CHOICE'.
+   * Como fallback (por si AppKit usara otra clave) escaneamos cualquier clave que
+   * contenga 'deeplink'. Devuelve null si no hay (p.ej. conector inyectado).
+   */
+  private getWalletDeepLink(): string | null {
+    if (typeof localStorage === "undefined") return null;
+
+    const readHref = (raw: string | null): string | null => {
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed?.href ?? null;
+      } catch {
+        // Algunas versiones guardan el href como string plano.
+        return raw.includes("://") ? raw : null;
+      }
+    };
+
+    // 1. Clave canónica de WalletConnect.
+    const canonical = readHref(localStorage.getItem("WALLETCONNECT_DEEPLINK_CHOICE"));
+    if (canonical) return canonical;
+
+    // 2. Fallback: cualquier clave que contenga 'deeplink'.
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && /deeplink/i.test(key)) {
+        const href = readHref(localStorage.getItem(key));
+        if (href) return href;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Trae la app del wallet al frente en mobile. DEBE invocarse de forma SÍNCRONA
+   * dentro del gesto del usuario (el tap), inmediatamente después de disparar
+   * signMessage/writeContract. Así MetaMask aparece para mostrar la petición que
+   * viaja por el relay, en vez de quedar oculta y dejar el spinner colgado.
+   *
+   * Usamos '_blank' (no '_self') para NO descargar la pestaña de la dApp: la página
+   * sigue viva y resuelve la promesa de la firma cuando el usuario vuelve.
+   *
+   * No-op en desktop y cuando se conectó con un conector inyectado / in-app browser
+   * (no hay deep-link guardado y no hace falta).
+   */
+  openWallet(): void {
+    if (!this.isMobile()) return;
+    const href = this.getWalletDeepLink();
+    if (!href) return;
+    window.open(href, "_blank", "noopener,noreferrer");
+  }
+
   async disconnect(): Promise<void> {
     await this.modal.disconnect();
   }

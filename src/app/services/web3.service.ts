@@ -159,6 +159,14 @@ export class Web3Service {
     }
   }
 
+  /**
+   * Trae el wallet al frente en mobile (deep-link). Passthrough a WalletService.
+   * Llamar de forma síncrona dentro del tap, justo después de signMessage/writeContract.
+   */
+  openWallet(): void {
+    this.walletService.openWallet();
+  }
+
   async checkNetwork(): Promise<boolean> {
     const chainId = this.chainId$.getValue();
     const isSepolia = chainId === this.SEPOLIA_CHAIN_ID;

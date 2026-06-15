@@ -92,6 +92,11 @@ export class Web3WalletComponent implements OnInit {
     // reconoce el "gesto del usuario" y abre MetaMask al 100% de las veces.
     const signingPromise = this.web3Service.signMessage(message);
 
+    // Mobile: traemos MetaMask al frente dentro del mismo gesto, justo después
+    // de disparar la firma. Sin esto, en Safari/Chrome mobile la petición viaja
+    // por el relay pero el wallet nunca aparece y el spinner queda colgado.
+    this.web3Service.openWallet();
+
     signingPromise.then(signature => {
       this.walletService.verifyChallenge(this.currentAddress!, message, signature).subscribe({
         next: (verifyResponse) => {

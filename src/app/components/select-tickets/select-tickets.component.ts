@@ -208,7 +208,10 @@ export class TicketPurchaseComponent implements OnInit {
     this.errorMessage.set('');
 
     // Directo al signMessage sin ningún await previo.
-    this.web3Service.signMessage(message).then(signature => {
+    const signingPromise = this.web3Service.signMessage(message);
+    // Mobile: foreground de MetaMask dentro del gesto, tras disparar la firma.
+    this.web3Service.openWallet();
+    signingPromise.then(signature => {
       this.http.post<any>(`${environment.apiBaseUrl}/users/me/wallet/verify`, {
         walletAddress: address,
         message,
