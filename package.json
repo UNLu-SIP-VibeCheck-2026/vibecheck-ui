@@ -24,6 +24,7 @@
     "@reown/appkit": "^1.8.20",
     "@reown/appkit-adapter-wagmi": "^1.8.20",
     "@wagmi/core": "^2.22.1",
+    "buffer": "^6.0.3",
     "chart.js": "^4.5.1",
     "html5-qrcode": "^2.3.8",
     "jwt-decode": "^4.0.0",

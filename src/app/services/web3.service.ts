@@ -167,6 +167,18 @@ export class Web3Service {
     this.walletService.openWallet();
   }
 
+  /**
+   * Despacha un writeContract y, en mobile, trae MetaMask al frente DENTRO del gesto
+   * del usuario: el body corre síncrono hasta el `await`, así openWallet() se ejecuta
+   * antes de ceder el hilo. Centraliza el fix de deep-link para TODAS las transacciones.
+   * No-op en desktop / conector inyectado. Ver WalletService.openWallet.
+   */
+  private async writeWithRedirect(params: any): Promise<any> {
+    const txPromise = writeContract(config, params);
+    this.walletService.openWallet();
+    return await txPromise;
+  }
+
   async checkNetwork(): Promise<boolean> {
     const chainId = this.chainId$.getValue();
     const isSepolia = chainId === this.SEPOLIA_CHAIN_ID;
@@ -241,17 +253,18 @@ export class Web3Service {
     asset: "ETH" | "VBK" | "USDC",
   ): Promise<string> {
     if (asset === "ETH") {
-      const hash = await sendTransaction(config, {
+      const txPromise = sendTransaction(config, {
         to: to as `0x${string}`,
         value: parseEther(amount),
       });
-      return hash;
+      this.walletService.openWallet();
+      return await txPromise;
     } else {
       const contractAddress = asset === "VBK" ? this.VBK_ADDRESS : this.USDC_ADDRESS;
       const decimals = asset === "VBK" ? 18 : 6;
       const amountInUnits = parseUnits(amount, decimals);
 
-      const hash = await writeContract(config, {
+      const hash = await this.writeWithRedirect({
         address: contractAddress as `0x${string}`,
         abi: this.ERC20_ABI,
         functionName: "transfer",
@@ -285,7 +298,7 @@ export class Web3Service {
     const amountInUnits = (parseUnits(priceUsdc.toString(), 6) * 107n) / 100n;
 
     // Approve USDC (100% direct for mobile responsiveness)
-    const approveTxHash = await writeContract(config, {
+    const approveTxHash = await this.writeWithRedirect({
       address: this.USDC_ADDRESS as `0x${string}`,
       abi: this.ERC20_ABI,
       functionName: "approve",
@@ -295,7 +308,7 @@ export class Web3Service {
     await waitForTransactionReceipt(config, { hash: approveTxHash });
 
     // Buy ticket
-    const buyTxHash = await writeContract(config, {
+    const buyTxHash = await this.writeWithRedirect({
       address: this.OFFERING_NFT_ADDRESS as `0x${string}`,
       abi: this.OFFERING_ABI,
       functionName: "buyWithUSDC",
@@ -337,7 +350,7 @@ export class Web3Service {
     const maxVbkAmount = (vbkNeeded * 104n) / 100n; // 4% fee
 
     // Approve VBK
-    const approveTxHash = await writeContract(config, {
+    const approveTxHash = await this.writeWithRedirect({
       address: this.VBK_ADDRESS as `0x${string}`,
       abi: this.ERC20_ABI,
       functionName: "approve",
@@ -347,7 +360,7 @@ export class Web3Service {
     await waitForTransactionReceipt(config, { hash: approveTxHash });
 
     // Buy ticket
-    const buyTxHash = await writeContract(config, {
+    const buyTxHash = await this.writeWithRedirect({
       address: this.OFFERING_NFT_ADDRESS as `0x${string}`,
       abi: this.OFFERING_ABI,
       functionName: "buyWithVBK",
@@ -397,7 +410,7 @@ export class Web3Service {
       sold: number;
     }>,
   ): Promise<{ eventNftAddress: string; deployTxHash: string }> {
-    const txHash = await writeContract(config, {
+    const txHash = await this.writeWithRedirect({
       address: this.EVENT_FACTORY_ADDRESS as `0x${string}`,
       abi: this.EVENT_FACTORY_ABI,
       functionName: "launchEvent",
@@ -462,7 +475,7 @@ export class Web3Service {
     spender: string,
     amount: bigint,
   ): Promise<void> {
-    const txHash = await writeContract(config, {
+    const txHash = await this.writeWithRedirect({
       address: tokenAddress as `0x${string}`,
       abi: this.ERC20_ABI,
       functionName: "approve",
@@ -478,7 +491,7 @@ export class Web3Service {
     to: string,
     deadline: number,
   ): Promise<string> {
-    const txHash = await writeContract(config, {
+    const txHash = await this.writeWithRedirect({
       address: this.UNISWAP_ROUTER_ADDRESS as `0x${string}`,
       abi: this.UNISWAP_ROUTER_ABI,
       functionName: "swapExactTokensForTokens",
@@ -596,7 +609,7 @@ export class Web3Service {
   // --- Helper methods for centralized contract interactions ---
 
   async listTicket(eventNftAddress: string, tokenId: bigint, priceUsdc: bigint): Promise<string> {
-    return await writeContract(config, {
+    return await this.writeWithRedirect({
       address: this.NFT_MARKETPLACE_ADDRESS as `0x${string}`,
       abi: this.MARKETPLACE_ABI,
       functionName: "list",
@@ -605,7 +618,7 @@ export class Web3Service {
   }
 
   async cancelListing(listingId: bigint): Promise<string> {
-    return await writeContract(config, {
+    return await this.writeWithRedirect({
       address: this.NFT_MARKETPLACE_ADDRESS as `0x${string}`,
       abi: this.MARKETPLACE_ABI,
       functionName: "cancel",
@@ -614,7 +627,7 @@ export class Web3Service {
   }
 
   async giftTicket(eventNftAddress: string, tokenId: bigint, recipient: string): Promise<string> {
-    return await writeContract(config, {
+    return await this.writeWithRedirect({
       address: this.NFT_MARKETPLACE_ADDRESS as `0x${string}`,
       abi: this.MARKETPLACE_ABI,
       functionName: "giftTicket",
@@ -632,7 +645,7 @@ export class Web3Service {
   }
 
   async approveUsdc(spender: string, amount: bigint): Promise<string> {
-    return await writeContract(config, {
+    return await this.writeWithRedirect({
       address: this.USDC_ADDRESS as `0x${string}`,
       abi: this.ERC20_ABI,
       functionName: "approve",
@@ -650,7 +663,7 @@ export class Web3Service {
   }
 
   async approveVbk(spender: string, amount: bigint): Promise<string> {
-    return await writeContract(config, {
+    return await this.writeWithRedirect({
       address: this.VBK_ADDRESS as `0x${string}`,
       abi: this.ERC20_ABI,
       functionName: "approve",
@@ -659,7 +672,7 @@ export class Web3Service {
   }
 
   async approveNft(eventNftAddress: string, spender: string, tokenId: bigint): Promise<string> {
-    return await writeContract(config, {
+    return await this.writeWithRedirect({
       address: eventNftAddress as `0x${string}`,
       abi: this.EVENT_NFT_ABI,
       functionName: "approve",
@@ -679,7 +692,7 @@ export class Web3Service {
       throw new Error("Cambiá a la red Sepolia antes de continuar.");
     }
 
-    const txHash = await writeContract(config, {
+    const txHash = await this.writeWithRedirect({
       address: this.OFFERING_NFT_ADDRESS as `0x${string}`,
       abi: this.OFFERING_ABI,
       functionName: "refundVoluntary",
