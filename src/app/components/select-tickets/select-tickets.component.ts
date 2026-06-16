@@ -6,6 +6,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ConfirmDialogComponent } from '../shared/dialogs/confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../services/auth.service';
 
 import { EventService } from '../../services/event.service';
 import { TicketTypeService } from '../../services/ticket-type.service';
@@ -22,7 +26,9 @@ import { formatUnits } from 'viem';
     MatIconModule,
     MatProgressSpinnerModule,
     MatButtonModule,
-    MatCardModule
+    MatCardModule,
+    MatDialogModule,
+    MatSnackBarModule,
   ],
   templateUrl: './select-tickets.component.html',
   styleUrls: ['./select-tickets.component.scss']
@@ -35,6 +41,9 @@ export class TicketPurchaseComponent implements OnInit {
   private ticketTypeService = inject(TicketTypeService);
   private web3Service = inject(Web3Service);
   private contractsService = inject(ContractsService);
+  private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
 
   @Input() event: {
     eventId: number;
@@ -100,6 +109,55 @@ export class TicketPurchaseComponent implements OnInit {
     const idParam = this.route.snapshot.paramMap.get('id');
     this.routeEventId = idParam ? parseInt(idParam, 10) : null;
 
+    this.checkRoleAndInitialize();
+  }
+
+  private checkRoleAndInitialize(): void {
+    if (this.authService.isAuthenticated()) {
+      const user = this.authService.getCurrentUserValue();
+      const currentRole = user?.role?.toLowerCase() || '';
+      const isClient = currentRole === 'cliente' || currentRole === 'comprar' || currentRole === 'user';
+
+      if (!isClient) {
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+          width: '400px',
+          disableClose: true,
+          data: {
+            title: 'Cambiar rol a Cliente',
+            message: 'Para comprar entradas necesitas estar en tu rol de Cliente. ¿Querés cambiar tu rol ahora?',
+            confirmText: 'Sí, cambiar',
+            cancelText: 'Cancelar',
+            success: true
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(confirmed => {
+          if (confirmed) {
+            this.isLoading.set(true);
+            this.authService.switchUserRole('cliente').subscribe({
+              next: () => {
+                this.snackBar.open('Rol cambiado a Cliente con éxito', 'Cerrar', { duration: 3000 });
+                this.isLoading.set(false);
+                this.initializeWeb3Subscribers();
+              },
+              error: (err) => {
+                this.isLoading.set(false);
+                this.errorMessage.set('No se pudo cambiar el rol. Intentá de nuevo o contactá a soporte.');
+                console.error('Error changing role:', err);
+              }
+            });
+          } else {
+            this.goBack();
+          }
+        });
+        return;
+      }
+    }
+
+    this.initializeWeb3Subscribers();
+  }
+
+  private initializeWeb3Subscribers(): void {
     this.web3Service.connectedAddress$.subscribe(addr => {
       this.connectedAddress.set(addr);
       this.checkConnectionState();

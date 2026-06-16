@@ -5,6 +5,10 @@ import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatDialog, MatDialogModule } from "@angular/material/dialog";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
+import { AuthService } from "../../services/auth.service";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { writeContract } from "@wagmi/core";
 import { config } from "../../services/wagmi.config";
@@ -33,7 +37,9 @@ import { environment } from "../../../environments/environment";
     MatCardModule,
     MatIconModule,
     MatButtonModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDialogModule,
+    MatSnackBarModule
   ],
   templateUrl: "./marketplace-detail.component.html",
   styleUrl: "./marketplace-detail.component.scss"
@@ -51,6 +57,9 @@ export class MarketplaceDetailComponent implements OnInit {
   private web3Service = inject(Web3Service);
   private tokenApprovalService = inject(TokenApprovalService);
   private transactionService = inject(TransactionService);
+  private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
 
   private pendingSiweChallenge: { message: string } | null = null;
 
@@ -83,6 +92,55 @@ export class MarketplaceDetailComponent implements OnInit {
     window.scrollTo(0, 0);
 
     const listingId = this.route.snapshot.paramMap.get("listingId");
+    this.checkRoleAndInitialize(listingId);
+  }
+
+  private checkRoleAndInitialize(listingId: string | null): void {
+    if (this.authService.isAuthenticated()) {
+      const user = this.authService.getCurrentUserValue();
+      const currentRole = user?.role?.toLowerCase() || "";
+      const isClient = currentRole === "cliente" || currentRole === "comprar" || currentRole === "user";
+
+      if (!isClient) {
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+          width: "400px",
+          disableClose: true,
+          data: {
+            title: "Cambiar rol a Cliente",
+            message: "Para comprar entradas en reventa necesitas estar en tu rol de Cliente. ¿Querés cambiar tu rol ahora?",
+            confirmText: "Sí, cambiar",
+            cancelText: "Cancelar",
+            success: true
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(confirmed => {
+          if (confirmed) {
+            this.isLoading.set(true);
+            this.authService.switchUserRole("cliente").subscribe({
+              next: () => {
+                this.snackBar.open("Rol cambiado a Cliente con éxito", "Cerrar", { duration: 3000 });
+                this.isLoading.set(false);
+                this.initializeComponentData(listingId);
+              },
+              error: (err) => {
+                this.isLoading.set(false);
+                this.errorMessage.set("No se pudo cambiar el rol. Intentá de nuevo o contactá a soporte.");
+                console.error("Error changing role:", err);
+              }
+            });
+          } else {
+            this.goBack();
+          }
+        });
+        return;
+      }
+    }
+
+    this.initializeComponentData(listingId);
+  }
+
+  private initializeComponentData(listingId: string | null): void {
     if (listingId) {
       this.loadListingDetails(Number(listingId));
     } else {
@@ -94,8 +152,6 @@ export class MarketplaceDetailComponent implements OnInit {
       this.checkConnectionState();
     });
 
-    // Regla 3: suscripción a chainId$ en vez de isSepolia$ para detectar la red
-    // real de inmediato durante el switch y evitar desincronización.
     this.web3Service.chainId$.subscribe((chainId) => {
       this.isSepolia.set(chainId === 11155111);
       this.checkConnectionState();
