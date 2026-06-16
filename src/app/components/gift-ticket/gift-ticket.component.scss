@@ -16,22 +16,21 @@
       background: var(--gradient-brand);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      font-weight: 950;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: -1px;
     }
 
     button {
       background: rgba(255, 255, 255, 0.05);
-      color: white;
-      border: 2px solid var(--md-sys-color-outline-variant);
-      border-radius: 0;
+      color: var(--md-sys-color-on-surface);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-full);
       transition: all 0.2s ease;
 
       &:hover {
-        background: white;
-        color: black;
-        border-color: white;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--md-sys-color-outline);
       }
     }
   }
@@ -47,24 +46,24 @@
   }
 }
 
-// Brutalist Design Token overrides and custom cards
+/* Card Styling - Standard Flat Design */
 .brutalist-card {
-  background: #121214 !important;
-  border: 4px solid white !important;
+  background: var(--md-sys-color-surface) !important;
+  border: 1px solid var(--md-sys-color-outline-variant) !important;
   padding: var(--space-6);
-  border-radius: 0px !important;
-  box-shadow: 8px 8px 0px 0px var(--md-sys-color-primary) !important;
+  border-radius: var(--md-sys-shape-corner-extra-large) !important;
+  box-shadow: none !important;
   min-height: 550px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 
   .title-section {
-    color: white;
-    font-weight: 900;
+    color: var(--md-sys-color-on-surface);
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
-    border-bottom: 3px double var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
     padding-bottom: var(--space-4);
     margin-bottom: var(--space-6);
   }
@@ -76,12 +75,12 @@
 
   ::v-deep {
     .mat-mdc-text-field-wrapper {
-      background-color: rgba(255, 255, 255, 0.03) !important;
-      border-radius: 0px !important;
-      border: 2px solid var(--md-sys-color-outline-variant) !important;
+      background-color: var(--md-sys-color-surface-variant) !important;
+      border-radius: var(--md-sys-shape-corner-medium) !important;
+      border: 1px solid var(--md-sys-color-outline-variant) !important;
 
       &:hover {
-        border-color: white !important;
+        border-color: var(--md-sys-color-outline) !important;
       }
     }
 
@@ -96,25 +95,24 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4);
-  background: rgba(168, 85, 247, 0.15) !important;
-  border: 2px dashed var(--md-sys-color-primary) !important;
-  border-radius: 0px;
+  background: rgba(168, 85, 247, 0.08) !important;
+  border: 1px dashed var(--md-sys-color-primary) !important;
+  border-radius: var(--md-sys-shape-corner-medium);
   margin-bottom: var(--space-6);
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(168, 85, 247, 0.25) !important;
+    background: rgba(168, 85, 247, 0.15) !important;
     border-style: solid !important;
-    transform: translate(-2px, -2px);
-    box-shadow: 4px 4px 0px 0px white;
+    box-shadow: none;
   }
 
   .manual-info {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    color: white;
+    color: var(--md-sys-color-on-surface);
 
     mat-icon {
       color: var(--md-sys-color-primary);
@@ -135,7 +133,7 @@
       }
 
       .wallet-val {
-        font-family: monospace;
+        font-family: var(--font-mono), monospace;
         font-size: 0.9rem;
         word-break: break-all;
       }
@@ -143,7 +141,7 @@
   }
 
   .arrow-icon {
-    color: white;
+    color: var(--md-sys-color-on-surface-variant);
   }
 }
 
@@ -165,15 +163,15 @@
     padding: 0;
 
     mat-list-option {
-      border: 2px solid var(--md-sys-color-outline-variant);
+      border: 1px solid var(--md-sys-color-outline-variant);
       margin-bottom: var(--space-3);
-      border-radius: 0px !important;
+      border-radius: var(--md-sys-shape-corner-medium) !important;
       background: rgba(255, 255, 255, 0.02);
       transition: all 0.2s ease;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: white;
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--md-sys-color-outline);
       }
 
       ::v-deep .mdc-list-item__primary-text {
@@ -192,9 +190,9 @@
   .user-photo {
     width: 44px;
     height: 44px;
-    border-radius: 0%;
+    border-radius: var(--md-sys-shape-corner-full);
     border: 2px solid var(--md-sys-color-primary);
-    box-shadow: 2px 2px 0px 0px white;
+    box-shadow: none;
   }
 
   .user-info {
@@ -203,7 +201,7 @@
 
     .username {
       font-weight: 900;
-      color: white;
+      color: var(--md-sys-color-on-surface);
       font-size: 1rem;
     }
 
@@ -222,14 +220,15 @@
   gap: var(--space-2);
   padding: var(--space-8) 0;
   opacity: 0.5;
-  color: white;
+  color: var(--md-sys-color-on-surface-variant);
 
   mat-icon { font-size: 48px; width: 48px; height: 48px; }
 }
 
 .brutalist-inner-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-variant);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
   padding: var(--space-4);
   margin-bottom: var(--space-5);
   transition: all 0.2s ease;
@@ -245,18 +244,18 @@
   img {
     width: 64px;
     height: 64px;
-    border-radius: 0%;
+    border-radius: var(--md-sys-shape-corner-full);
     border: 2px solid var(--md-sys-color-primary);
-    box-shadow: 3px 3px 0px 0px white;
+    box-shadow: none;
   }
 
   .meta {
     display: flex;
     flex-direction: column;
     
-    .name { font-weight: 900; font-size: 1.1rem; color: white; }
+    .name { font-weight: 900; font-size: 1.1rem; color: var(--md-sys-color-on-surface); }
     .user { color: var(--md-sys-color-primary); font-weight: 700; }
-    .wallet { font-family: monospace; font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); }
+    .wallet { font-family: var(--font-mono), monospace; font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); }
   }
 }
 
@@ -270,7 +269,7 @@
     top: 0;
     right: 0;
     background: var(--md-sys-color-primary);
-    color: black;
+    color: var(--md-sys-color-on-primary);
     font-size: 0.7rem;
     font-weight: 900;
     padding: 2px 8px;
@@ -283,7 +282,7 @@
 
     .event-title {
       font-weight: 900;
-      color: white;
+      color: var(--md-sys-color-on-surface);
       font-size: 1.1rem;
       margin-bottom: 2px;
     }
@@ -291,7 +290,7 @@
     .ticket-id {
       font-size: 0.85rem;
       color: var(--md-sys-color-on-surface-variant);
-      font-family: monospace;
+      font-family: var(--font-mono), monospace;
     }
 
     .seat {
@@ -308,7 +307,7 @@
     margin: 0 0 var(--space-3) 0;
     font-weight: 900;
     text-transform: uppercase;
-    color: white;
+    color: var(--md-sys-color-on-surface);
     font-size: 0.9rem;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
     padding-bottom: 4px;
@@ -327,57 +326,56 @@
     justify-content: space-between;
     font-size: 1.1rem;
     font-weight: 900;
-    color: white;
-    border-top: 2px solid white;
+    color: var(--md-sys-color-on-surface);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
     padding-top: var(--space-3);
     margin-top: var(--space-3);
 
     .total-val {
-      color: #10b981; // emerald green for accent
+      color: var(--md-sys-color-tertiary);
     }
   }
 }
 
 .warning-box {
   background: rgba(239, 68, 68, 0.1);
-  border: 2px solid #ef4444;
+  border: 1px solid var(--md-sys-color-error);
   padding: var(--space-4);
   display: flex;
   gap: var(--space-3);
   margin-bottom: var(--space-6);
-  color: #f87171;
+  color: var(--md-sys-color-error);
+  border-radius: var(--md-sys-shape-corner-medium);
 
   mat-icon { flex-shrink: 0; }
   p { margin: 0; font-size: 0.85rem; line-height: 1.4; font-weight: 700; }
 
   &.info-box {
-    background: rgba(245, 158, 11, 0.08);
-    border-color: #f59e0b;
-    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.08);
+    border-color: var(--md-sys-color-tertiary);
+    color: var(--md-sys-color-tertiary);
   }
 }
 
 .brutalist-btn-primary {
   width: 100%;
-  height: 64px;
-  border-radius: 0px !important;
+  height: var(--btn-cta-height);
+  border-radius: var(--btn-cta-radius) !important;
   background: var(--gradient-brand) !important;
-  border: 3px solid white !important;
-  color: white !important;
-  font-weight: 950;
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-  box-shadow: 4px 4px 0px 0px white !important;
+  border: none !important;
+  color: var(--btn-cta-text-color) !important;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  box-shadow: none !important;
   transition: all 0.2s ease !important;
 
   &:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px 0px white !important;
+    transform: scale(1.02);
   }
 
   &:active {
-    transform: translate(0, 0);
-    box-shadow: 2px 2px 0px 0px white !important;
+    transform: scale(0.98);
   }
 }
 
@@ -414,7 +412,7 @@
   }
 }
 
-// Stepper and loading components
+/* Stepper and loading components */
 .transaction-status-wrapper {
   margin-bottom: var(--space-6);
 }
@@ -424,7 +422,7 @@
   align-items: center;
   gap: var(--space-4);
   background: rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
+  border-color: var(--md-sys-color-primary);
 
   .desc-text {
     display: flex;
@@ -432,7 +430,7 @@
 
     .desc-title {
       font-weight: 900;
-      color: white;
+      color: var(--md-sys-color-on-surface);
       font-size: 1rem;
     }
 
@@ -447,8 +445,8 @@
   width: 24px;
   height: 24px;
   border: 3px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  border-top-color: #3b82f6;
+  border-radius: var(--md-sys-shape-corner-full);
+  border-top-color: var(--md-sys-color-primary);
   animation: spin 1s ease-in-out infinite;
 }
 
@@ -463,19 +461,19 @@
   justify-content: center;
   min-height: 400px;
   gap: var(--space-4);
-  color: white;
+  color: var(--md-sys-color-on-surface);
 
   .spinner {
     width: 50px;
     height: 50px;
     border: 5px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
+    border-radius: var(--md-sys-shape-corner-full);
     border-top-color: var(--md-sys-color-primary);
     animation: spin 1s ease-in-out infinite;
   }
 }
 
-// Success Card screen styles
+/* Success Card screen styles */
 .success-container {
   display: flex;
   justify-content: center;
@@ -501,14 +499,15 @@
     width: 80px;
     height: 80px;
     background: rgba(16, 185, 129, 0.1);
-    border: 3px solid #10b981;
+    border: 2px solid var(--md-sys-color-primary);
+    border-radius: var(--md-sys-shape-corner-full);
     margin-bottom: var(--space-6);
 
     .success-icon {
       font-size: 48px;
       width: 48px;
       height: 48px;
-      color: #10b981;
+      color: var(--md-sys-color-primary);
     }
   }
 
@@ -523,8 +522,9 @@
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    background: rgba(255, 255, 255, 0.03);
-    border: 2px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface-variant);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-medium);
     padding: var(--space-4);
     margin-bottom: var(--space-8);
     text-align: left;
@@ -534,6 +534,7 @@
     .badge-photo {
       width: 50px;
       height: 50px;
+      border-radius: var(--md-sys-shape-corner-full);
       border: 2px solid var(--md-sys-color-primary);
     }
 
@@ -541,9 +542,9 @@
       display: flex;
       flex-direction: column;
 
-      .badge-name { font-weight: 900; color: white; }
+      .badge-name { font-weight: 900; color: var(--md-sys-color-on-surface); }
       .badge-user { color: var(--md-sys-color-primary); font-weight: 700; font-size: 0.9rem; }
-      .badge-wallet { font-family: monospace; font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); }
+      .badge-wallet { font-family: var(--font-mono), monospace; font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); }
     }
   }
 
@@ -556,9 +557,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #27272a;
-  color: white;
-  border-radius: 0%;
+  background: var(--md-sys-color-surface-variant);
+  color: var(--md-sys-color-on-surface);
+  border-radius: var(--md-sys-shape-corner-full);
   
   mat-icon {
     font-size: 24px;
@@ -569,21 +570,24 @@
   &.badge-photo {
     width: 50px;
     height: 50px;
+    border-radius: var(--md-sys-shape-corner-full);
     border: 2px solid var(--md-sys-color-primary);
   }
 
   &.user-photo {
     width: 44px;
     height: 44px;
+    border-radius: var(--md-sys-shape-corner-full);
     border: 2px solid var(--md-sys-color-primary);
-    box-shadow: 2px 2px 0px 0px white;
+    box-shadow: none;
   }
 
   &.selected-user-avatar {
     width: 64px;
     height: 64px;
+    border-radius: var(--md-sys-shape-corner-full);
     border: 2px solid var(--md-sys-color-primary);
-    box-shadow: 3px 3px 0px 0px white;
+    box-shadow: none;
     mat-icon {
       font-size: 32px;
       width: 32px;

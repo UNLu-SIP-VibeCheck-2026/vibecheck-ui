@@ -16,10 +16,10 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-5);
-  background: rgba(18, 16, 42, 0.85);
+  background: rgba(13, 11, 30, 0.85); // Maps to background translucent
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -60,7 +60,7 @@
 .scanner-title {
   font-size: var(--text-title-md);
   font-weight: var(--weight-bold);
-  color: #ffffff;
+  color: var(--md-sys-color-on-surface);
   margin: 0;
 
   @include mobile {
@@ -83,10 +83,10 @@
   position: relative;
   margin: var(--space-4) var(--space-4) 0 var(--space-4);
   padding: var(--space-4);
-  background: rgba(30, 27, 57, 0.4);
+  background: rgba(26, 21, 53, 0.4); // Maps to surface-variant translucent
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-large);
   overflow: hidden;
   display: flex;
@@ -130,7 +130,7 @@
     height: 54px;
     border-radius: var(--md-sys-shape-corner-medium);
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--md-sys-color-outline-variant);
     background: rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
     display: flex;
@@ -145,7 +145,7 @@
 
     &.fallback {
       background: var(--gradient-brand);
-      color: #ffffff;
+      color: var(--md-sys-color-on-primary);
 
       mat-icon {
         font-size: 24px;
@@ -170,7 +170,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-width: 0; // Enables ellipsis / prevent overflow
+    min-width: 0;
   }
 
   .event-label {
@@ -189,7 +189,7 @@
   .event-title {
     font-size: var(--text-body-lg);
     font-weight: var(--weight-bold);
-    color: #ffffff;
+    color: var(--md-sys-color-on-surface);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -268,7 +268,7 @@
       h3 {
         font-size: var(--text-body-lg);
         font-weight: var(--weight-semibold);
-        color: #ffffff;
+        color: var(--md-sys-color-on-surface);
         margin: 0 0 2px 0;
       }
       p {
@@ -302,18 +302,17 @@
   width: 100%;
   max-width: 420px;
   aspect-ratio: 1 / 1;
-  border-radius: 24px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
   overflow: hidden;
   background: #000000;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+  border: 1px solid var(--md-sys-color-outline-variant);
 
   @include mobile {
     max-width: 100%;
-    border-radius: 16px;
+    border-radius: var(--md-sys-shape-corner-large);
   }
 
-  // Hide html5-qrcode controls or custom UI elements that might render
   ::ng-deep {
     #reader {
       border: none !important;
@@ -354,15 +353,16 @@
   position: relative;
   width: min(250px, 60vw);
   height: min(250px, 60vw);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  box-shadow: 0 0 0 4000px rgba(12, 10, 29, 0.65); // Shading the outside
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  // Spread shadow is functionally required to shade/overlay the outside region
+  box-shadow: 0 0 0 4000px rgba(12, 10, 29, 0.65);
   background: rgba(255, 255, 255, 0.02);
   transition: all 0.3s ease;
   animation: guidePulse 3s ease-in-out infinite alternate;
 
   @include mobile {
-    border-radius: 16px;
+    border-radius: var(--md-sys-shape-corner-large);
   }
 }
 
@@ -371,7 +371,6 @@
   width: 24px;
   height: 24px;
   border: 4px solid var(--md-sys-color-primary);
-  filter: drop-shadow(0 0 5px rgba(253, 62, 129, 0.5));
   transition: all 0.3s ease;
 
   &.top-left {
@@ -440,12 +439,12 @@
 .scan-laser-container {
   position: absolute;
   inset: 0;
-  border-radius: 24px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
   overflow: hidden;
   pointer-events: none;
 
   @include mobile {
-    border-radius: 16px;
+    border-radius: var(--md-sys-shape-corner-large);
   }
 }
 
@@ -454,9 +453,7 @@
   width: 100%;
   height: 3px;
   background: linear-gradient(90deg, transparent, var(--md-sys-color-primary), transparent);
-  box-shadow: 
-    0 0 8px var(--md-sys-color-primary),
-    0 0 15px var(--md-sys-color-primary);
+  box-shadow: none;
   top: 0;
   animation: scanning 2.5s ease-in-out infinite;
   opacity: 0.9;
@@ -522,13 +519,13 @@
 
 /* Success state */
 .success-overlay {
-  background: rgba(16, 185, 129, 0.88); // Translucent green
+  background: rgba(16, 185, 129, 0.88); // Translucent green for pass verification feedback
 
   .icon-circle {
     width: 76px;
     height: 76px;
     background: rgba(255, 255, 255, 0.18);
-    border-radius: 50%;
+    border-radius: var(--md-sys-shape-corner-full);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -546,13 +543,13 @@
 
 /* Error state */
 .error-overlay {
-  background: rgba(239, 68, 68, 0.88); // Translucent red
+  background: rgba(239, 68, 68, 0.88); // Translucent red for fail verification feedback
 
   .icon-circle {
     width: 76px;
     height: 76px;
     background: rgba(255, 255, 255, 0.18);
-    border-radius: 50%;
+    border-radius: var(--md-sys-shape-corner-full);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -575,11 +572,12 @@
   right: var(--space-6);
   width: 56px;
   height: 56px;
-  background: rgba(18, 16, 42, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: var(--md-sys-color-surface-variant);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface);
   z-index: 8;
   transition: all 0.2s ease;
+  border-radius: var(--md-sys-shape-corner-full);
 
   mat-icon {
     font-size: 24px;
@@ -588,7 +586,7 @@
   }
 
   &:hover {
-    background: rgba(18, 16, 42, 1);
+    background: var(--md-sys-color-surface);
     transform: rotate(45deg);
     border-color: var(--md-sys-color-primary);
   }
@@ -619,7 +617,7 @@
   h2 {
     font-size: var(--text-title-lg);
     font-weight: var(--weight-bold);
-    color: #ffffff;
+    color: var(--md-sys-color-on-surface);
     margin: 0 0 var(--space-3) 0;
   }
 
@@ -647,24 +645,23 @@
     border-radius: var(--md-sys-shape-corner-full);
     font-weight: var(--weight-semibold);
     transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #ffffff;
+    border: 1px solid var(--md-sys-color-outline);
+    color: var(--md-sys-color-on-surface);
     background: transparent;
 
     &:hover {
       background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.25);
+      border-color: var(--md-sys-color-on-surface);
     }
 
     &.primary-retry {
       background: var(--gradient-brand);
-      color: #ffffff;
+      color: var(--md-sys-color-on-primary);
       border: none;
-      box-shadow: 0 4px 15px rgba(253, 62, 129, 0.3);
+      box-shadow: none;
 
       &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(253, 62, 129, 0.45);
+        transform: scale(1.02);
       }
     }
   }
@@ -710,12 +707,11 @@
 
 @keyframes guidePulse {
   from {
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--md-sys-color-outline-variant);
     box-shadow: 0 0 0 4000px rgba(12, 10, 29, 0.65);
   }
   to {
-    border-color: rgba(253, 62, 129, 0.28);
-    box-shadow: 0 0 0 4000px rgba(12, 10, 29, 0.68), 0 0 15px rgba(253, 62, 129, 0.12);
+    border-color: rgba(168, 85, 247, 0.28);
+    box-shadow: 0 0 0 4000px rgba(12, 10, 29, 0.68);
   }
 }
-

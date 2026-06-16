@@ -1,3 +1,5 @@
+@use '../../../tokens' as *;
+
 .create-listing-container {
   width: 100%;
   max-width: 600px;
@@ -16,9 +18,9 @@
     .spinner-border {
       width: 3rem;
       height: 3rem;
-      border: 0.25em solid currentColor;
-      border-right-color: transparent;
-      border-radius: 50%;
+      border: 0.25em solid var(--md-sys-color-outline-variant);
+      border-right-color: var(--md-sys-color-primary);
+      border-radius: var(--md-sys-shape-corner-full);
       animation: spinner-border .75s linear infinite;
     }
   }
@@ -37,7 +39,7 @@
     justify-content: center;
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: var(--md-sys-shape-corner-medium);
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-primary);
     margin-bottom: var(--space-3);
@@ -50,7 +52,7 @@
   }
 
   .headline-large {
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-ui), sans-serif;
     font-size: 28px;
     font-weight: 700;
     color: var(--md-sys-color-on-surface);
@@ -58,7 +60,7 @@
   }
 
   .body-medium {
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-ui), sans-serif;
     font-size: 14px;
     color: var(--md-sys-color-on-surface-variant);
     margin: 0;
@@ -81,7 +83,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-ui), sans-serif;
       font-size: 14px;
 
       .label {
@@ -104,7 +106,7 @@
 
         .value {
           color: var(--md-sys-color-secondary);
-          font-family: 'Space Mono', monospace;
+          font-family: var(--font-mono), monospace;
           font-weight: 700;
         }
       }
@@ -119,7 +121,7 @@
     margin-bottom: var(--space-5);
 
     .input-label {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-ui), sans-serif;
       font-size: 14px;
       font-weight: 600;
       color: var(--md-sys-color-on-surface);
@@ -134,11 +136,11 @@
         width: 100%;
         background-color: var(--md-sys-color-surface-variant);
         border: 1px solid var(--md-sys-color-outline);
-        border-radius: 8px;
+        border-radius: var(--md-sys-shape-corner-small);
         padding: var(--space-3) var(--space-4);
         padding-right: 70px;
         color: var(--md-sys-color-on-surface);
-        font-family: 'Space Mono', monospace;
+        font-family: var(--font-mono), monospace;
         font-size: 18px;
         outline: none;
         transition: border-color 0.2s ease;
@@ -151,7 +153,7 @@
       .price-suffix {
         position: absolute;
         right: var(--space-4);
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-ui), sans-serif;
         font-size: 14px;
         font-weight: 700;
         color: var(--md-sys-color-primary);
@@ -159,7 +161,7 @@
     }
 
     .error-msg {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-ui), sans-serif;
       font-size: 12px;
       color: var(--md-sys-color-error);
       margin-top: 4px;
@@ -172,9 +174,9 @@
     align-items: flex-start;
     gap: var(--space-3);
     padding: var(--space-4);
-    border-radius: 8px;
+    border-radius: var(--md-sys-shape-corner-small);
     margin-bottom: var(--space-5);
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-ui), sans-serif;
     font-size: 14px;
 
     &.alert-danger {
@@ -195,20 +197,22 @@
   /* CTA Button Style 2 */
   .btn-cta {
     width: 100%;
+    height: var(--btn-cta-height);
     background: var(--gradient-brand);
     border: none;
-    border-radius: 50px;
-    padding: 8px 24px 8px 8px;
+    border-radius: var(--btn-cta-radius);
+    padding: var(--btn-cta-padding-x);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-4);
     cursor: pointer;
-    color: #ffffff;
+    color: var(--btn-cta-text-color);
     transition: transform 0.2s ease, opacity 0.2s ease;
+    box-shadow: none;
 
     &:hover:not(:disabled) {
-      transform: translateY(-2px);
+      transform: scale(1.02);
       opacity: 0.95;
     }
 
@@ -219,10 +223,10 @@
     }
 
     .cta-icon-wrapper {
-      background-color: var(--md-sys-color-primary-container);
+      background-color: var(--btn-cta-icon-bg);
       border-radius: 50%;
-      width: 36px;
-      height: 36px;
+      width: var(--btn-cta-icon-size);
+      height: var(--btn-cta-icon-size);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -236,14 +240,14 @@
     }
 
     .cta-text {
-      font-family: 'Space Mono', monospace;
-      font-size: 14px;
-      font-weight: 700;
+      font-family: var(--btn-cta-font);
+      font-size: var(--btn-cta-font-size);
+      font-weight: var(--weight-bold);
       text-transform: uppercase;
-      letter-spacing: 0.15em;
+      letter-spacing: var(--btn-cta-tracking);
       flex: 1;
       text-align: center;
-      margin-right: 36px; /* Balance the left icon */
+      margin-right: var(--btn-cta-icon-size); /* Balance the left icon */
     }
   }
 
@@ -257,7 +261,7 @@
     gap: var(--space-3);
 
     .step-title {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-ui), sans-serif;
       font-size: 16px;
       font-weight: 700;
       color: var(--md-sys-color-on-surface);
@@ -276,15 +280,15 @@
         width: 2.5rem;
         height: 2.5rem;
         color: var(--md-sys-color-primary);
-        border: 0.25em solid currentColor;
-        border-right-color: transparent;
-        border-radius: 50%;
+        border: 0.25em solid var(--md-sys-color-outline-variant);
+        border-right-color: var(--md-sys-color-primary);
+        border-radius: var(--md-sys-shape-corner-full);
         animation: spinner-border .75s linear infinite;
       }
     }
 
     .status-desc {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-ui), sans-serif;
       font-size: 13px;
       color: var(--md-sys-color-on-surface-variant);
       margin: 0;

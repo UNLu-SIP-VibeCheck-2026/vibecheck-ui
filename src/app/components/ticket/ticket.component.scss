@@ -23,15 +23,15 @@
     margin-bottom: var(--space-8);
     
     button {
-      color: #ffffff !important;
-      background: rgba(255, 255, 255, 0.05);
+      color: var(--md-sys-color-on-surface) !important;
+      background: var(--md-sys-color-surface-variant);
     }
 
     .header-title {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-ui);
       font-size: var(--text-title-md);
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.7);
+      font-weight: var(--weight-semibold);
+      color: var(--md-sys-color-on-surface-variant);
     }
   }
 }
@@ -47,13 +47,12 @@
   position: relative;
   height: 350px;
   overflow: hidden;
-  background: #0d091e;
+  background: var(--md-sys-color-background);
   display: flex;
   align-items: center;
   justify-content: center;
 
-  /* MOBILE FIX: Reducir altura de la portada en mobile */
-  @media (max-width: 768px) {
+  @include mobile {
     height: 200px;
   }
 
@@ -78,18 +77,17 @@
     width: auto;
     height: auto;
     object-fit: contain;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
+    border-radius: var(--md-sys-shape-corner-small);
 
-    @media (max-width: 768px) {
-      border-radius: 4px;
+    @include mobile {
+      border-radius: var(--md-sys-shape-corner-extra-small);
     }
   }
 
   .overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(13, 11, 30, 0.9) 0%, transparent 100%);
+    background: linear-gradient(to top, var(--md-sys-color-background) 0%, transparent 100%);
   }
 
   .hero-content {
@@ -98,8 +96,7 @@
     left: var(--space-8);
     right: var(--space-8);
 
-    /* MOBILE FIX: Ajustar padding en mobile */
-    @media (max-width: 768px) {
+    @include mobile {
       bottom: var(--space-4);
       left: var(--space-4);
       right: var(--space-4);
@@ -143,14 +140,14 @@
   gap: var(--space-8);
   padding: var(--space-8);
 
-  @media (max-width: 960px) {
+  @include tablet {
     grid-template-columns: 1fr;
     padding: var(--space-6);
     gap: var(--space-6);
   }
 
-  /* MOBILE FIX: Reducir espaciado en mobile */
-  @media (max-width: 768px) {
+  @include mobile {
+    grid-template-columns: 1fr;
     padding: var(--space-4);
     gap: var(--space-4);
   }
@@ -226,25 +223,25 @@
 
     .type-badge {
       background: var(--gradient-brand);
-      color: white;
-      padding: 6px 16px;
-      border-radius: 30px;
-      font-weight: 800;
-      font-size: 0.85rem;
+      color: var(--md-sys-color-on-primary);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--md-sys-shape-corner-full);
+      font-weight: var(--weight-bold);
+      font-size: var(--text-label-lg);
     }
 
     .id-badge {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--md-sys-color-surface-variant);
       color: var(--md-sys-color-on-surface-variant);
-      padding: 6px 16px;
-      border-radius: 30px;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.85rem;
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--md-sys-shape-corner-full);
+      font-family: var(--font-mono);
+      font-size: var(--text-label-lg);
     }
   }
 
   .location-card {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--md-sys-color-surface-container-low);
     border: 1px solid var(--md-sys-color-outline-variant);
     padding: var(--space-4);
     border-radius: var(--md-sys-shape-corner-medium);
@@ -272,8 +269,8 @@
 
       span {
         font-size: 1.25rem;
-        font-weight: 800;
-        color: white;
+        font-weight: var(--weight-bold);
+        color: var(--md-sys-color-on-surface);
       }
     }
   }
@@ -294,13 +291,12 @@
     gap: var(--space-6);
     border: 1px solid var(--md-sys-color-outline-variant);
 
-    /* MOBILE FIX: Destacar boton VER QR DE INGRESO como sticky bottom */
-    @media (max-width: 768px) {
+    @include mobile {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      box-sizing: border-box; /* MOBILE FIX: Evitar desborde por padding en elemento fixed */
+      box-sizing: border-box;
       border-radius: 0 !important;
       border: none !important;
       border-top: 1px solid var(--md-sys-color-outline-variant) !important;
@@ -309,8 +305,7 @@
       flex-direction: row !important;
       justify-content: space-between;
       gap: var(--space-4) !important;
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
-      background: rgba(13, 9, 30, 0.96) !important;
+      background: var(--md-sys-color-background) !important;
       backdrop-filter: blur(10px);
 
       .qr-hidden-state {
@@ -350,12 +345,13 @@
     .qr-btn {
       width: 100%;
       height: 56px;
-      border-radius: 12px;
-      font-weight: 800;
-      background: white !important;
-      color: #0d0b1e !important;
+      border-radius: var(--md-sys-shape-corner-medium);
+      font-weight: var(--weight-bold);
+      background: var(--gradient-brand) !important;
+      color: var(--md-sys-color-on-primary) !important;
+      border: none !important;
 
-      mat-icon { margin-right: 8px; }
+      mat-icon { margin-right: var(--space-2); }
     }
   }
 
@@ -372,10 +368,10 @@
     .action-btn {
       width: 100%;
       height: 56px;
-      border-radius: 12px;
-      font-weight: 700;
+      border-radius: var(--md-sys-shape-corner-medium);
+      font-weight: var(--weight-semibold);
 
-      mat-icon { margin-right: 8px; }
+      mat-icon { margin-right: var(--space-2); }
     }
   }
 }
@@ -384,7 +380,7 @@
 .qr-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(13, 11, 30, 0.95);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -393,7 +389,7 @@
   padding: var(--space-4);
 
   .qr-modal {
-    background: white;
+    background: var(--md-sys-color-surface);
     width: 100%;
     max-width: 450px;
     border-radius: var(--md-sys-shape-corner-extra-large);
@@ -403,22 +399,16 @@
     align-items: center;
     gap: var(--space-6);
     animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* MOBILE FIX: Modal QR pantalla completa en mobile */
-    @media (max-width: 768px) {
-      max-width: none;
-      height: 100%;
-      justify-content: center;
-      border-radius: 0;
-      padding: var(--space-4) !important;
-      gap: var(--space-4) !important;
-    }
+    border: 1px solid var(--md-sys-color-outline-variant);
 
     @include mobile {
       max-width: none;
       height: 100%;
       justify-content: center;
       border-radius: 0;
+      border: none;
+      padding: var(--space-4) !important;
+      gap: var(--space-4) !important;
     }
 
     .modal-header {
@@ -426,23 +416,22 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      color: #0d0b1e;
+      color: var(--md-sys-color-on-surface);
 
       h2 {
         margin: 0;
         font-size: var(--text-title-md);
-        font-weight: 800;
+        font-weight: var(--weight-bold);
 
-        /* MOBILE FIX: Reducir tamaño de letra en mobile */
-        @media (max-width: 768px) {
+        @include mobile {
           font-size: 1.2rem;
         }
       }
 
       button {
-        color: #0d0b1e;
+        color: var(--md-sys-color-on-surface);
 
-        /* MOBILE FIX: Area de contacto tactil min 44x44px */
+        /* Touch target size */
         min-width: 44px !important;
         min-height: 44px !important;
         width: 44px !important;
@@ -455,7 +444,7 @@
     }
 
     .qr-display {
-      background: #f8fafc;
+      background: var(--md-sys-color-surface-variant);
       padding: var(--space-6);
       border-radius: var(--md-sys-shape-corner-large);
       display: flex;
@@ -465,9 +454,9 @@
       gap: var(--space-4);
       width: 100%;
       min-height: 250px;
+      border: 1px solid var(--md-sys-color-outline-variant);
 
-      /* MOBILE FIX: Reducir padding en mobile */
-      @media (max-width: 768px) {
+      @include mobile {
         padding: var(--space-4) !important;
         min-height: 220px;
       }
@@ -482,8 +471,7 @@
           display: none;
         }
 
-        /* MOBILE FIX: Limitar tamaño de qr en pantallas chicas */
-        @media (max-width: 768px) {
+        @include mobile {
           max-width: 200px;
         }
       }
@@ -493,16 +481,16 @@
         flex-direction: column;
         align-items: center;
         gap: 12px;
-        color: #0d0b1e;
+        color: var(--md-sys-color-on-surface);
         padding: 24px;
 
         ::ng-deep .mat-mdc-progress-spinner circle {
-          stroke: #6d28d9 !important;
+          stroke: var(--md-sys-color-primary) !important;
         }
 
         p {
           margin: 0;
-          font-weight: 600;
+          font-weight: var(--weight-semibold);
           font-size: 0.95rem;
         }
       }
@@ -514,32 +502,32 @@
         gap: 4px;
 
         .ticket-type {
-          color: #0d0b1e;
-          font-weight: 900;
+          color: var(--md-sys-color-on-surface);
+          font-weight: var(--weight-bold);
           font-size: 1.2rem;
           text-transform: uppercase;
         }
 
         .ticket-id {
-          color: #64748b;
-          font-family: 'Space Mono', monospace;
+          color: var(--md-sys-color-on-surface-variant);
+          font-family: var(--font-mono);
           font-size: 0.9rem;
         }
       }
     }
 
     .qr-instructions {
-      color: #64748b;
+      color: var(--md-sys-color-on-surface-variant);
       text-align: center;
-      font-weight: 600;
+      font-weight: var(--weight-semibold);
       margin: 0;
     }
 
     .close-btn {
       width: 100%;
       height: 56px;
-      font-weight: 800;
-      color: #6d28d9 !important;
+      font-weight: var(--weight-bold);
+      color: var(--md-sys-color-primary) !important;
     }
   }
 }
@@ -596,44 +584,44 @@
   }
 
   &.refunded {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.2);
-    color: #f87171;
-    mat-icon { color: #ef4444; }
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.2);
+    color: var(--md-sys-color-error);
+    mat-icon { color: var(--md-sys-color-error); }
   }
 
   &.redeemed {
-    background: rgba(34, 197, 94, 0.1);
-    border-color: rgba(34, 197, 94, 0.2);
+    background: rgba(74, 222, 128, 0.1);
+    border-color: rgba(74, 222, 128, 0.2);
     color: #4ade80;
-    mat-icon { color: #22c55e; }
+    mat-icon { color: #4ade80; }
   }
 
   &.cancelled {
-    background: rgba(245, 158, 11, 0.1);
-    border-color: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
-    mat-icon { color: #f59e0b; }
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.2);
+    color: var(--md-sys-color-tertiary);
+    mat-icon { color: var(--md-sys-color-tertiary); }
   }
 
   &.for-sale {
-    background: rgba(109, 40, 217, 0.1);
-    border-color: rgba(109, 40, 217, 0.2);
-    color: #a78bfa;
-    mat-icon { color: #6d28d9; }
+    background: rgba(168, 85, 247, 0.1);
+    border-color: rgba(168, 85, 247, 0.2);
+    color: var(--md-sys-color-primary);
+    mat-icon { color: var(--md-sys-color-primary); }
   }
 }
 
 // Refund Button
 .refund-btn {
   background-color: transparent !important;
-  color: #f87171 !important;
-  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: var(--md-sys-color-error) !important;
+  border: 1px solid rgba(248, 113, 113, 0.3) !important;
   transition: all 0.2s ease-in-out;
 
   &:hover {
-    background-color: rgba(239, 68, 68, 0.1) !important;
-    border-color: #ef4444 !important;
+    background-color: rgba(248, 113, 113, 0.1) !important;
+    border-color: var(--md-sys-color-error) !important;
   }
 }
 
@@ -650,17 +638,17 @@
   padding: var(--space-4);
 
   .refund-modal {
-    background: #18162f;
+    background: var(--md-sys-color-surface);
     width: 100%;
     max-width: 500px;
     border-radius: var(--md-sys-shape-corner-extra-large);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--md-sys-color-outline-variant);
     padding: var(--space-6);
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
     animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #ffffff;
+    color: var(--md-sys-color-on-surface);
 
     .modal-header {
       width: 100%;
@@ -670,15 +658,15 @@
 
       h2 {
         margin: 0;
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-ui);
         font-size: 1.5rem;
-        font-weight: 700;
-        color: #ffffff;
+        font-weight: var(--weight-bold);
+        color: var(--md-sys-color-on-surface);
       }
 
       button {
-        color: rgba(255, 255, 255, 0.6);
-        &:hover { color: #ffffff; }
+        color: var(--md-sys-color-on-surface-variant);
+        &:hover { color: var(--md-sys-color-on-surface); }
       }
     }
 
@@ -691,15 +679,15 @@
         display: flex;
         align-items: center;
         gap: var(--space-2);
-        background: rgba(239, 68, 68, 0.15);
-        border: 1px solid rgba(239, 68, 68, 0.3);
+        background: rgba(248, 113, 113, 0.15);
+        border: 1px solid rgba(248, 113, 113, 0.3);
         padding: var(--space-3);
-        border-radius: 8px;
-        color: #f87171;
+        border-radius: var(--md-sys-shape-corner-small);
+        color: var(--md-sys-color-error);
         font-size: 0.95rem;
 
         mat-icon {
-          color: #ef4444;
+          color: var(--md-sys-color-error);
           flex-shrink: 0;
         }
       }
@@ -707,27 +695,27 @@
       .warning-box {
         display: flex;
         gap: var(--space-3);
-        background: rgba(245, 158, 11, 0.08);
-        border: 1px solid rgba(245, 158, 11, 0.15);
+        background: rgba(251, 191, 36, 0.08);
+        border: 1px solid rgba(251, 191, 36, 0.15);
         padding: var(--space-4);
-        border-radius: 12px;
+        border-radius: var(--md-sys-shape-corner-medium);
 
         mat-icon {
-          color: #fbbf24;
+          color: var(--md-sys-color-tertiary);
           flex-shrink: 0;
         }
 
         .warning-text {
           strong {
             display: block;
-            color: #fbbf24;
+            color: var(--md-sys-color-tertiary);
             font-size: 0.95rem;
             margin-bottom: 2px;
           }
           p {
             margin: 0;
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--md-sys-color-on-surface-variant);
             line-height: 1.4;
           }
         }
@@ -736,37 +724,37 @@
       .info-box {
         display: flex;
         gap: var(--space-3);
-        background: rgba(59, 130, 246, 0.08);
-        border: 1px solid rgba(59, 130, 246, 0.15);
+        background: rgba(168, 85, 247, 0.08);
+        border: 1px solid rgba(168, 85, 247, 0.15);
         padding: var(--space-4);
-        border-radius: 12px;
+        border-radius: var(--md-sys-shape-corner-medium);
 
         mat-icon {
-          color: #60a5fa;
+          color: var(--md-sys-color-primary);
           flex-shrink: 0;
         }
 
         .info-text {
           strong {
             display: block;
-            color: #60a5fa;
+            color: var(--md-sys-color-primary);
             font-size: 0.95rem;
             margin-bottom: 2px;
           }
           p {
             margin: 0;
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--md-sys-color-on-surface-variant);
             line-height: 1.4;
           }
         }
       }
 
       .ticket-summary {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
         padding: var(--space-4);
-        border-radius: 12px;
+        border-radius: var(--md-sys-shape-corner-medium);
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
@@ -777,11 +765,11 @@
           font-size: 0.9rem;
 
           .label {
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--md-sys-color-on-surface-variant);
           }
           .value {
-            font-weight: 600;
-            color: #ffffff;
+            font-weight: var(--weight-semibold);
+            color: var(--md-sys-color-on-surface);
           }
         }
       }
@@ -814,13 +802,13 @@
             font-size: 60px;
             width: 60px;
             height: 60px;
-            color: #22c55e;
+            color: #4ade80;
           }
         }
 
         .status-msg {
           font-size: 1rem;
-          color: rgba(255, 255, 255, 0.85);
+          color: var(--md-sys-color-on-surface-variant);
           text-align: center;
           margin: 0;
           line-height: 1.5;
@@ -837,21 +825,21 @@
       button {
         height: 48px;
         padding: 0 var(--space-6);
-        border-radius: 10px;
-        font-weight: 700;
+        border-radius: var(--md-sys-shape-corner-medium);
+        font-weight: var(--weight-bold);
       }
 
       .cancel-btn {
-        color: rgba(255, 255, 255, 0.6) !important;
-        &:hover { color: #ffffff !important; }
+        color: var(--md-sys-color-on-surface-variant) !important;
+        &:hover { color: var(--md-sys-color-on-surface) !important; }
       }
 
       .confirm-btn {
-        background-color: #ef4444 !important;
-        color: #ffffff !important;
+        background-color: var(--md-sys-color-error) !important;
+        color: var(--md-sys-color-on-error) !important;
         
         &:disabled {
-          background-color: rgba(239, 68, 68, 0.4) !important;
+          background-color: rgba(248, 113, 113, 0.4) !important;
           color: rgba(255, 255, 255, 0.4) !important;
         }
       }

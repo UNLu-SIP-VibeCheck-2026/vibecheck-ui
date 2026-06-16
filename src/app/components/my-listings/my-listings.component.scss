@@ -1,10 +1,12 @@
+@use '../../../tokens' as *;
+
 .my-listings-container {
   padding: var(--space-6) var(--space-5);
   max-width: 1200px;
   margin: 0 auto;
   min-height: 80vh;
 
-  @media (min-width: 1024px) {
+  @include desktop {
     padding: var(--space-8) var(--space-10);
   }
 
@@ -13,10 +15,7 @@
     text-align: left;
 
     .display-medium {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 48px;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
+      @include text-display(var(--text-display-md));
       color: var(--md-sys-color-on-background);
       margin: 0 0 var(--space-2) 0;
     }
@@ -53,7 +52,7 @@
       background-color: var(--md-sys-color-primary-container);
       width: 96px;
       height: 96px;
-      border-radius: 24px;
+      border-radius: var(--md-sys-shape-corner-large);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -61,8 +60,8 @@
     }
 
     .headline-medium {
-      font-family: 'Outfit', sans-serif;
-      font-size: 22px;
+      font-family: var(--font-ui), sans-serif;
+      font-size: var(--text-title-lg);
       font-weight: 700;
       color: var(--md-sys-color-on-surface);
       margin: 0;
@@ -91,11 +90,11 @@
     grid-template-columns: 1fr;
     gap: var(--space-5);
 
-    @media (min-width: 600px) {
+    @include tablet {
       grid-template-columns: repeat(2, 1fr);
     }
 
-    @media (min-width: 1024px) {
+    @include desktop {
       grid-template-columns: repeat(3, 1fr);
     }
   }
@@ -107,12 +106,12 @@
     border-radius: var(--md-sys-shape-corner-medium);
     overflow: hidden;
     box-shadow: none;
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     display: flex;
     flex-direction: column;
 
     &:hover {
-      transform: translateY(-4px);
+      background-color: var(--md-sys-color-surface-variant);
       border-color: var(--md-sys-color-primary);
     }
 
@@ -137,12 +136,12 @@
         background-color: rgba(13, 11, 30, 0.85);
         border: 1px solid var(--md-sys-color-primary);
         padding: 4px 12px;
-        border-radius: 20px;
-        color: #ffffff;
+        border-radius: var(--md-sys-shape-corner-full);
+        color: var(--md-sys-color-tertiary);
         display: flex;
         align-items: baseline;
         gap: 3px;
-        font-family: 'Space Mono', monospace;
+        font-family: var(--font-mono), monospace;
 
         .price-value {
           font-size: 16px;
@@ -167,7 +166,7 @@
       flex: 1;
 
       .token-id {
-        font-family: 'Space Mono', monospace;
+        font-family: var(--font-mono), monospace;
         font-size: 11px;
         font-weight: 700;
         color: var(--md-sys-color-secondary);
@@ -176,7 +175,7 @@
       }
 
       .event-title {
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-ui), sans-serif;
         font-size: 20px;
         font-weight: 700;
         color: var(--md-sys-color-on-surface);
@@ -194,7 +193,7 @@
         align-items: center;
         gap: var(--space-2);
         margin-bottom: 8px;
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-ui), sans-serif;
         font-size: 13px;
         color: var(--md-sys-color-on-surface-variant);
 
@@ -219,45 +218,48 @@
 
   /* CTA Button Style 2 */
   .btn-cta {
+    height: var(--btn-cta-height);
     background: var(--gradient-brand);
     border: none;
-    border-radius: 50px;
-    padding: 6px 20px 6px 6px;
+    border-radius: var(--btn-cta-radius);
+    padding: var(--btn-cta-padding-x);
     display: inline-flex;
     align-items: center;
     gap: var(--space-3);
     cursor: pointer;
-    color: #ffffff;
+    color: var(--btn-cta-text-color);
     transition: transform 0.2s ease, opacity 0.2s ease;
+    box-shadow: none;
 
     &:hover {
-      transform: translateY(-2px);
+      transform: scale(1.02);
       opacity: 0.95;
     }
 
     .cta-icon-wrapper {
-      background-color: var(--md-sys-color-primary-container);
+      background-color: var(--btn-cta-icon-bg);
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: var(--btn-cta-icon-size);
+      height: var(--btn-cta-icon-size);
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--md-sys-color-primary);
 
       mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
       }
     }
 
     .cta-text {
-      font-family: 'Space Mono', monospace;
-      font-size: 12px;
-      font-weight: 700;
+      font-family: var(--btn-cta-font);
+      font-size: var(--btn-cta-font-size);
+      font-weight: var(--weight-bold);
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: var(--btn-cta-tracking);
+      padding-right: var(--space-4);
     }
   }
 }
