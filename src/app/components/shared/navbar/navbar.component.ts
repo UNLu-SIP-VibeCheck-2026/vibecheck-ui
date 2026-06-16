@@ -52,6 +52,47 @@ export class NavbarComponent implements OnInit {
   isScrolled = signal<boolean>(false);
   isMobileMenuOpen = signal<boolean>(false);
 
+  // Role check methods
+  get userRole(): string {
+    return this.authService.getCurrentUserValue()?.role?.toLowerCase() || '';
+  }
+
+  get isCliente(): boolean {
+    return this.userRole === 'cliente' || this.userRole === 'comprar' || this.userRole === 'user';
+  }
+
+  get isOrganizador(): boolean {
+    return this.userRole === 'organizador';
+  }
+
+  get isValidador(): boolean {
+    return this.userRole === 'validador';
+  }
+
+  get isAdmin(): boolean {
+    return this.userRole === 'admin';
+  }
+
+  get isCeo(): boolean {
+    return this.userRole === 'ceo';
+  }
+
+  get isAdminVenues(): boolean {
+    return this.userRole === 'admin_venues';
+  }
+
+  get isAdminUsuarios(): boolean {
+    return this.userRole === 'admin_usuarios';
+  }
+
+  get isAdminEventos(): boolean {
+    return this.userRole === 'admin_eventos';
+  }
+
+  get isCualquierAdmin(): boolean {
+    return this.isAdmin || this.isAdminUsuarios || this.isAdminEventos || this.isAdminVenues || this.isCeo;
+  }
+
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
     this.isScrolled.set(window.scrollY > 20);

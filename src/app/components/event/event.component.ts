@@ -11,6 +11,7 @@ import { EventService } from "../../services/event.service";
 import { TicketTypeService } from "../../services/ticket-type.service";
 import { VenueService } from "../../services/venue.service";
 import { UsersService } from "../../services/users.service";
+import { AuthService } from "../../services/auth.service";
 import { EventResponse } from "../../models/event.model";
 import { TicketTypeResponse } from "../../models/ticket-type.model";
 import { VenueResponse } from "../../models/venue.model";
@@ -42,6 +43,7 @@ export class EventComponent implements OnInit {
   private ticketTypeService = inject(TicketTypeService);
   private venueService = inject(VenueService);
   private usersService = inject(UsersService);
+  private authService = inject(AuthService);
   private sanitizer = inject(DomSanitizer);
 
   event: EventResponse | null = null;
@@ -205,6 +207,12 @@ export class EventComponent implements OnInit {
 
   get venueCapacity(): number | null {
     return this.venue?.capacity ?? this.event?.capacity ?? null;
+  }
+
+  get isEventOwner(): boolean {
+    const currentUser = this.authService.getCurrentUserValue();
+    if (!currentUser || !this.owner) return false;
+    return currentUser.username === this.owner.username;
   }
 
   // -------------------------------------------------------------------------

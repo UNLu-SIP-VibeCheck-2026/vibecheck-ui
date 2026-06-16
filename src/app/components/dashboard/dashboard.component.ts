@@ -172,6 +172,22 @@ export class DashboardComponent implements OnInit {
     return this.isAdmin || this.isAdminUsuarios || this.isAdminEventos || this.isAdminVenues || this.isCeo;
   }
 
+  // Check if any quick actions should be shown for the current user
+  get hasQuickActions(): boolean {
+    // Mi Perfil: shown if not admin and not validator
+    const showPerfil = !this.isCualquierAdmin && !this.isValidador;
+    // Mis Entradas: shown if cliente and not admin
+    const showEntradas = this.isCliente && !this.isCualquierAdmin;
+    // Mis Reventas: shown if cliente and not admin
+    const showReventas = this.isCliente && !this.isCualquierAdmin;
+    // Mi Billetera VC: shown if not admin and not validator
+    const showBilletera = !this.isCualquierAdmin && !this.isValidador;
+    // Configuraciones: shown if not cliente and not validator
+    const showConfig = !this.isCliente && !this.isValidador;
+
+    return showPerfil || showEntradas || showReventas || showBilletera || showConfig;
+  }
+
   navigateTo(path: string): void {
     this.router.navigate([path]);
   }
