@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -6,10 +6,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatListModule } from '@angular/material/list';
-import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, Subscription, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, tap, catchError } from 'rxjs/operators';
 import { isAddress } from 'viem';
 
 import { TicketResponse } from '../../models/ticket.model';
@@ -23,26 +24,33 @@ import { UsersService } from '../../services/users.service';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
 
+interface SearchResultUser {
+  username: string;
+  fullName: string;
+  hasImage: boolean;
+  wallet: string;
+  canReceiveGift: boolean;
+}
+
 @Component({
   selector: 'app-gift-ticket',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    MatCardModule, 
-    MatButtonModule, 
-    MatIconModule, 
-    MatFormFieldModule, 
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
     MatInputModule,
-    MatListModule,
-    MatDialogModule,
     MatSnackBarModule,
+    MatTooltipModule,
     TxStatusComponent
   ],
   templateUrl: './gift-ticket.component.html',
   styleUrl: './gift-ticket.component.scss'
 })
-export class GiftTicketComponent implements OnInit {
+export class GiftTicketComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private ticketService = inject(TicketService);
@@ -58,8 +66,15 @@ export class GiftTicketComponent implements OnInit {
   ticket: TicketResponse | null = null;
   isLoading = false;
   searchQuery = '';
-  selectedUser: any = null;
+  selectedUser: SearchResultUser | null = null;
   isManualAddressValid = false;
+
+  // Search state
+  private searchSubject = new Subject<string>();
+  private searchSubscription: Subscription | null = null;
+  isSearching = false;
+  noResults = false;
+  filteredFriends: SearchResultUser[] = [];
 
   txStep: 'idle' | 'validating' | 'approving-nft' | 'approving-usdc' | 'gifting' | 'confirming' | 'success' = 'idle';
   currentTxState: TxState | null = null;
@@ -68,8 +83,7 @@ export class GiftTicketComponent implements OnInit {
   platformFee = 0;
   royaltyFee = 0;
   totalFee = 0;
-  
-  filteredFriends: any[] = [];
+
   apiBaseUrl = environment.apiBaseUrl;
 
   ngOnInit(): void {
@@ -79,7 +93,51 @@ export class GiftTicketComponent implements OnInit {
       this.ticketId = Number(idParam);
       this.loadTicketDetails();
     }
-    this.searchUsers('');
+
+    this.initSearchSubscription();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
+  }
+
+  private initSearchSubscription(): void {
+    const currentUser = this.authService.getCurrentUserValue();
+
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      tap((query) => {
+        if (query.length >= 3) {
+          this.isSearching = true;
+        }
+        this.noResults = false;
+      }),
+      switchMap((query) => {
+        if (query.length < 3) {
+          this.filteredFriends = [];
+          this.isSearching = false;
+          return of([]);
+        }
+        return this.usersService.searchPublicUsers(query).pipe(
+          catchError(() => of([]))
+        );
+      })
+    ).subscribe((results) => {
+      this.isSearching = false;
+      this.filteredFriends = results
+        .filter(u => !currentUser || u.username.toLowerCase() !== currentUser.username.toLowerCase())
+        .map(u => ({
+          username: u.username,
+          fullName: `${u.name} ${u.lastName}`,
+          hasImage: u.hasImage ?? false,
+          wallet: u.walletAddress ?? '',
+          canReceiveGift: !!(u.walletAddress && u.walletAddress.trim() !== '')
+        }));
+
+      const rawQuery = this.searchQuery.trim();
+      this.noResults = rawQuery.length >= 3 && this.filteredFriends.length === 0;
+    });
   }
 
   loadTicketDetails(): void {
@@ -89,7 +147,7 @@ export class GiftTicketComponent implements OnInit {
       next: (ticket) => {
         this.ticket = ticket;
         this.isLoading = false;
-        
+
         // Calculate fees (5% platform fee, 5% royalty fee)
         const price = ticket.ticketType.priceUsdc;
         this.platformFee = price * 0.05;
@@ -106,65 +164,16 @@ export class GiftTicketComponent implements OnInit {
     });
   }
 
-  searchUsers(query: string): void {
-    const trimmed = query.trim();
-    if (!trimmed) {
-      this.filteredFriends = [];
-      return;
-    }
-
-    const currentUser = this.authService.getCurrentUserValue();
-    const isId = /^\d+$/.test(trimmed);
-
-    if (isId) {
-      this.usersService.getPublicUserById(Number(trimmed)).subscribe({
-        next: (u) => {
-          if (u.walletAddress && u.walletAddress.trim() !== '' && (!currentUser || u.username.toLowerCase() !== currentUser.username.toLowerCase())) {
-            this.filteredFriends = [{
-              username: u.username,
-              fullName: `${u.name} ${u.lastName}`,
-              hasImage: u.hasImage,
-              wallet: u.walletAddress
-            }];
-          } else {
-            this.filteredFriends = [];
-          }
-        },
-        error: (err) => {
-          console.error('Error fetching public user by ID:', err);
-          this.filteredFriends = [];
-        }
-      });
-    } else {
-      this.usersService.getPublicUser(trimmed).subscribe({
-        next: (u) => {
-          if (u.walletAddress && u.walletAddress.trim() !== '' && (!currentUser || u.username.toLowerCase() !== currentUser.username.toLowerCase())) {
-            this.filteredFriends = [{
-              username: u.username,
-              fullName: `${u.name} ${u.lastName}`,
-              hasImage: u.hasImage,
-              wallet: u.walletAddress
-            }];
-          } else {
-            this.filteredFriends = [];
-          }
-        },
-        error: (err) => {
-          console.error('Error fetching public user by username:', err);
-          this.filteredFriends = [];
-        }
-      });
-    }
-  }
-
-  onSearch(): void {
-    const query = this.searchQuery.trim();
-    if (query.startsWith('0x') && isAddress(query)) {
+  onSearchInput(): void {
+    const value = this.searchQuery.trim();
+    if (value.startsWith('0x') && isAddress(value)) {
       this.isManualAddressValid = true;
       this.filteredFriends = [];
+      this.noResults = false;
+      this.isSearching = false;
     } else {
       this.isManualAddressValid = false;
-      this.searchUsers(query);
+      this.searchSubject.next(value);
     }
   }
 
@@ -173,20 +182,32 @@ export class GiftTicketComponent implements OnInit {
     this.selectedUser = {
       username: 'wallet_manual',
       fullName: 'Dirección Manual',
-      photo: null,
-      wallet: query
+      hasImage: false,
+      wallet: query,
+      canReceiveGift: true
     };
     this.searchQuery = '';
     this.isManualAddressValid = false;
-    this.onSearch();
+    this.filteredFriends = [];
   }
 
-  selectUser(user: any): void {
-    this.selectedUser = user;
+  selectUser(user: SearchResultUser): void {
+    if (user && user.canReceiveGift) {
+      this.selectedUser = user;
+    }
+  }
+
+  clearSelection(): void {
+    this.selectedUser = null;
   }
 
   getUserImageUrl(username: string): string {
     return `${this.apiBaseUrl}/users/public/${username}/image`;
+  }
+
+  get showMinCharsHint(): boolean {
+    const q = this.searchQuery.trim();
+    return q.length > 0 && q.length < 3 && !this.isManualAddressValid;
   }
 
   // Regla 3: sin await antes de MetaMask — Safari mobile invalida el gesto del
@@ -237,10 +258,10 @@ export class GiftTicketComponent implements OnInit {
 
   private async executeOnChainGiftFlow(eventNftAddress: string, recipientWallet: string): Promise<void> {
     if (!this.ticket || this.ticket.tokenId === null) return;
-    
+
     try {
       const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
-      
+
       // Verify that the connected wallet owns the ticket on-chain
       const connectedWallet = this.web3Service.walletAddress$.getValue();
       if (!connectedWallet) {
@@ -250,17 +271,17 @@ export class GiftTicketComponent implements OnInit {
       }
 
       const tokenOwner = await this.contractsService.getNftOwner(eventNftAddress, BigInt(this.ticket.tokenId));
-      
+
       if (connectedWallet.toLowerCase() !== tokenOwner.toLowerCase()) {
         this.txStep = 'idle';
         this.errorMessage = `La billetera conectada (${connectedWallet.slice(0, 6)}...${connectedWallet.slice(-4)}) no es la dueña de esta entrada en la blockchain. Conectate con la billetera dueña (${tokenOwner.slice(0, 6)}...${tokenOwner.slice(-4)}) para poder regalarla.`;
         return;
       }
-      
+
       // 1. Verify ERC721 Approval
       this.txStep = 'approving-nft';
       const approvedAddress = await this.contractsService.getNftApproved(eventNftAddress, BigInt(this.ticket.tokenId));
-      
+
       if (approvedAddress.toLowerCase() !== marketplaceAddress.toLowerCase()) {
         const approveTx = await this.web3Service.approveNft(
           eventNftAddress,
@@ -303,7 +324,7 @@ export class GiftTicketComponent implements OnInit {
         this.errorMessage = 'Por favor conectá tu billetera.';
         return;
       }
-      
+
       const totalFeeOnChain = BigInt(Math.round(this.totalFee * 1_000_000)); // USDC has 6 decimals
       const currentAllowance = await this.web3Service.getUsdcAllowance(donorWallet, marketplaceAddress);
 

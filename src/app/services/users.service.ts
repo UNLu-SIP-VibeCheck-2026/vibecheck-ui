@@ -1,4 +1,4 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpContext } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { environment } from "../../environments/environment";
 import { Observable, Subject } from "rxjs";
@@ -7,6 +7,7 @@ import { UserSummaryResponse } from "../models/user-summary-response.model";
 import { UserUpdateRequest } from "../models/user-update-request.model";
 import { UserPublicResponse } from "../models/user-public-response.model";
 import { EventResponse } from "../models/event.model";
+import { BYPASS_GLOBAL_ERROR } from "../interceptors/error.interceptor";
 
 @Injectable({
   providedIn: "root",
@@ -44,6 +45,16 @@ export class UsersService {
 
   getPublicUserById(id: number): Observable<UserPublicResponse> {
     return this.http.get<UserPublicResponse>(`${this.apiUrl}/users/public/id/${id}`);
+  }
+
+  searchPublicUsers(query: string): Observable<UserPublicResponse[]> {
+    return this.http.get<UserPublicResponse[]>(
+      `${this.apiUrl}/users/public/search`,
+      {
+        params: { q: query },
+        context: new HttpContext().set(BYPASS_GLOBAL_ERROR, true)
+      }
+    );
   }
 
   updateUser(originalUsername: string, data: UserUpdateRequest): Observable<any> {
