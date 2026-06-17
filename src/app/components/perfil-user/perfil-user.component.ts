@@ -156,20 +156,23 @@ export class PerfilUserComponent implements OnInit {
 
   loadAchievements(username: string): void {
     this.isLoadingAchievements.set(true);
-    if (this.isOwnProfile()) {
-      this.achievementService.getMyAchievements().subscribe({
-        next: (data) => {
-          this.processAchievements(data);
-          this.isLoadingAchievements.set(false);
-        },
-        error: () => {
-          this.loadMockAchievements();
-          this.isLoadingAchievements.set(false);
-        }
-      });
-    } else {
-      this.loadMockAchievements();
-      this.isLoadingAchievements.set(false);
+    this.achievementService.getAchievementsForUser(username).subscribe({
+      next: (data) => {
+        this.processAchievements(data);
+        this.isLoadingAchievements.set(false);
+      },
+      error: (err) => {
+        console.error('Error al cargar logros del usuario:', err);
+        this.loadMockAchievements();
+        this.isLoadingAchievements.set(false);
+      }
+    });
+  }
+
+  viewAllAchievements(): void {
+    const p = this.profile();
+    if (p) {
+      this.router.navigate(['/achievements', p.username]);
     }
   }
 

@@ -155,6 +155,12 @@
               <mat-icon>emoji_events</mat-icon>
               <span>Últimos Logros</span>
             </div>
+            @if (achievements().length > 0) {
+              <button mat-flat-button class="view-all-achievements-btn" (click)="viewAllAchievements()">
+                <span>Ver Todos</span>
+                <mat-icon>arrow_forward</mat-icon>
+              </button>
+            }
           </div>
           <div class="candy-body">
             @if (isLoadingAchievements()) {

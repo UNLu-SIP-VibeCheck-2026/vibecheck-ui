@@ -109,6 +109,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "achievements/:username",
+    component: AchievementsComponent,
+    canActivate: [authGuard],
+  },
+  {
     path: "admin/statistics",
     loadComponent: () =>
       import(

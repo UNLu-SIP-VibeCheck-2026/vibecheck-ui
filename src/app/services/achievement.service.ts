@@ -14,4 +14,8 @@ export class AchievementService {
   getMyAchievements(): Observable<Achievement[]> {
     return this.http.get<Achievement[]>(`${this.apiUrl}/me`);
   }
+
+  getAchievementsForUser(username: string): Observable<Achievement[]> {
+    return this.http.get<Achievement[]>(`${this.apiUrl}/user/${username}`);
+  }
 }
