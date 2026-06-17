@@ -7,4 +7,5 @@ export interface UserUpdateRequest {
   phoneNumber: string;
   active?: boolean;
   roleId?: number;
+  description?: string;
 }

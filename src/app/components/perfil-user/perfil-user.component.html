@@ -107,15 +107,15 @@
                 <textarea
                   class="bio-textarea"
                   [(ngModel)]="bio"
-                  maxLength="150"
+                  maxLength="256"
                   placeholder="Contanos algo sobre vos..."
                   rows="3"
                 ></textarea>
                 <div class="bio-editor-footer">
-                  <span class="char-count">{{ bio().length }}/150</span>
+                  <span class="char-count">{{ bio().length }}/256</span>
                   <div class="editor-actions">
                     <button class="cancel-btn" (click)="isEditingBio.set(false)">Cancelar</button>
-                    <button class="save-btn" (click)="isEditingBio.set(false)">Guardar</button>
+                    <button class="save-btn" (click)="saveBio()">Guardar</button>
                   </div>
                 </div>
               </div>

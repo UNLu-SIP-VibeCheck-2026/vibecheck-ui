@@ -145,7 +145,7 @@ export class PerfilUserComponent implements OnInit {
     if (!p) return;
 
     // Load Bio
-    this.bio.set('¡Hola! Soy un apasionado por la música y los eventos tecnológicos. Nos vemos en el próximo show.');
+    this.bio.set(p.description || '');
 
     // Load achievements
     this.loadAchievements(p.username);
@@ -406,6 +406,41 @@ export class PerfilUserComponent implements OnInit {
     this.usersService.getPublicUser(username).subscribe({
       next: (data) => {
         this.profile.set(data);
+      }
+    });
+  }
+
+  saveBio(): void {
+    const p = this.profile();
+    const currentUser = this.authService.getCurrentUserValue();
+    if (!p || !currentUser || !this.isOwnProfile()) return;
+
+    const updatedText = this.bio().trim();
+    if (updatedText.length > 256) {
+      this.snackBar.open('La descripción no puede superar los 256 caracteres', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    const updatePayload = {
+      description: updatedText
+    } as UserUpdateRequest;
+
+    this.usersService.updateUser(p.username, updatePayload).subscribe({
+      next: () => {
+        this.isEditingBio.set(false);
+        this.snackBar.open('Biografía actualizada', 'Cerrar', { duration: 2500 });
+        
+        this.usersService.getPublicUser(p.username).subscribe({
+          next: (data) => {
+            this.profile.set(data);
+            this.bio.set(data.description || '');
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error al actualizar la biografía:', err);
+        const errMsg = err.error?.message || 'Error al actualizar la biografía';
+        this.snackBar.open(errMsg, 'Cerrar', { duration: 3000 });
       }
     });
   }
