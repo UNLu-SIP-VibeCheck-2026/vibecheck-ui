@@ -34,8 +34,7 @@ import { TierInfoDialogComponent } from '../shared/dialogs/tier-info-dialog/tier
     MatDialogModule,
     MatSnackBarModule,
     MatProgressBarModule,
-    AvatarComponent,
-    TierInfoDialogComponent
+    AvatarComponent
   ],
   templateUrl: './perfil-user.component.html',
   styleUrl: './perfil-user.component.scss'
