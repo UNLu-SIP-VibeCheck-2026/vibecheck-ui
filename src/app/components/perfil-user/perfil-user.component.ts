@@ -21,6 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AvatarComponent } from '../shared/avatar/avatar.component';
+import { TierInfoDialogComponent } from '../shared/dialogs/tier-info-dialog/tier-info-dialog.component';
 
 @Component({
   selector: 'app-perfil-user',
@@ -33,7 +34,8 @@ import { AvatarComponent } from '../shared/avatar/avatar.component';
     MatDialogModule,
     MatSnackBarModule,
     MatProgressBarModule,
-    AvatarComponent
+    AvatarComponent,
+    TierInfoDialogComponent
   ],
   templateUrl: './perfil-user.component.html',
   styleUrl: './perfil-user.component.scss'
@@ -442,6 +444,13 @@ export class PerfilUserComponent implements OnInit {
         const errMsg = err.error?.message || 'Error al actualizar la biografía';
         this.snackBar.open(errMsg, 'Cerrar', { duration: 3000 });
       }
+    });
+  }
+
+  openTierInfo(): void {
+    this.dialog.open(TierInfoDialogComponent, {
+      width: '540px',
+      autoFocus: false
     });
   }
 }
