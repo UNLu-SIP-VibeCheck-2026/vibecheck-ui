@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, AfterViewInit, OnDestroy, PLATFORM_ID, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -14,11 +15,19 @@ import { EventService } from '../../services/event.service';
 import { EventResponse } from '../../models/event.model';
 import { VenueResponse } from '../../models/venue.model';
 
+interface ScanHistoryItem {
+  ticketId: string;
+  timestamp: Date;
+  status: 'success' | 'error';
+  message: string;
+}
+
 @Component({
   selector: 'app-qr-scanner',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule
@@ -50,6 +59,12 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
   availableDevices: any[] = [];
   selectedDeviceId: string | null = null;
 
+  // Manual entry state
+  manualTicketId = '';
+
+  // Recent validations log
+  scanHistory: ScanHistoryItem[] = [];
+
   // Assigned Event details
   assignedEvent: EventResponse | null = null;
   assignedVenue: VenueResponse | null = null;
@@ -59,6 +74,7 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
   // Html5Qrcode instance
   html5QrCode: Html5Qrcode | null = null;
   private feedbackTimeout: any = null;
+  private onDeviceChangeBound: any = null;
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
@@ -69,6 +85,7 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.checkCameraSupport();
     this.loadAssignedEvent();
+    this.setupDeviceChangeObserver();
   }
 
   ngAfterViewInit(): void {
@@ -79,6 +96,7 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopScanner();
+    this.teardownDeviceChangeObserver();
     if (this.feedbackTimeout) {
       clearTimeout(this.feedbackTimeout);
     }
@@ -89,6 +107,22 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.hasCameraSupport = false;
       this.hasCameraPermission = false;
       return;
+    }
+  }
+
+  private setupDeviceChangeObserver(): void {
+    if (isPlatformBrowser(this.platformId) && navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+      this.onDeviceChangeBound = () => {
+        console.log('Cambio detectado en los dispositivos multimedia. Actualizando cámaras...');
+        this.updateCameraList();
+      };
+      navigator.mediaDevices.addEventListener('devicechange', this.onDeviceChangeBound);
+    }
+  }
+
+  private teardownDeviceChangeObserver(): void {
+    if (isPlatformBrowser(this.platformId) && navigator.mediaDevices && navigator.mediaDevices.removeEventListener && this.onDeviceChangeBound) {
+      navigator.mediaDevices.removeEventListener('devicechange', this.onDeviceChangeBound);
     }
   }
 
@@ -132,24 +166,27 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       this.html5QrCode = new Html5Qrcode('reader');
       
-      // Start scanning directly with back camera facing mode
-      await this.startScanningWithFacingMode('environment');
-      
-      // Once started successfully, we have permission. Now fetch cameras to see if we can switch.
+      // Query cameras first to make camera selection deterministic
       try {
         const devices = await Html5Qrcode.getCameras();
         this.availableDevices = devices || [];
-        if (devices && devices.length > 0) {
-          const backCamera = devices.find(device => 
-            device.label.toLowerCase().includes('back') || 
-            device.label.toLowerCase().includes('environment') ||
-            device.label.toLowerCase().includes('trasera')
-          );
-          this.selectedDeviceId = (backCamera || devices[0]).id;
-        }
       } catch (devicesErr) {
-        console.warn('Could not retrieve camera list for switching:', devicesErr);
+        console.warn('Could not retrieve camera list initially:', devicesErr);
         this.availableDevices = [];
+      }
+
+      if (this.availableDevices.length > 0) {
+        // Prefer back camera
+        const backCamera = this.availableDevices.find(device => 
+          device.label.toLowerCase().includes('back') || 
+          device.label.toLowerCase().includes('environment') ||
+          device.label.toLowerCase().includes('trasera')
+        );
+        this.selectedDeviceId = (backCamera || this.availableDevices[0]).id;
+        await this.startScanningWithDeviceId(this.selectedDeviceId);
+      } else {
+        // Fallback to environment facing mode
+        await this.startScanningWithFacingMode('environment');
       }
     } catch (err: any) {
       console.error('Error initializing scanner:', err);
@@ -221,6 +258,7 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.hasCameraSupport = true;
     } else {
       this.hasCameraSupport = false;
+      this.errorMessage = err?.message || 'Cámara no disponible.';
     }
   }
 
@@ -230,8 +268,104 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.initializeScanner();
   }
 
+  async updateCameraList(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      this.availableDevices = devices || [];
+      
+      if (this.availableDevices.length > 0) {
+        const stillAvailable = this.availableDevices.some(d => d.id === this.selectedDeviceId);
+        if (!stillAvailable) {
+          console.warn('La cámara seleccionada ya no está disponible. Reconectando...');
+          // Prefer back camera
+          const backCamera = this.availableDevices.find(device => 
+            device.label.toLowerCase().includes('back') || 
+            device.label.toLowerCase().includes('environment') ||
+            device.label.toLowerCase().includes('trasera')
+          );
+          this.selectedDeviceId = (backCamera || this.availableDevices[0]).id;
+          
+          if (this.html5QrCode && this.html5QrCode.isScanning) {
+            await this.stopScanner();
+            await this.startScanningWithDeviceId(this.selectedDeviceId);
+          }
+        }
+      } else {
+        console.error('Todas las cámaras han sido desconectadas.');
+        this.selectedDeviceId = null;
+        this.hasCameraSupport = false;
+        this.errorMessage = 'No se encontraron cámaras conectadas al dispositivo.';
+        await this.stopScanner();
+      }
+    } catch (err) {
+      console.warn('Error al actualizar la lista de cámaras:', err);
+    }
+  }
+
+  async refreshCameras(): Promise<void> {
+    await this.updateCameraList();
+    if (this.availableDevices.length > 0 && !this.html5QrCode?.isScanning) {
+      this.hasCameraSupport = true;
+      this.initializeScanner();
+    }
+  }
+
+  async onCameraSelect(deviceId: string): Promise<void> {
+    if (!deviceId || deviceId === this.selectedDeviceId) return;
+    this.selectedDeviceId = deviceId;
+    this.processing = true;
+
+    await this.stopScanner();
+
+    try {
+      await this.startScanningWithDeviceId(deviceId);
+      this.processing = false;
+    } catch (err) {
+      console.error('Error al cambiar a la cámara seleccionada:', err);
+      this.handleScannerError(err);
+      this.processing = false;
+    }
+  }
+
+  async switchCamera(): Promise<void> {
+    if (this.availableDevices.length <= 1) {
+      return;
+    }
+
+    const currentIndex = this.availableDevices.findIndex(d => d.id === this.selectedDeviceId);
+    const startIndex = currentIndex === -1 ? 0 : currentIndex;
+    
+    // Attempt subsequent devices in the list until one works
+    let nextIndex = (startIndex + 1) % this.availableDevices.length;
+    let attempts = 0;
+    
+    this.processing = true;
+    await this.stopScanner();
+
+    while (attempts < this.availableDevices.length) {
+      const targetDevice = this.availableDevices[nextIndex];
+      this.selectedDeviceId = targetDevice.id;
+      
+      try {
+        console.log(`Intentando cambiar a cámara: ${targetDevice.label} (ID: ${targetDevice.id})`);
+        await this.startScanningWithDeviceId(this.selectedDeviceId);
+        this.processing = false;
+        return; // Success!
+      } catch (err) {
+        console.warn(`Error al abrir cámara ${targetDevice.label}, probando la siguiente...`, err);
+        nextIndex = (nextIndex + 1) % this.availableDevices.length;
+        attempts++;
+      }
+    }
+    
+    // Fallback if all failed
+    this.processing = false;
+    this.hasCameraSupport = false;
+    this.errorMessage = 'No se pudo conectar a ninguna de las cámaras detectadas.';
+  }
+
   onScanSuccess(decodedText: string): void {
-    // If scanner is not active, or we are already processing a QR code, ignore
     if (!this.scanning || this.processing || !decodedText) {
       return;
     }
@@ -251,28 +385,50 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (isNaN(ticketId)) {
-      this.showFeedback('error', 'Formato de QR inválido.');
+      this.showFeedback('error', 'Código QR', 'Formato de QR inválido.');
       return;
     }
 
-    // Call redeemTicket immediately
+    // Call redeemTicket
     this.ticketService.redeemTicket(ticketId).subscribe({
       next: (response) => {
-        this.showFeedback('success');
+        this.showFeedback('success', ticketId.toString());
       },
       error: (err) => {
         const msg = err.error?.message || err.message || 'Error al validar la entrada';
-        this.showFeedback('error', msg);
+        this.showFeedback('error', ticketId.toString(), msg);
       }
     });
   }
 
-  private showFeedback(type: 'success' | 'error', message: string = ''): void {
+  validateManual(): void {
+    const idStr = this.manualTicketId.trim();
+    if (!idStr || this.processing) return;
+
+    this.manualTicketId = ''; // Clear input
+    this.onScanSuccess(idStr);
+  }
+
+  private showFeedback(type: 'success' | 'error', ticketId: string, message: string = ''): void {
     this.result = type;
     this.errorMessage = message;
     this.loading = false;
 
-    // Haptic feedback
+    // Log to validation history
+    const finalMessage = message || (type === 'success' ? 'Entrada validada exitosamente' : 'Fallo en la validación');
+    this.scanHistory.unshift({
+      ticketId,
+      timestamp: new Date(),
+      status: type,
+      message: finalMessage
+    });
+
+    // Keep log concise (e.g., last 12 items)
+    if (this.scanHistory.length > 12) {
+      this.scanHistory.pop();
+    }
+
+    // Haptic vibration feedback
     if (isPlatformBrowser(this.platformId) && navigator.vibrate) {
       try {
         if (type === 'success') {
@@ -281,11 +437,11 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
           navigator.vibrate([100, 80, 100]);
         }
       } catch (e) {
-        console.warn('Vibration not supported or blocked by browser/user permissions:', e);
+        console.warn('Vibration blocked by user/browser permissions:', e);
       }
     }
 
-    // Timer to reset scanner state and resume continuous scanning
+    // Timer to reset scanner feedback overlay
     const duration = type === 'success' ? 1500 : 2500;
     if (this.feedbackTimeout) {
       clearTimeout(this.feedbackTimeout);
@@ -300,23 +456,6 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.errorMessage = '';
     this.processing = false;
     this.loading = false;
-  }
-
-  async switchCamera(): Promise<void> {
-    if (this.availableDevices.length <= 1 || !this.selectedDeviceId) return;
-
-    await this.stopScanner();
-
-    const currentIndex = this.availableDevices.findIndex(d => d.id === this.selectedDeviceId);
-    const nextIndex = (currentIndex + 1) % this.availableDevices.length;
-    this.selectedDeviceId = this.availableDevices[nextIndex].id;
-
-    try {
-      await this.startScanningWithDeviceId(this.selectedDeviceId);
-    } catch (err) {
-      console.error('Error switching camera:', err);
-      this.handleScannerError(err);
-    }
   }
 
   formatDate(dateStr: string | null | undefined): string {
