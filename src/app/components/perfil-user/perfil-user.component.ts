@@ -83,10 +83,8 @@ export class PerfilUserComponent implements OnInit {
   });
 
   userTierName = computed(() => {
-    const p = this.profile();
-    if (!p) return 'Bronce';
-    const tier = (p.tier || 'BRONZE').toUpperCase();
-    switch (tier) {
+    const key = this.userTierKey();
+    switch (key) {
       case 'SILVER': return 'Plata';
       case 'GOLD': return 'Oro';
       case 'PLATINUM': return 'Platino';

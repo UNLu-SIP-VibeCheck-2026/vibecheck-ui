@@ -164,4 +164,36 @@ describe('PerfilUserComponent', () => {
     const toggleBtn = fixture.nativeElement.querySelector('.visibility-toggle-btn');
     expect(toggleBtn).toBeNull();
   });
+
+  it('correctly maps various tier inputs to their Spanish display names, keys, and images', () => {
+    fixture = TestBed.createComponent(PerfilUserComponent);
+    component = fixture.componentInstance;
+
+    const testCases = [
+      { input: 'BRONCE', expectedName: 'Bronce', expectedKey: 'BRONZE', expectedImg: '/assets/VC-TierBRONZE.png' },
+      { input: 'BRONZE', expectedName: 'Bronce', expectedKey: 'BRONZE', expectedImg: '/assets/VC-TierBRONZE.png' },
+      { input: 'PLATA', expectedName: 'Plata', expectedKey: 'SILVER', expectedImg: '/assets/VC-TierSILVER.png' },
+      { input: 'SILVER', expectedName: 'Plata', expectedKey: 'SILVER', expectedImg: '/assets/VC-TierSILVER.png' },
+      { input: 'ORO', expectedName: 'Oro', expectedKey: 'GOLD', expectedImg: '/assets/VC-TierGOLD.png' },
+      { input: 'GOLD', expectedName: 'Oro', expectedKey: 'GOLD', expectedImg: '/assets/VC-TierGOLD.png' },
+      { input: 'PLATINO', expectedName: 'Platino', expectedKey: 'PLATINUM', expectedImg: '/assets/VC-TierPLATINUM.png' },
+      { input: 'PLATINUM', expectedName: 'Platino', expectedKey: 'PLATINUM', expectedImg: '/assets/VC-TierPLATINUM.png' },
+      { input: 'UNKNOWN_TIER', expectedName: 'Bronce', expectedKey: 'BRONZE', expectedImg: '/assets/VC-TierBRONZE.png' },
+    ];
+
+    for (const testCase of testCases) {
+      component.profile.set({
+        username: 'alice',
+        name: 'Alice',
+        lastName: 'Vibes',
+        role: 'USER',
+        tier: testCase.input,
+        hasImage: false,
+      } as any);
+
+      expect(component.userTierKey()).toBe(testCase.expectedKey);
+      expect(component.userTierName()).toBe(testCase.expectedName);
+      expect(component.userTierImage()).toBe(testCase.expectedImg);
+    }
+  });
 });
