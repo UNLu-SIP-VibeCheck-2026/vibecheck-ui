@@ -2,7 +2,7 @@ import { Injectable, NgZone, inject } from "@angular/core";
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from "rxjs";
 import { createAppKit, AppKit } from "@reown/appkit";
-import { sepolia } from "@reown/appkit/networks";
+import { sepolia, mainnet } from "@reown/appkit/networks";
 import { environment } from "../../environments/environment";
 import { Wallet, Transaction } from '../models/wallet.model';
 import { watchAccount, watchChainId, getAccount } from '@wagmi/core';
@@ -71,7 +71,9 @@ export class WalletService {
     // reconecta la sesión existente a través del adaptador.
     this.modal = createAppKit({
       adapters: [wagmiAdapter], // Usamos el adaptador que exportamos de wagmi.config.ts
-      networks: [sepolia],
+      // mainnet incluida para que AppKit refleje la chain real de la wallet en mobile
+      // (MetaMask suele estar en Mainnet) y el switch a Sepolia funcione. Ver wagmi.config.ts.
+      networks: [sepolia, mainnet],
       defaultNetwork: sepolia,
       metadata,
       projectId,

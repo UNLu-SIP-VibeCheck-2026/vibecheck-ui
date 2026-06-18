@@ -192,12 +192,23 @@ export class TicketPurchaseComponent implements OnInit {
     const address = this.connectedAddress();
     const sepolia = this.isSepolia();
 
-    if (!address || !sepolia) {
+    if (!address) {
       this.currentStep.set(1);
       return;
     }
 
+    // Conectado pero en otra red (típico en mobile: MetaMask arranca en Mainnet).
+    // Pedimos el switch a Sepolia: sin él, la firma SIWE revienta con
+    // ConnectorChainMismatchError y las transacciones irían a la red equivocada.
+    if (!sepolia) {
+      this.currentStep.set(1);
+      this.errorMessage.set('Cambiá a la red Sepolia para continuar.');
+      this.web3Service.switchToSepolia();
+      return;
+    }
+
     if (this.currentStep() === 1) {
+      this.errorMessage.set('');
       this.currentStep.set(2);
       this.startSiweFlow();
     }
