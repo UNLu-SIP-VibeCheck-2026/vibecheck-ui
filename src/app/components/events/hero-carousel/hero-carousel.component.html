@@ -1,0 +1,128 @@
+<section class="carousel-hero" 
+         role="region" 
+         aria-label="Eventos destacados" 
+         (mouseenter)="onMouseEnter()" 
+         (mouseleave)="onMouseLeave()"
+         (pointerdown)="onPointerDown($event)"
+         (pointerup)="onPointerUp($event)">
+         
+  @if (events && events.length) {
+    <div class="carousel-viewport">
+      <div class="carousel-track" 
+           [class.no-transition]="prefersReducedMotion"
+           [style.--current-index]="currentIndex()"
+           [style.--total-items]="events.length"
+           [style.width]="events.length * 100 + '%'">
+        
+        @for (ev of events; track ev.id; let i = $index) {
+          <div class="carousel-item" 
+               [attr.aria-hidden]="i !== currentIndex()"
+               [class.active]="i === currentIndex()">
+            
+            <div class="hero-slide-card" (click)="navigateToEvent(ev.id)">
+              
+              <!-- Blurred Background Cover -->
+              <div class="background-blur-container">
+                @if (getEventImage(ev.id)) {
+                  <img [src]="getEventImage(ev.id)" class="bg-blur" aria-hidden="true" />
+                }
+              </div>
+
+              <!-- Content Layout -->
+              <div class="slide-layout">
+                <!-- Center Main Image -->
+                <div class="image-section">
+                  @if (getEventImage(ev.id)) {
+                    <img [src]="getEventImage(ev.id)" [alt]="ev.title" class="main-image" />
+                  } @else {
+                    <div class="no-image-placeholder">
+                      <mat-icon>event</mat-icon>
+                    </div>
+                  }
+                </div>
+
+                <!-- Info Section -->
+                <div class="info-section">
+                  <h2 class="display-lg text-gradient event-title">{{ ev.title }}</h2>
+                  
+                  <div class="metadata-grid">
+                    <div class="metadata-item">
+                      <mat-icon>calendar_today</mat-icon>
+                      <span>{{ getFormattedDate(ev.startDate) }}</span>
+                    </div>
+                    <div class="metadata-item">
+                      <mat-icon>location_on</mat-icon>
+                      <span>{{ ev.venue }}</span>
+                    </div>
+                  </div>
+
+                  <p class="event-desc">{{ ev.description }}</p>
+
+                  <div class="cta-price-row">
+                    <div class="price-box">
+                      @if (isEventSoldOut(ev.id)) {
+                        <span class="price-sold-out">Agotado</span>
+                      } @else if (isEventComingSoon(ev.id)) {
+                        <span class="price-coming-soon">Próximamente</span>
+                      } @else if (getEventPrice(ev.id) !== null) {
+                        <span class="price-label">Entradas desde</span>
+                        <span class="price-value">{{ getEventPrice(ev.id) | currency:'USD':'symbol-narrow':'1.2-2' }} USDC</span>
+                      } @else {
+                        <span class="price-label">Ver disponibilidad</span>
+                      }
+                    </div>
+
+                    @if (isEventComingSoon(ev.id)) {
+                      <button class="btn-secondary" (click)="navigateToEvent(ev.id); $event.stopPropagation()">
+                        <span>Ver Info</span>
+                        <mat-icon class="btn-secondary__arrow">arrow_forward</mat-icon>
+                      </button>
+                    } @else {
+                      <button class="btn-cta" (click)="navigateToEvent(ev.id); $event.stopPropagation()">
+                        <span class="btn-cta__label">Ver entradas</span>
+                        <mat-icon class="btn-cta__arrow">arrow_forward</mat-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Navigation Arrows (Desktop Only) -->
+      @if (events.length > 1) {
+        <button class="carousel-nav prev" 
+                type="button" 
+                (click)="prevSlide(); $event.stopPropagation()" 
+                aria-label="Anterior">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button class="carousel-nav next" 
+                type="button" 
+                (click)="nextSlide(); $event.stopPropagation()" 
+                aria-label="Siguiente">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      }
+
+      <!-- Dots Indicators -->
+      @if (events.length > 1) {
+        <div class="carousel-dots" role="tablist">
+          @for (ev of events; track ev.id; let i = $index) {
+            <button class="carousel-dot" 
+                    type="button"
+                    role="tab"
+                    [class.active]="i === currentIndex()"
+                    [attr.aria-selected]="i === currentIndex()"
+                    [attr.aria-label]="'Ir al evento destacado ' + (i + 1)"
+                    (click)="currentIndex.set(i); $event.stopPropagation()">
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>

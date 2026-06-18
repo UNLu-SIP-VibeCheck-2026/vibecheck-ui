@@ -50,7 +50,10 @@ export class PerfilConfigComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFullUserProfile();
-    this.loadPreferences();
+    // Skip loading preferences for validators as they don't need them and it may cause errors
+    if (!this.isValidador) {
+      this.loadPreferences();
+    }
   }
 
   private loadFullUserProfile(): void {
@@ -124,6 +127,22 @@ export class PerfilConfigComponent implements OnInit {
   get isValidador(): boolean {
     const user = this.authService.getCurrentUserValue();
     return user?.role === 'validador' || user?.role === 'VALIDADOR' || user?.role === 'VALIDATOR';
+  }
+
+  get isAdminVenues(): boolean {
+    const user = this.authService.getCurrentUserValue();
+    const role = user?.role?.toLowerCase();
+    return role === 'admin_venues';
+  }
+
+  get isAdminEventos(): boolean {
+    const user = this.authService.getCurrentUserValue();
+    const role = user?.role?.toLowerCase();
+    return role === 'admin_eventos';
+  }
+
+  get isCualquierAdmin(): boolean {
+    return this.isAdmin || this.isAdminUsuarios || this.isAdminEventos || this.isAdminVenues || this.isCeo;
   }
 
   get greeting(): string {

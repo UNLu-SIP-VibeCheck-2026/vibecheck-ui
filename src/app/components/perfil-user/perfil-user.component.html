@@ -58,12 +58,10 @@
 
         <!-- Fila de Controles de Rol y Editar -->
         <div class="profile-controls">
-          <div class="info-card role-card">
-            <span class="info-label">Rol</span>
-            <div class="role-badge-wrapper">
-              @if (!isOwnProfile()) {
-                <span class="role-badge">{{ profile()?.role }}</span>
-              } @else {
+          @if (isOwnProfile()) {
+            <div class="info-card role-card">
+              <span class="info-label">Rol</span>
+              <div class="role-badge-wrapper">
                 <button
                   type="button"
                   class="user-badge user-badge-button"
@@ -72,11 +70,9 @@
                 >
                   <span class="badge-text">{{ profile()?.role }}</span>
                 </button>
-              }
+              </div>
             </div>
-          </div>
 
-          @if (isOwnProfile()) {
             <button mat-flat-button class="edit-profile-btn" (click)="navigateToEditProfile()">
               <mat-icon>edit</mat-icon>
               <span>Editar Perfil</span>
@@ -107,15 +103,15 @@
                 <textarea
                   class="bio-textarea"
                   [(ngModel)]="bio"
-                  maxLength="150"
+                  maxLength="256"
                   placeholder="Contanos algo sobre vos..."
                   rows="3"
                 ></textarea>
                 <div class="bio-editor-footer">
-                  <span class="char-count">{{ bio().length }}/150</span>
+                  <span class="char-count">{{ bio().length }}/256</span>
                   <div class="editor-actions">
                     <button class="cancel-btn" (click)="isEditingBio.set(false)">Cancelar</button>
-                    <button class="save-btn" (click)="isEditingBio.set(false)">Guardar</button>
+                    <button class="save-btn" (click)="saveBio()">Guardar</button>
                   </div>
                 </div>
               </div>
@@ -134,6 +130,9 @@
               <mat-icon>workspace_premium</mat-icon>
               <span>Nivel de Usuario</span>
             </div>
+            <button mat-icon-button class="info-tier-btn" (click)="openTierInfo()" title="Ver información de tiers">
+              <mat-icon>info_outline</mat-icon>
+            </button>
           </div>
           <div class="candy-body tier-body">
             <div class="tier-badge-container">
@@ -155,6 +154,12 @@
               <mat-icon>emoji_events</mat-icon>
               <span>Últimos Logros</span>
             </div>
+            @if (achievements().length > 0) {
+              <button mat-flat-button class="view-all-achievements-btn" (click)="viewAllAchievements()">
+                <span>Ver Todos</span>
+                <mat-icon>arrow_forward</mat-icon>
+              </button>
+            }
           </div>
           <div class="candy-body">
             @if (isLoadingAchievements()) {

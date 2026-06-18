@@ -247,22 +247,25 @@
     }
 
     <!-- Quick Actions -->
-    <div class="actions-section">
-      <div class="section-header">
-        <h2 class="section-title">Acciones Rápidas</h2>
-      </div>
-      <div class="actions-grid">
-        <!-- Mi Perfil -->
-        <mat-card class="action-card" (click)="navigateTo('/perfil-user/' + user.username)">
-          <div class="card-icon">
-            <mat-icon>person</mat-icon>
-          </div>
-          <div class="card-content">
-            <h3 class="card-title text-center">Mi Perfil</h3>
-            <p class="card-description">Ver y editar mis datos personales</p>
-          </div>
-          <mat-icon class="card-arrow">arrow_forward</mat-icon>
-        </mat-card>
+    @if (hasQuickActions) {
+      <div class="actions-section">
+        <div class="section-header">
+          <h2 class="section-title">Acciones Rápidas</h2>
+        </div>
+        <div class="actions-grid">
+        <!-- Mi Perfil (Hidden for ADMIN, CEO, and validators) -->
+        @if (!isCualquierAdmin && !isValidador) {
+          <mat-card class="action-card" (click)="navigateTo('/perfil-user/' + user.username)">
+            <div class="card-icon">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="card-content">
+              <h3 class="card-title text-center">Mi Perfil</h3>
+              <p class="card-description">Ver y editar mis datos personales</p>
+            </div>
+            <mat-icon class="card-arrow">arrow_forward</mat-icon>
+          </mat-card>
+        }
 
         <!-- Mis Entradas (Hidden for all admins) -->
         @if (isCliente && !isCualquierAdmin) {
@@ -292,8 +295,8 @@
           </mat-card>
         }
 
-        <!-- Mi Billetera VC (Hidden for all admins) -->
-        @if (!isCualquierAdmin) {
+        <!-- Mi Billetera VC (Hidden for all admins and validators) -->
+        @if (!isCualquierAdmin && !isValidador) {
           <mat-card class="action-card" (click)="navigateTo('/wallet')">
             <div class="card-icon">
               <mat-icon>account_balance_wallet</mat-icon>
@@ -306,8 +309,8 @@
           </mat-card>
         }
 
-        <!-- Configuraciones (Not for Cliente) -->
-        @if (!isCliente && user.role !== 'comprar') {
+        <!-- Configuraciones (Not for Cliente and not for validators) -->
+        @if (!isCliente && user.role !== 'comprar' && !isValidador) {
           <mat-card class="action-card" (click)="navigateTo('/perfil-config')">
             <div class="card-icon">
               <mat-icon>settings</mat-icon>
@@ -321,6 +324,7 @@
         }
       </div>
     </div>
+    }
   </div>
 </div>
 

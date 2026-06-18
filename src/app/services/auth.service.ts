@@ -1,8 +1,11 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, BehaviorSubject, throwError } from "rxjs";
-import { map, tap, shareReplay, finalize } from "rxjs/operators";
+import { Observable, BehaviorSubject, throwError, of } from "rxjs";
+import { map, tap, shareReplay, finalize, switchMap } from "rxjs/operators";
 import { environment } from "../../environments/environment";
+import { UsersService } from "./users.service";
+import { RolesService } from "./roles.service";
+import { UserUpdateRequest } from "../models/user-update-request.model";
 import { LoginRequest } from "../models/login-request.model";
 import { RegisterRequest } from "../models/register-request.model";
 import { AuthResponse } from "../models/auth-response.model";
@@ -15,6 +18,8 @@ import { jwtDecode } from "jwt-decode";
 export class AuthService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl;
+  private usersService = inject(UsersService);
+  private rolesService = inject(RolesService);
 
   private currentUserSubject = new BehaviorSubject<{
     username: string;
@@ -140,5 +145,50 @@ export class AuthService {
 
   getCurrentUserValue(): { username: string; role: string } | null {
     return this.currentUserSubject.value;
+  }
+
+  switchUserRole(targetRoleName: "cliente" | "organizador"): Observable<void> {
+    const currentUser = this.getCurrentUserValue();
+    if (!currentUser) {
+      return throwError(() => new Error("Usuario no autenticado"));
+    }
+
+    return this.usersService.getUserByUsername(currentUser.username).pipe(
+      switchMap((fullUser) => {
+        return this.rolesService.getFinalRoles().pipe(
+          switchMap((roles) => {
+            const targetNames = targetRoleName === "cliente"
+              ? ["cliente", "Cliente", "CLIENTE"]
+              : ["organizador", "Organizador", "ORGANIZADOR"];
+            const fallbackId = targetRoleName === "cliente" ? 5 : 6;
+
+            const matchingRole = roles.find((r) =>
+              targetNames.some((name) => r.name.toUpperCase().includes(name.toUpperCase()))
+            );
+            const finalRoleId = matchingRole ? matchingRole.id : fallbackId;
+
+            let formattedBirthdate = fullUser.birthdate;
+            if (Array.isArray(fullUser.birthdate)) {
+              const [year, month, day] = fullUser.birthdate;
+              formattedBirthdate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            }
+
+            const updatePayload: UserUpdateRequest = {
+              username: fullUser.username,
+              name: fullUser.name,
+              lastName: fullUser.lastName,
+              email: fullUser.email,
+              phoneNumber: fullUser.phoneNumber,
+              birthdate: formattedBirthdate,
+              roleId: finalRoleId
+            };
+
+            return this.usersService.updateUser(currentUser.username, updatePayload);
+          })
+        );
+      }),
+      switchMap(() => this.refreshToken()),
+      map(() => void 0)
+    );
   }
 }

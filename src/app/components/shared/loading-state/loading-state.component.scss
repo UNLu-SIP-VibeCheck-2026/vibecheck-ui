@@ -20,16 +20,6 @@
   }
 }
 
-// Animación de Latido suave para el pulso del Glow
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(249, 115, 22, 0.6);
-  }
-}
-
 .loading-state-wrapper {
   width: 100%;
   
@@ -52,17 +42,17 @@
   .glow-spinner {
     width: 60px;
     height: 60px;
-    border-radius: 50%;
+    border-radius: var(--md-sys-shape-corner-full);
     padding: 3px;
     background: var(--gradient-brand);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    animation: spin 1s linear infinite, pulseGlow 2s infinite ease-in-out;
+    animation: spin 1s linear infinite;
   }
 
   .loading-text {
-    font-family: 'Space Mono', monospace;
+    font-family: var(--font-mono), monospace;
     color: var(--md-sys-color-on-surface-variant);
     font-size: var(--text-label-large);
     letter-spacing: 0.15em;
@@ -102,7 +92,7 @@
   .skeleton-image {
     width: 100%;
     aspect-ratio: 1 / 1;
-    background-color: #1a1535;
+    background-color: var(--md-sys-color-surface-variant);
   }
 
   .skeleton-info {
@@ -115,13 +105,13 @@
 
   .skeleton-title {
     height: 24px;
-    border-radius: 4px;
+    border-radius: var(--md-sys-shape-corner-extra-small);
     width: 85%;
   }
 
   .skeleton-line {
     height: 16px;
-    border-radius: 4px;
+    border-radius: var(--md-sys-shape-corner-extra-small);
     
     &.short { width: 40%; }
     &.medium { width: 60%; }
@@ -139,13 +129,13 @@
     .skeleton-avatar {
       width: 24px;
       height: 24px;
-      border-radius: 50%;
+      border-radius: var(--md-sys-shape-corner-full);
     }
 
     .skeleton-price {
       width: 70px;
       height: 28px;
-      border-radius: 8px;
+      border-radius: var(--md-sys-shape-corner-small);
     }
   }
 }
@@ -173,7 +163,7 @@
   .skeleton-avatar {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: var(--md-sys-shape-corner-medium);
     flex-shrink: 0;
   }
 
@@ -185,13 +175,13 @@
 
     .skeleton-title {
       height: 18px;
-      border-radius: 4px;
+      border-radius: var(--md-sys-shape-corner-extra-small);
       width: 40%;
     }
 
     .skeleton-line {
       height: 14px;
-      border-radius: 4px;
+      border-radius: var(--md-sys-shape-corner-extra-small);
       
       &.medium { width: 25%; }
     }
@@ -200,7 +190,7 @@
   .skeleton-action {
     width: 24px;
     height: 24px;
-    border-radius: 50%;
+    border-radius: var(--md-sys-shape-corner-full);
     flex-shrink: 0;
   }
 }
@@ -208,7 +198,7 @@
 // 3. DETAIL SKELETON
 .skeleton-detail {
   background: var(--md-sys-color-surface);
-  border-radius: 20px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
   overflow: hidden;
   border: 1px solid var(--md-sys-color-outline-variant);
   width: 100%;
@@ -232,14 +222,14 @@
 
     .skeleton-title {
       height: 36px;
-      border-radius: 6px;
+      border-radius: var(--md-sys-shape-corner-medium);
       
       &.long { width: 70%; }
     }
 
     .skeleton-line {
       height: 18px;
-      border-radius: 4px;
+      border-radius: var(--md-sys-shape-corner-extra-small);
       
       &.medium { width: 45%; }
       &.short { width: 30%; }
@@ -253,7 +243,7 @@
 
     .skeleton-block {
       height: 14px;
-      border-radius: 4px;
+      border-radius: var(--md-sys-shape-corner-extra-small);
       width: 100%;
       margin-bottom: 6px;
       

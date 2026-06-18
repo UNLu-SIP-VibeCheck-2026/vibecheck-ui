@@ -48,9 +48,9 @@ describe('PerfilUserComponent', () => {
       'getCurrentUserValue',
       'refreshToken',
     ]);
-    achievementService = jasmine.createSpyObj<AchievementService>('AchievementService', ['getMyAchievements']);
+    achievementService = jasmine.createSpyObj<AchievementService>('AchievementService', ['getMyAchievements', 'getAchievementsForUser']);
     ticketService = jasmine.createSpyObj<TicketService>('TicketService', ['getMyTickets']);
-    historyService = jasmine.createSpyObj<HistoryService>('HistoryService', ['getMyHistory']);
+    historyService = jasmine.createSpyObj<HistoryService>('HistoryService', ['getMyHistory', 'getUserHistory', 'updateVisibility']);
 
     usersService.getPublicUser.and.returnValue(of({
       username: 'alice',
@@ -63,8 +63,10 @@ describe('PerfilUserComponent', () => {
     usersService.getProfileImage.and.returnValue(of(new Blob()));
     authService.getCurrentUserValue.and.returnValue({ username: 'alice', role: 'USER' } as any);
     achievementService.getMyAchievements.and.returnValue(of([]));
+    achievementService.getAchievementsForUser.and.returnValue(of([]));
     ticketService.getMyTickets.and.returnValue(of(emptyPage()));
     historyService.getMyHistory.and.returnValue(of(emptyPage()));
+    historyService.getUserHistory.and.returnValue(of(emptyPage()));
 
     await TestBed.configureTestingModule({
       imports: [PerfilUserComponent],
@@ -102,8 +104,10 @@ describe('PerfilUserComponent', () => {
   });
 
   it('renders owner history items', () => {
-    historyService.getMyHistory.and.returnValue(of(emptyPage([
+    historyService.getUserHistory.and.returnValue(of(emptyPage([
       {
+        id: 1,
+        eventId: 1,
         eventTitle: 'Vibe Fest',
         eventStartDate: '2026-06-01T21:00:00Z',
         attendedAt: '2026-06-01T22:05:00Z',
@@ -111,6 +115,7 @@ describe('PerfilUserComponent', () => {
         tokenId: 42,
         ownerWalletAtRedeem: '0x1234567890abcdef1234567890abcdef12345678',
         redeemTxHash: '0xabcdef1234567890abcdef1234567890abcdef12',
+        publicVisibility: true
       },
     ])));
 
@@ -119,11 +124,10 @@ describe('PerfilUserComponent', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
-    expect(text).toContain('Historial de eventos asistidos');
+    expect(text).toContain('Eventos Asistidos');
     expect(text).toContain('Vibe Fest');
     expect(text).toContain('General');
-    expect(text).toContain('42');
-    expect(historyService.getMyHistory).toHaveBeenCalledWith(0, 10, 'attendedAt,desc');
+    expect(historyService.getUserHistory).toHaveBeenCalledWith('alice', 0, 4, 'attendedAt,desc');
   });
 
   it('shows history empty state for owner profile', () => {
@@ -131,17 +135,65 @@ describe('PerfilUserComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Todavía no asististe a eventos.');
+    expect(fixture.nativeElement.textContent).toContain('Todavía no asistió a eventos.');
   });
 
-  it('does not load or show history for a public profile', () => {
+  it('does not show visibility toggle buttons for a public profile visitor', () => {
     authService.getCurrentUserValue.and.returnValue({ username: 'bob', role: 'USER' } as any);
+    historyService.getUserHistory.and.returnValue(of(emptyPage([
+      {
+        id: 1,
+        eventId: 1,
+        eventTitle: 'Vibe Fest',
+        eventStartDate: '2026-06-01T21:00:00Z',
+        attendedAt: '2026-06-01T22:05:00Z',
+        ticketTypeName: 'General',
+        tokenId: 42,
+        ownerWalletAtRedeem: '0x1234567890abcdef1234567890abcdef12345678',
+        redeemTxHash: '0xabcdef1234567890abcdef1234567890abcdef12',
+        publicVisibility: true
+      },
+    ])));
 
     fixture = TestBed.createComponent(PerfilUserComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(historyService.getMyHistory).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.textContent).not.toContain('Historial de eventos asistidos');
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Vibe Fest');
+    const toggleBtn = fixture.nativeElement.querySelector('.visibility-toggle-btn');
+    expect(toggleBtn).toBeNull();
+  });
+
+  it('correctly maps various tier inputs to their Spanish display names, keys, and images', () => {
+    fixture = TestBed.createComponent(PerfilUserComponent);
+    component = fixture.componentInstance;
+
+    const testCases = [
+      { input: 'BRONCE', expectedName: 'Bronce', expectedKey: 'BRONZE', expectedImg: '/assets/VC-TierBRONZE.png' },
+      { input: 'BRONZE', expectedName: 'Bronce', expectedKey: 'BRONZE', expectedImg: '/assets/VC-TierBRONZE.png' },
+      { input: 'PLATA', expectedName: 'Plata', expectedKey: 'SILVER', expectedImg: '/assets/VC-TierSILVER.png' },
+      { input: 'SILVER', expectedName: 'Plata', expectedKey: 'SILVER', expectedImg: '/assets/VC-TierSILVER.png' },
+      { input: 'ORO', expectedName: 'Oro', expectedKey: 'GOLD', expectedImg: '/assets/VC-TierGOLD.png' },
+      { input: 'GOLD', expectedName: 'Oro', expectedKey: 'GOLD', expectedImg: '/assets/VC-TierGOLD.png' },
+      { input: 'PLATINO', expectedName: 'Platino', expectedKey: 'PLATINUM', expectedImg: '/assets/VC-TierPLATINUM.png' },
+      { input: 'PLATINUM', expectedName: 'Platino', expectedKey: 'PLATINUM', expectedImg: '/assets/VC-TierPLATINUM.png' },
+      { input: 'UNKNOWN_TIER', expectedName: 'Bronce', expectedKey: 'BRONZE', expectedImg: '/assets/VC-TierBRONZE.png' },
+    ];
+
+    for (const testCase of testCases) {
+      component.profile.set({
+        username: 'alice',
+        name: 'Alice',
+        lastName: 'Vibes',
+        role: 'USER',
+        tier: testCase.input,
+        hasImage: false,
+      } as any);
+
+      expect(component.userTierKey()).toBe(testCase.expectedKey);
+      expect(component.userTierName()).toBe(testCase.expectedName);
+      expect(component.userTierImage()).toBe(testCase.expectedImg);
+    }
   });
 });

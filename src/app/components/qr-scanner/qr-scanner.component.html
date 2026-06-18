@@ -51,113 +51,188 @@
     </div>
   }
 
-  <!-- Main Scanner Area (only if camera is supported and has permission) -->
-  @if (hasCameraSupport && hasCameraPermission) {
-    <div class="scanner-view">
-      <div class="scanner-wrapper">
-        <!-- The video element will be rendered inside this div by html5-qrcode -->
-        <div #reader id="reader" class="scanner"></div>
+  <!-- Main Grid Layout -->
+  <div class="scanner-layout-grid">
+    <!-- Left Column: Scanner and Manual Validation -->
+    <div class="scanner-column-main">
+      @if (hasCameraSupport && hasCameraPermission) {
+        <div class="scanner-view">
+          <div class="scanner-wrapper">
+            <!-- The video element will be rendered inside this div by html5-qrcode -->
+            <div #reader id="reader" class="scanner"></div>
 
-        <!-- Scanner overlay with guide or state changes -->
-        <div class="scanner-overlay" [class.overlay-active]="loading || result || !assignedEvent">
-          
-          <!-- Default Scan Guide when idle and event is loaded -->
-          @if (!loading && !result && assignedEvent) {
-            <div class="scan-guide">
-              <div class="scan-corner top-left"></div>
-              <div class="scan-corner top-right"></div>
-              <div class="scan-corner bottom-left"></div>
-              <div class="scan-corner bottom-right"></div>
-              <div class="scan-laser-container">
-                <div class="scan-laser"></div>
+            <!-- Scanner overlay with guide or state changes -->
+            <div class="scanner-overlay" [class.overlay-active]="loading || result || !assignedEvent">
+              
+              <!-- Default Scan Guide when idle and event is loaded -->
+              @if (!loading && !result && assignedEvent) {
+                <div class="scan-guide">
+                  <div class="scan-corner top-left"></div>
+                  <div class="scan-corner top-right"></div>
+                  <div class="scan-corner bottom-left"></div>
+                  <div class="scan-corner bottom-right"></div>
+                  <div class="scan-laser-container">
+                    <div class="scan-laser"></div>
+                  </div>
+                </div>
+                <p class="scan-instruction">Apuntá al código QR para validar automáticamente</p>
+              }
+
+              <!-- Loading event overlay -->
+              @if (!assignedEvent && loadingEvent) {
+                <div class="status-overlay loading-overlay">
+                  <mat-spinner diameter="60"></mat-spinner>
+                  <span class="status-title">Cargando...</span>
+                  <span class="status-sub">Obteniendo detalles del evento asignado</span>
+                </div>
+              }
+
+              <!-- No assigned event overlay -->
+              @if (!assignedEvent && !loadingEvent) {
+                <div class="status-overlay error-overlay">
+                  <div class="icon-circle">
+                    <mat-icon>lock</mat-icon>
+                  </div>
+                  <span class="status-title">Acceso Restringido</span>
+                  <span class="status-sub">No tenés un evento asignado para validar. Comunicate con el organizador.</span>
+                </div>
+              }
+
+              <!-- Loading validation overlay -->
+              @if (loading && assignedEvent) {
+                <div class="status-overlay loading-overlay">
+                  <mat-spinner diameter="60"></mat-spinner>
+                  <span class="status-title">Validando...</span>
+                  <span class="status-sub">Buscando ticket en el sistema</span>
+                </div>
+              }
+
+              <!-- Success overlay -->
+              @if (result === 'success' && assignedEvent) {
+                <div class="status-overlay success-overlay">
+                  <div class="icon-circle">
+                    <mat-icon>check</mat-icon>
+                  </div>
+                  <span class="status-title">¡Entrada Válida!</span>
+                  <span class="status-sub">Acceso Autorizado</span>
+                </div>
+              }
+
+              <!-- Error overlay -->
+              @if (result === 'error' && assignedEvent) {
+                <div class="status-overlay error-overlay">
+                  <div class="icon-circle">
+                    <mat-icon>close</mat-icon>
+                  </div>
+                  <span class="status-title">Entrada Inválida</span>
+                  <span class="status-sub">{{ errorMessage }}</span>
+                </div>
+              }
+
+            </div>
+          </div>
+
+          <!-- Camera Select / Switch bar (Dropdown for desktop terminal view) -->
+          @if (assignedEvent && availableDevices.length > 0) {
+            <div class="camera-controls-bar">
+              <div class="select-wrapper">
+                <mat-icon class="select-icon">videocam</mat-icon>
+                <select [ngModel]="selectedDeviceId" (ngModelChange)="onCameraSelect($event)" class="camera-select">
+                  @for (device of availableDevices; track device.id) {
+                    <option [value]="device.id">{{ device.label || 'Cámara ' + ($index + 1) }}</option>
+                  }
+                </select>
               </div>
-            </div>
-            <p class="scan-instruction">Apuntá al código QR para validar automáticamente</p>
-          }
-
-          <!-- Loading event overlay -->
-          @if (!assignedEvent && loadingEvent) {
-            <div class="status-overlay loading-overlay">
-              <mat-spinner diameter="60"></mat-spinner>
-              <span class="status-title">Cargando...</span>
-              <span class="status-sub">Obteniendo detalles del evento asignado</span>
+              <button mat-icon-button (click)="refreshCameras()" title="Recargar lista de cámaras" class="refresh-cameras-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
             </div>
           }
-
-          <!-- No assigned event overlay -->
-          @if (!assignedEvent && !loadingEvent) {
-            <div class="status-overlay error-overlay">
-              <div class="icon-circle">
-                <mat-icon>lock</mat-icon>
-              </div>
-              <span class="status-title">Acceso Restringido</span>
-              <span class="status-sub">No tenés un evento asignado para validar. Comunicate con el organizador.</span>
-            </div>
-          }
-
-          <!-- Loading validation overlay -->
-          @if (loading && assignedEvent) {
-            <div class="status-overlay loading-overlay">
-              <mat-spinner diameter="60"></mat-spinner>
-              <span class="status-title">Validando...</span>
-              <span class="status-sub">Buscando ticket en el sistema</span>
-            </div>
-          }
-
-          <!-- Success overlay -->
-          @if (result === 'success' && assignedEvent) {
-            <div class="status-overlay success-overlay">
-              <div class="icon-circle">
-                <mat-icon>check</mat-icon>
-              </div>
-              <span class="status-title">¡Entrada Válida!</span>
-              <span class="status-sub">Acceso Autorizado</span>
-            </div>
-          }
-
-          <!-- Error overlay -->
-          @if (result === 'error' && assignedEvent) {
-            <div class="status-overlay error-overlay">
-              <div class="icon-circle">
-                <mat-icon>close</mat-icon>
-              </div>
-              <span class="status-title">Entrada Inválida</span>
-              <span class="status-sub">{{ errorMessage }}</span>
-            </div>
-          }
-
         </div>
-      </div>
+      }
 
-      <!-- Camera switch button -->
-      @if (availableDevices.length > 1 && assignedEvent) {
-        <button mat-fab class="camera-switch-btn" (click)="switchCamera()" aria-label="Cambiar cámara">
-          <mat-icon>flip_camera_android</mat-icon>
-        </button>
+      <!-- Manual Validation Card -->
+      @if (assignedEvent) {
+        <div class="manual-validation-card">
+          <div class="card-header-manual">
+            <mat-icon>keyboard</mat-icon>
+            <h3 class="card-subtitle">Validación Manual</h3>
+          </div>
+          <p class="card-desc">Si el código QR está dañado o la cámara no lo lee, ingresá el número de entrada manualmente.</p>
+          <div class="manual-entry-box">
+            <input type="text" [(ngModel)]="manualTicketId" placeholder="Ej: 142" class="manual-input" (keyup.enter)="validateManual()" />
+            <button (click)="validateManual()" [disabled]="processing || !manualTicketId.trim()" class="manual-btn">
+              @if (processing && !manualTicketId) {
+                <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+              } @else {
+                <mat-icon>send</mat-icon>
+                <span>Validar</span>
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Fallback views when camera fails -->
+      @if (!hasCameraSupport) {
+        <div class="error-state">
+          <mat-icon class="error-icon">videocam_off</mat-icon>
+          <h2>Cámara no disponible</h2>
+          <p>{{ errorMessage || 'Tu dispositivo o navegador no soporta el acceso a la cámara. Usá un navegador moderno con soporte HTTPS.' }}</p>
+          <div class="fallback-actions">
+            <button mat-button class="retry-btn primary-retry" (click)="retryPermission()">Reintentar Conectar</button>
+            <button mat-button class="retry-btn" (click)="goBack()">Volver al Dashboard</button>
+          </div>
+        </div>
+      }
+
+      @if (hasCameraSupport && !hasCameraPermission) {
+        <div class="error-state">
+          <mat-icon class="error-icon">block</mat-icon>
+          <h2>Permiso de cámara denegado</h2>
+          <p>Habilitá el acceso a la cámara en la configuración del sitio o de tu navegador para continuar.</p>
+          <div class="fallback-actions">
+            <button mat-button class="retry-btn primary-retry" (click)="retryPermission()">Reintentar</button>
+            <button mat-button class="retry-btn" (click)="goBack()">Volver al Dashboard</button>
+          </div>
+        </div>
       }
     </div>
-  }
 
-  <!-- No camera support -->
-  @if (!hasCameraSupport) {
-    <div class="error-state">
-      <mat-icon class="error-icon">videocam_off</mat-icon>
-      <h2>Cámara no disponible</h2>
-      <p>Tu dispositivo o navegador no soporta el acceso a la cámara. Usá un navegador moderno con soporte HTTPS.</p>
-      <button mat-button class="retry-btn" (click)="goBack()">Volver al Dashboard</button>
-    </div>
-  }
-
-  <!-- Camera permission denied -->
-  @if (hasCameraSupport && !hasCameraPermission) {
-    <div class="error-state">
-      <mat-icon class="error-icon">block</mat-icon>
-      <h2>Permiso de cámara denegado</h2>
-      <p>Habilitá el acceso a la cámara en la configuración del sitio o de tu navegador para continuar.</p>
-      <div class="fallback-actions">
-        <button mat-button class="retry-btn primary-retry" (click)="retryPermission()">Reintentar</button>
-        <button mat-button class="retry-btn" (click)="goBack()">Volver al Dashboard</button>
+    <!-- Right Column: Scan History Logs -->
+    <div class="scanner-column-side">
+      <div class="history-card">
+        <div class="history-header">
+          <mat-icon>list_alt</mat-icon>
+          <h3>Historial de Lectura</h3>
+        </div>
+        
+        <div class="history-content">
+          @if (scanHistory.length === 0) {
+            <div class="empty-history">
+              <mat-icon>qr_code_scanner</mat-icon>
+              <p>Esperando validaciones en esta sesión...</p>
+            </div>
+          } @else {
+            <div class="history-list">
+              @for (item of scanHistory; track item.timestamp) {
+                <div class="history-item" [class.success]="item.status === 'success'" [class.error]="item.status === 'error'">
+                  <div class="item-status-icon">
+                    <mat-icon>{{ item.status === 'success' ? 'check_circle' : 'cancel' }}</mat-icon>
+                  </div>
+                  <div class="item-details">
+                    <div class="item-id-row">
+                      <span class="item-ticket-id">Ticket ID: #{{ item.ticketId }}</span>
+                      <span class="item-time">{{ item.timestamp | date:'HH:mm:ss' }}</span>
+                    </div>
+                    <p class="item-message">{{ item.message }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
       </div>
     </div>
-  }
+  </div>
 </div>

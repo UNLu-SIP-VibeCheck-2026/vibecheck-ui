@@ -69,7 +69,7 @@
 
   .alert-text {
     flex-grow: 1;
-    color: #ffffff;
+    color: var(--md-sys-color-on-surface);
   }
 }
 
@@ -112,20 +112,19 @@
     .auth-link {
       background: var(--gradient-brand-diagonal);
       border: none;
-      color: #ffffff;
+      color: var(--md-sys-color-on-primary);
       font-family: var(--font-mono);
       font-size: var(--text-body-md);
       font-weight: var(--weight-regular);
       letter-spacing: var(--tracking-mono);
       padding: var(--space-1) var(--space-4);
       margin: var(--space-2) var(--space-2);
-      border-radius: 50px;
+      border-radius: var(--md-sys-shape-corner-full);
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease;
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
       }
     }
   }
@@ -136,7 +135,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-5);
 
-  @media (max-width: 1024px) {
+  @include tablet {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -182,12 +181,12 @@
     right: var(--space-3);
     background: var(--gradient-brand-diagonal);
     padding: var(--space-2) var(--space-4);
-    border-radius: 50px;
+    border-radius: var(--md-sys-shape-corner-full);
     display: flex;
     align-items: baseline;
     gap: 4px;
-    color: #ffffff;
-    font-weight: 700;
+    color: var(--md-sys-color-on-primary);
+    font-weight: var(--weight-bold);
 
     .price-value {
       font-size: var(--text-title-md);
@@ -222,18 +221,18 @@
       font-size: 11px;
       font-weight: var(--weight-bold);
       background-color: var(--md-sys-color-primary-container);
-      color: #ffffff;
+      color: var(--md-sys-color-on-primary-container);
       padding: var(--space-1) var(--space-3);
-      border-radius: 50px;
+      border-radius: var(--md-sys-shape-corner-full);
       text-transform: uppercase;
     }
   }
 
   .event-title {
     font-size: var(--text-title-lg);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     margin: 0 0 var(--space-3) 0;
-    color: #ffffff;
+    color: var(--md-sys-color-on-surface);
     cursor: pointer;
     line-height: 1.2;
 
@@ -259,7 +258,7 @@
     .truncated-wallet {
       .wallet-text {
         font-family: var(--font-mono);
-        color: #ffffff;
+        color: var(--md-sys-color-on-surface);
       }
     }
   }
@@ -287,7 +286,7 @@
     transition: color 0.2s ease;
 
     &:hover {
-      color: #ffffff;
+      color: var(--md-sys-color-on-surface);
       text-decoration: underline;
     }
   }
@@ -295,7 +294,7 @@
   .btn-cta {
     @include btn-cta;
     height: 40px;
-    border-radius: 50px;
+    border-radius: var(--md-sys-shape-corner-full);
     padding: 0 var(--space-4);
     display: flex;
     align-items: center;
@@ -323,7 +322,7 @@
       font-size: 11px;
       font-weight: var(--weight-bold);
       letter-spacing: var(--tracking-mono);
-      color: #ffffff;
+      color: var(--md-sys-color-on-primary);
     }
 
     &:disabled {
@@ -347,8 +346,8 @@
 
   .pag-btn {
     background: var(--md-sys-color-surface-variant) !important;
-    color: #ffffff !important;
-    border-radius: 50px !important;
+    color: var(--md-sys-color-on-surface) !important;
+    border-radius: var(--md-sys-shape-corner-full) !important;
 
     &:disabled {
       opacity: 0.4;

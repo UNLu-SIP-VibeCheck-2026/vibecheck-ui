@@ -1,10 +1,24 @@
 <div class="achievements-container">
+  <!-- Back Button Header -->
+  <div class="back-header" (click)="goBack()">
+    <button mat-icon-button class="back-btn" aria-label="Volver">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="back-text">Volver</span>
+  </div>
+
   <!-- Header Banner -->
   <div class="achievements-header-card">
     <div class="header-glow"></div>
     <div class="header-content">
       <mat-icon class="header-icon">emoji_events</mat-icon>
-      <h1 class="display-medium page-title">El Baúl de Logros</h1>
+      <h1 class="display-medium page-title">
+        @if (isOwnAchievements()) {
+          Mis logros
+        } @else {
+          Logros de {{ profileUsername() }}
+        }
+      </h1>
       <p class="subtitle">Superá desafíos, completá metas y demostrá tu compromiso en la comunidad VibeCheck.</p>
     </div>
   </div>

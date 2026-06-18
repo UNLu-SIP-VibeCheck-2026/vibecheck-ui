@@ -8,4 +8,5 @@ export interface UserPublicResponse {
   hasImage?: boolean;
   walletAddress?: string;
   assignedEventId?: number;
+  description?: string;
 }

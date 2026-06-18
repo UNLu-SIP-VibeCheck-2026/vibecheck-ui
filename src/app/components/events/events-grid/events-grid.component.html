@@ -1,0 +1,66 @@
+<div class="grid-wrapper">
+
+  <!-- Initial Skeleton Loader -->
+  @if (isInitialLoad() && isLoading()) {
+    <div class="events-grid">
+      @for (x of [1,2,3,4,5,6,7,8]; track x) {
+        <div class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-info">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Grid Content -->
+  @if (!isInitialLoad() && interleavedEvents().length > 0) {
+    <div class="grid-content-container" [class.overlay-loading]="isLoading()">
+      
+      <!-- Overlay Spinner on Page Change -->
+      @if (isLoading()) {
+        <div class="change-page-spinner">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      }
+
+      <div class="events-grid">
+        @for (event of interleavedEvents(); track event.id; let i = $index) {
+          <app-event-card 
+            [event]="event" 
+            [boostTier]="getEventTier(event.id)"
+            [imageUrl]="getEventImage(event.id)"
+            [class.event-card--ultra-super]="getEventTier(event.id) === 'ULTRA_SUPER'"
+            [class.consecutive-ultra]="i > 0 && getEventTier(event.id) === 'ULTRA_SUPER' && getEventTier(interleavedEvents()[i-1].id) === 'ULTRA_SUPER'"
+            size="default">
+          </app-event-card>
+        }
+      </div>
+
+      <div class="pagination-container">
+        <mat-paginator 
+          [length]="totalElements()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="[8, 16, 24]"
+          [pageIndex]="pageIndex()"
+          (page)="onPageChange($event)"
+          aria-label="Seleccionar página">
+        </mat-paginator>
+      </div>
+
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading() && interleavedEvents().length === 0) {
+    <div class="empty-state" role="status">
+      <mat-icon class="empty-icon">event_busy</mat-icon>
+      <h3 class="empty-title">No encontramos eventos disponibles</h3>
+      <p class="empty-desc">Probá cambiando la categoría o ampliando la búsqueda.</p>
+    </div>
+  }
+
+</div>

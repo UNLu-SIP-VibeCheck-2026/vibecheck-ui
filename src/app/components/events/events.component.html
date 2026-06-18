@@ -1,273 +1,107 @@
 <div class="events-container">
+  
+  <!-- Header Section -->
   <div class="events-header">
-    <div class="header-main-row">
-      <h1 class="display-medium">Eventos</h1>
-    </div>
+    <h1 class="display-medium">Descubrí Eventos</h1>
+  </div>
 
-    <div class="filters-row">
-      <div class="search-filters-container">
-        <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-          <input matInput placeholder="Buscar por evento o locación..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
-          <span matSuffix class="search-icon-wrapper">
-            <mat-icon>search</mat-icon>
-          </span>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="category-filter-field" subscriptSizing="dynamic">
-          <mat-select placeholder="Todas las categorías" [ngModel]="selectedCategoryId()" (ngModelChange)="selectedCategoryId.set($event); onCategoryChange()">
-            <mat-option [value]="null">Todas las categorías</mat-option>
-            @for (cat of categories(); track cat.id) {
-              <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+  <!-- SECCIÓN 1: Hero Carousel (ULTRA_SUPER events with fallbacks) -->
+  @if (!isLoadingBoosted() && heroEvents().length > 0) {
+    <app-hero-carousel [events]="heroEvents()" [imageMap]="stringImageMap()"></app-hero-carousel>
+  }
+
+  <!-- SECCIÓN 2: Featured Events Carousel (SUPER + ULTRA_SUPER) -->
+  @if (!isLoadingBoosted() && featuredEvents().length > 0) {
+    <section class="section-featured">
+      <h2 class="section-title">Eventos Recomendados</h2>
+      <app-events-carousel [events]="featuredEvents()" [imageMap]="stringImageMap()"></app-events-carousel>
+    </section>
+  }
+
+  @if (!isLoadingBoosted() && (heroEvents().length > 0 || featuredEvents().length > 0)) {
+    <div class="section-divider"></div>
+  }
+
+  <!-- MAIN LAYOUT: Main Content Grid + Sticky Sidebar (Desktop Only) -->
+  <div class="main-layout" [class.no-sidebar]="sidebarEvents().length === 0">
+    
+    <!-- SECCIÓN 3: General Server-Side Paginated Grid -->
+    <main class="main-content">
+      
+      <!-- GRID HEADER WITH TITLE AND FILTERS -->
+      <div class="main-content-header">
+        <h2 class="section-title">Todos los Eventos</h2>
+        
+        <div class="filters-row">
+          <div class="search-filters-container">
+            <!-- Search Field -->
+            <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+              <input matInput 
+                     placeholder="Buscar por evento o locación..." 
+                     [ngModel]="searchQuery()" 
+                     (ngModelChange)="searchQuery.set($event)">
+              <span matSuffix class="search-icon-wrapper">
+                <mat-icon>search</mat-icon>
+              </span>
+            </mat-form-field>
+
+            <!-- Category Select (Tablet / Desktop) -->
+            <mat-form-field appearance="outline" class="category-filter-field" subscriptSizing="dynamic">
+              <mat-select placeholder="Todas las categorías" 
+                          [ngModel]="selectedCategoryId()" 
+                          (ngModelChange)="selectedCategoryId.set($event); onCategoryChange()">
+                <mat-option [value]="null">Todas las categorías</mat-option>
+                @for (cat of categories(); track cat.id) {
+                  <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
       </div>
 
-      <!-- MOBILE FIX: Chips de categoría con scroll horizontal -->
+      <!-- Category Chips Horizontal Scroll (Mobile Only) -->
       <div class="categories-chips-scroll">
-        <button type="button" class="category-chip" [class.active]="selectedCategoryId() === null" (click)="selectedCategoryId.set(null); onCategoryChange()">
+        <button type="button" 
+                class="category-chip" 
+                [class.active]="selectedCategoryId() === null" 
+                (click)="selectedCategoryId.set(null); onCategoryChange()">
           Todas
         </button>
         @for (cat of categories(); track cat.id) {
-          <button type="button" class="category-chip" [class.active]="selectedCategoryId() === cat.id" (click)="selectedCategoryId.set(cat.id); onCategoryChange()">
+          <button type="button" 
+                  class="category-chip" 
+                  [class.active]="selectedCategoryId() === cat.id" 
+                  (click)="selectedCategoryId.set(cat.id); onCategoryChange()">
             {{ cat.name }}
           </button>
         }
       </div>
-    </div>
-  </div>
 
-  <!-- Featured Section (Tiers 1 & 2) -->
-  <div class="featured-section">
-    <!-- Large single-item carousel (auto-slide) - Tier 1 (HIGH) -->
-    @if (tier1Events().length) {
-      <section class="carousel carousel-large" aria-label="Destacados principales">
-        <div class="carousel-viewport">
-          <div class="carousel-track" [style.transform]="'translateX(-' + (currentIndex1() * 100) + '%)'" [style.width]="tier1Events().length * 100 + '%'">
-            @for (ev of tier1Events(); track ev.id) {
-              <div class="carousel-item" (click)="navigateToEvent(ev.id)">
-                <div class="large-card" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
-                  <!-- Premium Label -->
-                  @if (ev.advertisementLevel === 'HIGH') {
-                    <div class="premium-badge-tag"><mat-icon>workspace_premium</mat-icon><span>PREMIUM</span></div>
-                  } @else if (ev.advertisementLevel === 'MEDIUM') {
-                    <div class="premium-badge-tag featured-tag"><mat-icon>star</mat-icon><span>RECOMENDADO</span></div>
-                  }
-                  
-                  <div class="large-image-container">
-                    @if (getEventImage(ev.id)) {
-                      <!-- Blurred background cover -->
-                      <img class="event-bg-blur" [src]="getEventImage(ev.id)" aria-hidden="true">
-                      <!-- Contained centered cover -->
-                      <img class="large-image" [src]="getEventImage(ev.id)" [alt]="ev.title">
-                    } @else {
-                      <div class="no-image-placeholder-large">
-                        <mat-icon>event</mat-icon>
-                      </div>
-                    }
-                  </div>
-                  <div class="large-info">
-                    <div class="large-header-block">
-                      <div class="card-badges">
-                        @for (cat of ev.realCategories; track cat) {
-                          <span class="category-badge">{{ cat }}</span>
-                        }
-                      </div>
-                      <h2 class="large-title">{{ ev.title }}</h2>
-                    </div>
-                    <div class="large-data-panel">
-                      <div class="large-data-item">
-                        <span class="data-label">Inicio</span>
-                        <span class="data-value">{{ ev.startDate }}</span>
-                      </div>
-                      <div class="large-data-item">
-                        <span class="data-label">Fin</span>
-                        <span class="data-value">{{ ev.endDate || ev.startDate }}</span>
-                      </div>
-                      <div class="large-data-item">
-                        <span class="data-label">Venue</span>
-                        <span class="data-value">{{ ev.venue }}</span>
-                      </div>
-                      <div class="large-data-item">
-                        <span class="data-label">Capacidad</span>
-                        <span class="data-value">{{ (ev.capacity || 0) | number }} personas</span>
-                      </div>
-                    </div>
-                    <p class="large-desc">{{ ev.description }}</p>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-          <div class="carousel-dots">
-            @for (ev of tier1Events(); track ev.id; let i = $index) {
-              <button class="carousel-dot" 
-                      [class.active]="i === currentIndex1()"
-                      (click)="currentIndex1.set(i)"
-                      [attr.aria-label]="'Ir al evento destacado ' + (i + 1)">
-              </button>
-            }
-          </div>
-          <button class="carousel-nav prev" type="button" (click)="prevTier1()" aria-label="Evento anterior">
-            <mat-icon>chevron_left</mat-icon>
-          </button>
-          <button class="carousel-nav next" type="button" (click)="nextTier1()" aria-label="Evento siguiente">
-            <mat-icon>chevron_right</mat-icon>
-          </button>
-        </div>
-      </section>
-    }
+      <app-events-grid 
+        [categoryId]="selectedCategoryId()" 
+        [searchQuery]="searchQuery()" 
+        [eventTierMap]="getEventTierMap()">
+      </app-events-grid>
+    </main>
 
-    <!-- Mid carousel: 3 items per viewport - Tier 2 (MEDIUM) -->
-    @if (tier2Events().length) {
-      <section class="carousel carousel-mid">
-        <div class="carousel-section-header">
-          <h3 class="carousel-section-title">Eventos Recomendados</h3>
-        </div>
-        <div class="carousel-scroll" #midCarousel>
-          @for (ev of tier2Events(); track ev.id) {
-            <div class="mid-item" (click)="navigateToEvent(ev.id)" [class.ad-highlight-high]="ev.advertisementLevel === 'HIGH'" [class.ad-highlight-medium]="ev.advertisementLevel === 'MEDIUM'">
-              @if (ev.advertisementLevel === 'HIGH') {
-                <div class="item-tag-badge mini-premium"><mat-icon>workspace_premium</mat-icon></div>
-              } @else if (ev.advertisementLevel === 'MEDIUM') {
-                <div class="item-tag-badge mini-featured"><mat-icon>star</mat-icon></div>
-              }
-              <div class="mid-image-container">
-                @if (getEventImage(ev.id)) {
-                  <!-- Blurred background cover -->
-                  <img class="event-bg-blur" [src]="getEventImage(ev.id)" aria-hidden="true">
-                  <!-- Contained centered cover -->
-                  <img class="mid-image" [src]="getEventImage(ev.id)" [alt]="ev.title">
-                } @else {
-                  <div class="no-image-placeholder-mid">
-                    <mat-icon>event</mat-icon>
-                  </div>
-                }
-              </div>
-              <div class="mid-info">
-                <div class="card-badges">
-                  @for (cat of ev.realCategories; track cat) {
-                    <span class="category-badge mini">{{ cat }}</span>
-                  }
-                </div>
-                <h3 class="mid-title">{{ ev.title }}</h3>
-                <div class="mid-data">
-                  <div class="mid-data-row">{{ ev.venue }}</div>
-                  <div class="mid-data-row">Capacidad: {{ (ev.capacity || 0) | number }}</div>
-                  <div class="mid-data-row">{{ ev.startDate }}</div>
-                </div>
-              </div>
-            </div>
+    <!-- SECCIÓN 4: Sidebar Compact Cards (Desktop Only) -->
+    @if (!isLoadingBoosted() && sidebarEvents().length > 0) {
+      <aside class="sidebar" aria-label="Eventos recomendados">
+        <h3 class="sidebar-title">No te los pierdas</h3>
+        <div class="sidebar-list">
+          @for (event of sidebarEvents(); track event.id) {
+            <app-event-card 
+              [event]="event" 
+              [boostTier]="getEventTier(event.id)" 
+              size="compact"
+              [imageUrl]="getEventImage(event.id)">
+            </app-event-card>
           }
         </div>
-        <button class="carousel-nav prev" type="button" (click)="scrollTier2(-1)" aria-label="Desplazar a la izquierda">
-          <mat-icon>chevron_left</mat-icon>
-        </button>
-        <button class="carousel-nav next" type="button" (click)="scrollTier2(1)" aria-label="Desplazar a la derecha">
-          <mat-icon>chevron_right</mat-icon>
-        </button>
-      </section>
+      </aside>
     }
+
   </div>
 
-  <div class="section-divider"></div>
-
-  <!-- Loading State -->
-  @if (isLoading()) {
-    <app-loading-state 
-      [mode]="'skeleton'" 
-      [skeletonType]="'card'" 
-      [count]="8"
-      [gridClass]="'events-grid'">
-    </app-loading-state>
-  }
-
-  <!-- Empty State -->
-  @if (!isLoading() && pagedEvents().length === 0) {
-    <app-empty-state 
-      [icon]="'event_busy'" 
-      [title]="'No se encontraron eventos'" 
-      [description]="searchQuery() ? 'No encontramos eventos que coincidan con tu búsqueda: \'' + searchQuery() + '\'.' : 'Por el momento no hay eventos disponibles en esta categoría.'"
-      [actionText]="searchQuery() ? 'Limpiar búsqueda' : ''"
-      (actionClick)="searchQuery.set('')">
-    </app-empty-state>
-  }
-
-  <!-- Events Grid -->
-  @if (!isLoading() && pagedEvents().length > 0) {
-    <div class="events-grid-wrapper" @fadeInOut>
-      <div class="events-grid" [@listAnimation]="pagedEvents().length">
-        @for (event of pagedEvents(); track event.id) {
-          <div class="event-card" (click)="navigateToEvent(event.id)" 
-               [class.ad-tier-high]="getEventTier(event.id) === 'HIGH'"
-               [class.ad-tier-medium]="getEventTier(event.id) === 'MEDIUM'"
-               [class.ad-highlight]="event.advertisementPlanId">
-            
-            <!-- Float Badges/Tags depending on Tier -->
-            @if (getEventTier(event.id) === 'HIGH') {
-              <div class="grid-card-tag premium-tag"><mat-icon>workspace_premium</mat-icon><span>PREMIUM</span></div>
-            } @else if (getEventTier(event.id) === 'MEDIUM') {
-              <div class="grid-card-tag featured-tag"><mat-icon>star</mat-icon><span>RECOMENDADO</span></div>
-            } @else if (event.advertisementPlanId) {
-              <div class="grid-card-tag"><mat-icon>star</mat-icon><span>DESTACADO</span></div>
-            }
-
-            <div class="event-image-container">
-              @if (getEventImage(event.id)) {
-                <!-- Blurred background cover -->
-                <img [src]="getEventImage(event.id)" class="event-bg-blur" aria-hidden="true">
-                <!-- Contained centered cover -->
-                <img [src]="getEventImage(event.id)" [alt]="event.title" class="event-image">
-              } @else {
-                <div class="no-image-placeholder">
-                  <mat-icon>image_not_supported</mat-icon>
-                </div>
-              }
-
-              <!-- Floating Calendar Badge -->
-              <div class="calendar-badge">
-                <span class="month">{{ getEventMonth(event.startDateParsed) }}</span>
-                <span class="day">{{ getEventDay(event.startDateParsed) }}</span>
-              </div>
-
-              <div class="card-badges-overlay">
-                @for (cat of event.realCategories; track cat) {
-                  <span class="category-badge">{{ cat }}</span>
-                }
-              </div>
-            </div>
-            
-            <!-- Modern Info -->
-            <div class="event-info">
-              <h3 class="headline-large">{{ event.title }}</h3>
-              <p class="event-desc">{{ event.description }}</p>
-              <div class="event-metadata">
-                <div class="metadata-item">
-                  <mat-icon>location_on</mat-icon>
-                  <span>{{ event.venue }}</span>
-                </div>
-                @if (event.capacity) {
-                  <div class="metadata-item">
-                    <mat-icon>people</mat-icon>
-                    <span>{{ event.capacity | number }} personas</span>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-
-      <div class="pagination-container">
-        <mat-paginator 
-          [length]="totalEvents()"
-          [pageSize]="pageSize()"
-          [pageSizeOptions]="[8, 16, 24]"
-          [pageIndex]="pageIndex()"
-          (page)="onPageChange($event)"
-          aria-label="Seleccionar página">
-        </mat-paginator>
-      </div>
-    </div>
-  }
 </div>
-

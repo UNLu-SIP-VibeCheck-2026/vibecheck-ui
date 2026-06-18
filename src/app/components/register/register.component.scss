@@ -1,3 +1,5 @@
+@use '../../../tokens' as *;
+
 // =============================================================================
 // RegisterComponent — Styles
 // Two-panel layout: branding left | form right
@@ -23,7 +25,7 @@
 // ---------------------------------------------------------------------------
 .brand-panel {
   flex: 0 0 32.5%;
-  background: linear-gradient(145deg, #0f0520 0%, #1a0840 50%, #0a0318 100%);
+  background: var(--gradient-background);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -37,8 +39,8 @@
     position: absolute;
     width: 400px;
     height: 400px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%);
+    border-radius: var(--md-sys-shape-corner-full);
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
     top: -80px;
     left: -80px;
     pointer-events: none;
@@ -49,8 +51,8 @@
     position: absolute;
     width: 300px;
     height: 300px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+    border-radius: var(--md-sys-shape-corner-full);
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
     bottom: -60px;
     right: -60px;
     pointer-events: none;
@@ -79,7 +81,7 @@
 }
 
 .brand-name {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-ui), sans-serif;
   font-size: 32px;
   font-weight: 900;
   margin: 0;
@@ -89,7 +91,7 @@
 .brand-tagline {
   font-size: 16px;
   line-height: 1.75;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--md-sys-color-on-surface-variant);
   margin: 0;
 }
 
@@ -107,7 +109,7 @@
     gap: 12px;
     font-size: 15px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--md-sys-color-on-surface);
   }
 }
 
@@ -125,7 +127,7 @@
   justify-content: center;
   padding: 32px;
   overflow-y: auto;
-  background-color: var(--md-sys-color-background, #09010f);
+  background-color: var(--md-sys-color-background);
 }
 
 .form-panel-inner {
@@ -155,7 +157,7 @@
 
 .form-subtitle {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--md-sys-color-on-surface-variant);
   margin: 0;
 }
 
@@ -178,10 +180,9 @@
   label {
     font-size: 11px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--md-sys-color-on-surface-variant);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    text-align: bottom;
   }
 }
 
@@ -195,8 +196,8 @@
     .mat-mdc-form-field-flex {
       height: 56px !important;
       align-items: center !important;
-      background-color: rgba(255, 255, 255, 0.04) !important;
-      border-radius: 10px !important;
+      background-color: var(--md-sys-color-surface-variant) !important;
+      border-radius: var(--md-sys-shape-corner-medium) !important;
       padding: 0 !important;
     }
 
@@ -218,13 +219,14 @@
       padding: 0 !important;
       margin: 0 !important;
       box-sizing: border-box !important;
-      color: #ffffff !important;
+      color: var(--md-sys-color-on-surface) !important;
       font-size: 14px !important;
       caret-color: var(--md-sys-color-primary) !important;
     }
 
     .mat-mdc-input-element::placeholder {
-      color: rgba(255, 255, 255, 0.25) !important;
+      color: var(--md-sys-color-on-surface-variant) !important;
+      opacity: 0.5;
     }
 
     .mat-mdc-form-field-prefix,
@@ -234,7 +236,7 @@
     }
 
     mat-icon {
-      color: rgba(255, 255, 255, 0.35) !important;
+      color: var(--md-sys-color-on-surface-variant) !important;
       font-size: 18px !important;
       width: 18px !important;
       height: 18px !important;
@@ -242,7 +244,7 @@
     }
 
     .mat-mdc-icon-button {
-      color: rgba(255, 255, 255, 0.4) !important;
+      color: var(--md-sys-color-on-surface-variant) !important;
       width: 36px !important;
       height: 36px !important;
 
@@ -252,7 +254,7 @@
       }
 
       &:hover {
-        color: rgba(255, 255, 255, 0.8) !important;
+        color: var(--md-sys-color-on-surface) !important;
         background: rgba(255, 255, 255, 0.06) !important;
       }
     }
@@ -263,7 +265,7 @@
     .mdc-notched-outline__leading,
     .mdc-notched-outline__notch,
     .mdc-notched-outline__trailing {
-      border-color: rgba(248, 113, 113, 0.6) !important;
+      border-color: var(--md-sys-color-error) !important;
     }
   }
 }
@@ -283,13 +285,13 @@
 
   span {
     font-size: 11px;
-    color: #f87171;
+    color: var(--md-sys-color-error);
     font-weight: 500;
   }
 
   &.mismatch {
     font-size: 11px;
-    color: #f87171;
+    color: var(--md-sys-color-error);
     font-weight: 600;
   }
 }
@@ -307,29 +309,29 @@
 .strength-bar {
   flex: 1;
   height: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
+  background: var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-full);
   overflow: hidden;
 
   .strength-bar-fill {
     height: 100%;
-    border-radius: 4px;
+    border-radius: var(--md-sys-shape-corner-full);
     transition: width 0.3s ease, background-color 0.3s ease;
   }
 
   &[data-strength="weak"] .strength-bar-fill {
     width: 33%;
-    background: #f87171;
+    background: var(--md-sys-color-error);
   }
 
   &[data-strength="medium"] .strength-bar-fill {
     width: 66%;
-    background: #fbbf24;
+    background: var(--md-sys-color-tertiary);
   }
 
   &[data-strength="strong"] .strength-bar-fill {
     width: 100%;
-    background: #4ade80;
+    background: var(--md-sys-color-primary);
   }
 }
 
@@ -338,9 +340,9 @@
   font-weight: 700;
   white-space: nowrap;
 
-  &[data-strength="weak"]   { color: #f87171; }
-  &[data-strength="medium"] { color: #fbbf24; }
-  &[data-strength="strong"] { color: #4ade80; }
+  &[data-strength="weak"]   { color: var(--md-sys-color-error); }
+  &[data-strength="medium"] { color: var(--md-sys-color-tertiary); }
+  &[data-strength="strong"] { color: var(--md-sys-color-primary); }
 }
 
 // ---------------------------------------------------------------------------
@@ -353,8 +355,8 @@
   padding: 12px 16px;
   background: rgba(248, 113, 113, 0.08);
   border: 1px solid rgba(248, 113, 113, 0.25);
-  border-radius: 10px;
-  color: #f87171;
+  border-radius: var(--md-sys-shape-corner-medium);
+  color: var(--md-sys-color-error);
   font-size: 13px;
   font-weight: 500;
 
@@ -366,29 +368,16 @@
 // ---------------------------------------------------------------------------
 .btn-submit,
 .btn-cta {
+  @include btn-cta;
   width: 100%;
-  height: 64px;
-  padding: 0 3rem;
-  border-radius: 16px;
-  font-family: "Outfit", sans-serif;
-  font-weight: 800;
-  font-size: 1.2rem;
-  background: var(--gradient-brand);
-  color: #ffffff;
-  border: none;
-  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
-  display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+  box-shadow: none !important;
 
-.btn-submit:hover:not(:disabled),
-.btn-cta:hover:not(:disabled) {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.55);
-  filter: brightness(1.1);
+  &:hover:not(:disabled) {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+    box-shadow: none !important;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -403,12 +392,12 @@
 .divider {
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--md-sys-color-outline-variant);
 }
 
 .divider-text {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--md-sys-color-on-surface-variant);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -423,6 +412,7 @@
   gap: 12px;
 
   .chip-outlined {
+    @include chip-outlined;
     flex: 1;
     justify-content: center;
   }
@@ -440,11 +430,11 @@
 .login-link {
   text-align: center;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--md-sys-color-on-surface-variant);
   margin: 0;
 
   .link-accent {
-    color: var(--md-sys-color-primary, #a855f7);
+    color: var(--md-sys-color-primary);
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
@@ -456,7 +446,7 @@
 // ---------------------------------------------------------------------------
 // Responsive
 // ---------------------------------------------------------------------------
-@media (max-width: 900px) {
+@include tablet {
   .register-page { flex-direction: column; }
 
   .brand-panel {
@@ -471,10 +461,21 @@
   .form-panel { padding: 40px 24px 60px; }
 }
 
-@media (max-width: 600px) {
+@include mobile {
+  .register-page { flex-direction: column; }
+
+  .brand-panel {
+    flex: none;
+    padding: 28px 24px;
+
+    &::before, &::after { display: none; }
+  }
+
+  .brand-features { display: none; }
+
+  .form-panel { padding: 40px 24px 60px; }
+
   .field-row {
     grid-template-columns: 1fr;
   }
-
-  .brand-panel { padding: 28px 24px; }
 }

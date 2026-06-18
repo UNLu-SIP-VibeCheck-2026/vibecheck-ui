@@ -352,7 +352,7 @@
   }
 }
 
-.view-all-history-btn {
+.view-all-history-btn, .view-all-achievements-btn {
   background: rgba(168, 85, 247, 0.1) !important;
   border: 1px solid rgba(168, 85, 247, 0.25) !important;
   color: #c084fc !important;
@@ -600,6 +600,22 @@
 }
 
 /* ─── CANDY 2: TIERS DE USER ─── */
+.info-tier-btn {
+  color: var(--md-sys-color-on-surface-variant) !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    color: var(--md-sys-color-primary) !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+}
+
 .tier-body {
   display: flex;
   justify-content: center;

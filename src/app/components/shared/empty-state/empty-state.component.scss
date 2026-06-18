@@ -7,7 +7,7 @@
   justify-content: center;
   text-align: center;
   padding: var(--space-8) var(--space-6);
-  background: var(--gradient-surface);
+  background: var(--md-sys-color-surface);
   border-radius: var(--md-sys-shape-corner-medium);
   border: 1px solid var(--md-sys-color-outline-variant);
   max-width: 600px;
@@ -28,8 +28,8 @@
   background: linear-gradient(#1a1535, #1a1535) padding-box,
               var(--gradient-brand) border-box;
   border: 2px solid transparent;
-  border-radius: 24px; // --md-sys-shape-corner-extra-large
-  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  box-shadow: none;
   
   .empty-state-icon {
     font-size: 40px;
@@ -73,7 +73,7 @@
   padding: 6px 20px 6px 6px; // Padding asimétrico para el círculo
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.25);
+  box-shadow: none;
   outline: none;
 
   .cta-icon-circle {
@@ -82,7 +82,7 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: var(--md-sys-shape-corner-full);
     background-color: var(--md-sys-color-primary-container); // #1a1535
     margin-right: var(--space-3);
     transition: transform 0.3s ease;
@@ -96,17 +96,17 @@
   }
 
   .cta-text {
-    font-family: 'Space Mono', monospace;
+    font-family: var(--font-mono), monospace;
     font-size: 11px; // label-small
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: #ffffff;
+    color: var(--btn-cta-text-color);
   }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4);
+    transform: scale(1.02);
+    box-shadow: none;
 
     .cta-icon-circle {
       transform: translateX(2px);
@@ -114,6 +114,6 @@
   }
 
   &:active {
-    transform: translateY(0);
+    transform: scale(0.98);
   }
 }

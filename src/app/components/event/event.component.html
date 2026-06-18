@@ -49,14 +49,14 @@
       <!-- Gradient overlay -->
       <div class="image-gradient"></div>
 
-      <!-- Status badge -->
-      <div class="status-badge" [ngClass]="statusClass">
+      <!-- Status badge (only visible to owner) -->
+      <div class="status-badge" [ngClass]="statusClass" *ngIf="isEventOwner">
         <span class="status-dot"></span>
         {{ statusLabel }}
       </div>
 
-      <!-- Active badge -->
-      <div class="active-badge" [class.active-yes]="event.active" [class.active-no]="!event.active">
+      <!-- Active badge (only visible to owner) -->
+      <div class="active-badge" [class.active-yes]="event.active" [class.active-no]="!event.active" *ngIf="isEventOwner">
         <mat-icon>{{ event.active ? 'check_circle' : 'cancel' }}</mat-icon>
         {{ event.active ? 'Publicado' : 'Inactivo' }}
       </div>

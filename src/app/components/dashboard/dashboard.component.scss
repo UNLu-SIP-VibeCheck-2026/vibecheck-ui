@@ -21,9 +21,7 @@
   gap: var(--space-5);
   margin-bottom: var(--space-6);
   padding: var(--space-6);
-  background: rgba(18, 16, 42, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--md-sys-color-surface);
   border-radius: var(--md-sys-shape-corner-extra-large);
   border: 1px solid var(--md-sys-color-outline-variant);
   box-sizing: border-box;
@@ -53,8 +51,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border-radius: 50%;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.25);
+  border-radius: var(--md-sys-shape-corner-full);
+  box-shadow: none;
 }
 
 .welcome-content {
@@ -83,7 +81,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--md-sys-color-surface-variant);
   border: 1px solid var(--md-sys-color-outline-variant);
   padding: 12px 20px;
   border-radius: var(--md-sys-shape-corner-large);
@@ -123,11 +121,11 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+  box-shadow: none;
 
   .badge-text {
     font-size: var(--text-label-lg);
-    color: #ffffff;
+    color: var(--md-sys-color-on-primary);
   }
 }
 
@@ -135,13 +133,9 @@
   cursor: pointer;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+    transform: scale(1.02);
     filter: brightness(1.1);
-  }
-
-  &:active {
-    transform: translateY(0);
+    box-shadow: none;
   }
 }
 
@@ -154,8 +148,8 @@
    ORGANIZER INVITATION BANNER
    ───────────────────────────────────────────────────────────────────────────── */
 .organizer-invite-banner {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(249, 115, 22, 0.08) 100%);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-extra-large);
   padding: var(--space-5) var(--space-6);
   display: flex;
@@ -164,9 +158,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   box-sizing: border-box;
 
   @include desktop {
@@ -185,12 +177,12 @@
   .invite-icon {
     width: 48px;
     height: 48px;
-    background: rgba(168, 85, 247, 0.2);
-    border-radius: 50%;
+    background: var(--md-sys-color-primary-container);
+    border-radius: var(--md-sys-shape-corner-full);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: var(--md-sys-color-primary);
     flex-shrink: 0;
 
     mat-icon {
@@ -208,7 +200,7 @@
     .invite-title {
       font-size: var(--text-title-sm);
       font-weight: var(--weight-bold);
-      color: #ffffff;
+      color: var(--md-sys-color-on-surface);
       margin: 0;
     }
 
@@ -223,15 +215,15 @@
 
 .invite-banner-actions {
   display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    align-items: center;
-    padding-top: 20px;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+  padding-top: 20px;
 }
 
 .invite-action-btn {
   background: var(--gradient-brand) !important;
-  color: #ffffff !important;
+  color: var(--md-sys-color-on-primary) !important;
   font-family: var(--font-mono) !important;
   font-size: var(--text-label-lg) !important;
   font-weight: var(--weight-bold) !important;
@@ -240,12 +232,11 @@
   padding: 8px 24px !important;
   height: 44px !important;
   flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35) !important;
+  box-shadow: none !important;
   transition: all 0.25s ease !important;
 
   &:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5) !important;
+    transform: scale(1.02) !important;
     filter: brightness(1.1) !important;
   }
 }
@@ -268,12 +259,7 @@
   transition: color 0.25s ease !important;
 
   &:hover {
-    color: #ffffff !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  &:focus {
+    color: var(--md-sys-color-on-surface) !important;
     background: transparent !important;
     box-shadow: none !important;
   }
@@ -292,15 +278,15 @@
   .section-title {
     font-size: var(--text-title-lg);
     font-weight: var(--weight-bold);
-    color: #ffffff;
+    color: var(--md-sys-color-on-surface);
     margin: 0;
     letter-spacing: -0.01em;
   }
 
   .coming-soon-badge {
-    background: rgba(168, 85, 247, 0.12);
-    border: 1px solid rgba(168, 85, 247, 0.25);
-    color: #c084fc;
+    background: var(--md-sys-color-surface-variant);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-primary);
     padding: 3px 10px;
     border-radius: var(--chip-radius);
     font-size: var(--text-label-lg);
@@ -329,7 +315,7 @@
 }
 
 .action-main-card {
-  background: rgba(18, 16, 42, 0.45);
+  background: var(--md-sys-color-surface);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-large);
   padding: var(--space-6);
@@ -344,9 +330,8 @@
   cursor: pointer;
 
   &:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.15);
-    background: rgba(18, 16, 42, 0.6);
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface-variant);
   }
 
   .card-icon-main {
@@ -356,9 +341,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(168, 85, 247, 0.12);
-    border: 1px solid rgba(168, 85, 247, 0.25);
-    border-radius: 50%;
+    background: var(--md-sys-color-primary-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-full);
     color: var(--md-sys-color-primary);
     transition: all 0.3s ease;
 
@@ -372,7 +357,7 @@
   .card-title-main {
     font-size: var(--text-title-sm);
     font-weight: var(--weight-bold);
-    color: #ffffff;
+    color: var(--md-sys-color-on-surface);
     margin: 0 0 6px 0;
     padding-bottom: 6px;
   }
@@ -387,7 +372,7 @@
     padding-bottom: 8px;
 
     .event-detail {
-      display:flex;
+      display: flex;
       flex-flow: row;
       gap: 16px;
       padding: 4px 0;
@@ -395,13 +380,13 @@
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
-     HIGHLIGHT PRIMARY ACTIONS (EXPLORE EVENTS & RESELL TICKETS)
+     HIGHLIGHT PRIMARY ACTIONS
      ───────────────────────────────────────────────────────────────────────── */
   &.primary-explore-highlight {
-    background: var(--gradient-brand-diagonal);
-    border: none;
+    background: var(--md-sys-color-surface-variant);
+    border: 1px solid var(--md-sys-color-primary);
     position: relative;
-    box-shadow: 0 8px 30px rgba(124, 58, 237, 0.25);
+    box-shadow: none;
     
     @include tablet {
       grid-column: span 2;
@@ -411,25 +396,24 @@
     }
 
     .card-icon-main {
-      background: rgba(13, 9, 30, 0.6);
-      border-color: rgba(255, 255, 255, 0.15);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      background: var(--md-sys-color-primary-container);
+      border-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-primary);
+      box-shadow: none;
     }
 
     .card-desc-main {
-      color: rgba(255, 255, 255, 0.8);
+      color: var(--md-sys-color-on-surface-variant);
       max-width: 500px;
     }
 
     &:hover {
-      transform: translateY(-4px) scale(1.01);
-      box-shadow: 0 12px 36px rgba(124, 58, 237, 0.45);
+      transform: scale(1.01);
+      box-shadow: none;
       filter: brightness(1.05);
 
       .card-icon-main {
-        transform: scale(1.1);
-        color: #ffffff;
+        transform: scale(1.05);
       }
     }
   }
@@ -457,7 +441,7 @@
 }
 
 .action-card {
-  background: rgba(18, 16, 42, 0.45) !important;
+  background: var(--md-sys-color-surface) !important;
   border: 1px solid var(--md-sys-color-outline-variant) !important;
   border-radius: var(--md-sys-shape-corner-large) !important;
   padding: var(--space-4) !important;
@@ -469,9 +453,8 @@
   box-sizing: border-box;
 
   &:hover {
-    transform: translateY(-3px);
-    border-color: rgba(255, 255, 255, 0.15) !important;
-    background: rgba(18, 16, 42, 0.6) !important;
+    border-color: var(--md-sys-color-primary) !important;
+    background: var(--md-sys-color-surface-variant) !important;
 
     .card-arrow {
       color: var(--md-sys-color-primary);
@@ -485,8 +468,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(168, 85, 247, 0.12);
-    border: 1px solid rgba(168, 85, 247, 0.25);
+    background: var(--md-sys-color-primary-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
     border-radius: var(--md-sys-shape-corner-medium);
     color: var(--md-sys-color-primary);
     flex-shrink: 0;
@@ -506,7 +489,7 @@
   .card-title {
     font-size: var(--text-body-lg);
     font-weight: var(--weight-bold);
-    color: #ffffff;
+    color: var(--md-sys-color-on-surface);
     margin: 0 0 2px 0;
     text-align: left;
   }
@@ -529,29 +512,29 @@
 
   /* RESELL TICKETS HIGHLIGHT OPTION IN QUICK ACTIONS */
   &.action-resell-highlight {
-    border-color: rgba(249, 115, 22, 0.35) !important;
-    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.04);
+    border-color: var(--md-sys-color-secondary) !important;
+    box-shadow: none;
 
     .card-icon {
-      background: rgba(249, 115, 22, 0.15);
-      border-color: rgba(249, 115, 22, 0.35);
-      color: #f97316;
+      background: var(--md-sys-color-primary-container);
+      border-color: var(--md-sys-color-secondary);
+      color: var(--md-sys-color-secondary);
     }
 
     &:hover {
-      border-color: rgba(249, 115, 22, 0.6) !important;
-      box-shadow: 0 8px 20px rgba(249, 115, 22, 0.15);
+      border-color: var(--md-sys-color-secondary) !important;
+      box-shadow: none;
 
       .card-arrow {
-        color: #f97316;
+        color: var(--md-sys-color-secondary);
       }
     }
   }
 
   /* VALIDATOR EVENT CARD */
   &.validator-event-card {
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(249, 115, 22, 0.1) 100%);
-    border-color: rgba(168, 85, 247, 0.4);
+    background: var(--md-sys-color-surface-variant) !important;
+    border-color: var(--md-sys-color-primary) !important;
     min-height: 240px;
     position: relative;
 
@@ -564,10 +547,10 @@
     }
 
     .card-icon-main {
-      background: rgba(13, 9, 30, 0.7);
-      border-color: rgba(168, 85, 247, 0.5);
-      color: #fbbf24;
-      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+      background: var(--md-sys-color-primary-container);
+      border-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-tertiary);
+      box-shadow: none;
     }
 
     .card-desc-main {
@@ -584,7 +567,7 @@
         align-items: center;
         gap: 6px;
         font-size: var(--text-body-md);
-        color: rgba(255, 255, 255, 0.85);
+        color: var(--md-sys-color-on-surface-variant);
         white-space: nowrap;
 
         .event-icon {
@@ -598,7 +581,7 @@
 
     .validate-btn {
       background: var(--gradient-brand) !important;
-      color: #ffffff !important;
+      color: var(--md-sys-color-on-primary) !important;
       font-family: var(--font-mono) !important;
       font-size: var(--text-label-lg) !important;
       font-weight: var(--weight-bold) !important;
@@ -606,24 +589,23 @@
       border-radius: var(--md-sys-shape-corner-full) !important;
       padding: 8px 24px !important;
       height: 44px !important;
-      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35) !important;
+      box-shadow: none !important;
       transition: all 0.25s ease !important;
       margin-top: auto;
 
       &:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5) !important;
+        transform: scale(1.02) !important;
         filter: brightness(1.1) !important;
       }
     }
 
     &:hover {
-      transform: translateY(-4px) scale(1.01);
-      box-shadow: 0 12px 36px rgba(124, 58, 237, 0.4);
-      border-color: rgba(168, 85, 247, 0.6);
+      transform: scale(1.01);
+      box-shadow: none;
+      border-color: var(--md-sys-color-primary);
 
       .card-icon-main {
-        transform: scale(1.1);
+        transform: scale(1.05);
       }
     }
   }
@@ -680,11 +662,9 @@
 .no-user-state {
   text-align: center;
   padding: var(--space-10) var(--space-6);
-  background: rgba(18, 16, 42, 0.45);
+  background: var(--md-sys-color-surface);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-extra-large);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   margin-top: var(--space-8);
 
   .no-user-icon {
@@ -697,7 +677,7 @@
 
   h2 {
     font-size: var(--text-title-lg);
-    color: #ffffff;
+    color: var(--md-sys-color-on-surface);
     margin: 0 0 var(--space-4) 0;
   }
 }

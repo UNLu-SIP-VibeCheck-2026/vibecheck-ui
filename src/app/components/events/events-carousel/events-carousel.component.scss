@@ -1,0 +1,97 @@
+@use '../../../../tokens' as *;
+
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+
+  .carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--md-sys-color-outline);
+    background: rgba(18, 16, 42, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    opacity: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+    &:hover {
+      background: var(--md-sys-color-primary);
+      border-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    &.prev { left: -22px; }
+    &.next { right: -22px; }
+
+    @include mobile {
+      display: none;
+    }
+  }
+
+  &:hover .carousel-nav {
+    opacity: 1;
+  }
+}
+
+.carousel-scroll {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  padding: var(--space-2) 4px var(--space-5) 4px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.carousel-item {
+  flex: 0 0 78vw;
+  scroll-snap-align: start;
+  box-sizing: border-box;
+
+  @include tablet {
+    flex: 0 0 45%;
+  }
+
+  @include desktop {
+    flex: 0 0 calc((100% - (3 * var(--space-4))) / 4);
+  }
+}
+
+.fade-overlay-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: var(--space-5);
+  width: 80px;
+  background: linear-gradient(to right, transparent, var(--md-sys-color-background));
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.visible {
+    opacity: 0.8;
+  }
+
+  @include mobile {
+    width: 40px;
+  }
+}

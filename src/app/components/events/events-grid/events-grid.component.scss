@@ -1,0 +1,169 @@
+@use '../../../../tokens' as *;
+
+.grid-wrapper {
+  width: 100%;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.grid-content-container {
+  position: relative;
+  width: 100%;
+  transition: opacity 0.3s ease;
+
+  &.overlay-loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+.change-page-spinner {
+  position: absolute;
+  top: 150px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: rgba(13, 11, 30, 0.85);
+  border-radius: 50%;
+  padding: var(--space-3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.events-grid {
+  display: grid;
+  align-items: start;
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+  grid-template-columns: 1fr;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-5);
+  }
+}
+
+.event-card--ultra-super {
+  @media (min-width: 768px) {
+    grid-column: span 2;
+  }
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-6);
+
+  ::ng-deep .mat-mdc-paginator {
+    background: transparent !important;
+    color: var(--md-sys-color-on-surface) !important;
+
+    @media (max-width: 600px) {
+      .mat-mdc-paginator-container {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        padding: 8px !important;
+      }
+    }
+  }
+}
+
+.skeleton-card {
+  background: var(--md-sys-color-surface-container-high);
+  border-radius: var(--md-sys-shape-corner-medium);
+  height: 380px;
+  overflow: hidden;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+
+  .skeleton-image {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(90deg, var(--md-sys-color-surface-container) 25%, var(--md-sys-color-surface-container-high) 50%, var(--md-sys-color-surface-container) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s infinite;
+  }
+
+  .skeleton-info {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+  }
+
+  .skeleton-title {
+    height: 18px;
+    width: 70%;
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    background: linear-gradient(90deg, var(--md-sys-color-surface-container) 25%, var(--md-sys-color-surface-container-high) 50%, var(--md-sys-color-surface-container) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s infinite;
+  }
+
+  .skeleton-text {
+    height: 12px;
+    width: 90%;
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    background: linear-gradient(90deg, var(--md-sys-color-surface-container) 25%, var(--md-sys-color-surface-container-high) 50%, var(--md-sys-color-surface-container) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s infinite;
+
+    &.short {
+      width: 50%;
+    }
+  }
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-12) var(--space-5);
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px dashed var(--md-sys-color-outline-variant);
+
+  .empty-icon {
+    font-size: 56px;
+    width: 56px;
+    height: 56px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: var(--space-4);
+    opacity: 0.6;
+  }
+
+  .empty-title {
+    font-size: var(--text-title-medium);
+    font-weight: var(--weight-bold);
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .empty-desc {
+    font-size: var(--text-body-md);
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+    max-width: 400px;
+    line-height: 1.4;
+  }
+}

@@ -1,0 +1,124 @@
+<div class="tier-info-container">
+  <!-- Cabecera del Diálogo -->
+  <div class="dialog-header">
+    <div class="header-title">
+      <mat-icon class="title-icon">workspace_premium</mat-icon>
+      <h2 class="display-md">Progreso de Tiers</h2>
+    </div>
+    <button mat-icon-button (click)="onClose()" class="close-btn" aria-label="Cerrar diálogo">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="dialog-content">
+    <p class="intro-text">
+      Tu participación activa en <strong>VibeCheck</strong> te permite acumular puntos de experiencia (XP) y evolucionar tu rango. ¡Desbloqueá beneficios exclusivos a medida que subís de nivel!
+    </p>
+
+    <!-- Tarjetas de Tiers -->
+    <div class="tiers-section-title">NIVELES DISPONIBLES</div>
+    <div class="tiers-list">
+      <!-- BRONCE -->
+      <div class="tier-card-item bronce">
+        <div class="tier-badge-col">
+          <div class="medal-circle">
+            <img src="/assets/VC-TierBRONZE.png" alt="Bronce" class="tier-medal-img" />
+          </div>
+        </div>
+        <div class="tier-info-col">
+          <div class="tier-header-row">
+            <h3 class="tier-title-name">BRONCE</h3>
+            <span class="tier-points-requirement">0 XP (Base)</span>
+          </div>
+          <p class="tier-benefit-desc">
+            Tier inicial con beneficios básicos de la plataforma y acceso general a eventos.
+          </p>
+        </div>
+      </div>
+
+      <!-- PLATA -->
+      <div class="tier-card-item plata">
+        <div class="tier-badge-col">
+          <div class="medal-circle">
+            <img src="/assets/VC-TierSILVER.png" alt="Plata" class="tier-medal-img" />
+          </div>
+        </div>
+        <div class="tier-info-col">
+          <div class="tier-header-row">
+            <h3 class="tier-title-name">PLATA</h3>
+            <span class="tier-points-requirement">100 XP</span>
+          </div>
+          <p class="tier-benefit-desc">
+            Acceso preferencial a pre-ventas seleccionadas y descuentos exclusivos en entradas de partners.
+          </p>
+        </div>
+      </div>
+
+      <!-- ORO -->
+      <div class="tier-card-item oro">
+        <div class="tier-badge-col">
+          <div class="medal-circle">
+            <img src="/assets/VC-TierGOLD.png" alt="Oro" class="tier-medal-img" />
+          </div>
+        </div>
+        <div class="tier-info-col">
+          <div class="tier-header-row">
+            <h3 class="tier-title-name">ORO</h3>
+            <span class="tier-points-requirement">300 XP</span>
+          </div>
+          <p class="tier-benefit-desc">
+            Prioridad alta en fila virtual para eventos masivos, devoluciones sin cargo en el marketplace y soporte preferencial.
+          </p>
+        </div>
+      </div>
+
+      <!-- PLATINO -->
+      <div class="tier-card-item platino">
+        <div class="tier-badge-col">
+          <div class="medal-circle">
+            <img src="/assets/VC-TierPLATINUM.png" alt="Platino" class="tier-medal-img" />
+          </div>
+        </div>
+        <div class="tier-info-col">
+          <div class="tier-header-row">
+            <h3 class="tier-title-name">PLATINO</h3>
+            <span class="tier-points-requirement">600 XP</span>
+          </div>
+          <p class="tier-benefit-desc">
+            Acceso VIP a lounge de eventos, posibilidades de meet & greet con artistas y beneficios exclusivos de socios fundadores.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reglas de Puntos -->
+    <div class="points-rules-card">
+      <div class="rules-header">
+        <mat-icon>help_outline</mat-icon>
+        <h4>¿Cómo acumular puntos?</h4>
+      </div>
+      <div class="points-grid">
+        <div class="points-item">
+          <div class="points-number">+50 XP</div>
+          <div class="points-label">Evento Creado</div>
+        </div>
+        <div class="points-item">
+          <div class="points-number">+30 XP</div>
+          <div class="points-label">Evento Asistido</div>
+        </div>
+        <div class="points-item">
+          <div class="points-number">+10 XP</div>
+          <div class="points-label">Ticket Comprado</div>
+        </div>
+        <div class="points-item">
+          <div class="points-number">+50 XP</div>
+          <div class="points-label">Logro Completado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <button mat-button (click)="onClose()" class="close-action-btn">Entendido</button>
+  </div>
+</div>

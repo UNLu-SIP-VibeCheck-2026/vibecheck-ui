@@ -8,12 +8,19 @@
 
   <!-- DESKTOP ACTIONS (Hidden on mobile) -->
   <div class="nav-actions desktop-only">
-    <button mat-button (click)="navigateToMarketplace()" class="marketplace-btn">
-      <mat-icon>storefront</mat-icon>
-      Marketplace
-    </button>
-    
+    @if (!isCualquierAdmin && !isValidador) {
+      <button mat-button (click)="navigateToMarketplace()" class="marketplace-btn">
+        <mat-icon>storefront</mat-icon>
+        Marketplace
+      </button>
+    }
+
     @if (user$ | async; as user) {
+      <button mat-button (click)="navigateToDashboard()" class="dashboard-btn">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </button>
+
       <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
         @if (fullUserProfile() && fullUserProfile()?.hasImage) {
           <app-avatar
@@ -32,26 +39,36 @@
       </button>
 
       <mat-menu #userMenu="matMenu" class="modern-user-menu">
-        <button mat-menu-item (click)="navigateToDashboard()">
-          <mat-icon>dashboard</mat-icon>
-          <span>Dashboard</span>
-        </button>
-        <button mat-menu-item (click)="navigateToMyListings()">
-          <mat-icon>sell</mat-icon>
-          <span>Mis Reventas</span>
-        </button>
-        <button mat-menu-item (click)="navigateToMyPublicProfile()">
-          <mat-icon>person</mat-icon>
-          <span>Ver mi Perfil</span>
-        </button>
-        <button mat-menu-item (click)="navigateToPerfilConfig()">
-          <mat-icon>manage_accounts</mat-icon>
-          <span>Configuración</span>
-        </button>
-        <button mat-menu-item (click)="navigateToAchievements()">
-          <mat-icon>emoji_events</mat-icon>
-          <span>Mis Logros</span>
-        </button>
+        @if (isCliente) {
+          <button mat-menu-item (click)="navigateAndClose('/my-tickets')">
+            <mat-icon>confirmation_number</mat-icon>
+            <span>Mis Entradas</span>
+          </button>
+        }
+        @if (!isCualquierAdmin && !isValidador) {
+          <button mat-menu-item (click)="navigateToMyListings()">
+            <mat-icon>sell</mat-icon>
+            <span>Mis Reventas</span>
+          </button>
+        }
+        @if (!isCualquierAdmin && !isValidador) {
+          <button mat-menu-item (click)="navigateToMyPublicProfile()">
+            <mat-icon>person</mat-icon>
+            <span>Ver mi Perfil</span>
+          </button>
+        }
+        @if (!isValidador) {
+          <button mat-menu-item (click)="navigateToPerfilConfig()">
+            <mat-icon>manage_accounts</mat-icon>
+            <span>Configuración</span>
+          </button>
+        }
+        @if (!isCualquierAdmin && !isValidador) {
+          <button mat-menu-item (click)="navigateToAchievements()">
+            <mat-icon>emoji_events</mat-icon>
+            <span>Mis Logros</span>
+          </button>
+        }
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="logout()">
           <mat-icon color="warn">exit_to_app</mat-icon>
@@ -135,32 +152,48 @@
       <div class="drawer-links-section">
         <span class="links-section-title">Navegación</span>
         <nav class="drawer-nav-list">
-          <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/marketplace')">
-            <mat-icon>storefront</mat-icon>
-            <span>Marketplace</span>
-          </button>
-          
+          @if (!isCualquierAdmin && !isValidador) {
+            <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/marketplace')">
+              <mat-icon>storefront</mat-icon>
+              <span>Marketplace</span>
+            </button>
+          }
+
           @if (user$ | async; as user) {
             <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/dashboard')">
               <mat-icon>dashboard</mat-icon>
               <span>Dashboard</span>
             </button>
-            <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/my-listings')">
-              <mat-icon>sell</mat-icon>
-              <span>Mis Reventas</span>
-            </button>
-            <button mat-button class="drawer-nav-item" (click)="navigateAndClose(['/perfil-user', user.username])">
-              <mat-icon>person</mat-icon>
-              <span>Mi Perfil Público</span>
-            </button>
-            <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/perfil-config')">
-              <mat-icon>manage_accounts</mat-icon>
-              <span>Configuración</span>
-            </button>
-            <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/achievements')">
-              <mat-icon>emoji_events</mat-icon>
-              <span>Mis Logros</span>
-            </button>
+            @if (isCliente) {
+              <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/my-tickets')">
+                <mat-icon>confirmation_number</mat-icon>
+                <span>Mis Entradas</span>
+              </button>
+            }
+            @if (!isCualquierAdmin && !isValidador) {
+              <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/my-listings')">
+                <mat-icon>sell</mat-icon>
+                <span>Mis Reventas</span>
+              </button>
+            }
+            @if (!isCualquierAdmin && !isValidador) {
+              <button mat-button class="drawer-nav-item" (click)="navigateAndClose(['/perfil-user', user.username])">
+                <mat-icon>person</mat-icon>
+                <span>Mi Perfil Público</span>
+              </button>
+            }
+            @if (!isValidador) {
+              <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/perfil-config')">
+                <mat-icon>manage_accounts</mat-icon>
+                <span>Configuración</span>
+              </button>
+            }
+            @if (!isCualquierAdmin && !isValidador) {
+              <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/achievements')">
+                <mat-icon>emoji_events</mat-icon>
+                <span>Mis Logros</span>
+              </button>
+            }
           }
         </nav>
       </div>
