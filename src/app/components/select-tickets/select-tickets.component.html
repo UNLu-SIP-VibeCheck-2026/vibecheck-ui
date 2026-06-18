@@ -121,12 +121,6 @@
             <span>Firmar y Vincular Billetera</span>
           </button>
         </div>
-
-        <!-- DIAGNÓSTICO TEMPORAL: error crudo de la firma SIWE (sacar después de debuggear). -->
-        <div class="challenge-box" *ngIf="siweDebug()" style="margin-top:12px; border:1px solid #e0a; background:rgba(255,0,128,0.08);">
-          <span class="challenge-title">DEBUG firma:</span>
-          <pre class="challenge-text" style="white-space:pre-wrap; word-break:break-word;">{{ siweDebug() }}</pre>
-        </div>
       </div>
     </div>
 
