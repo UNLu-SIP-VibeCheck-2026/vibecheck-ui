@@ -1,0 +1,29 @@
+<div class="carousel-wrapper">
+  
+  <div class="carousel-scroll" #carouselScroll (scroll)="checkScroll()">
+    @for (ev of events; track ev.id) {
+      <div class="carousel-item">
+        <app-event-card 
+          [event]="ev" 
+          [boostTier]="getEventTier(ev.id)" 
+          size="featured"
+          [imageUrl]="getEventImage(ev.id)">
+        </app-event-card>
+      </div>
+    }
+  </div>
+
+  <!-- Fade overlay at the right edge -->
+  <div class="fade-overlay-right" [class.visible]="showFadeOverlay()"></div>
+
+  <!-- Navigation buttons (Desktop Only) -->
+  @if (events.length > 2) {
+    <button class="carousel-nav prev" type="button" (click)="scroll(-1)" aria-label="Desplazar a la izquierda">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <button class="carousel-nav next" type="button" (click)="scroll(1)" aria-label="Desplazar a la derecha">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  }
+
+</div>

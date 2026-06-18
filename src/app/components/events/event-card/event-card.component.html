@@ -1,0 +1,91 @@
+<div class="card-container" 
+     [class]="'card-size-' + size" 
+     [class.ad-tier-high]="boostTier === 'ULTRA_SUPER'"
+     [class.ad-tier-medium]="boostTier === 'SUPER'"
+     [class.ad-tier-basic]="boostTier === 'BASIC'"
+     (click)="navigateToEvent()"
+     role="article"
+     [attr.aria-label]="'Evento: ' + event.title">
+
+
+  <!-- Image Section -->
+  <div class="image-wrapper">
+    @if (imageUrl) {
+      <img [src]="imageUrl" class="event-bg-blur" aria-hidden="true" />
+      <img [src]="imageUrl" [alt]="event.title" class="main-image" />
+    } @else {
+      <div class="no-image-placeholder">
+        <mat-icon>event</mat-icon>
+      </div>
+    }
+
+    <!-- Floating Calendar Badge -->
+    @if (size !== 'compact' && event.startDateParsed) {
+      <div class="calendar-badge">
+        <span class="month">{{ getEventMonth(event.startDateParsed) }}</span>
+        <span class="day">{{ getEventDay(event.startDateParsed) }}</span>
+      </div>
+    }
+
+    <!-- Floating Category Badges -->
+    @if (size !== 'compact' && event.realCategories && event.realCategories.length) {
+      <div class="card-badges-overlay">
+        @for (cat of event.realCategories; track cat) {
+          <span class="category-badge">{{ cat }}</span>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Content Section -->
+  <div class="info-wrapper">
+    <h3 class="event-title">{{ event.title }}</h3>
+    
+    @if (size !== 'compact' && size !== 'featured') {
+      <p class="event-desc">{{ event.description }}</p>
+    }
+
+    <div class="event-metadata">
+      <div class="metadata-item">
+        <mat-icon>calendar_today</mat-icon>
+        <span>{{ getFormattedDate(event.startDate) }}</span>
+      </div>
+      <div class="metadata-item">
+        <mat-icon>location_on</mat-icon>
+        <span>{{ event.venue }}</span>
+      </div>
+      @if (size !== 'compact' && size !== 'featured' && event.capacity) {
+        <div class="metadata-item">
+          <mat-icon>people</mat-icon>
+          <span>{{ event.capacity | number }} personas</span>
+        </div>
+      }
+    </div>
+
+    <!-- Pricing and CTA Footer -->
+    <div class="card-footer">
+      <div class="price-container">
+        @if (isLoadingPrice()) {
+          <span class="price-label">Cargando...</span>
+        } @else if (isSoldOut()) {
+          <span class="price-sold-out">Agotado</span>
+        } @else if (isComingSoon()) {
+          <span class="price-coming-soon">Próximamente</span>
+        } @else if (cheapestTicketPrice() !== null) {
+          <span class="price-label">Desde</span>
+          <span class="price-value">{{ cheapestTicketPrice() | currency:'USD':'symbol-narrow':'1.2-2' }} USDC</span>
+        }
+      </div>
+
+      @if (size !== 'compact') {
+        @if (!isSoldOut() && !isComingSoon()) {
+          <button class="btn-cta btn-cta--sm">
+            <span class="btn-cta__label">Comprar</span>
+          </button>
+        } @else if (isComingSoon()) {
+          <button class="btn-secondary">Ver Info</button>
+        }
+      }
+    </div>
+  </div>
+</div>
