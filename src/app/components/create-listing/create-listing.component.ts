@@ -58,6 +58,10 @@ export class CreateListingComponent implements OnInit {
   currentTxState: TxState | null = null;
   errorMessage = "";
 
+  // Fase 3.A: estado de aprobación del NFT precargado (la lectura getNftApproved se hace
+  // al cargar el componente, NO en el tap — un await ahí rompe el gesto en Safari mobile).
+  private nftApproved = false;
+
   get capPercentage(): number {
     if (this.eventDetails && this.eventDetails.maxResalePriceBps) {
       return Math.round((this.eventDetails.maxResalePriceBps - 10000) / 100);
@@ -100,6 +104,7 @@ export class CreateListingComponent implements OnInit {
           ]);
           this.listingForm.get("priceUsdc")?.updateValueAndValidity();
         }
+        this.preloadNftApproval();
       },
       error: (err) => {
         console.error("Error loading event details", err);
@@ -114,6 +119,20 @@ export class CreateListingComponent implements OnInit {
   get isPriceInvalid(): boolean {
     const control = this.listingForm.get("priceUsdc");
     return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  // Fase 3.A: precarga del estado de aprobación del NFT hacia el Marketplace.
+  private async preloadNftApproval(): Promise<void> {
+    if (!this.eventDetails?.eventNftAddress || !this.ticket?.tokenId) return;
+    try {
+      const approvedAddress = await this.contractsService.getNftApproved(
+        this.eventDetails.eventNftAddress,
+        BigInt(this.ticket.tokenId)
+      );
+      this.nftApproved = approvedAddress.toLowerCase() === this.web3Service.NFT_MARKETPLACE_ADDRESS.toLowerCase();
+    } catch (err) {
+      console.warn("No se pudo precargar el estado de aprobación del NFT", err);
+    }
   }
 
   async onSubmit(): Promise<void> {
@@ -133,7 +152,6 @@ export class CreateListingComponent implements OnInit {
     }
 
     this.errorMessage = "";
-    this.txStep = "idle";
     this.currentTxState = null;
 
     // Regla 3: verificación sincrónica de red — un await antes de MetaMask invalida
@@ -145,44 +163,39 @@ export class CreateListingComponent implements OnInit {
       return;
     }
 
-    try {
-      const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
+    const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
 
-      // 1. Verify ERC721 Approval
-      this.isLoading = true;
-      const approvedAddress = await this.contractsService.getNftApproved(eventNftAddress, BigInt(this.ticket.tokenId));
-      this.isLoading = false;
-
-      if (approvedAddress.toLowerCase() !== marketplaceAddress.toLowerCase()) {
-        this.txStep = "approving";
-
-        const approveTx = await this.web3Service.approveNft(
-          eventNftAddress,
-          marketplaceAddress,
-          BigInt(this.ticket.tokenId)
-        );
-
+    // Two-tap: si falta la aprobación del NFT, la disparamos primero (gesto intacto vía
+    // openWallet) y, al confirmarse, pedimos al usuario tocar "Publicar" de nuevo. El
+    // segundo tap ya encuentra el NFT aprobado → la publicación es un único write.
+    if (!this.nftApproved) {
+      this.txStep = "approving";
+      const approvePromise = this.web3Service.approveNft(
+        eventNftAddress,
+        marketplaceAddress,
+        BigInt(this.ticket.tokenId)
+      );
+      approvePromise.then((approveTx) => {
         this.transactionService.track(approveTx).subscribe({
           next: (state) => {
             this.currentTxState = state;
             if (state.status === "confirmed") {
-              this.listOnMarketplace(eventNftAddress);
+              this.nftApproved = true;
+              this.txStep = "idle";
+              this.snackBar.open('NFT aprobado. Tocá "Publicar" de nuevo para confirmar.', "Cerrar", { duration: 7000 });
             } else if (state.status === "failed") {
               this.txStep = "idle";
               this.errorMessage = "La aprobación del NFT falló o fue cancelada.";
             }
           },
-          error: (err) => {
-            this.handleError(err);
-          },
+          error: (err) => this.handleError(err),
         });
-      } else {
-        // Already approved, proceed to list
-        await this.listOnMarketplace(eventNftAddress);
-      }
-    } catch (err: any) {
-      this.handleError(err);
+      }).catch((err) => this.handleError(err));
+      return;
     }
+
+    // NFT ya aprobado → publicar directo (single write).
+    await this.listOnMarketplace(eventNftAddress);
   }
 
   async listOnMarketplace(eventNftAddress: string): Promise<void> {

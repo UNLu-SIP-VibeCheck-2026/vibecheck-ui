@@ -38,6 +38,11 @@ export class SwapComponent implements OnInit, OnDestroy {
   usdcBalance = signal<string>("0.00");
   vbkBalance = signal<string>("0.00");
 
+  // Allowance precargada hacia el router de Uniswap (Fase 3.A). Se compara en el tap
+  // para decidir approve (two-tap) vs swap directo (single write).
+  private usdcRouterAllowance = signal<bigint>(0n);
+  private vbkRouterAllowance = signal<bigint>(0n);
+
   // Timer state
   secondsToRefresh = signal<number>(30);
   private countdownInterval: any = null;
@@ -63,6 +68,7 @@ export class SwapComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.addressSub = this.web3Service.connectedAddress$.subscribe(addr => {
       this.connectedAddress.set(addr);
+      this.preloadRouterAllowances();
     });
     this.usdcSub = this.web3Service.usdcBalance$.subscribe(bal => {
       this.usdcBalance.set(bal);
@@ -247,6 +253,49 @@ export class SwapComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Fase 3.A: precarga de allowances hacia el router (read-only, fuera del tap).
+  private async preloadRouterAllowances(): Promise<void> {
+    const wallet = this.connectedAddress();
+    if (!wallet) return;
+    const router = this.web3Service.UNISWAP_ROUTER_ADDRESS;
+    try {
+      this.usdcRouterAllowance.set(await this.web3Service.getErc20Allowance(this.web3Service.USDC_ADDRESS, wallet, router));
+    } catch (err) {
+      console.warn("No se pudo precargar allowance de USDC", err);
+    }
+    try {
+      this.vbkRouterAllowance.set(await this.web3Service.getErc20Allowance(this.web3Service.VBK_ADDRESS, wallet, router));
+    } catch (err) {
+      console.warn("No se pudo precargar allowance de VBK", err);
+    }
+  }
+
+  // Fase 3.B (combinar): approve infinito al router dentro del gesto + re-tap. Tras
+  // confirmarse, el swap es un único write (gesto intacto → deep-link en mobile).
+  private approveRouterAndPromptRetry(token: string, label: string, retryLabel: string): void {
+    this.stopCountdown();
+    this.step.set('approving');
+    this.errorMessage.set("");
+    this.txHash.set("");
+    this.receivedAmount.set("");
+    this.snackBar.open(`Aprobando ${label}... confirmá en tu billetera.`, "Cerrar", { duration: 4000 });
+
+    const approvePromise = this.web3Service.approveErc20Max(token, this.web3Service.UNISWAP_ROUTER_ADDRESS);
+    approvePromise.then(async (txHash) => {
+      await this.web3Service.waitForTransaction(txHash);
+      if (token === this.web3Service.USDC_ADDRESS) {
+        this.usdcRouterAllowance.set(this.web3Service.MAX_UINT256);
+      } else {
+        this.vbkRouterAllowance.set(this.web3Service.MAX_UINT256);
+      }
+      this.step.set('idle');
+      this.snackBar.open(`${label} aprobado. Tocá "${retryLabel}" de nuevo para confirmar.`, "Cerrar", { duration: 7000 });
+    }).catch((error: any) => {
+      console.error("Error aprobando token para swap:", error);
+      this.handleSwapError(error, 'buy');
+    });
+  }
+
   async onConvert() {
     const amount = parseFloat(this.usdcAmountInput());
     const balance = parseFloat(this.usdcBalance());
@@ -256,32 +305,32 @@ export class SwapComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const amountIn = parseUnits(amount.toString(), 6);
+    const quoted = this.quotedVbk();
+    if (!quoted) {
+      this.snackBar.open("No hay cotización disponible.", "Cerrar", { duration: 3000 });
+      return;
+    }
+
+    // Two-tap: si falta allowance, approve infinito primero y pedir re-tap (gesto intacto).
+    if (this.usdcRouterAllowance() < amountIn) {
+      this.approveRouterAndPromptRetry(this.web3Service.USDC_ADDRESS, "USDC", "Convertir");
+      return;
+    }
+
     this.stopCountdown();
-    this.step.set('approving');
+    this.step.set('swapping');
     this.errorMessage.set("");
     this.txHash.set("");
     this.receivedAmount.set("");
 
     try {
-      const amountIn = parseUnits(amount.toString(), 6);
-      const quoted = this.quotedVbk();
-      if (!quoted) throw new Error("No hay cotización disponible.");
-      
       const slippagePct = 2;
       const amountOutMin = (quoted * BigInt(100 - slippagePct)) / 100n;
- 
-      // Step 1: Approve
-      await this.web3Service.approveToken(
-        this.web3Service.USDC_ADDRESS,
-        this.web3Service.UNISWAP_ROUTER_ADDRESS,
-        amountIn
-      );
- 
-      // Step 2: Swap
-      this.step.set('swapping');
+
       const userAddr = this.connectedAddress();
       if (!userAddr) throw new Error("Billetera no conectada.");
- 
+
       const deadline = Math.floor(Date.now() / 1000) + 300;
       const hash = await this.web3Service.executeSwap(
         amountIn,
@@ -290,13 +339,13 @@ export class SwapComponent implements OnInit, OnDestroy {
         userAddr,
         deadline
       );
- 
+
       this.txHash.set(hash);
-      
+
       // Extract received VBK amount
       const received = await this.web3Service.getVbkReceivedFromSwap(hash, userAddr);
       this.receivedAmount.set(parseFloat(formatUnits(received, 18)).toFixed(4));
-      
+
       // Update balances
       await this.web3Service.updateBalances(userAddr);
       this.step.set('success');
@@ -305,7 +354,7 @@ export class SwapComponent implements OnInit, OnDestroy {
       this.handleSwapError(error, 'buy');
     }
   }
- 
+
   async onSell() {
     const amount = parseFloat(this.vbkAmountInput());
     const balance = parseFloat(this.vbkBalance());
@@ -314,35 +363,35 @@ export class SwapComponent implements OnInit, OnDestroy {
       this.snackBar.open("Saldo de VBK insuficiente.", "Cerrar", { duration: 3000 });
       return;
     }
- 
+
+    const amountIn = parseUnits(amount.toString(), 18);
+    const quoted = this.quotedUsdc();
+    if (!quoted) {
+      this.snackBar.open("No hay cotización disponible.", "Cerrar", { duration: 3000 });
+      return;
+    }
+
+    // Two-tap: si falta allowance, approve infinito primero y pedir re-tap (gesto intacto).
+    if (this.vbkRouterAllowance() < amountIn) {
+      this.approveRouterAndPromptRetry(this.web3Service.VBK_ADDRESS, "VBK", "Vender");
+      return;
+    }
+
     this.stopCountdown();
-    this.step.set('approving');
+    this.step.set('swapping');
     this.errorMessage.set("");
     this.txHash.set("");
     this.receivedAmount.set("");
- 
+
     try {
-      const amountIn = parseUnits(amount.toString(), 18);
-      const quoted = this.quotedUsdc();
-      if (!quoted) throw new Error("No hay cotización disponible.");
-      
       // 15% disincentive fee + 2% slippage
       const afterFee = (quoted * 85n) / 100n;
       const slippagePct = 2;
       const amountOutMin = (afterFee * BigInt(100 - slippagePct)) / 100n;
- 
-      // Step 1: Approve
-      await this.web3Service.approveToken(
-        this.web3Service.VBK_ADDRESS,
-        this.web3Service.UNISWAP_ROUTER_ADDRESS,
-        amountIn
-      );
- 
-      // Step 2: Swap
-      this.step.set('swapping');
+
       const userAddr = this.connectedAddress();
       if (!userAddr) throw new Error("Billetera no conectada.");
- 
+
       const deadline = Math.floor(Date.now() / 1000) + 300;
       const hash = await this.web3Service.executeSwap(
         amountIn,
@@ -351,13 +400,13 @@ export class SwapComponent implements OnInit, OnDestroy {
         userAddr,
         deadline
       );
- 
+
       this.txHash.set(hash);
-      
+
       // Extract received USDC amount
       const received = await this.web3Service.getUsdcReceivedFromSwap(hash, userAddr);
       this.receivedAmount.set(parseFloat(formatUnits(received, 6)).toFixed(2));
-      
+
       // Update balances
       await this.web3Service.updateBalances(userAddr);
       this.step.set('success');

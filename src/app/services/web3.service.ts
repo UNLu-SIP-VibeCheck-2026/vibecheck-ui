@@ -11,14 +11,15 @@ import {
   getAccount,
   waitForTransactionReceipt 
 } from "@wagmi/core";
-import { 
-  parseUnits, 
-  formatUnits, 
-  formatEther, 
-  parseEther, 
-  decodeEventLog, 
-  decodeAbiParameters, 
-  parseAbi 
+import {
+  parseUnits,
+  formatUnits,
+  formatEther,
+  parseEther,
+  decodeEventLog,
+  decodeAbiParameters,
+  parseAbi,
+  maxUint256
 } from "viem";
 
 @Injectable({
@@ -61,6 +62,12 @@ export class Web3Service {
   readonly TREASURY_ADDRESS = "0x54618BBcc0b65778a872A0F01397f7D9983F8507";
 
   private readonly SEPOLIA_CHAIN_ID = 11155111;
+
+  // Approval infinito: aprobamos maxUint256 una sola vez por (token, spender). Así las
+  // compras/swaps siguientes NO requieren un segundo write de approve y quedan en un
+  // único writeContract (gesto del tap intacto → deep-link a MetaMask funciona en mobile).
+  // Ver MOBILE_WALLETCONNECT_FIX.md (Fase 3.B, opción "combinar").
+  readonly MAX_UINT256 = maxUint256;
 
   private readonly ERC20_ABI = parseAbi([
     "function balanceOf(address owner) view returns (uint256)",
@@ -290,24 +297,45 @@ export class Web3Service {
     } as any) as bigint;
   }
 
-  async buyTicketWithUSDC(
+  // --- Compra de tickets (Offering) — split approve/buy para el fix mobile ---
+  // El approve y el buy se separan para que el componente pueda: precargar la allowance,
+  // disparar el approve infinito en el primer tap y el buy en un segundo tap (gesto nuevo).
+  // Cuando ya hay allowance suficiente, el buy es un único write en un solo tap.
+
+  /** Monto de USDC (con 7% de buffer) que el contrato Offering necesita gastar. */
+  usdcOfferingAmount(priceUsdc: number): bigint {
+    return (parseUnits(priceUsdc.toString(), 6) * 107n) / 100n;
+  }
+
+  /** Máximo de VBK a gastar para una compra, dado el quote (5% slippage + 4% fee). */
+  vbkOfferingMaxAmount(quote: bigint): bigint {
+    const vbkNeeded = (quote * 105n) / 100n; // 5% slippage
+    return (vbkNeeded * 104n) / 100n; // 4% fee
+  }
+
+  private extractTokenId(receipt: any, eventName: string): number {
+    for (const log of receipt.logs) {
+      try {
+        const decoded = decodeEventLog({
+          abi: this.OFFERING_ABI,
+          data: log.data,
+          topics: log.topics,
+        } as any) as any;
+        if (decoded.eventName === eventName) {
+          return Number(decoded.args.tokenId);
+        }
+      } catch (e) {
+        // ignore other contracts
+      }
+    }
+    throw new Error("No se pudo extraer el tokenId de los logs de la transacción.");
+  }
+
+  /** Solo el write de compra con USDC (asume allowance ya aprobada). */
+  async buyOfferingWithUSDC(
     eventNftAddress: string,
     tierIndex: number,
-    priceUsdc: number,
   ): Promise<{ txHash: string; tokenId: number }> {
-    const amountInUnits = (parseUnits(priceUsdc.toString(), 6) * 107n) / 100n;
-
-    // Approve USDC (100% direct for mobile responsiveness)
-    const approveTxHash = await this.writeWithRedirect({
-      address: this.USDC_ADDRESS as `0x${string}`,
-      abi: this.ERC20_ABI,
-      functionName: "approve",
-      args: [this.OFFERING_NFT_ADDRESS as `0x${string}`, amountInUnits],
-    } as any);
-
-    await waitForTransactionReceipt(config, { hash: approveTxHash });
-
-    // Buy ticket
     const buyTxHash = await this.writeWithRedirect({
       address: this.OFFERING_NFT_ADDRESS as `0x${string}`,
       abi: this.OFFERING_ABI,
@@ -316,50 +344,16 @@ export class Web3Service {
     } as any);
 
     const receipt = await waitForTransactionReceipt(config, { hash: buyTxHash });
-
-    let tokenId: number | null = null;
-    for (const log of receipt.logs) {
-      try {
-        const decoded = decodeEventLog({
-          abi: this.OFFERING_ABI,
-          data: log.data,
-          topics: log.topics,
-        } as any) as any;
-        if (decoded.eventName === "TicketPurchasedUSDC") {
-          tokenId = Number(decoded.args.tokenId);
-          break;
-        }
-      } catch (e) {
-        // ignore other contracts
-      }
-    }
-
-    if (tokenId === null) {
-      throw new Error("No se pudo extraer el tokenId de los logs de la transacción.");
-    }
-
+    const tokenId = this.extractTokenId(receipt, "TicketPurchasedUSDC");
     return { txHash: receipt.transactionHash, tokenId };
   }
 
-  async buyTicketWithVBK(
+  /** Solo el write de compra con VBK (asume allowance ya aprobada). */
+  async buyOfferingWithVBK(
     eventNftAddress: string,
     tierIndex: number,
+    maxVbkAmount: bigint,
   ): Promise<{ txHash: string; tokenId: number }> {
-    const quote = await this.getVbkQuote(eventNftAddress, tierIndex);
-    const vbkNeeded = (quote * 105n) / 100n; // 5% slippage
-    const maxVbkAmount = (vbkNeeded * 104n) / 100n; // 4% fee
-
-    // Approve VBK
-    const approveTxHash = await this.writeWithRedirect({
-      address: this.VBK_ADDRESS as `0x${string}`,
-      abi: this.ERC20_ABI,
-      functionName: "approve",
-      args: [this.OFFERING_NFT_ADDRESS as `0x${string}`, maxVbkAmount],
-    } as any);
-
-    await waitForTransactionReceipt(config, { hash: approveTxHash });
-
-    // Buy ticket
     const buyTxHash = await this.writeWithRedirect({
       address: this.OFFERING_NFT_ADDRESS as `0x${string}`,
       abi: this.OFFERING_ABI,
@@ -368,28 +362,7 @@ export class Web3Service {
     } as any);
 
     const receipt = await waitForTransactionReceipt(config, { hash: buyTxHash });
-
-    let tokenId: number | null = null;
-    for (const log of receipt.logs) {
-      try {
-        const decoded = decodeEventLog({
-          abi: this.OFFERING_ABI,
-          data: log.data,
-          topics: log.topics,
-        } as any) as any;
-        if (decoded.eventName === "TicketPurchasedVBK") {
-          tokenId = Number(decoded.args.tokenId);
-          break;
-        }
-      } catch (e) {
-        // ignore other contracts
-      }
-    }
-
-    if (tokenId === null) {
-      throw new Error("No se pudo extraer el tokenId de los logs de la transacción.");
-    }
-
+    const tokenId = this.extractTokenId(receipt, "TicketPurchasedVBK");
     return { txHash: receipt.transactionHash, tokenId };
   }
 
@@ -617,6 +590,26 @@ export class Web3Service {
     } as any);
   }
 
+  /** Compra de reventa con USDC (single write, asume allowance ya aprobada). */
+  async buyMarketplaceWithUSDC(listingId: bigint): Promise<string> {
+    return await this.writeWithRedirect({
+      address: this.NFT_MARKETPLACE_ADDRESS as `0x${string}`,
+      abi: this.MARKETPLACE_ABI,
+      functionName: "buyWithUSDC",
+      args: [listingId],
+    } as any);
+  }
+
+  /** Compra de reventa con VBK (single write, asume allowance ya aprobada). */
+  async buyMarketplaceWithVBK(listingId: bigint): Promise<string> {
+    return await this.writeWithRedirect({
+      address: this.NFT_MARKETPLACE_ADDRESS as `0x${string}`,
+      abi: this.MARKETPLACE_ABI,
+      functionName: "buyWithVBK",
+      args: [listingId],
+    } as any);
+  }
+
   async cancelListing(listingId: bigint): Promise<string> {
     return await this.writeWithRedirect({
       address: this.NFT_MARKETPLACE_ADDRESS as `0x${string}`,
@@ -668,6 +661,32 @@ export class Web3Service {
       abi: this.ERC20_ABI,
       functionName: "approve",
       args: [spender as `0x${string}`, amount],
+    } as any);
+  }
+
+  // --- Helpers genéricos de allowance ERC20 (usados por la precarga / Fase 3.A) ---
+
+  /** Lee la allowance de cualquier ERC20. Read-only: seguro de llamar en la precarga. */
+  async getErc20Allowance(tokenAddress: string, owner: string, spender: string): Promise<bigint> {
+    return await readContract(config, {
+      address: tokenAddress as `0x${string}`,
+      abi: this.ERC20_ABI,
+      functionName: "allowance",
+      args: [owner as `0x${string}`, spender as `0x${string}`],
+    } as any) as bigint;
+  }
+
+  /**
+   * Aprueba maxUint256 (approval infinito) para (token, spender) y trae MetaMask al
+   * frente dentro del gesto. Devuelve el hash; el caller espera el receipt y recién
+   * entonces (en un NUEVO tap) dispara el write final. Centraliza la Fase 3.B.
+   */
+  async approveErc20Max(tokenAddress: string, spender: string): Promise<string> {
+    return await this.writeWithRedirect({
+      address: tokenAddress as `0x${string}`,
+      abi: this.ERC20_ABI,
+      functionName: "approve",
+      args: [spender as `0x${string}`, this.MAX_UINT256],
     } as any);
   }
 

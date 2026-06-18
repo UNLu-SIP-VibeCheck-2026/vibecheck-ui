@@ -73,7 +73,7 @@ Clave: el body de una función `async` corre **síncrono hasta el primer `await`
 
 ---
 
-## 5. ✅ Cambios YA APLICADOS (en esta sesión)
+## 5. Cambios YA APLICADOS (en esta sesión)
 
 ### Fix Buffer (Sección 3.1)
 | Archivo | Cambio |
@@ -88,14 +88,14 @@ Clave: el body de una función `async` corre **síncrono hasta el primer `await`
 | `src/app/services/wallet.service.ts` | Métodos nuevos: `isMobile()`, `getWalletDeepLink()`, `openWallet()`. |
 | `src/app/services/web3.service.ts` | Passthrough `openWallet()` + wrapper privado `writeWithRedirect()`. |
 
-### Fase 1 — Firma SIWE (single signature) ✅
+### Fase 1 — Firma SIWE (single signature)
 En cada handler se separa la promesa, se dispara `signMessage`, se llama `openWallet()` en el mismo tick y luego `.then()`:
 - `src/app/components/wallet/web3-wallet/web3-wallet.component.ts` → `linkWallet()`
 - `src/app/components/select-tickets/select-tickets.component.ts` → `signAndVerify()`
 - `src/app/components/marketplace-detail/marketplace-detail.component.ts` → `signAndVerify()`
 - `src/app/components/advertise-event/advertise-event.component.ts` → `signAndVerify()`
 
-### Fase 2 — Transacciones (centralizado) ✅
+### Fase 2 — Transacciones (centralizado)
 - `src/app/services/web3.service.ts`: **TODOS** los `writeContract(config, …)` ahora pasan por
   `this.writeWithRedirect({...})` (15 sitios: buy USDC/VBK, list, cancel, gift, approve*, swap, launchEvent,
   refund). Cada uno foregroundea MetaMask dentro del gesto. También `sendFunds` (ETH `sendTransaction`).
@@ -111,8 +111,30 @@ En cada handler se separa la promesa, se dispara `signMessage`, se llama `openWa
 
 ## 6. ⏳ PENDIENTE (Fase 3 y 4) — requiere implementar + TESTEAR en device
 
-> Esto NO se implementó porque necesita ajustes de template/UX y **validación en celular real**.
-> Está documentado con el approach exacto para retomarlo.
+> **ACTUALIZACIÓN 2026-06-18:** la **Fase 3 (3.A + 3.B) ya está IMPLEMENTADA** (falta TESTEAR en
+> device real). Estrategia elegida: **combinar precarga + approval infinito (maxUint256) + two-tap**.
+> La **Fase 4 NO se implementó** (se deja para después del test en celu, como sugería el doc).
+>
+> Cómo quedó el patrón (uniforme en los 5 componentes):
+> - **Precarga (3.A):** las lecturas que rompían el gesto (`getNftApproved`, `getNftOwner`,
+>   `allowance`, quotes VBK, validación del destinatario en gift) se movieron a cuando carga el
+>   componente / se selecciona el ticket o destinatario. El tap ya NO hace ningún `await` previo.
+> - **Approval infinito (3.B):** todos los `approve` de ERC20 ahora son `maxUint256`
+>   (`web3Service.approveErc20Max(token, spender)`). Así, una vez aprobado, las compras/swaps
+>   siguientes saltan el approve y son **un único write en un solo tap**.
+> - **Two-tap de fallback:** la PRIMERA vez (cuando falta allowance/approval), el tap dispara solo
+>   el approve (gesto intacto → `openWallet` abre MetaMask). Al confirmarse, un snackbar pide
+>   "tocá el botón de nuevo"; el segundo tap encuentra la allowance OK y hace el write final.
+>   En gift, que tiene 2 approvals (NFT per-token + USDC fee), pueden ser hasta 3 taps la 1ª vez.
+> - **Métodos nuevos en `web3.service.ts`:** `getErc20Allowance`, `approveErc20Max`,
+>   `usdcOfferingAmount`, `vbkOfferingMaxAmount`, `buyOfferingWithUSDC/VBK` (solo el buy, split del
+>   approve), `buyMarketplaceWithUSDC/VBK`, `MAX_UINT256`. `marketplace-detail` dejó de usar
+>   `writeContract` directo y `TokenApprovalService` (ahora rutea por el service → dispara `openWallet`).
+>
+> ⚠️ A VALIDAR en device (ver checklist Sección 7): que los contratos de test (USDC `0x1c7D…`,
+> VBK `0xF84c…`) acepten `approve(maxUint256)` sin revertir, y que el flujo de re-tap se sienta bien.
+>
+> El texto de abajo (3.A/3.B/4) es el **approach original** que se siguió; se deja como referencia.
 
 ### Fase 3.A — Lecturas antes del primer write (rompen el gesto)
 Estos handlers hacen `await` de una **lectura** (o HTTP) ANTES del primer write, así que el gesto ya está perdido
@@ -171,7 +193,7 @@ npm install      # baja "buffer" y ACTUALIZA package-lock.json
 npm run build    # o: npm start  (ng serve)  para local
 ```
 
-⚠️ **Deploy / CI (Docker):** se agregó `buffer` a `package.json`, así que `package-lock.json` quedó desactualizado.
+**Deploy / CI (Docker):** se agregó `buffer` a `package.json`, así que `package-lock.json` quedó desactualizado.
 - Si el build usa **`npm ci`** → **va a fallar** hasta commitear el `package-lock.json` actualizado.
 - Con `npm install` en el Dockerfile no hay problema.
 

@@ -84,6 +84,15 @@ export class GiftTicketComponent implements OnInit, OnDestroy {
   royaltyFee = 0;
   totalFee = 0;
 
+  // Fase 3.A: estado on-chain precargado (lecturas fuera del tap) + validación del
+  // destinatario hecha al seleccionarlo (no en el tap). Así confirmGift va directo al
+  // primer write sin ningún await previo que rompa el gesto en Safari mobile.
+  private nftApproved = false;
+  private usdcFeeApproved = false;
+  private ownerOnChain: string | null = null;
+  recipientValidated = false;
+  private isValidatingRecipient = false;
+
   apiBaseUrl = environment.apiBaseUrl;
 
   ngOnInit(): void {
@@ -153,6 +162,8 @@ export class GiftTicketComponent implements OnInit, OnDestroy {
         this.platformFee = price * 0.05;
         this.royaltyFee = price * 0.05;
         this.totalFee = price * 0.10;
+
+        this.preloadGiftState();
       },
       error: (err) => {
         console.error('Error loading ticket details', err);
@@ -189,16 +200,74 @@ export class GiftTicketComponent implements OnInit, OnDestroy {
     this.searchQuery = '';
     this.isManualAddressValid = false;
     this.filteredFriends = [];
+    this.validateRecipient();
   }
 
   selectUser(user: SearchResultUser): void {
     if (user && user.canReceiveGift) {
       this.selectedUser = user;
+      this.validateRecipient();
     }
   }
 
   clearSelection(): void {
     this.selectedUser = null;
+    this.recipientValidated = false;
+  }
+
+  // Fase 3.A: validamos el destinatario al seleccionarlo (HTTP fuera del tap). Así
+  // confirmGift no necesita ningún await antes del primer write y conserva el gesto.
+  private validateRecipient(): void {
+    this.recipientValidated = false;
+    this.errorMessage = '';
+    const wallet = this.selectedUser?.wallet;
+    if (!wallet || !isAddress(wallet)) {
+      this.errorMessage = 'La dirección del destinatario no es una wallet de Ethereum válida.';
+      return;
+    }
+    this.isValidatingRecipient = true;
+    this.marketplaceService.validateGift({ recipientWallet: wallet }).subscribe({
+      next: () => {
+        this.isValidatingRecipient = false;
+        this.recipientValidated = true;
+      },
+      error: (err) => {
+        this.isValidatingRecipient = false;
+        console.error('Validation error', err);
+        this.errorMessage = err.error?.message || 'La wallet destinataria no está registrada en VibeCheck.';
+      }
+    });
+  }
+
+  // Fase 3.A: precarga del estado on-chain (dueño + aprobaciones) fuera del tap.
+  private async preloadGiftState(): Promise<void> {
+    if (!this.ticket || this.ticket.tokenId === null || this.ticket.tokenId === undefined) return;
+    const eventNftAddress = this.ticket.eventNftAddress;
+    if (!eventNftAddress) return;
+    const tokenId = BigInt(this.ticket.tokenId);
+    const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
+    const donorWallet = this.web3Service.walletAddress$.getValue();
+
+    try {
+      this.ownerOnChain = await this.contractsService.getNftOwner(eventNftAddress, tokenId);
+    } catch (err) {
+      console.warn('No se pudo precargar el dueño del NFT', err);
+    }
+    try {
+      const approvedAddress = await this.contractsService.getNftApproved(eventNftAddress, tokenId);
+      this.nftApproved = approvedAddress.toLowerCase() === marketplaceAddress.toLowerCase();
+    } catch (err) {
+      console.warn('No se pudo precargar la aprobación del NFT', err);
+    }
+    if (donorWallet) {
+      try {
+        const totalFeeOnChain = BigInt(Math.round(this.totalFee * 1_000_000));
+        const allowance = await this.web3Service.getUsdcAllowance(donorWallet, marketplaceAddress);
+        this.usdcFeeApproved = allowance >= totalFeeOnChain;
+      } catch (err) {
+        console.warn('No se pudo precargar la allowance de USDC', err);
+      }
+    }
   }
 
   getUserImageUrl(username: string): string {
@@ -210,8 +279,10 @@ export class GiftTicketComponent implements OnInit, OnDestroy {
     return q.length > 0 && q.length < 3 && !this.isManualAddressValid;
   }
 
-  // Regla 3: sin await antes de MetaMask — Safari mobile invalida el gesto del
-  // usuario en el primer await, bloqueando el deeplink a MetaMask.
+  // Regla 3 + Fase 3.B: sin await antes del write — el destinatario ya fue validado al
+  // seleccionarlo y las lecturas on-chain están precargadas. Si falta una aprobación,
+  // disparamos ese write (gesto intacto) y pedimos al usuario tocar "Regalar" de nuevo;
+  // el siguiente tap avanza al próximo paso hasta llegar al regalo (único write final).
   confirmGift(): void {
     if (!this.ticket || !this.selectedUser) return;
 
@@ -233,67 +304,53 @@ export class GiftTicketComponent implements OnInit, OnDestroy {
     }
 
     this.errorMessage = '';
-    this.txStep = 'validating';
     this.currentTxState = null;
 
     const chainId = this.web3Service.chainId$.getValue();
     if (chainId !== 11155111) {
-      this.txStep = 'idle';
       this.errorMessage = 'Cambiá la red a Sepolia en MetaMask';
       this.web3Service.switchToSepolia();
       return;
     }
 
-    this.marketplaceService.validateGift({ recipientWallet }).subscribe({
-      next: () => {
-        this.executeOnChainGiftFlow(eventNftAddress, recipientWallet);
-      },
-      error: (err) => {
-        console.error('Validation error', err);
-        this.txStep = 'idle';
-        this.errorMessage = err.error?.message || 'La wallet destinataria no está registrada en VibeCheck.';
-      }
-    });
-  }
+    // Destinatario validado en la selección (Fase 3.A).
+    if (this.isValidatingRecipient) {
+      this.errorMessage = 'Validando destinatario, intentá de nuevo en un momento...';
+      return;
+    }
+    if (!this.recipientValidated) {
+      this.validateRecipient();
+      this.errorMessage = 'Validando destinatario, tocá "Regalar" de nuevo en un momento...';
+      return;
+    }
 
-  private async executeOnChainGiftFlow(eventNftAddress: string, recipientWallet: string): Promise<void> {
-    if (!this.ticket || this.ticket.tokenId === null) return;
+    const connectedWallet = this.web3Service.walletAddress$.getValue();
+    if (!connectedWallet) {
+      this.errorMessage = 'Por favor conectá tu billetera.';
+      return;
+    }
 
-    try {
-      const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
+    // Verificación de dueño con el dato precargado (sin await en el tap).
+    if (this.ownerOnChain && connectedWallet.toLowerCase() !== this.ownerOnChain.toLowerCase()) {
+      this.errorMessage = `La billetera conectada (${connectedWallet.slice(0, 6)}...${connectedWallet.slice(-4)}) no es la dueña de esta entrada en la blockchain. Conectate con la billetera dueña (${this.ownerOnChain.slice(0, 6)}...${this.ownerOnChain.slice(-4)}) para poder regalarla.`;
+      return;
+    }
 
-      // Verify that the connected wallet owns the ticket on-chain
-      const connectedWallet = this.web3Service.walletAddress$.getValue();
-      if (!connectedWallet) {
-        this.txStep = 'idle';
-        this.errorMessage = 'Por favor conectá tu billetera.';
-        return;
-      }
+    const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
+    const tokenId = BigInt(this.ticket.tokenId);
 
-      const tokenOwner = await this.contractsService.getNftOwner(eventNftAddress, BigInt(this.ticket.tokenId));
-
-      if (connectedWallet.toLowerCase() !== tokenOwner.toLowerCase()) {
-        this.txStep = 'idle';
-        this.errorMessage = `La billetera conectada (${connectedWallet.slice(0, 6)}...${connectedWallet.slice(-4)}) no es la dueña de esta entrada en la blockchain. Conectate con la billetera dueña (${tokenOwner.slice(0, 6)}...${tokenOwner.slice(-4)}) para poder regalarla.`;
-        return;
-      }
-
-      // 1. Verify ERC721 Approval
+    // Paso 1: aprobar el NFT (per-token) si falta.
+    if (!this.nftApproved) {
       this.txStep = 'approving-nft';
-      const approvedAddress = await this.contractsService.getNftApproved(eventNftAddress, BigInt(this.ticket.tokenId));
-
-      if (approvedAddress.toLowerCase() !== marketplaceAddress.toLowerCase()) {
-        const approveTx = await this.web3Service.approveNft(
-          eventNftAddress,
-          marketplaceAddress,
-          BigInt(this.ticket.tokenId)
-        );
-
+      const approvePromise = this.web3Service.approveNft(eventNftAddress, marketplaceAddress, tokenId);
+      approvePromise.then((approveTx) => {
         this.transactionService.track(approveTx).subscribe({
           next: (state) => {
             this.currentTxState = state;
             if (state.status === 'confirmed') {
-              this.ensureUsdcAllowance(eventNftAddress, recipientWallet);
+              this.nftApproved = true;
+              this.txStep = 'idle';
+              this.snackBar.open('NFT aprobado. Tocá "Regalar" de nuevo para continuar.', 'Cerrar', { duration: 7000 });
             } else if (state.status === 'failed') {
               this.txStep = 'idle';
               this.errorMessage = 'La aprobación de transferencia del NFT falló o fue cancelada.';
@@ -301,41 +358,22 @@ export class GiftTicketComponent implements OnInit, OnDestroy {
           },
           error: (err) => this.handleError(err)
         });
-      } else {
-        // Already approved, proceed to USDC allowance check
-        await this.ensureUsdcAllowance(eventNftAddress, recipientWallet);
-      }
-    } catch (err: any) {
-      this.handleError(err);
+      }).catch((err) => this.handleError(err));
+      return;
     }
-  }
 
-  private async ensureUsdcAllowance(eventNftAddress: string, recipientWallet: string): Promise<void> {
-    if (!this.ticket) return;
-
-    try {
+    // Paso 2: aprobar el fee en USDC (approval infinito) si falta.
+    if (!this.usdcFeeApproved) {
       this.txStep = 'approving-usdc';
-      this.currentTxState = null;
-
-      const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
-      const donorWallet = this.web3Service.walletAddress$.getValue();
-      if (!donorWallet) {
-        this.txStep = 'idle';
-        this.errorMessage = 'Por favor conectá tu billetera.';
-        return;
-      }
-
-      const totalFeeOnChain = BigInt(Math.round(this.totalFee * 1_000_000)); // USDC has 6 decimals
-      const currentAllowance = await this.web3Service.getUsdcAllowance(donorWallet, marketplaceAddress);
-
-      if (currentAllowance < totalFeeOnChain) {
-        const approveUsdcTx = await this.web3Service.approveUsdc(marketplaceAddress, totalFeeOnChain);
-
-        this.transactionService.track(approveUsdcTx).subscribe({
+      const approvePromise = this.web3Service.approveErc20Max(this.web3Service.USDC_ADDRESS, marketplaceAddress);
+      approvePromise.then((approveTx) => {
+        this.transactionService.track(approveTx).subscribe({
           next: (state) => {
             this.currentTxState = state;
             if (state.status === 'confirmed') {
-              this.giftTicketOnChain(eventNftAddress, recipientWallet);
+              this.usdcFeeApproved = true;
+              this.txStep = 'idle';
+              this.snackBar.open('USDC aprobado. Tocá "Regalar" de nuevo para confirmar.', 'Cerrar', { duration: 7000 });
             } else if (state.status === 'failed') {
               this.txStep = 'idle';
               this.errorMessage = 'La aprobación de USDC falló o fue cancelada.';
@@ -343,13 +381,12 @@ export class GiftTicketComponent implements OnInit, OnDestroy {
           },
           error: (err) => this.handleError(err)
         });
-      } else {
-        // Already approved, proceed to execute gift on-chain
-        await this.giftTicketOnChain(eventNftAddress, recipientWallet);
-      }
-    } catch (err: any) {
-      this.handleError(err);
+      }).catch((err) => this.handleError(err));
+      return;
     }
+
+    // Paso 3: regalo on-chain (único write, gesto intacto).
+    this.giftTicketOnChain(eventNftAddress, recipientWallet);
   }
 
   private async giftTicketOnChain(eventNftAddress: string, recipientWallet: string): Promise<void> {

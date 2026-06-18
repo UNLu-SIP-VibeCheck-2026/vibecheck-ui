@@ -96,6 +96,14 @@ export class TicketPurchaseComponent implements OnInit {
   }>>([]);
 
   vbkQuotes = signal<Record<number, string>>({});
+  // Quote en bigint por tier: lo precargamos para que la compra con VBK no necesite
+  // leer el quote dentro del tap (un await ahí rompe el gesto en Safari mobile).
+  private vbkQuoteBig = signal<Record<number, bigint>>({});
+
+  // Allowance precargada del contrato Offering (Fase 3.A). Se compara de forma SÍNCRONA
+  // en el tap para decidir si hace falta approve (two-tap) o si la compra es directa.
+  private usdcAllowance = signal<bigint>(0n);
+  private vbkAllowance = signal<bigint>(0n);
 
   // Purchase final details signals
   selectedTierName = signal<string>('');
@@ -359,6 +367,7 @@ export class TicketPurchaseComponent implements OnInit {
     if (!currentEvent || !currentEvent.eventNftAddress) return;
     const currentTiers = this.mappedTiers();
     const quotes: Record<number, string> = {};
+    const quotesBig: Record<number, bigint> = {};
     const updatedTiers = currentTiers.map(t => ({ ...t }));
 
     try {
@@ -366,6 +375,7 @@ export class TicketPurchaseComponent implements OnInit {
         try {
           const quote = await this.web3Service.getVbkQuote(currentEvent.eventNftAddress, tier.tierIndex);
           quotes[tier.ticketTypeId] = formatUnits(quote, 18);
+          quotesBig[tier.ticketTypeId] = quote;
         } catch (err) {
           console.error(`Error loading VBK quote for tier ${tier.name}:`, err);
           quotes[tier.ticketTypeId] = 'Error';
@@ -384,6 +394,50 @@ export class TicketPurchaseComponent implements OnInit {
 
     this.mappedTiers.set(updatedTiers);
     this.vbkQuotes.set(quotes);
+    this.vbkQuoteBig.set(quotesBig);
+    this.preloadOfferingAllowances();
+  }
+
+  // Fase 3.A: precarga de las allowances del contrato Offering. Se hace fuera del tap,
+  // así el handler de compra puede decidir sincrónicamente si necesita approve.
+  private async preloadOfferingAllowances(): Promise<void> {
+    const wallet = this.connectedAddress();
+    if (!wallet) return;
+    const offering = this.web3Service.OFFERING_NFT_ADDRESS;
+    try {
+      this.usdcAllowance.set(await this.web3Service.getErc20Allowance(this.web3Service.USDC_ADDRESS, wallet, offering));
+    } catch (err) {
+      console.warn('No se pudo precargar allowance de USDC', err);
+    }
+    try {
+      this.vbkAllowance.set(await this.web3Service.getErc20Allowance(this.web3Service.VBK_ADDRESS, wallet, offering));
+    } catch (err) {
+      console.warn('No se pudo precargar allowance de VBK', err);
+    }
+  }
+
+  // Fase 3.B (combinar): si falta allowance, disparamos el approve infinito DENTRO del
+  // gesto (openWallet abre MetaMask) y, al confirmarse, pedimos al usuario tocar de nuevo.
+  // El segundo tap ya encuentra la allowance suficiente → compra en un único write.
+  private approveOfferingAndPromptRetry(label: 'USDC' | 'VBK', token: string, buyLabel: string): void {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.snackBar.open(`Aprobando ${label}... confirmá en tu billetera.`, 'Cerrar', { duration: 4000 });
+
+    const approvePromise = this.web3Service.approveErc20Max(token, this.web3Service.OFFERING_NFT_ADDRESS);
+    approvePromise.then(async (txHash) => {
+      await this.web3Service.waitForTransaction(txHash);
+      if (label === 'USDC') {
+        this.usdcAllowance.set(this.web3Service.MAX_UINT256);
+      } else {
+        this.vbkAllowance.set(this.web3Service.MAX_UINT256);
+      }
+      this.isLoading.set(false);
+      this.snackBar.open(`${label} aprobado. Tocá "${buyLabel}" de nuevo para confirmar la compra.`, 'Cerrar', { duration: 7000 });
+    }).catch((err: any) => {
+      this.isLoading.set(false);
+      this.handlePurchaseError(err);
+    });
   }
 
   async buyWithUSDC(tier: any) {
@@ -411,15 +465,21 @@ export class TicketPurchaseComponent implements OnInit {
       return;
     }
 
+    // Two-tap: si falta allowance, approve infinito primero y pedir re-tap (gesto intacto).
+    const needed = this.web3Service.usdcOfferingAmount(tier.priceUsdc);
+    if (this.usdcAllowance() < needed) {
+      this.approveOfferingAndPromptRetry('USDC', this.web3Service.USDC_ADDRESS, 'Comprar con USDC');
+      return;
+    }
+
     this.currentStep.set(4);
     this.isLoading.set(true);
     this.errorMessage.set('');
 
     try {
-      const result = await this.web3Service.buyTicketWithUSDC(
+      const result = await this.web3Service.buyOfferingWithUSDC(
         currentEvent.eventNftAddress,
-        tier.tierIndex,
-        tier.priceUsdc
+        tier.tierIndex
       );
       this.purchaseTxHash.set(result.txHash);
       this.purchaseTokenId.set(result.tokenId);
@@ -456,14 +516,29 @@ export class TicketPurchaseComponent implements OnInit {
       return;
     }
 
+    // Quote precargado en bigint: necesario para el monto máximo de VBK sin leer en el tap.
+    const quote = this.vbkQuoteBig()[tier.ticketTypeId];
+    if (!quote) {
+      this.errorMessage.set('No hay cotización de VBK disponible. Recargá la página.');
+      return;
+    }
+    const maxVbkAmount = this.web3Service.vbkOfferingMaxAmount(quote);
+
+    // Two-tap: si falta allowance, approve infinito primero y pedir re-tap (gesto intacto).
+    if (this.vbkAllowance() < maxVbkAmount) {
+      this.approveOfferingAndPromptRetry('VBK', this.web3Service.VBK_ADDRESS, 'Comprar con VBK');
+      return;
+    }
+
     this.currentStep.set(4);
     this.isLoading.set(true);
     this.errorMessage.set('');
 
     try {
-      const result = await this.web3Service.buyTicketWithVBK(
+      const result = await this.web3Service.buyOfferingWithVBK(
         currentEvent.eventNftAddress,
-        tier.tierIndex
+        tier.tierIndex,
+        maxVbkAmount
       );
       this.purchaseTxHash.set(result.txHash);
       this.purchaseTokenId.set(result.tokenId);

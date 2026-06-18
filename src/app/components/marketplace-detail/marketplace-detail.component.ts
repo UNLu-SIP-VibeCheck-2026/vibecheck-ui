@@ -10,8 +10,6 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
 import { AuthService } from "../../services/auth.service";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
-import { writeContract } from "@wagmi/core";
-import { config } from "../../services/wagmi.config";
 import { HttpClient } from "@angular/common/http";
 import { formatUnits } from "viem";
 
@@ -24,7 +22,6 @@ import { VenueService } from "../../services/venue.service";
 import { TicketTypeService } from "../../services/ticket-type.service";
 import { ContractsService } from "../../services/contracts.service";
 import { Web3Service } from "../../services/web3.service";
-import { TokenApprovalService } from "../../services/token-approval.service";
 import { TransactionService } from "../../services/transaction.service";
 import { environment } from "../../../environments/environment";
 
@@ -55,7 +52,6 @@ export class MarketplaceDetailComponent implements OnInit {
   private ticketTypeService = inject(TicketTypeService);
   private contractsService = inject(ContractsService);
   private web3Service = inject(Web3Service);
-  private tokenApprovalService = inject(TokenApprovalService);
   private transactionService = inject(TransactionService);
   private dialog = inject(MatDialog);
   private authService = inject(AuthService);
@@ -83,6 +79,11 @@ export class MarketplaceDetailComponent implements OnInit {
   isVbkAvailable = signal<boolean>(false);
   vbkPriceEstimate = signal<string>("");
   vbkQuoteBigInt = signal<bigint>(0n);
+
+  // Allowance precargada hacia el Marketplace (Fase 3.A). Se compara sincrónicamente en
+  // el tap para decidir approve (two-tap) vs compra directa (single write).
+  private usdcAllowance = signal<bigint>(0n);
+  private vbkAllowance = signal<bigint>(0n);
 
   // Success ticket receipt
   purchaseTxHash = signal<string>("");
@@ -150,6 +151,7 @@ export class MarketplaceDetailComponent implements OnInit {
     this.web3Service.connectedAddress$.subscribe((addr) => {
       this.connectedAddress.set(addr);
       this.checkConnectionState();
+      this.preloadAllowances();
     });
 
     this.web3Service.chainId$.subscribe((chainId) => {
@@ -386,6 +388,46 @@ export class MarketplaceDetailComponent implements OnInit {
     }
   }
 
+  // Fase 3.A: precarga de allowances hacia el Marketplace (read-only, fuera del tap).
+  private async preloadAllowances(): Promise<void> {
+    const wallet = this.connectedAddress();
+    if (!wallet) return;
+    const marketplace = this.web3Service.NFT_MARKETPLACE_ADDRESS;
+    try {
+      this.usdcAllowance.set(await this.web3Service.getErc20Allowance(this.web3Service.USDC_ADDRESS, wallet, marketplace));
+    } catch (err) {
+      console.warn("No se pudo precargar allowance de USDC", err);
+    }
+    try {
+      this.vbkAllowance.set(await this.web3Service.getErc20Allowance(this.web3Service.VBK_ADDRESS, wallet, marketplace));
+    } catch (err) {
+      console.warn("No se pudo precargar allowance de VBK", err);
+    }
+  }
+
+  // Fase 3.B (combinar): approve infinito dentro del gesto + re-tap. Tras confirmarse el
+  // approve, la compra es un único write (gesto intacto → deep-link a MetaMask en mobile).
+  private approveAndPromptRetry(label: "USDC" | "VBK", token: string): void {
+    this.isLoading.set(true);
+    this.errorMessage.set("");
+    this.snackBar.open(`Aprobando ${label}... confirmá en tu billetera.`, "Cerrar", { duration: 4000 });
+
+    const approvePromise = this.web3Service.approveErc20Max(token, this.web3Service.NFT_MARKETPLACE_ADDRESS);
+    approvePromise.then(async (txHash) => {
+      await this.web3Service.waitForTransaction(txHash);
+      if (label === "USDC") {
+        this.usdcAllowance.set(this.web3Service.MAX_UINT256);
+      } else {
+        this.vbkAllowance.set(this.web3Service.MAX_UINT256);
+      }
+      this.isLoading.set(false);
+      this.snackBar.open(`${label} aprobado. Tocá "Comprar Entrada" de nuevo para confirmar.`, "Cerrar", { duration: 7000 });
+    }).catch((err: any) => {
+      this.isLoading.set(false);
+      this.handleTxError(err);
+    });
+  }
+
   async executePurchase(): Promise<void> {
     this.errorMessage.set("");
     const lst = this.listing();
@@ -406,101 +448,70 @@ export class MarketplaceDetailComponent implements OnInit {
       return;
     }
 
-    this.currentStep.set(4);
-    this.isLoading.set(true);
+    if (this.selectedToken() === "USDC") {
+      const priceUsdcBig = BigInt(Math.round(lst.priceUsdc * 1_000_000));
+      const amountUsdc = (priceUsdcBig * 10700n) / 10000n;
 
-    try {
-      const marketplaceAddress = this.web3Service.NFT_MARKETPLACE_ADDRESS;
-
-      if (this.selectedToken() === "USDC") {
-        const usdcAddress = this.web3Service.USDC_ADDRESS;
-        const priceUsdcBig = BigInt(Math.round(lst.priceUsdc * 1_000_000));
-        const amountUsdc = (priceUsdcBig * 10700n) / 10000n;
-
-        // 1. Approve USDC if necessary
-        const currentAllowance = await this.web3Service.getUsdcAllowance(wallet, marketplaceAddress);
-
-        if (currentAllowance < amountUsdc) {
-          await this.tokenApprovalService.ensureAllowance(usdcAddress, marketplaceAddress, amountUsdc);
-        }
-
-        // 2. Call buyWithUSDC
-        const buyTx = await writeContract(config, {
-          address: marketplaceAddress as `0x${string}`,
-          abi: this.contractsService.MARKETPLACE_ABI,
-          functionName: "buyWithUSDC",
-          args: [BigInt(lst.onChainListingId)],
-        } as any);
-
-        this.transactionService.track(buyTx).subscribe({
-          next: (state) => {
-            if (state.status === "confirmed") {
-              const txHash = buyTx;
-              this.purchaseTxHash.set(txHash);
-              this.confirmPurchaseOnBackend(txHash);
-            } else if (state.status === "failed") {
-              this.currentStep.set(3);
-              this.errorMessage.set("La transacción de compra falló.");
-              this.isLoading.set(false);
-            }
-          },
-          error: (err) => {
-            this.currentStep.set(3);
-            this.handleTxError(err);
-          }
-        });
-
-      } else {
-        // VBK buy flow
-        if (!this.isVbkAvailable() || this.vbkQuoteBigInt() === 0n) {
-          this.errorMessage.set("La compra con VBK no está disponible.");
-          this.currentStep.set(3);
-          this.isLoading.set(false);
-          return;
-        }
-
-        const vbkAddress = this.web3Service.VBK_ADDRESS;
-        // 5% slippage on VBK amount
-        const vbkNeeded = (this.vbkQuoteBigInt() * 105n) / 100n;
-        const amountVbk = (vbkNeeded * 10400n) / 10000n;
-
-        // 1. Approve VBK if necessary
-        const currentAllowance = await this.web3Service.getVbkAllowance(wallet, marketplaceAddress);
-
-        if (currentAllowance < amountVbk) {
-          await this.tokenApprovalService.ensureAllowance(vbkAddress, marketplaceAddress, amountVbk);
-        }
-
-        // 2. Call buyWithVBK
-        const buyTx = await writeContract(config, {
-          address: marketplaceAddress as `0x${string}`,
-          abi: this.contractsService.MARKETPLACE_ABI,
-          functionName: "buyWithVBK",
-          args: [BigInt(lst.onChainListingId)],
-        } as any);
-
-        this.transactionService.track(buyTx).subscribe({
-          next: (state) => {
-            if (state.status === "confirmed") {
-              const txHash = buyTx;
-              this.purchaseTxHash.set(txHash);
-              this.confirmPurchaseOnBackend(txHash);
-            } else if (state.status === "failed") {
-              this.currentStep.set(3);
-              this.errorMessage.set("La transacción de compra con VBK falló.");
-              this.isLoading.set(false);
-            }
-          },
-          error: (err) => {
-            this.currentStep.set(3);
-            this.handleTxError(err);
-          }
-        });
+      // Two-tap: si falta allowance, approve infinito primero y pedir re-tap (gesto intacto).
+      if (this.usdcAllowance() < amountUsdc) {
+        this.approveAndPromptRetry("USDC", this.web3Service.USDC_ADDRESS);
+        return;
       }
-    } catch (err: any) {
-      this.currentStep.set(3);
-      this.handleTxError(err);
+
+      this.currentStep.set(4);
+      this.isLoading.set(true);
+      try {
+        const buyTx = await this.web3Service.buyMarketplaceWithUSDC(BigInt(lst.onChainListingId));
+        this.trackBuy(buyTx, "La transacción de compra falló.");
+      } catch (err: any) {
+        this.currentStep.set(3);
+        this.handleTxError(err);
+      }
+    } else {
+      // VBK buy flow
+      if (!this.isVbkAvailable() || this.vbkQuoteBigInt() === 0n) {
+        this.errorMessage.set("La compra con VBK no está disponible.");
+        return;
+      }
+
+      // 5% slippage on VBK amount
+      const vbkNeeded = (this.vbkQuoteBigInt() * 105n) / 100n;
+      const amountVbk = (vbkNeeded * 10400n) / 10000n;
+
+      if (this.vbkAllowance() < amountVbk) {
+        this.approveAndPromptRetry("VBK", this.web3Service.VBK_ADDRESS);
+        return;
+      }
+
+      this.currentStep.set(4);
+      this.isLoading.set(true);
+      try {
+        const buyTx = await this.web3Service.buyMarketplaceWithVBK(BigInt(lst.onChainListingId));
+        this.trackBuy(buyTx, "La transacción de compra con VBK falló.");
+      } catch (err: any) {
+        this.currentStep.set(3);
+        this.handleTxError(err);
+      }
     }
+  }
+
+  private trackBuy(buyTx: string, failMsg: string): void {
+    this.transactionService.track(buyTx).subscribe({
+      next: (state) => {
+        if (state.status === "confirmed") {
+          this.purchaseTxHash.set(buyTx);
+          this.confirmPurchaseOnBackend(buyTx);
+        } else if (state.status === "failed") {
+          this.currentStep.set(3);
+          this.errorMessage.set(failMsg);
+          this.isLoading.set(false);
+        }
+      },
+      error: (err) => {
+        this.currentStep.set(3);
+        this.handleTxError(err);
+      }
+    });
   }
 
   confirmPurchaseOnBackend(txHash: string): void {
