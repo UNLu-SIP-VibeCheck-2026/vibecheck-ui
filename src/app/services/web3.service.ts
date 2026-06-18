@@ -2,15 +2,16 @@ import { Injectable, NgZone, inject } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 import { WalletService } from "./wallet.service";
 import { config } from "./wagmi.config";
-import { 
-  readContract, 
-  writeContract, 
-  sendTransaction, 
-  signMessage, 
-  getBalance, 
+import {
+  readContract,
+  writeContract,
+  sendTransaction,
+  getConnectorClient,
+  getBalance,
   getAccount,
-  waitForTransactionReceipt 
+  waitForTransactionReceipt
 } from "@wagmi/core";
+import { signMessage as viemSignMessage } from "viem/actions";
 import {
   parseUnits,
   formatUnits,
@@ -281,8 +282,14 @@ export class Web3Service {
     }
   }
 
-  signMessage(message: string): Promise<string> {
-    return signMessage(config, { message } as any);
+  async signMessage(message: string): Promise<string> {
+    // assertChainId:false evita ConnectorChainMismatchError cuando la wallet está en otra
+    // red que la app (típico en mobile: MetaMask arranca en Mainnet mientras la app espera
+    // Sepolia). SIWE / personal_sign es chain-agnostic: la firma es sobre los bytes del
+    // mensaje, no sobre la red. Así la vinculación funciona en cualquier chain; la red
+    // correcta (Sepolia) se exige recién en las transacciones (guards de red).
+    const client: any = await getConnectorClient(config, { assertChainId: false } as any);
+    return await viemSignMessage(client, { account: client.account, message } as any);
   }
 
   async getVbkQuote(

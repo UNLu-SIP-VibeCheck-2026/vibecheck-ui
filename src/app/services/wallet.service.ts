@@ -5,7 +5,7 @@ import { createAppKit, AppKit } from "@reown/appkit";
 import { sepolia, mainnet } from "@reown/appkit/networks";
 import { environment } from "../../environments/environment";
 import { Wallet, Transaction } from '../models/wallet.model';
-import { watchAccount, watchChainId, getAccount } from '@wagmi/core';
+import { watchAccount, getAccount } from '@wagmi/core';
 // IMPORTANTE: ahora importamos también el adaptador desde wagmi.config.
 // `config` sigue existiendo y es el MISMO objeto que AppKit gestiona internamente,
 // así que el resto de la app (Web3Service, etc.) no necesita cambios.
@@ -92,20 +92,19 @@ export class WalletService {
     // Subscribe to account/connection changes via Wagmi watchAccount.
     // Ahora SÍ dispara, porque `config` es el wagmiConfig del adaptador
     // (la misma instancia que usa el modal de AppKit).
+    //
+    // CLAVE: el chainId lo tomamos de `account.chainId` (la chain REAL de la conexión /
+    // wallet), NO de `watchChainId`/`getChainId()` que devuelve `config.state.chainId`
+    // (la red que la app eligió, Sepolia por default). En mobile la wallet suele estar en
+    // Mainnet mientras la app cree estar en Sepolia: usar config.state daba un falso
+    // positivo (avanzaba a firmar) y luego signMessage/writeContract reventaban con
+    // ConnectorChainMismatchError. watchAccount dispara también cuando cambia la chain.
     watchAccount(config, {
       onChange: (account) => {
         this.zone.run(() => {
           this.addressSubject.next(account.address || null);
           this.isConnectedSubject.next(account.isConnected || false);
-        });
-      }
-    });
-
-    // Subscribe to network changes via Wagmi watchChainId
-    watchChainId(config, {
-      onChange: (chainId) => {
-        this.zone.run(() => {
-          this.chainIdSubject.next(chainId ? Number(chainId) : null);
+          this.chainIdSubject.next(account.chainId ? Number(account.chainId) : null);
         });
       }
     });

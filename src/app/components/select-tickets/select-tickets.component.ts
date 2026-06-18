@@ -190,23 +190,15 @@ export class TicketPurchaseComponent implements OnInit {
 
   checkConnectionState() {
     const address = this.connectedAddress();
-    const sepolia = this.isSepolia();
 
     if (!address) {
       this.currentStep.set(1);
       return;
     }
 
-    // Conectado pero en otra red (típico en mobile: MetaMask arranca en Mainnet).
-    // Pedimos el switch a Sepolia: sin él, la firma SIWE revienta con
-    // ConnectorChainMismatchError y las transacciones irían a la red equivocada.
-    if (!sepolia) {
-      this.currentStep.set(1);
-      this.errorMessage.set('Cambiá a la red Sepolia para continuar.');
-      this.web3Service.switchToSepolia();
-      return;
-    }
-
+    // SIWE es chain-agnostic: avanzamos a firmar aunque la wallet esté en otra red
+    // (en mobile MetaMask suele estar en Mainnet). La red correcta (Sepolia) se exige
+    // recién al comprar, donde el guard de red ahora detecta la chain real de la wallet.
     if (this.currentStep() === 1) {
       this.errorMessage.set('');
       this.currentStep.set(2);
