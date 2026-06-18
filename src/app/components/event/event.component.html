@@ -141,6 +141,20 @@
           <mat-icon>person</mat-icon>
           Organizado por {{ owner ? '@' + owner.username : 'usuario #' + event.ownerId }}
         </div>
+        @if (organizerRating !== null) {
+          <div class="extra-chip organizer-rating">
+            <mat-icon>star</mat-icon>
+            <span>{{ organizerRating.toFixed(1) }}</span>
+            @if (organizerRatingCount !== null && organizerRatingCount > 0) {
+              <span class="rating-count">({{ organizerRatingCount }})</span>
+            }
+          </div>
+        }
+        @if (canRateOrganizer) {
+          <button mat-icon-button class="rate-btn" (click)="openRatingDialog()" matTooltip="Calificar organizador">
+            <mat-icon>star</mat-icon>
+          </button>
+        }
       </div>
 
       <!-- MOBILE FIX: Contenedor de compra que se vuelve sticky bottom en mobile -->

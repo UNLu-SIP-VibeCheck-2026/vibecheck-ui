@@ -9,4 +9,6 @@ export interface UserPublicResponse {
   walletAddress?: string;
   assignedEventId?: number;
   description?: string;
+  averageRating?: number;
+  totalRatingsCount?: number;
 }

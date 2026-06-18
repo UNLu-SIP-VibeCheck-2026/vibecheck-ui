@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { AchievementService } from '../../services/achievement.service';
 import { HistoryService } from '../../services/history.service';
 import { EventService } from '../../services/event.service';
+import { OrganizerRatingService } from '../../services/organizer-rating.service';
 import { UserPublicResponse } from '../../models/user-public-response.model';
 import { Achievement } from '../../models/achievement.model';
 import { UserHistoryItem } from '../../models/user-history.model';
@@ -22,6 +23,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AvatarComponent } from '../shared/avatar/avatar.component';
 import { TierInfoDialogComponent } from '../shared/dialogs/tier-info-dialog/tier-info-dialog.component';
+import { StarRatingComponent } from '../shared/star-rating/star-rating.component';
+import { RatingDialogComponent, RatingDialogData } from '../shared/dialogs/rating-dialog/rating-dialog.component';
 
 @Component({
   selector: 'app-perfil-user',
@@ -34,7 +37,8 @@ import { TierInfoDialogComponent } from '../shared/dialogs/tier-info-dialog/tier
     MatDialogModule,
     MatSnackBarModule,
     MatProgressBarModule,
-    AvatarComponent
+    AvatarComponent,
+    StarRatingComponent
   ],
   templateUrl: './perfil-user.component.html',
   styleUrl: './perfil-user.component.scss'
@@ -50,6 +54,7 @@ export class PerfilUserComponent implements OnInit {
   private sanitizer = inject(DomSanitizer);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private organizerRatingService = inject(OrganizerRatingService);
 
   profile = signal<UserPublicResponse | null>(null);
   isLoading = signal<boolean>(true);
@@ -116,6 +121,16 @@ export class PerfilUserComponent implements OnInit {
   userTierImage = computed(() => {
     const tier = this.userTierKey();
     return `/assets/VC-Tier${tier}.png`;
+  });
+
+  organizerRating = computed(() => {
+    const p = this.profile();
+    return p?.averageRating || null;
+  });
+
+  organizerRatingCount = computed(() => {
+    const p = this.profile();
+    return p?.totalRatingsCount || null;
   });
 
   ngOnInit(): void {

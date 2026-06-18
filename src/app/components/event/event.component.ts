@@ -6,18 +6,22 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
 import { EventService } from "../../services/event.service";
 import { TicketTypeService } from "../../services/ticket-type.service";
 import { VenueService } from "../../services/venue.service";
 import { UsersService } from "../../services/users.service";
 import { AuthService } from "../../services/auth.service";
+import { OrganizerRatingService } from "../../services/organizer-rating.service";
 import { EventResponse } from "../../models/event.model";
 import { TicketTypeResponse } from "../../models/ticket-type.model";
 import { VenueResponse } from "../../models/venue.model";
 import { UserPublicResponse } from "../../models/user-public-response.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { StarRatingComponent } from "../shared/star-rating/star-rating.component";
+import { RatingDialogComponent, RatingDialogData } from "../shared/dialogs/rating-dialog/rating-dialog.component";
 
 @Component({
   selector: "app-event",
@@ -30,6 +34,8 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
     MatProgressSpinnerModule,
     MatChipsModule,
     MatTooltipModule,
+    MatSnackBarModule,
+    StarRatingComponent,
   ],
   templateUrl: "./event.component.html",
   styleUrl: "./event.component.scss",
@@ -45,12 +51,15 @@ export class EventComponent implements OnInit {
   private usersService = inject(UsersService);
   private authService = inject(AuthService);
   private sanitizer = inject(DomSanitizer);
+  private dialog = inject(MatDialog);
+  private organizerRatingService = inject(OrganizerRatingService);
 
   event: EventResponse | null = null;
   venue: VenueResponse | null = null;
   owner: UserPublicResponse | null = null;
   eventImage: SafeUrl | null = null;
   cheapestTicketPrice: number | null = null;
+  myRating: number | null = null;
 
   isLoading = false;
   errorMessage = "";
@@ -122,9 +131,24 @@ export class EventComponent implements OnInit {
       next: (user: UserPublicResponse) => {
         console.log("Owner response received:", user);
         this.owner = user;
+        this.loadMyRating();
       },
       error: (err: any) => {
         console.error("Error fetching owner:", err);
+      },
+    });
+  }
+
+  private loadMyRating(): void {
+    const currentUser = this.authService.getCurrentUserValue();
+    if (!currentUser || !this.event || !this.owner) return;
+
+    this.organizerRatingService.getUserRatingForEvent(this.event.ownerId, this.event.id).subscribe({
+      next: (rating) => {
+        this.myRating = rating.ratingValue;
+      },
+      error: () => {
+        this.myRating = null;
       },
     });
   }
@@ -240,5 +264,72 @@ export class EventComponent implements OnInit {
     } else {
       this.router.navigate(["/"]);
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Rating functionality
+  // -------------------------------------------------------------------------
+
+  openRatingDialog(): void {
+    if (!this.event || !this.owner) return;
+
+    const dialogData: RatingDialogData = {
+      organizerName: this.owner.username,
+      eventId: this.event.id,
+      organizerId: this.event.ownerId,
+      currentRating: this.myRating || undefined,
+    };
+
+    const dialogRef = this.dialog.open(RatingDialogComponent, {
+      data: dialogData,
+      width: '400px',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result !== undefined && result !== null) {
+        this.submitRating(result);
+      }
+    });
+  }
+
+  submitRating(ratingValue: number): void {
+    if (!this.event) return;
+
+    const request = {
+      organizerId: this.event.ownerId,
+      eventId: this.event.id,
+      ratingValue: ratingValue,
+    };
+
+    this.organizerRatingService.rateOrganizer(request).subscribe({
+      next: (response) => {
+        this.myRating = response.ratingValue;
+        this.snackBar.open('Calificación enviada exitosamente', 'Cerrar', { duration: 3000 });
+      },
+      error: (err) => {
+        this.snackBar.open(err?.error?.message || 'Error al enviar calificación', 'Cerrar', { duration: 4000 });
+      },
+    });
+  }
+
+  get canRateOrganizer(): boolean {
+    const currentUser = this.authService.getCurrentUserValue();
+    if (!currentUser || !this.event || !this.owner) return false;
+    
+    // User cannot rate themselves
+    if (currentUser.username === this.owner.username) return false;
+    
+    // Event must be finished
+    if (this.event.status?.toUpperCase() !== 'FINISHED') return false;
+    
+    return true;
+  }
+
+  get organizerRating(): number | null {
+    return this.event?.organizerRating || null;
+  }
+
+  get organizerRatingCount(): number | null {
+    return this.event?.organizerRatingCount || null;
   }
 }

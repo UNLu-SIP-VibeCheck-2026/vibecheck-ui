@@ -53,6 +53,18 @@
           <div class="identity-section">
             <h1 class="display-name">{{ fullName() }}</h1>
             <p class="username">&#64;{{ profile()?.username }}</p>
+            @if (organizerRating() !== null) {
+              <div class="organizer-rating-display">
+                <app-star-rating
+                  [rating]="organizerRating()"
+                  [readonly]="true"
+                  [size]="'medium'"
+                ></app-star-rating>
+                @if (organizerRatingCount() !== null && organizerRatingCount() > 0) {
+                  <span class="rating-count">({{ organizerRatingCount() }} calificaciones)</span>
+                }
+              </div>
+            }
           </div>
         </div>
 

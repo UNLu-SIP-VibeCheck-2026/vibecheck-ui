@@ -1,0 +1,44 @@
+<h2 mat-dialog-title>Calificar Organizador</h2>
+
+<mat-dialog-content>
+  <p class="rating-dialog__subtitle">
+    Calificando a <strong>@{{ data.organizerName }}</strong>
+  </p>
+  
+  <div class="rating-dialog__rating-container">
+    <app-star-rating
+      [rating]="selectedRating"
+      [readonly]="false"
+      [size]="'large'"
+      (ratingChanged)="onRatingChanged($event)"
+    ></app-star-rating>
+  </div>
+
+  @if (!isValid) {
+    <p class="rating-dialog__error">
+      Por favor selecciona una calificación
+    </p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button 
+    mat-button 
+    (click)="onCancel()"
+    [disabled]="isSubmitting"
+  >
+    Cancelar
+  </button>
+  <button 
+    mat-raised-button 
+    color="primary"
+    (click)="onConfirm()"
+    [disabled]="!isValid || isSubmitting"
+  >
+    @if (isSubmitting) {
+      <span>Enviando...</span>
+    } @else {
+      <span>Confirmar</span>
+    }
+  </button>
+</mat-dialog-actions>

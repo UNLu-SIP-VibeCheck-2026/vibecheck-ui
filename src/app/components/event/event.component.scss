@@ -417,6 +417,28 @@
     width: 15px;
     height: 15px;
   }
+
+  &.organizer-rating {
+    mat-icon {
+      color: var(--md-sys-color-tertiary);
+    }
+
+    .rating-count {
+      color: var(--md-sys-color-on-surface-variant);
+      font-size: var(--text-label-sm);
+    }
+  }
+}
+
+.rate-btn {
+  color: var(--md-sys-color-tertiary) !important;
+  background: var(--md-sys-color-surface-container-high) !important;
+  border: 1px solid var(--md-sys-color-outline-variant) !important;
+
+  &:hover {
+    background: var(--md-sys-color-primary-container) !important;
+    color: var(--md-sys-color-on-primary-container) !important;
+  }
 }
 
 // ---------------------------------------------------------------------------

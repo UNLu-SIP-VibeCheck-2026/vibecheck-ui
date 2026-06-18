@@ -45,6 +45,8 @@ export interface EventResponse {
   maxResalePriceBps?: number;
   royaltyBps?: number;
   categories?: CategoryResponse[];
+  organizerRating?: number;
+  organizerRatingCount?: number;
 }
 
 export interface EventDeployRegisterRequest {
