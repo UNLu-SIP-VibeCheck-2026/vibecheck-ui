@@ -72,6 +72,9 @@ export class TicketPurchaseComponent implements OnInit {
   currentStep = signal<number>(1);
   isLoading = signal<boolean>(false);
   errorMessage = signal<string>('');
+  // DIAGNÓSTICO TEMPORAL: detalle crudo del error de firma SIWE en mobile. No lo borra
+  // startSiweFlow(), así queda visible en pantalla (no hay consola accesible en el celu).
+  siweDebug = signal<string>('');
   connectedAddress = signal<string | null>(null);
   isSepolia = signal<boolean>(false);
   siweMessage = signal<string>('');
@@ -302,6 +305,11 @@ export class TicketPurchaseComponent implements OnInit {
     }).catch((e: any) => {
       this.isLoading.set(false);
       console.error('Error al firmar:', e);
+      // DIAGNÓSTICO TEMPORAL: volcamos todos los campos típicos de un error de wagmi/WC
+      // para identificar la causa real del auto-cancelado en mobile.
+      this.siweDebug.set(
+        `name=${e?.name} | code=${e?.code} | short=${e?.shortMessage} | msg=${e?.message} | details=${e?.details} | cause=${e?.cause?.message || e?.cause}`
+      );
       this.errorMessage.set('Firma cancelada o rechazada por el usuario.');
       // Precargar nuevo challenge para que el usuario pueda reintentar.
       this.startSiweFlow();
