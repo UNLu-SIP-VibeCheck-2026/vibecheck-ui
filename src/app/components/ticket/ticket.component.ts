@@ -12,6 +12,7 @@ import { VenueService } from '../../services/venue.service';
 import { Web3Service } from '../../services/web3.service';
 import { RefundRequestResponse } from '../../models/ticket.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-ticket',
@@ -32,6 +33,7 @@ export class TicketComponent implements OnInit {
   private eventService = inject(EventService);
   private venueService = inject(VenueService);
   private web3Service = inject(Web3Service);
+  private errorService = inject(ErrorService);
 
   // Refund state signals
   isLoadingRefund = signal<boolean>(false);
@@ -152,6 +154,16 @@ export class TicketComponent implements OnInit {
 
   openRefundModal(): void {
     if (!this.ticket) return;
+
+    // Check if ticket is listed for resale
+    if (this.ticket.status === 'FOR_SALE') {
+      this.errorService.showError(
+        'No podés reembolsar una entrada que está listada para la reventa. Debes cancelarla primero para poder reembolsarla.',
+        'Entrada en reventa'
+      );
+      return;
+    }
+
     this.isRefundModalVisible = true;
     this.refundStep.set('requesting');
     this.refundError.set('');
