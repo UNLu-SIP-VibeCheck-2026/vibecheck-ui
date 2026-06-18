@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule } from '@angular/material/dialog';
 import { StarRatingComponent } from '../../star-rating/star-rating.component';
 
 export interface RatingDialogData {
@@ -14,7 +15,7 @@ export interface RatingDialogData {
 @Component({
   selector: 'app-rating-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, StarRatingComponent],
+  imports: [CommonModule, MatButtonModule, MatDialogModule, StarRatingComponent],
   templateUrl: './rating-dialog.component.html',
   styleUrls: ['./rating-dialog.component.scss']
 })

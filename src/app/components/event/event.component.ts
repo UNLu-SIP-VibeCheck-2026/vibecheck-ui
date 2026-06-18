@@ -20,7 +20,6 @@ import { VenueResponse } from "../../models/venue.model";
 import { UserPublicResponse } from "../../models/user-public-response.model";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { StarRatingComponent } from "../shared/star-rating/star-rating.component";
 import { RatingDialogComponent, RatingDialogData } from "../shared/dialogs/rating-dialog/rating-dialog.component";
 
 @Component({
@@ -35,7 +34,6 @@ import { RatingDialogComponent, RatingDialogData } from "../shared/dialogs/ratin
     MatChipsModule,
     MatTooltipModule,
     MatSnackBarModule,
-    StarRatingComponent,
   ],
   templateUrl: "./event.component.html",
   styleUrl: "./event.component.scss",
