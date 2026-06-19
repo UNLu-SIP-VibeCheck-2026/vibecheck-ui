@@ -84,6 +84,12 @@ export class CreateEventComponent implements OnInit {
   selectedImage: File | null = null;
   imagePreview: string | null = null;
   imageError: string = "";
+  showPreview = true;
+  activePreviewTab: 'grid' | 'nft' = 'grid';
+
+  setActivePreviewTab(tab: 'grid' | 'nft'): void {
+    this.activePreviewTab = tab;
+  }
 
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
 
@@ -284,6 +290,58 @@ export class CreateEventComponent implements OnInit {
       horizontalPosition: "end",
       verticalPosition: "top",
     });
+  }
+
+  togglePreview(): void {
+    this.showPreview = !this.showPreview;
+  }
+
+  getEventMonth(dateStr: string): string {
+    if (!dateStr) return "ENE";
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleString("es-AR", { month: "short" }).toUpperCase().replace(".", "");
+    } catch {
+      return "ENE";
+    }
+  }
+
+  getEventDay(dateStr: string): string {
+    if (!dateStr) return "01";
+    try {
+      const date = new Date(dateStr);
+      return date.getDate().toString().padStart(2, '0');
+    } catch {
+      return "01";
+    }
+  }
+
+  getFormattedDate(dateStr: string): string {
+    if (!dateStr) return "—";
+    try {
+      return new Date(dateStr).toLocaleString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateStr;
+    }
+  }
+
+  getSelectedVenueName(): string {
+    const venueId = this.eventForm.get("venue")?.value;
+    const venue = this.venues.find((v) => v.id === venueId);
+    return venue ? venue.title : "";
+  }
+
+  getSelectedCategoriesNames(): string[] {
+    const catIds = this.eventForm.get("categoryIds")?.value || [];
+    return this.categories
+      .filter((c) => catIds.includes(c.id))
+      .map((c) => c.name);
   }
 
   cancel(): void {

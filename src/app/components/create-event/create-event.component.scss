@@ -1,12 +1,14 @@
+@use '@angular/material' as mat;
+@use '../../../theme' as *;
+@use '../../../tokens' as *;
 
 :host {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   min-height: calc(100vh - 72px);
   padding: var(--space-10) 0;
   background-color: transparent;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .create-event-page {
@@ -14,11 +16,36 @@
   max-width: 900px;
   padding: var(--space-4);
   margin: 0 auto;
+  transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &.preview-open {
+    max-width: 900px;
+    margin: 0 auto;
+    
+    @include large-desktop {
+      max-width: 1300px;
+      margin-left: var(--space-6);
+      margin-right: auto;
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
 }
 
 .page-header {
   text-align: center;
   margin-bottom: var(--space-8);
+  transition: text-align 0.4s ease;
+
+  .preview-open & {
+    @include large-desktop {
+      text-align: left;
+      
+      .brand-title::after {
+        margin: var(--space-3) 0 0;
+      }
+    }
+  }
 }
 
 .brand-title {
@@ -601,4 +628,675 @@
     }
   }
 }
+
+.main-layout-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  align-items: center;
+  width: 100%;
+  position: relative;
+  transition: all 0.4s ease;
+  
+  @include large-desktop {
+    flex-direction: row;
+    gap: var(--space-6);
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+}
+
+.form-column {
+  width: 100%;
+  max-width: 900px;
+  flex: none;
+  
+  @include large-desktop {
+    width: 900px;
+    flex: 0 0 900px;
+    max-width: 100%;
+  }
+}
+
+.preview-column {
+  width: 100%;
+  max-width: 900px;
+  flex: none;
+  position: static;
+  max-height: none;
+  overflow-y: visible;
+  margin-top: var(--space-6);
+  padding-right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  @include large-desktop {
+    flex: 1;
+    max-width: 360px;
+    min-width: 300px;
+    position: sticky;
+    top: 90px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    padding-right: var(--space-2);
+    margin-top: 0;
+  }
+
+  /* Custom scrollbar for preview column */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+.floating-toggle-preview {
+  display: none !important;
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: 1000;
+  background: var(--gradient-brand) !important;
+  color: white !important;
+  height: 48px !important;
+  border-radius: 24px !important;
+  padding: 0 var(--space-5) !important;
+  align-items: center;
+  gap: 8px;
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-weight: 700;
+  
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    margin-right: 0 !important;
+  }
+
+  &:hover {
+    transform: scale(1.05) translateY(-2px);
+    filter: brightness(1.1);
+  }
+  
+  &.preview-active {
+    background: var(--md-sys-color-surface-container-highest) !important;
+    border: 1px solid var(--md-sys-color-outline-variant) !important;
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  @include large-desktop {
+    display: flex !important;
+  }
+}
+
+.preview-sticky-wrapper {
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.preview-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  padding-bottom: var(--space-3);
+  
+  mat-icon {
+    color: var(--md-sys-color-primary);
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: var(--text-title-md);
+    font-weight: 700;
+    color: white;
+    margin: 0;
+  }
+}
+
+.preview-tabs {
+  display: flex;
+  background-color: var(--md-sys-color-surface-container-high);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
+  padding: 4px;
+  gap: 4px;
+  width: 100%;
+}
+
+.preview-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: calc(var(--md-sys-shape-corner-medium) - 2px);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    color: var(--md-sys-color-on-surface);
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  &.active {
+    color: white;
+    background-color: var(--md-sys-color-primary);
+  }
+}
+
+.preview-explanation {
+  background-color: var(--md-sys-color-surface-container-highest);
+  border-left: 3px solid var(--md-sys-color-primary);
+  border-radius: var(--md-sys-shape-corner-small);
+  padding: var(--space-3);
+  
+  .explanation-content {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .info-icon {
+    color: var(--md-sys-color-primary);
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  p {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+  }
+}
+
+.fade-in {
+  animation: fadeInEffect 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInEffect {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: var(--space-4);
+  
+  &:not(:last-child) {
+    border-bottom: 1px dashed var(--md-sys-color-outline-variant);
+  }
+}
+
+.preview-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-label-md);
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--md-sys-color-primary);
+  }
+}
+
+/* Event Grid Card Mock Styles */
+.mock-card-container {
+  background-color: var(--md-sys-color-surface-container);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  max-width: 340px;
+  margin: 0 auto;
+  width: 100%;
+  
+  &:hover {
+    transform: translateY(-4px);
+    border-color: var(--md-sys-color-primary-container);
+    background: rgba(168, 85, 247, 0.06);
+  }
+}
+
+.mock-image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--md-sys-color-surface-container-highest);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mock-event-bg-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(10px) brightness(0.4);
+  transform: scale(1.1);
+  z-index: 1;
+}
+
+.mock-main-image {
+  position: relative;
+  z-index: 2;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.mock-no-image-placeholder {
+  color: var(--md-sys-color-outline);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    opacity: 0.5;
+  }
+}
+
+.mock-calendar-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+  min-width: 44px;
+
+  .mock-month {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--md-sys-color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .mock-day {
+    font-size: 18px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.1;
+  }
+}
+
+.mock-badges-overlay {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  z-index: 10;
+}
+
+.mock-category-badge {
+  background: rgba(168, 85, 247, 0.25);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  backdrop-filter: blur(6px);
+  color: #f3e8ff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mock-info-wrapper {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mock-event-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mock-event-desc {
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+  height: 36px;
+}
+
+.mock-event-metadata {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mock-metadata-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--md-sys-color-primary);
+  }
+
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.mock-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  padding-top: 12px;
+}
+
+.mock-price-container {
+  display: flex;
+  flex-direction: column;
+  
+  .mock-price-label {
+    font-size: 10px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  
+  .mock-price-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+  }
+}
+
+.mock-btn-cta {
+  background: var(--gradient-brand);
+  border: none;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    filter: brightness(1.1);
+  }
+}
+
+/* NFT Card Mock Styles */
+.mock-nft-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 340px;
+  margin: 0 auto;
+  width: 100%;
+  
+  &:hover {
+    transform: translateY(-8px) rotate(1deg);
+    border-color: rgba(168, 85, 247, 0.4);
+  }
+}
+
+.mock-nft-image-area {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(circle, var(--md-sys-color-surface-container-highest) 0%, var(--md-sys-color-surface-container-low) 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mock-nft-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mock-nft-image-placeholder {
+  color: var(--md-sys-color-outline);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    opacity: 0.5;
+  }
+  
+  span {
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.mock-nft-overlay-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  z-index: 10;
+  
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #3b82f6; // Verified blue
+  }
+}
+
+.mock-nft-details-area {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mock-nft-event-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+  margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mock-nft-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mock-nft-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--md-sys-color-on-surface-variant);
+  
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: var(--md-sys-color-outline);
+  }
+
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.mock-nft-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+}
+
+.mock-nft-blockchain-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.mock-nft-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  
+  .mock-nft-info-lbl {
+    font-size: 9px;
+    text-transform: uppercase;
+    color: var(--md-sys-color-outline);
+    letter-spacing: 0.5px;
+  }
+  
+  .mock-nft-info-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+  }
+}
+
+.mock-nft-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  
+  .mock-nft-brand {
+    font-size: 9px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+  }
+  
+  .mock-nft-blockchain-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: rgba(255,255,255,0.25);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Default layout is already stacked (mobile/tablet view), large-desktop styles apply side-by-side above 1280px.
 

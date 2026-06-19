@@ -182,6 +182,8 @@ $bp-desktop: 1280px;
 @mixin mobile  { @media (max-width: #{$bp-mobile - 1})                          { @content; } }
 @mixin tablet  { @media (min-width: #{$bp-mobile}) and (max-width: #{$bp-tablet - 1}) { @content; } }
 @mixin desktop { @media (min-width: #{$bp-tablet})                               { @content; } }
+@mixin large-desktop { @media (min-width: #{$bp-desktop})                        { @content; } }
+
 
 
 // =============================================================================
