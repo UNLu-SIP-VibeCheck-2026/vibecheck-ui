@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { OrganizerRatingRequest, OrganizerRatingResponse, OrganizerRatingSummary } from '../models/organizer-rating.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrganizerRatingService {
-  private apiUrl = '/api/ratings/organizers';
+  private apiUrl = `${environment.apiBaseUrl}/ratings/organizers`;
 
   constructor(private http: HttpClient) {}
 
