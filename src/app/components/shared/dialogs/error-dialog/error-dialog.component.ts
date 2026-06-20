@@ -7,6 +7,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 export interface ErrorDialogData {
   title: string;
   message: string;
+  severity?: 'error' | 'warning' | 'success';
 }
 
 @Component({
@@ -24,5 +25,12 @@ export class ErrorDialogComponent {
 
   close(): void {
     this.dialogRef.close();
+  }
+
+  getIcon(): string {
+    const sev = this.data.severity || 'error';
+    if (sev === 'warning') return 'warning';
+    if (sev === 'success') return 'check_circle';
+    return 'error_outline';
   }
 }

@@ -72,7 +72,8 @@ export class LoginComponent implements OnInit {
             title: "¡Contraseña restablecida!",
             message: "Tu contraseña ha sido restablecida con éxito. Ya podés iniciar sesión con tu nueva contraseña.",
             confirmText: "Aceptar",
-            hideCancel: true
+            hideCancel: true,
+            success: true
           },
           width: "400px"
         });
