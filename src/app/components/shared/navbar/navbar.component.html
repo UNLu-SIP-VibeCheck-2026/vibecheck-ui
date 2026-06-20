@@ -21,6 +21,11 @@
         Dashboard
       </button>
 
+      <button mat-button (click)="navigateAndClose('/staking')" class="staking-btn">
+        <mat-icon>lock</mat-icon>
+        Staking VBK
+      </button>
+
       <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
         @if (fullUserProfile() && fullUserProfile()?.hasImage) {
           <app-avatar
@@ -67,6 +72,12 @@
           <button mat-menu-item (click)="navigateToAchievements()">
             <mat-icon>emoji_events</mat-icon>
             <span>Mis Logros</span>
+          </button>
+        }
+        @if (isCliente) {
+          <button mat-menu-item (click)="navigateAndClose('/staking')">
+            <mat-icon>lock</mat-icon>
+            <span>Staking VBK</span>
           </button>
         }
         <mat-divider></mat-divider>
@@ -192,6 +203,12 @@
               <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/achievements')">
                 <mat-icon>emoji_events</mat-icon>
                 <span>Mis Logros</span>
+              </button>
+            }
+            @if (isCliente) {
+              <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/staking')">
+                <mat-icon>lock</mat-icon>
+                <span>Staking VBK</span>
               </button>
             }
           }

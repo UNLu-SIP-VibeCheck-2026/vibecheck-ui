@@ -137,6 +137,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "staking",
+    loadComponent: () =>
+      import(
+        "./components/staking/staking.component"
+      ).then((m) => m.StakingComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: "create-event",
     component: CreateEventComponent,
     canActivate: [authGuard],

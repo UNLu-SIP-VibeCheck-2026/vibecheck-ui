@@ -1,0 +1,331 @@
+<div class="staking-container">
+  <!-- Brand Header -->
+  <header class="staking-header">
+    <h1 class="display-title">Staking de VBK</h1>
+    <p class="subtitle">Bloqueá tus tokens VBK, aumentá tu nivel y desbloqueá beneficios exclusivos</p>
+  </header>
+
+  <!-- Admin/User Tabs if applicable -->
+  <div class="tabs-bar" *ngIf="isUserAdmin">
+    <button class="tab-button" [class.active]="activeTab() === 'user'" (click)="activeTab.set('user')">
+      <mat-icon>dashboard</mat-icon> Dashboard Staking
+    </button>
+    <button class="tab-button" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
+      <mat-icon>admin_panel_settings</mat-icon> Config Venues (Admin)
+    </button>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="dashboard-grid" *ngIf="activeTab() === 'user'">
+    <!-- Left Column: My Status & Active Locks -->
+    <div class="left-column">
+      <!-- Status Card -->
+      <div class="status-card">
+        <h2 class="section-title">Mi Estado</h2>
+
+        <div class="wallet-status" *ngIf="!connectedAddress()">
+          <div class="warning-box">
+            <mat-icon class="warning-icon">warning</mat-icon>
+            <p>Conectá tu billetera en la sección de Wallet para comenzar a stakear.</p>
+          </div>
+        </div>
+
+        <div class="status-info-grid" *ngIf="connectedAddress() && stakingSummary()">
+          <div class="info-block">
+            <label>Nivel</label>
+            <div class="value highlight-text">{{ stakingSummary()?.tier }}</div>
+          </div>
+          <div class="info-block">
+            <label>Multiplicador Cashback</label>
+            <div class="value">{{ stakingSummary()?.activeMultiplier }}x</div>
+          </div>
+          <div class="info-block">
+            <label>Reembolso de Tarifas Restante</label>
+            <div class="value">${{ stakingSummary()?.feefreeRemaining | number:'1.2-2' }} USD</div>
+          </div>
+          <div class="info-block">
+            <label>Acceso a Preventas</label>
+            <div class="value">
+              <span class="badge" [class.badge-success]="stakingSummary()?.presaleActive" [class.badge-danger]="!stakingSummary()?.presaleActive">
+                {{ stakingSummary()?.presaleActive ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cashback Claim Block -->
+        <div class="cashback-block" *ngIf="connectedAddress() && stakingSummary() && (stakingSummary()?.claimableCashback || 0) > 0">
+          <div class="cashback-content">
+            <div class="cashback-amount">
+              <span class="amount-val">{{ stakingSummary()?.claimableCashback | number:'1.2-2' }}</span> VBK
+              <span class="label-muted">Acumulado listo para retirar</span>
+            </div>
+            <button class="btn-gradient small" (click)="claimCashback()" [disabled]="claimStep() === 'claiming'">
+              <mat-icon>payments</mat-icon>
+              <span>{{ claimStep() === 'claiming' ? 'Procesando...' : 'Reclamar Cashback' }}</span>
+            </button>
+          </div>
+          <div class="claim-status-msg" *ngIf="claimStep() === 'success'">
+            Reclamo broadcasteado. Tx: <a [href]="'https://sepolia.etherscan.io/tx/' + txHash()" target="_blank" class="tx-link">{{ txHash() | slice:0:10 }}...</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Locks Card -->
+      <div class="locks-card">
+        <h2 class="section-title">Mis Tokens Bloqueados</h2>
+
+        <div class="loading-placeholder" *ngIf="isLoadingSummary()">
+          <div class="spinner"></div>
+          <p>Cargando posiciones de staking...</p>
+        </div>
+
+        <div class="empty-state" *ngIf="!isLoadingSummary() && (!stakingSummary() || !stakingSummary()?.locks?.length)">
+          <mat-icon class="empty-icon">lock_open</mat-icon>
+          <p>No tenés posiciones de staking activas.</p>
+        </div>
+
+        <div class="locks-list" *ngIf="!isLoadingSummary() && stakingSummary() && stakingSummary()!.locks.length > 0">
+          <div class="lock-item-card" *ngFor="let lock of stakingSummary()?.locks">
+            <div class="lock-header">
+              <div class="lock-title">
+                <span class="lock-badge-tier">{{ lock.tier }}</span>
+                <span class="lock-amount">{{ lock.amountVbk | number:'1.0-2' }} VBK</span>
+                <span class="lock-val-usd">(Equivalente a ${{ lock.usdcValueFrozen | number:'1.2-2' }} USD)</span>
+              </div>
+              <div class="lock-actions">
+                <!-- Withdraw button enabled if expired -->
+                <button class="btn-outlined" (click)="withdrawStake(lock.lockIdOnChain)" *ngIf="lock.isWithdrawable">
+                  Retirar VBK
+                </button>
+                <span class="badge badge-pending" *ngIf="!lock.isExpired">
+                  Vence {{ lock.unlockAt | date:'mediumDate' }}
+                </span>
+                <span class="badge badge-success" *ngIf="lock.status === 'WITHDRAWN'">
+                  Retirado
+                </span>
+                <span class="badge badge-danger" *ngIf="lock.isExpired && lock.status === 'ACTIVE' && !lock.isWithdrawable">
+                  Listo para retirar
+                </span>
+              </div>
+            </div>
+
+            <!-- Benefit Election Block -->
+            <div class="benefit-election-box">
+              <div class="election-info">
+                <span class="label">Beneficio Seleccionado:</span>
+                <strong class="elected-benefit-val" *ngIf="lock.electedBenefit">
+                  {{ lock.electedBenefit === 'PRESALE' ? 'Preventa' : (lock.electedBenefit === 'CASHBACK' ? 'Cashback' : 'Compra sin Comisión') }}
+                </strong>
+                <span class="badge badge-info" *ngIf="lock.electedBenefit === 'FEEFREE'">
+                  Compras sin comisión restantes: ${{ lock.feefreeRemaining | number:'1.2-2' }} USD
+                </span>
+                <span class="not-elected" *ngIf="!lock.electedBenefit && !lock.isExpired">
+                  Sin beneficio seleccionado
+                </span>
+                <span class="expired-lock-text" *ngIf="lock.isExpired">
+                  Bloqueo finalizado.
+                </span>
+              </div>
+
+              <!-- Selector if none elected and active -->
+              <div class="election-actions" *ngIf="!lock.electedBenefit && !lock.isExpired && lock.status === 'ACTIVE'">
+                <p class="helper-text-small">Elegí tu beneficio para este bloqueo (esta acción es permanente):</p>
+                <div class="benefit-buttons-row">
+                  <button class="btn-option" (click)="electBenefit(lock.id, 'PRESALE')">
+                    <mat-icon>schedule</mat-icon> Preventa
+                  </button>
+                  <button class="btn-option" (click)="electBenefit(lock.id, 'CASHBACK')">
+                    <mat-icon>trending_up</mat-icon> Cashback
+                  </button>
+                  <button class="btn-option" (click)="electBenefit(lock.id, 'FEEFREE')">
+                    <mat-icon>receipt</mat-icon> Compra sin Comisión
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: New Staking form / Calculator -->
+    <div class="right-column">
+      <div class="calculator-card">
+        <h2 class="section-title">Bloquear Tokens</h2>
+
+        <!-- Input Section -->
+        <div class="input-group">
+          <label for="usd-target">Monto de Cobertura (USD)</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">$</span>
+            <input type="number" id="usd-target" [ngModel]="calculatorUsdc()" (ngModelChange)="calculatorUsdc.set($event)" placeholder="Mínimo 100" min="100">
+            <span class="input-suffix">USD</span>
+          </div>
+          <p class="helper-text">Este valor en dólares se mantendrá estable durante todo el bloqueo.</p>
+        </div>
+
+        <!-- Term Selector -->
+        <div class="term-group">
+          <label>Plazo de Bloqueo</label>
+          <div class="term-buttons">
+            <button class="term-btn" [class.selected]="calculatorTerm() === 30" (click)="setTerm(30)">
+              30 Días
+              <span class="tier-hint">Nivel 1</span>
+            </button>
+            <button class="term-btn" [class.selected]="calculatorTerm() === 60" (click)="setTerm(60)">
+              60 Días
+              <span class="tier-hint">Nivel 2</span>
+            </button>
+            <button class="term-btn" [class.selected]="calculatorTerm() === 90" (click)="setTerm(90)">
+              90 Días
+              <span class="tier-hint">Nivel 3</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quote Result Box -->
+        <div class="quote-result-box">
+          <div class="quote-loading" *ngIf="isLoadingQuote()">
+            <div class="spinner small"></div>
+            <span>Calculando cantidad de VBK...</span>
+          </div>
+          
+          <div class="quote-data" *ngIf="!isLoadingQuote() && quotedVbk()">
+            <div class="quote-row">
+              <span>VBK a bloquear:</span>
+              <strong class="highlight-text">{{ quotedVbk() | number:'1.2-2' }} VBK</strong>
+            </div>
+            <div class="quote-row">
+              <span>Nivel a alcanzar:</span>
+              <strong class="tier-text">{{ projectedTier }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Benefits Summary Card -->
+        <div class="benefits-summary-box">
+          <h3>Beneficios por bloquear</h3>
+          <ul class="benefit-list" *ngIf="calculatorTerm() === 30">
+            <li><mat-icon class="list-icon">check_circle</mat-icon> Multiplicador de cashback: 1.1x</li>
+            <li><mat-icon class="list-icon">check_circle</mat-icon> Reembolso de comisiones: hasta $5 USD</li>
+            <li><mat-icon class="list-icon">check_circle</mat-icon> Acceso a preventas exclusivas</li>
+          </ul>
+          <ul class="benefit-list" *ngIf="calculatorTerm() === 60">
+            <li><mat-icon class="list-icon">check_circle</mat-icon> Multiplicador de cashback: 1.25x</li>
+            <li><mat-icon class="list-icon">check_circle</mat-icon> Reembolso de comisiones: hasta $15 USD</li>
+            <li><mat-icon class="list-icon">check_circle</mat-icon> Acceso a preventas exclusivas</li>
+          </ul>
+          <ul class="benefit-list" *ngIf="calculatorTerm() === 90">
+            <li><mat-icon class="list-icon">check_circle</mat-icon> Multiplicador de cashback: 1.5x</li>
+            <li><mat-icon class="list-icon">check_circle</mat-icon> Reembolso de comisiones: hasta $40 USD</li>
+            <li><mat-icon class="list-icon">check_circle</mat-icon> Acceso a preventas automáticas</li>
+          </ul>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="cta-block">
+          <!-- Step: Idle -->
+          <button class="btn-gradient large" [disabled]="isStakeDisabled" (click)="executeStake()" *ngIf="stakingStep() === 'idle'">
+            <div class="cta-inner">
+              <mat-icon>lock</mat-icon>
+              <span>Bloquear VBK</span>
+            </div>
+          </button>
+
+          <!-- Step: Approving -->
+          <div class="process-box" *ngIf="stakingStep() === 'approving'">
+            <div class="spinner"></div>
+            <p>Aprobando VBK Token en tu wallet...</p>
+          </div>
+
+          <!-- Step: Staking -->
+          <div class="process-box" *ngIf="stakingStep() === 'staking'">
+            <div class="spinner"></div>
+            <p>Bloqueando VBK on-chain... Esperando confirmación.</p>
+          </div>
+
+          <!-- Step: Success -->
+          <div class="status-alert alert-success" *ngIf="stakingStep() === 'success'">
+            <mat-icon>check_circle</mat-icon>
+            <div class="alert-content">
+              <h4>¡Transacción Confirmada!</h4>
+              <p>Staking registrado. Tx: <a [href]="'https://sepolia.etherscan.io/tx/' + txHash()" target="_blank" class="tx-link">{{ txHash() | slice:0:12 }}...</a></p>
+              <button class="btn-outlined small mt-2" (click)="resetStakingStep()">Nuevo Stake</button>
+            </div>
+          </div>
+
+          <!-- Step: Error -->
+          <div class="status-alert alert-danger" *ngIf="stakingStep() === 'error'">
+            <mat-icon>error</mat-icon>
+            <div class="alert-content">
+              <h4>Error en el Staking</h4>
+              <p>{{ errorMessage() }}</p>
+              <button class="btn-outlined small mt-2" (click)="resetStakingStep()">Reintentar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Panel Tab (Venue Wallets configuration) -->
+  <div class="admin-panel" *ngIf="activeTab() === 'admin' && isUserAdmin">
+    <div class="admin-grid">
+      <!-- Left side: List registered venues -->
+      <div class="admin-card">
+        <h2 class="section-title">Venue Wallets Registradas</h2>
+        
+        <div class="loading-placeholder" *ngIf="isAdminLoading()">
+          <div class="spinner"></div>
+          <p>Procesando administración de venues...</p>
+        </div>
+
+        <div class="empty-state" *ngIf="!isAdminLoading() && !allVenueWallets().length">
+          <mat-icon>storefront</mat-icon>
+          <p>No hay Venue Wallets registradas en el sistema.</p>
+        </div>
+
+        <div class="venue-list" *ngIf="!isAdminLoading() && allVenueWallets().length > 0">
+          <div class="venue-item" *ngFor="let venue of allVenueWallets()">
+            <div class="venue-info">
+              <span class="venue-name">{{ venue.name }}</span>
+              <span class="venue-addr">{{ venue.address }}</span>
+            </div>
+            <div class="venue-actions">
+              <span class="badge badge-success" *ngIf="venue.feeExempt">Fee Exento</span>
+              <button class="btn-outlined small" (click)="setVenueFeeExempt(venue.id)" *ngIf="!venue.feeExempt">
+                Eximir de Fee on-chain
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side: Register a new venue wallet -->
+      <div class="admin-card">
+        <h2 class="section-title">Registrar Nueva Venue Wallet</h2>
+        <p class="helper-text-small mb-4">
+          Registrá la wallet de cobros del local. Para que el local reciba VBK directo de consumos sin fees, marcá "Eximir de Fee" para broadcastear la tx administrativa.
+        </p>
+
+        <div class="input-group">
+          <label for="venue-name-input">Nombre del Establecimiento</label>
+          <input type="text" id="venue-name-input" [ngModel]="newVenueName()" (ngModelChange)="newVenueName.set($event)" placeholder="Ej. Estadio Único">
+        </div>
+
+        <div class="input-group mt-3">
+          <label for="venue-address-input">Wallet Address</label>
+          <input type="text" id="venue-address-input" [ngModel]="newVenueAddress()" (ngModelChange)="newVenueAddress.set($event)" placeholder="0x...">
+        </div>
+
+        <button class="btn-gradient large mt-4" (click)="registerVenueWallet()" [disabled]="isAdminLoading()">
+          <div class="cta-inner">
+            <mat-icon>add_business</mat-icon>
+            <span>Registrar Establecimiento</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

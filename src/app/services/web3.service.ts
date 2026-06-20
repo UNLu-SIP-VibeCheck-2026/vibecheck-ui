@@ -61,6 +61,7 @@ export class Web3Service {
   readonly VENUE_SIGNER_ADDRESS = "0xF8A5EcdE82f020Ec51419D73F73B1d83BB941292";
   readonly REFUND_SIGNER_ADDRESS = "0xEcd25CC3A10144B8b7f171Bb8B458791998f80d3";
   readonly TREASURY_ADDRESS = "0x54618BBcc0b65778a872A0F01397f7D9983F8507";
+  readonly STAKING_VAULT_ADDRESS = "0x9e275Ba91214063DD5D2562A298e12ffeD93ab8d";
 
   private readonly SEPOLIA_CHAIN_ID = 11155111;
 
@@ -91,6 +92,12 @@ export class Web3Service {
   private readonly EVENT_FACTORY_ABI = parseAbi([
     "function launchEvent((string name, string symbol, uint256 eventDate, uint16 maxResalePriceBps, uint16 royaltyBps, address venueSigner, string baseURI) p, (string name, uint256 priceUSDC, uint256 supply, uint256 sold)[] tiers) external returns (address)",
     "event EventLaunched(address indexed organizer, address indexed eventNFT, string name, uint256 eventDate)",
+  ]);
+
+  readonly STAKING_VAULT_ABI = parseAbi([
+    "function stake(uint256 amount, uint32 termDays) external returns (uint256)",
+    "function withdraw(uint256 lockId) external",
+    "function activeLockedByMinTerm(address user, uint32 minTermDays) external view returns (uint256)"
   ]);
 
   private readonly UNISWAP_ROUTER_ABI = parseAbi([
@@ -731,6 +738,56 @@ export class Web3Service {
     } as any);
 
     return await waitForTransactionReceipt(config, { hash: txHash });
+  }
+
+  async stakeVbk(amountVbk: number, termDays: number): Promise<string> {
+    const chainId = this.chainId$.getValue();
+    if (chainId !== this.SEPOLIA_CHAIN_ID) {
+      await this.switchToSepolia();
+      throw new Error("Cambiá a la red Sepolia antes de continuar.");
+    }
+
+    const amountInUnits = parseUnits(amountVbk.toString(), 18);
+    const account = getAccount(config);
+    const userAddress = account.address;
+    if (!userAddress) throw new Error("No hay billetera conectada.");
+
+    const currentAllowance = await readContract(config, {
+      address: this.VBK_ADDRESS as `0x${string}`,
+      abi: this.ERC20_ABI,
+      functionName: "allowance",
+      args: [userAddress, this.STAKING_VAULT_ADDRESS as `0x${string}`],
+    } as any) as bigint;
+
+    if (currentAllowance < amountInUnits) {
+      await this.approveToken(this.VBK_ADDRESS, this.STAKING_VAULT_ADDRESS, this.MAX_UINT256);
+    }
+
+    const txHash = await this.writeWithRedirect({
+      address: this.STAKING_VAULT_ADDRESS as `0x${string}`,
+      abi: this.STAKING_VAULT_ABI,
+      functionName: "stake",
+      args: [amountInUnits, BigInt(termDays)],
+    } as any);
+
+    return txHash;
+  }
+
+  async withdrawStake(lockIdOnChain: bigint): Promise<string> {
+    const chainId = this.chainId$.getValue();
+    if (chainId !== this.SEPOLIA_CHAIN_ID) {
+      await this.switchToSepolia();
+      throw new Error("Cambiá a la red Sepolia antes de continuar.");
+    }
+
+    const txHash = await this.writeWithRedirect({
+      address: this.STAKING_VAULT_ADDRESS as `0x${string}`,
+      abi: this.STAKING_VAULT_ABI,
+      functionName: "withdraw",
+      args: [lockIdOnChain],
+    } as any);
+
+    return txHash;
   }
 
   async waitForTransaction(txHash: string): Promise<any> {

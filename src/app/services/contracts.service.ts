@@ -8,11 +8,12 @@ import { config } from "./wagmi.config";
 })
 export class ContractsService {
   // Address constants matching Web3Service
-  public readonly OFFERING_NFT_ADDRESS = "0x1C36ba105258D3cCc0466797C9B0331e42B9FC0d";
-  public readonly NFT_MARKETPLACE_ADDRESS = "0x49aCfe6E469c472C0074F9B77d079216d6A257e8";
-  public readonly EVENT_FACTORY_ADDRESS = "0xc4C9df1CD6D4D9c704f7936aA00d4FFfB90059C3";
+  public readonly OFFERING_NFT_ADDRESS = "0xD5aa5a006bC3e7532Df6a27535eC04432B1f1e94";
+  public readonly NFT_MARKETPLACE_ADDRESS = "0xe293447a3229B628644d0f341F05E5AcCd7FC72e";
+  public readonly EVENT_FACTORY_ADDRESS = "0x4F007690513D9cB44FCbCfDeE9024210E3660e32";
   public readonly USDC_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-  public readonly VBK_ADDRESS = "0x2A31e9c56515DBa46cfA7D185b1E695b7A128B23";
+  public readonly VBK_ADDRESS = "0xF84c05F1278A60601989192077f40bAb340A1947";
+  public readonly STAKING_VAULT_ADDRESS = "0x9e275Ba91214063DD5D2562A298e12ffeD93ab8d";
 
   public readonly ERC20_ABI = parseAbi([
     "function balanceOf(address owner) view returns (uint256)",
