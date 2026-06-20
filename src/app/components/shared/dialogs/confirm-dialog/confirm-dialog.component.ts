@@ -21,22 +21,4 @@ export class ConfirmDialogComponent {
   onConfirm(): void {
     this.dialogRef.close(true);
   }
-
-  isDestructive(): boolean {
-    if (this.data.danger || this.data.isDestructive) {
-      return true;
-    }
-    if (this.data.success === true) {
-      return false;
-    }
-    
-    const text = (this.data.confirmText || '').toLowerCase();
-    const title = (this.data.title || '').toLowerCase();
-    const msg = (this.data.message || '').toLowerCase();
-    
-    const destructiveTerms = ['eliminar', 'borrar', 'rechazar', 'cancelar', 'baja', 'remover', 'suspender'];
-    return destructiveTerms.some(term => 
-      text.includes(term) || title.includes(term) || msg.includes(term)
-    );
-  }
 }
