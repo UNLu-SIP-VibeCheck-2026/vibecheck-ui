@@ -317,8 +317,8 @@ export class EventComponent implements OnInit {
     // User cannot rate themselves
     if (currentUser.username === this.owner.username) return false;
     
-    // Event must be finished
-    if (this.event.status?.toUpperCase() !== 'FINISHED') return false;
+    // Event must be completed
+    if (this.event.status?.toUpperCase() !== 'COMPLETED') return false;
     
     return true;
   }
