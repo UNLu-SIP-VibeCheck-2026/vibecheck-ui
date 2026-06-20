@@ -11,4 +11,5 @@ export interface UserPublicResponse {
   description?: string;
   averageRating?: number;
   totalRatingsCount?: number;
+  hasOrganizedEvents?: boolean;
 }

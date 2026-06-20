@@ -149,6 +149,11 @@
               <span class="rating-count">({{ organizerRatingCount }})</span>
             }
           </div>
+        } @else {
+          <div class="extra-chip organizer-rating no-rating">
+            <mat-icon>star_outline</mat-icon>
+            <span>Organizador sin puntuar</span>
+          </div>
         }
         @if (canRateOrganizer) {
           <button mat-icon-button class="rate-btn" (click)="openRatingDialog()" matTooltip="Calificar organizador">

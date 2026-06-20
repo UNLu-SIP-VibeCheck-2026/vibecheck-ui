@@ -133,6 +133,11 @@ export class PerfilUserComponent implements OnInit {
     return p?.totalRatingsCount || null;
   });
 
+  hasOrganizedEvents = computed(() => {
+    const p = this.profile();
+    return p?.hasOrganizedEvents || false;
+  });
+
   ngOnInit(): void {
     const username = this.route.snapshot.paramMap.get('username');
     if (!username) {
