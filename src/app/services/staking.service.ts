@@ -34,12 +34,14 @@ export interface QuoteResponse {
   vbkNeeded: number;
 }
 
+import { environment } from "../../environments/environment";
+
 @Injectable({
   providedIn: "root",
 })
 export class StakingService {
   private http = inject(HttpClient);
-  private readonly baseUrl = "/api/staking";
+  private readonly baseUrl = `${environment.apiBaseUrl}/staking`;
 
   getStakingSummary(wallet: string): Observable<StakingSummary> {
     return this.http.get<StakingSummary>(`${this.baseUrl}/${wallet}`);
