@@ -145,6 +145,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "referrals",
+    loadComponent: () =>
+      import(
+        "./components/referrals/referrals.component"
+      ).then((m) => m.ReferralsComponent),
+    canActivate: [authGuard, (route, state) => roleGuard(['cliente', 'organizador', 'comprar', 'user'])(route, state)],
+  },
+  {
     path: "create-event",
     component: CreateEventComponent,
     canActivate: [authGuard],
@@ -260,7 +268,7 @@ export const routes: Routes = [
   {
     path: "scanner",
     component: QrScannerComponent,
-    canActivate: [authGuard, () => roleGuard(['validador'])],
+    canActivate: [authGuard, (route, state) => roleGuard(['validador'])(route, state)],
   },
   { path: "**", component: NotFoundComponent },
 ];

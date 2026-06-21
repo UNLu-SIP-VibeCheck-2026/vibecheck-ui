@@ -7,4 +7,5 @@ export interface RegisterRequest {
   password: string;
   birthdate: string;
   role: string;
+  referralCode?: string;
 }

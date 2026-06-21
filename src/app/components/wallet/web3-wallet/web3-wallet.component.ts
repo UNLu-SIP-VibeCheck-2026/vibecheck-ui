@@ -64,7 +64,13 @@ export class Web3WalletComponent implements OnInit {
     this.isLoadingChallenge = true;
     this.walletService.requestChallenge(address).subscribe({
       next: (challenge) => {
-        this.siweMessage = challenge.message;
+        if (challenge.walletAddress && challenge.walletAddress.toLowerCase() === address.toLowerCase()) {
+          this.isLinked = true;
+          const username = this.getCurrentUser();
+          localStorage.setItem(`linked_wallet_${username}`, challenge.walletAddress);
+        } else {
+          this.siweMessage = challenge.message;
+        }
         this.isLoadingChallenge = false;
       },
       error: (err) => {

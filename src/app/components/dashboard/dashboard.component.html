@@ -309,6 +309,20 @@
           </mat-card>
         }
 
+        <!-- Referir Contacto (Only for Cliente and Organizador) -->
+        @if (isCliente || isOrganizador) {
+          <mat-card class="action-card" (click)="navigateTo('/referrals')">
+            <div class="card-icon">
+              <mat-icon>person_add</mat-icon>
+            </div>
+            <div class="card-content">
+              <h3 class="card-title text-center">Referir Contacto</h3>
+              <p class="card-description">Invitá amigos a unirse y ganá 3 $VBK por cada uno</p>
+            </div>
+            <mat-icon class="card-arrow">arrow_forward</mat-icon>
+          </mat-card>
+        }
+
         <!-- Configuraciones (Not for Cliente and not for validators) -->
         @if (!isCliente && user.role !== 'comprar' && !isValidador) {
           <mat-card class="action-card" (click)="navigateTo('/perfil-config')">
