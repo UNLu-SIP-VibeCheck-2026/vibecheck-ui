@@ -170,4 +170,17 @@ export class ReferralsComponent implements OnInit {
       }
     });
   }
+
+  getCompletedReferralsCount(): number {
+    if (!this.stats()) return 0;
+    return this.stats()!.referrals.filter(r => r.state === 'COMPLETED').length;
+  }
+
+  getReferralProgressPercentage(): number {
+    if (!this.stats()) return 0;
+    const max = this.stats()!.maxReferrals || 1;
+    const current = this.getCompletedReferralsCount();
+    const pct = (current / max) * 100;
+    return Math.min(pct, 100);
+  }
 }

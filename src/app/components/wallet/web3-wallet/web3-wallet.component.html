@@ -33,20 +33,27 @@
     <div class="dashboard-header luxury-card">
       <div class="user-info">
         <div class="avatar-circle">
-          <mat-icon style="font-size: 24px; width: 24px; height: 24px; color: #f6851b; display: flex; align-items: center; justify-content: center;">account_balance_wallet</mat-icon>
+          <mat-icon style="font-size: 28px; width: 28px; height: 28px; color: #f6851b; display: flex; align-items: center; justify-content: center;">account_balance_wallet</mat-icon>
         </div>
         <div class="address-details">
-          <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="badge-row">
             <span class="network-badge">Sepolia Network</span>
-            <span *ngIf="isLinked" class="network-badge" style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; border-color: #2ecc71;">
-              <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;">check_circle</mat-icon>Vinculada
+            <span *ngIf="isLinked" class="linked-badge">
+              <mat-icon class="badge-icon">check_circle</mat-icon>
+              Vinculada
+            </span>
+            <span *ngIf="!isLinked" class="unlinked-badge">
+              <mat-icon class="badge-icon">info_outline</mat-icon>
+              No Vinculada
             </span>
           </div>
-          <div style="display: flex; align-items: center; gap: 16px; margin-top: 4px;">
-            <h2 class="address" style="margin: 0;">{{ truncateAddress(connectedAddress$ | async) }}</h2>
-            <button *ngIf="!isLinked" class="luxury-btn primary-btn" (click)="linkWallet()" [disabled]="isLinking || isLoadingChallenge" style="font-size: 0.8rem; padding: 4px 12px; height: auto; min-height: unset; margin: 0;">
-              <mat-icon style="font-size: 16px; width: 16px; height: 16px; margin-right: 4px;">link</mat-icon>
-              {{ isLinking ? 'Vinculando...' : (isLoadingChallenge ? 'Preparando...' : 'Vincular con VibeCheck') }}
+          <div class="address-row">
+            <h2 class="address">{{ truncateAddress(connectedAddress$ | async) }}</h2>
+            <button *ngIf="!isLinked" class="link-action-btn" (click)="linkWallet()" [disabled]="isLinking || isLoadingChallenge">
+              <mat-icon class="link-btn-icon" [class.spin]="isLinking">
+                {{ isLinking ? 'sync' : 'link' }}
+              </mat-icon>
+              <span>{{ isLinking ? 'Vinculando...' : (isLoadingChallenge ? 'Cargando...' : 'Vincular Wallet') }}</span>
             </button>
           </div>
         </div>

@@ -95,6 +95,44 @@
         </mat-card>
       </div>
 
+      <!-- Límite de Referidos por Tier -->
+      <div class="tier-limit-section" style="margin-top: var(--space-4); margin-bottom: var(--space-4);">
+        <mat-card class="link-card" style="background-color: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline-variant); padding: var(--space-5); box-shadow: none; border-radius: var(--md-sys-shape-corner-medium);">
+          <mat-card-content style="padding: 0;">
+            <div class="tier-limit-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); flex-wrap: wrap; gap: var(--space-2);">
+              <div>
+                <h3 class="card-title-small" style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--md-sys-color-on-surface-variant); margin: 0 0 var(--space-1) 0;">LÍMITE DE RECOMPENSAS POR RANGO</h3>
+                <p class="body-small text-muted" style="margin: 0;">
+                  Tu rango actual es <strong class="text-gradient font-accent" style="text-transform: uppercase;">{{ stats()?.currentTier || 'BRONCE' }}</strong>.
+                </p>
+              </div>
+              <div class="tier-limit-counter" style="text-align: right;">
+                <span class="body-medium" style="font-weight: 700; color: var(--color-white);">
+                  {{ getCompletedReferralsCount() }} / {{ stats()?.maxReferrals || 1 }}
+                </span>
+                <span class="body-small text-muted" style="display: block; font-size: 12px;">cupos utilizados</span>
+              </div>
+            </div>
+            
+            <div class="progress-bar-container" style="background-color: rgba(255,255,255,0.06); height: 8px; border-radius: 4px; overflow: hidden; width: 100%;">
+              <div class="progress-bar-fill" [style.width.%]="getReferralProgressPercentage()" style="height: 100%; background: linear-gradient(90deg, #7c3aed 0%, #f97316 100%); border-radius: 4px; transition: width 0.5s ease-in-out;"></div>
+            </div>
+
+            @if (getCompletedReferralsCount() >= (stats()?.maxReferrals || 1)) {
+              <div class="limit-warning-banner" style="margin-top: var(--space-4); display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3); background-color: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2); border-radius: 8px;">
+                <mat-icon style="color: #f97316; font-size: 20px; width: 20px; height: 20px;">warning</mat-icon>
+                <div>
+                  <p class="body-small" style="color: #cbd5e1; margin: 0; font-weight: 600; font-size: 13px;">¡Límite de recompensas alcanzado!</p>
+                  <p class="body-small text-muted" style="margin: var(--space-1) 0 0 0; font-size: 12px; line-height: 1.4;">
+                    Participá en eventos, comprá entradas y completá logros para acumular puntos y subir de nivel. ¡Niveles superiores te permitirán desbloquear más cupos de recompensa!
+                  </p>
+                </div>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+
       <div class="history-section">
         <h2 class="section-subtitle">HISTORIAL DE INVITACIONES</h2>
         
@@ -119,7 +157,7 @@
                 <th mat-header-cell *matHeaderCellDef> Estado </th>
                 <td mat-cell *matCellDef="let element">
                   <span class="status-badge" [attr.data-status]="element.state">
-                    {{ element.state === 'PENDING' ? 'Pendiente' : element.state === 'COMPLETED' ? 'Acreditado' : 'Fallido' }}
+                    {{ element.state === 'PENDING' ? 'Pendiente' : element.state === 'COMPLETED' ? 'Acreditado' : element.state === 'LIMIT_EXCEEDED' ? 'Cupo Excedido' : 'Fallido' }}
                   </span>
                 </td>
               </ng-container>

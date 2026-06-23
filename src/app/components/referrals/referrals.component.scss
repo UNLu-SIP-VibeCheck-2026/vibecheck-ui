@@ -336,6 +336,12 @@
     color: var(--md-sys-color-error);
     border: 1px solid rgba(239, 68, 68, 0.15);
   }
+
+  &[data-status="LIMIT_EXCEEDED"] {
+    background-color: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.15);
+  }
 }
 
 // ---------------------------------------------------------------------------

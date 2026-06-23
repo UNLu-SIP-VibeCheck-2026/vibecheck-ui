@@ -11,13 +11,15 @@ export interface ReferralCodeResponse {
 export interface ReferralDetail {
   username: string;
   createdAt: string;
-  state: "PENDING" | "COMPLETED" | "FAILED";
+  state: "PENDING" | "COMPLETED" | "FAILED" | "LIMIT_EXCEEDED";
   rewardTxHash?: string;
 }
 
 export interface ReferralStatsResponse {
   totalReferred: number;
   totalEarnedVbk: number;
+  maxReferrals: number;
+  currentTier: string;
   referrals: ReferralDetail[];
 }
 

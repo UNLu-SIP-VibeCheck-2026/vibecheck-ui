@@ -59,6 +59,7 @@ export class RegisterComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (params["ref"]) {
         this.referralCode = params["ref"];
+        document.cookie = `vibecheck_ref=${this.referralCode}; path=/; max-age=3600; SameSite=Lax`;
       }
     });
   }
