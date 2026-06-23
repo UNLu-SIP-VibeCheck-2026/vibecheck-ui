@@ -86,6 +86,75 @@ export class EventsComponent implements OnInit, OnDestroy {
   // Filter signals bound to inputs
   selectedCategoryId = signal<number | null>(null);
   searchQuery = signal<string>('');
+  dateFilterOption = signal<string>('ALL'); // 'ALL', 'TODAY', 'WEEK', 'MONTH'
+
+  startDateParam = computed(() => {
+    const option = this.dateFilterOption();
+    const now = new Date();
+    if (option === 'TODAY') {
+      return now.toISOString();
+    }
+    if (option === 'WEEK') {
+      return now.toISOString();
+    }
+    if (option === 'MONTH') {
+      return now.toISOString();
+    }
+    return null;
+  });
+
+  endDateParam = computed(() => {
+    const option = this.dateFilterOption();
+    const now = new Date();
+    if (option === 'TODAY') {
+      const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      return todayEnd.toISOString();
+    }
+    if (option === 'WEEK') {
+      const weekEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return weekEnd.toISOString();
+    }
+    if (option === 'MONTH') {
+      const monthEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      return monthEnd.toISOString();
+    }
+    return null;
+  });
+
+  hasActiveFilters = computed(() => {
+    return this.searchQuery().trim().length > 0 || this.selectedCategoryId() !== null || this.dateFilterOption() !== 'ALL';
+  });
+
+  getCategoryName(id: number | null): string {
+    if (id === null) return '';
+    const cat = this.categories().find(c => c.id === id);
+    return cat ? cat.name : `Categoría #${id}`;
+  }
+
+  getDateOptionLabel(option: string): string {
+    if (option === 'TODAY') return 'Hoy';
+    if (option === 'WEEK') return 'Esta semana';
+    if (option === 'MONTH') return 'Próximos 30 días';
+    return '';
+  }
+
+  clearSearchQuery(): void {
+    this.searchQuery.set('');
+  }
+
+  clearCategory(): void {
+    this.selectedCategoryId.set(null);
+  }
+
+  clearDateFilter(): void {
+    this.dateFilterOption.set('ALL');
+  }
+
+  clearAllFilters(): void {
+    this.searchQuery.set('');
+    this.selectedCategoryId.set(null);
+    this.dateFilterOption.set('ALL');
+  }
 
   ngOnInit(): void {
     this.loadVenues();

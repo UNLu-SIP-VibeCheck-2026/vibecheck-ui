@@ -46,93 +46,229 @@
   }
 }
 
-.filters-row {
+.filters-panel {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-end;
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
+  padding: var(--space-3) var(--space-4);
+  box-sizing: border-box;
+
+  @include mobile {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    padding: var(--space-3) 0;
+    background-color: transparent;
+    border: none;
+  }
+
+  @include tablet {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+.filter-group {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-1);
+  box-sizing: border-box;
 
-  .search-filters-container {
+  &.search-group {
+    flex: 1;
+    min-width: 240px;
+    @include mobile {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+
+  &.category-group {
+    width: 240px;
+    flex-shrink: 0;
+    @include mobile {
+      display: none !important;
+    }
+  }
+
+  &.date-group {
+    width: 200px;
+    flex-shrink: 0;
+    @include mobile {
+      width: 100%;
+    }
+  }
+
+  .filter-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-label);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-left: 2px;
+    text-transform: uppercase;
+  }
+
+  .filter-icon {
+    color: var(--md-sys-color-primary) !important;
+    margin-right: var(--space-2) !important;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
     display: flex;
-    gap: var(--space-4);
     align-items: center;
-    width: 100%;
+    justify-content: center;
+  }
 
-    .search-field {
-      flex: 1;
-      max-width: 500px;
-      
-      @media (min-width: 768px) {
-        width: 320px;
-      }
-
-      input {
-        font-size: 16px !important;
-      }
-
-      ::ng-deep .mat-mdc-text-field-wrapper {
-        background-color: var(--md-sys-color-surface-container-high) !important;
-        border-radius: var(--md-sys-shape-corner-medium) !important;
-        height: 48px !important;
-        padding: 0 16px !important;
-        border: 1px solid var(--md-sys-color-outline-variant) !important;
-        transition: all 0.2s ease !important;
-      }
-
-      ::ng-deep .mat-mdc-text-field-wrapper:hover {
-        border-color: var(--md-sys-color-outline) !important;
-      }
-
-      ::ng-deep .mat-mdc-text-field-wrapper.mat-mdc-text-field-focused {
-        border-color: var(--md-sys-color-primary) !important;
-      }
-
-      ::ng-deep .mat-mdc-form-field-infix {
-        padding-top: 12px !important;
-        padding-bottom: 12px !important;
-        min-height: 48px !important;
-      }
-
-      ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-        display: none !important;
-      }
-
-      .search-icon-wrapper {
-        color: var(--md-sys-color-primary);
-        display: flex;
-        align-items: center;
-      }
+  // Material Form Field Overrides
+  ::ng-deep {
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--md-sys-color-surface-variant) !important;
+      border-radius: var(--md-sys-shape-corner-medium) !important;
+      height: 44px !important;
+      padding: 0 12px !important;
+      border: 1px solid var(--md-sys-color-outline-variant) !important;
+      transition: all 0.2s ease !important;
+      box-shadow: none !important;
     }
 
-    .category-filter-field {
-      width: 240px;
-      flex-shrink: 0;
+    .mat-mdc-text-field-wrapper:hover {
+      border-color: var(--md-sys-color-outline) !important;
+    }
 
-      ::ng-deep .mat-mdc-text-field-wrapper {
-        background-color: var(--md-sys-color-surface-container-high) !important;
-        border-radius: var(--md-sys-shape-corner-medium) !important;
-        height: 48px !important;
-        padding: 0 16px !important;
-        border: 1px solid var(--md-sys-color-outline-variant) !important;
-        transition: all 0.2s ease !important;
+    .mat-mdc-text-field-wrapper.mat-mdc-text-field-focused {
+      border-color: var(--md-sys-color-primary) !important;
+    }
+
+    .mat-mdc-form-field-infix {
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
+      min-height: 44px !important;
+      display: flex;
+      align-items: center;
+    }
+
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none !important;
+    }
+
+    .mat-mdc-select-trigger {
+      font-size: 14px;
+      color: var(--md-sys-color-on-surface);
+      font-family: var(--font-ui);
+    }
+
+    .mat-mdc-select-placeholder {
+      color: var(--md-sys-color-on-surface-variant);
+    }
+  }
+}
+
+.applied-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+
+  .label {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: var(--weight-medium);
+  }
+
+  .chips-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background-color: var(--md-sys-color-surface-variant);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--md-sys-shape-corner-full);
+    height: 32px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: var(--md-sys-color-outline);
+    }
+
+    .text {
+      font-size: 11px;
+      font-weight: var(--weight-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .remove-btn {
+      background: transparent;
+      border: none;
+      color: var(--md-sys-color-on-surface-variant);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 44px;
+        height: 44px;
       }
 
-      ::ng-deep .mat-mdc-text-field-wrapper:hover {
-        border-color: var(--md-sys-color-outline) !important;
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--md-sys-color-on-surface);
       }
 
-      ::ng-deep .mat-mdc-text-field-wrapper.mat-mdc-text-field-focused {
-        border-color: var(--md-sys-color-primary) !important;
+      mat-icon {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
       }
+    }
+  }
 
-      ::ng-deep .mat-mdc-form-field-infix {
-        padding-top: 12px !important;
-        padding-bottom: 12px !important;
-        min-height: 48px !important;
-      }
+  .btn-clear-all {
+    background: transparent;
+    border: none;
+    color: var(--md-sys-color-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: var(--tracking-mono);
+    font-weight: var(--weight-bold);
+    cursor: pointer;
+    text-transform: uppercase;
+    padding: var(--space-1) var(--space-3);
+    transition: color 0.2s ease;
 
-      ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-        display: none !important;
-      }
+    &:hover {
+      color: var(--md-sys-color-secondary);
+      text-decoration: underline;
     }
   }
 }
@@ -218,26 +354,6 @@
     margin-bottom: var(--space-4);
   }
 
-  .filters-row {
-    gap: var(--space-3);
-    width: 100%;
-
-    .search-filters-container {
-      flex-direction: column;
-      align-items: stretch;
-      width: 100%;
-      gap: var(--space-2);
-
-      .search-field {
-        max-width: none !important;
-        width: 100%;
-      }
-
-      .category-filter-field {
-        display: none !important;
-      }
-    }
-  }
 
   .categories-chips-scroll {
     display: flex;

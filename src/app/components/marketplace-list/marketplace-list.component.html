@@ -7,17 +7,99 @@
   </div>
 
   <!-- Filters & Actions -->
-  <div class="filters-row">
-    <div class="filter-field">
-      <mat-form-field appearance="outline" class="event-select">
-        <mat-label>Filtrar por Evento</mat-label>
-        <mat-select [(value)]="selectedEventNftAddress" (selectionChange)="onFilterChange()">
-          <mat-option value="">Todos los eventos</mat-option>
-          <mat-option *ngFor="let evt of events()" [value]="evt.eventNftAddress">
-            {{ evt.title }}
+  <div class="filters-panel">
+    <!-- Event Search -->
+    <div class="filter-group event-group">
+      <span class="filter-label">EVENTO</span>
+      <mat-form-field appearance="outline" class="event-search-field" subscriptSizing="dynamic">
+        <mat-icon matPrefix class="filter-icon">search</mat-icon>
+        <input type="text"
+               placeholder="Buscar evento..."
+               aria-label="Buscar Evento"
+               matInput
+               [formControl]="eventSearchCtrl"
+               [matAutocomplete]="auto" />
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayEventTitle" (optionSelected)="onEventSelected($event)">
+          <mat-option *ngIf="isLoadingEvents()" class="is-loading">
+            <mat-spinner diameter="20"></mat-spinner>
+          </mat-option>
+          <ng-container *ngIf="!isLoadingEvents()">
+            <mat-option value="">Todos los eventos</mat-option>
+            <mat-option *ngFor="let evt of filteredEvents()" [value]="evt">
+              {{ evt.title }}
+            </mat-option>
+          </ng-container>
+        </mat-autocomplete>
+        <button *ngIf="eventSearchCtrl.value" matSuffix mat-icon-button aria-label="Limpiar" (click)="clearEventFilter()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <!-- Max Price -->
+    <div class="filter-group price-group">
+      <span class="filter-label">PRECIO MÁXIMO (USDC)</span>
+      <mat-form-field appearance="outline" class="price-filter-field" subscriptSizing="dynamic">
+        <mat-icon matPrefix class="filter-icon">monetization_on</mat-icon>
+        <input type="number"
+               placeholder="Precio máx USDC"
+               matInput
+               [ngModel]="maxPrice()"
+               (ngModelChange)="maxPrice.set($event)" />
+        <span matSuffix class="currency-label">USDC</span>
+      </mat-form-field>
+    </div>
+
+    <!-- Ticket Tier -->
+    <div class="filter-group tier-group" [class.disabled]="!selectedEventNftAddress">
+      <span class="filter-label">CLASE DE ENTRADA</span>
+      <mat-form-field appearance="outline" class="tier-filter-field" subscriptSizing="dynamic">
+        <mat-icon matPrefix class="filter-icon">confirmation_number</mat-icon>
+        <mat-select [placeholder]="selectedEventNftAddress ? 'Todas las clases' : 'Seleccioná un evento'"
+                    [ngModel]="selectedTier()"
+                    (ngModelChange)="selectedTier.set($event)"
+                    [disabled]="!selectedEventNftAddress">
+          <mat-option value="">Todas las clases</mat-option>
+          <mat-option *ngFor="let tier of availableTiers()" [value]="tier">
+            {{ tier }}
           </mat-option>
         </mat-select>
       </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Applied Filters Section -->
+  <div class="applied-filters" *ngIf="hasActiveFilters()">
+    <span class="label">Filtros aplicados:</span>
+    <div class="chips-container">
+      <!-- Event Chip -->
+      <div class="filter-chip" *ngIf="selectedEventNftAddress">
+        <span class="text">Evento: {{ getEventForListing(selectedEventNftAddress)?.title || 'Cargando...' }}</span>
+        <button class="remove-btn" (click)="clearEventFilter()" aria-label="Remover filtro de evento">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <!-- Max Price Chip -->
+      <div class="filter-chip" *ngIf="maxPrice() !== null">
+        <span class="text">Precio Máx: {{ maxPrice() }} USDC</span>
+        <button class="remove-btn" (click)="clearMaxPriceFilter()" aria-label="Remover filtro de precio máximo">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <!-- Tier Chip -->
+      <div class="filter-chip" *ngIf="selectedTier()">
+        <span class="text">Clase: {{ selectedTier() }}</span>
+        <button class="remove-btn" (click)="clearTierFilter()" aria-label="Remover filtro de clase">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <!-- Clear All -->
+      <button class="btn-clear-all" (click)="clearAllFilters()">
+        Limpiar todos
+      </button>
     </div>
   </div>
 
@@ -49,7 +131,7 @@
   <ng-container *ngIf="!isLoading() && !isAuthRequired()">
 
     <!-- Empty State -->
-    <div *ngIf="listings().length === 0" class="empty-state-card">
+    <div *ngIf="filteredListings().length === 0" class="empty-state-card">
       <div class="empty-icon-container">
         <mat-icon class="empty-icon">storefront</mat-icon>
       </div>
@@ -58,8 +140,8 @@
     </div>
 
     <!-- Active Listings Grid -->
-    <div *ngIf="listings().length > 0" class="listings-grid">
-      <mat-card class="listing-card" *ngFor="let item of listings()">
+    <div *ngIf="filteredListings().length > 0" class="listings-grid">
+      <mat-card class="listing-card" *ngFor="let item of filteredListings()">
         
         <!-- Ticket Image -->
         <div class="listing-image-wrapper">
@@ -117,7 +199,7 @@
     </div>
 
     <!-- Pagination -->
-    <div *ngIf="listings().length > 0 && totalPages > 1" class="pagination-container">
+    <div *ngIf="filteredListings().length > 0 && totalPages > 1" class="pagination-container">
       <button mat-flat-button class="pag-btn" [disabled]="currentPage === 0" (click)="goToPage(currentPage - 1)">
         <mat-icon>navigate_before</mat-icon> Anterior
       </button>

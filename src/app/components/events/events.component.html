@@ -32,21 +32,24 @@
       <div class="main-content-header">
         <h2 class="section-title">Todos los Eventos</h2>
         
-        <div class="filters-row">
-          <div class="search-filters-container">
-            <!-- Search Field -->
+        <div class="filters-panel">
+          <!-- Search Field -->
+          <div class="filter-group search-group">
+            <span class="filter-label">BUSCAR</span>
             <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix class="filter-icon">search</mat-icon>
               <input matInput 
                      placeholder="Buscar por evento o locación..." 
                      [ngModel]="searchQuery()" 
                      (ngModelChange)="searchQuery.set($event)">
-              <span matSuffix class="search-icon-wrapper">
-                <mat-icon>search</mat-icon>
-              </span>
             </mat-form-field>
+          </div>
 
-            <!-- Category Select (Tablet / Desktop) -->
+          <!-- Category Select (Tablet / Desktop) -->
+          <div class="filter-group category-group">
+            <span class="filter-label">CATEGORÍA</span>
             <mat-form-field appearance="outline" class="category-filter-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix class="filter-icon">category</mat-icon>
               <mat-select placeholder="Todas las categorías" 
                           [ngModel]="selectedCategoryId()" 
                           (ngModelChange)="selectedCategoryId.set($event); onCategoryChange()">
@@ -57,6 +60,57 @@
               </mat-select>
             </mat-form-field>
           </div>
+
+          <!-- Date Select -->
+          <div class="filter-group date-group">
+            <span class="filter-label">FECHA</span>
+            <mat-form-field appearance="outline" class="date-filter-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix class="filter-icon">calendar_today</mat-icon>
+              <mat-select placeholder="Cualquier fecha" 
+                          [ngModel]="dateFilterOption()" 
+                          (ngModelChange)="dateFilterOption.set($event)">
+                <mat-option value="ALL">Cualquier fecha</mat-option>
+                <mat-option value="TODAY">Hoy</mat-option>
+                <mat-option value="WEEK">Esta semana</mat-option>
+                <mat-option value="MONTH">Próximos 30 días</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Applied Filters Section -->
+      <div class="applied-filters" *ngIf="hasActiveFilters()">
+        <span class="label">Filtros aplicados:</span>
+        <div class="chips-container">
+          <!-- Text Search Chip -->
+          <div class="filter-chip" *ngIf="searchQuery().trim().length > 0">
+            <span class="text">Búsqueda: "{{ searchQuery() }}"</span>
+            <button class="remove-btn" (click)="clearSearchQuery()" aria-label="Remover filtro de búsqueda">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <!-- Category Chip -->
+          <div class="filter-chip" *ngIf="selectedCategoryId() !== null">
+            <span class="text">Categoría: {{ getCategoryName(selectedCategoryId()) }}</span>
+            <button class="remove-btn" (click)="clearCategory()" aria-label="Remover filtro de categoría">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <!-- Date Chip -->
+          <div class="filter-chip" *ngIf="dateFilterOption() !== 'ALL'">
+            <span class="text">Fecha: {{ getDateOptionLabel(dateFilterOption()) }}</span>
+            <button class="remove-btn" (click)="clearDateFilter()" aria-label="Remover filtro de fecha">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <!-- Clear All -->
+          <button class="btn-clear-all" (click)="clearAllFilters()">
+            Limpiar todos
+          </button>
         </div>
       </div>
 
@@ -81,6 +135,8 @@
       <app-events-grid 
         [categoryId]="selectedCategoryId()" 
         [searchQuery]="searchQuery()" 
+        [startDate]="startDateParam()"
+        [endDate]="endDateParam()"
         [eventTierMap]="getEventTierMap()">
       </app-events-grid>
     </main>
