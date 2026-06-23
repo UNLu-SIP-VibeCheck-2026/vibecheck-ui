@@ -1,44 +1,72 @@
 <div class="change-role-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title class="dialog-title">Cambiar mi Rol Activo</h2>
+    <button mat-icon-button class="btn-close" (click)="onCancel()" aria-label="Cerrar diálogo">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
     @if (isLoadingUser || isLoadingRoles) {
-        <div class="skeleton-wrapper">
-            <div class="skeleton-label"></div>
-            <div class="skeleton-buttons-row">
-                <div class="skeleton-btn"></div>
-                <div class="skeleton-btn"></div>
-            </div>
-            <div class="skeleton-submit-btn"></div>
+      <div class="skeleton-wrapper">
+        <div class="skeleton-label"></div>
+        <div class="skeleton-cards">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
         </div>
+      </div>
     } @else {
-        <div class="role-selection-wrapper">
-            
-            <div class="form-group custom-field-wrapper role-selection">
-                <label>En VibeCheck quiero:</label>
-                <div class="role-buttons">
-                    <button type="button" 
-                            class="role-btn" 
-                            [class.active]="selectedRole === 'comprar'"
-                            (click)="setRole('comprar')">
-                        Comprar entradas
-                    </button>
-                    <button type="button" 
-                            class="role-btn" 
-                            [class.active]="selectedRole === 'crear'"
-                            (click)="setRole('crear')">
-                        Crear Eventos
-                    </button>
-                </div>
-            </div>
+      <div class="role-selection-wrapper">
+        <p class="role-intro-text">
+          Seleccioná tu rol activo en la plataforma. Podés alternar entre ambos cuando lo desees desde tu panel de configuraciones.
+        </p>
 
-            <div class="dialog-actions">
-                <button mat-raised-button 
-                        (click)="onSubmit()"
-                        [disabled]="!selectedRole"
-                        class="custom-btn-submit">
-                    Confirmar Modificación
-                </button>
+        <div class="role-options-grid">
+          <!-- Option Comprar (Cliente) -->
+          <div class="role-card-option" 
+               [class.active]="selectedRole === 'comprar'"
+               (click)="setRole('comprar')">
+            <div class="option-icon-wrapper">
+              <mat-icon class="option-icon">confirmation_number</mat-icon>
             </div>
+            <div class="option-details">
+              <h3 class="option-title">Comprar Entradas</h3>
+              <p class="option-desc">Buscá shows, adquiri tickets oficiales y accede al mercado de reventa segura.</p>
+            </div>
+            <div class="option-indicator">
+              <div class="indicator-inner"></div>
+            </div>
+          </div>
 
+          <!-- Option Crear (Organizador) -->
+          <div class="role-card-option" 
+               [class.active]="selectedRole === 'crear'"
+               (click)="setRole('crear')">
+            <div class="option-icon-wrapper">
+              <mat-icon class="option-icon">campaign</mat-icon>
+            </div>
+            <div class="option-details">
+              <h3 class="option-title">Crear Eventos</h3>
+              <p class="option-desc">Publicá tus propios eventos, gestioná las ventas de entradas y visualizá tus estadísticas.</p>
+            </div>
+            <div class="option-indicator">
+              <div class="indicator-inner"></div>
+            </div>
+          </div>
         </div>
+      </div>
     }
+  </mat-dialog-content>
 
+  <mat-dialog-actions class="dialog-actions-row" *ngIf="!isLoadingUser && !isLoadingRoles">
+    <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
+      Cancelar
+    </button>
+    <button mat-raised-button 
+            [disabled]="!selectedRole"
+            (click)="onSubmit()"
+            class="btn-submit">
+      Confirmar Cambio
+    </button>
+  </mat-dialog-actions>
 </div>

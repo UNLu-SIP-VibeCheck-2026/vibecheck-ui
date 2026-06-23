@@ -81,14 +81,20 @@
             <div class="info-card role-card">
               <span class="info-label">Rol</span>
               <div class="role-badge-wrapper">
-                <button
-                  type="button"
-                  class="user-badge user-badge-button"
-                  (click)="openChangeRole()"
-                  aria-label="Cambiar mi rol activo"
-                >
-                  <span class="badge-text">{{ profile()?.role }}</span>
-                </button>
+                @if (canChangeRole()) {
+                  <button
+                    type="button"
+                    class="user-badge user-badge-button"
+                    (click)="openChangeRole()"
+                    aria-label="Cambiar mi rol activo"
+                  >
+                    <span class="badge-text">{{ profile()?.role }}</span>
+                  </button>
+                } @else {
+                  <div class="user-badge user-badge-static" aria-hidden="true">
+                    <span class="badge-text">{{ profile()?.role }}</span>
+                  </div>
+                }
               </div>
             </div>
 

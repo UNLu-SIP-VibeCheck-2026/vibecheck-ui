@@ -138,6 +138,11 @@ export class PerfilUserComponent implements OnInit {
     return p?.hasOrganizedEvents || false;
   });
 
+  canChangeRole = computed(() => {
+    const r = this.profile()?.role?.toLowerCase() || '';
+    return r === 'cliente' || r === 'organizador' || r === 'comprar' || r === 'crear' || r === 'user';
+  });
+
   ngOnInit(): void {
     const username = this.route.snapshot.paramMap.get('username');
     if (!username) {

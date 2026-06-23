@@ -6,6 +6,7 @@ import { RolesService } from "../../../../services/roles.service";
 import { UsersService } from "../../../../services/users.service";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { ErrorService } from "../../../../services/error.service";
+import { MatIconModule } from "@angular/material/icon";
 
 @Component({
   selector: "app-change-role-dialog",
@@ -14,6 +15,7 @@ import { ErrorService } from "../../../../services/error.service";
     CommonModule,
     MatDialogModule,
     MatButtonModule,
+    MatIconModule,
   ],
   templateUrl: "./change-role-dialog.component.html",
   styleUrls: ["./change-role-dialog.component.scss"],
