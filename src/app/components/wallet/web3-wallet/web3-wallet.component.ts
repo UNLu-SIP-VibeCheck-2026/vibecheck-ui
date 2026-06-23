@@ -32,11 +32,23 @@ export class Web3WalletComponent implements OnInit {
   currentAddress: string | null = null;
   isLinking = false;
   isLinked = false;
+  isLoadingConnection = true;
 
   siweMessage: string | null = null;
   isLoadingChallenge = false;
 
   ngOnInit() {
+    const timeoutId = setTimeout(() => {
+      this.isLoadingConnection = false;
+    }, 800);
+
+    this.isConnected$.subscribe(connected => {
+      if (connected) {
+        clearTimeout(timeoutId);
+        this.isLoadingConnection = false;
+      }
+    });
+
     this.connectedAddress$.subscribe(address => {
       this.currentAddress = address;
       if (address) {

@@ -3,192 +3,226 @@
   <div class="glass-orb orb-1"></div>
   <div class="glass-orb orb-2"></div>
 
-  <!-- BILLETERA NO CONECTADA -->
-  <div class="luxury-card center-content" *ngIf="!(isConnected$ | async)">
-    <div class="logo-wrapper pulse-glow">
-      <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #f6851b; display: flex; align-items: center; justify-content: center;">account_balance_wallet</mat-icon>
+  <!-- ESTADO DE CARGA / SKELETON -->
+  <div class="luxury-card skeleton-container" *ngIf="isLoadingConnection">
+    <div class="skeleton-header">
+      <div class="skeleton-avatar skeleton-pulse"></div>
+      <div class="skeleton-info">
+        <div class="skeleton-line short skeleton-pulse"></div>
+        <div class="skeleton-line medium skeleton-pulse"></div>
+      </div>
     </div>
-    <h2>Billetera Virtual</h2>
-    <p class="subtitle">Conecta tu billetera virtual para gestionar tus activos y realizar pagos seguros dentro del ecosistema VibeCheck.</p>
     
-    <button class="luxury-btn primary-btn" (click)="connect()">
-      <mat-icon>account_balance_wallet</mat-icon> Conectar Billetera
-    </button>
+    <div class="skeleton-tabs">
+      <div class="skeleton-tab skeleton-pulse"></div>
+      <div class="skeleton-tab skeleton-pulse"></div>
+      <div class="skeleton-tab skeleton-pulse"></div>
+    </div>
+
+    <div class="skeleton-grid">
+      <div class="skeleton-card">
+        <div class="skeleton-icon skeleton-pulse"></div>
+        <div class="skeleton-amount skeleton-pulse"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-icon skeleton-pulse"></div>
+        <div class="skeleton-amount skeleton-pulse"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-icon skeleton-pulse"></div>
+        <div class="skeleton-amount skeleton-pulse"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- CONECTADO PERO EN RED INCORRECTA -->
-  <div class="luxury-card center-content warning-state" *ngIf="(isConnected$ | async) && !(isSepolia$ | async)">
-    <mat-icon class="huge-icon">wifi_tethering_error</mat-icon>
-    <h2>Red Incorrecta</h2>
-    <p>La red actual no es compatible. VibeCheck opera de forma exclusiva sobre la red <strong>Sepolia Testnet</strong>.</p>
-    <button class="luxury-btn warning-btn" (click)="forceSwitchNetwork()">
-      <mat-icon>swap_horiz</mat-icon> Cambiar a Sepolia
-    </button>
-  </div>
-
-  <!-- CONECTADO Y EN SEPOLIA -->
-  <div class="dashboard-container" *ngIf="(isConnected$ | async) && (isSepolia$ | async)">
-    
-    <!-- Dashboard Header -->
-    <div class="dashboard-header luxury-card">
-      <div class="user-info">
-        <div class="avatar-circle">
-          <mat-icon style="font-size: 28px; width: 28px; height: 28px; color: #f6851b; display: flex; align-items: center; justify-content: center;">account_balance_wallet</mat-icon>
-        </div>
-        <div class="address-details">
-          <div class="badge-row">
-            <span class="network-badge">Sepolia Network</span>
-            <span *ngIf="isLinked" class="linked-badge">
-              <mat-icon class="badge-icon">check_circle</mat-icon>
-              Vinculada
-            </span>
-            <span *ngIf="!isLinked" class="unlinked-badge">
-              <mat-icon class="badge-icon">info_outline</mat-icon>
-              No Vinculada
-            </span>
-          </div>
-          <div class="address-row">
-            <h2 class="address">{{ truncateAddress(connectedAddress$ | async) }}</h2>
-            <button *ngIf="!isLinked" class="link-action-btn" (click)="linkWallet()" [disabled]="isLinking || isLoadingChallenge">
-              <mat-icon class="link-btn-icon" [class.spin]="isLinking">
-                {{ isLinking ? 'sync' : 'link' }}
-              </mat-icon>
-              <span>{{ isLinking ? 'Vinculando...' : (isLoadingChallenge ? 'Cargando...' : 'Vincular Wallet') }}</span>
-            </button>
-          </div>
-        </div>
+  <ng-container *ngIf="!isLoadingConnection">
+    <!-- BILLETERA NO CONECTADA -->
+    <div class="luxury-card center-content" *ngIf="!(isConnected$ | async)">
+      <div class="logo-wrapper pulse-glow">
+        <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #f6851b; display: flex; align-items: center; justify-content: center;">account_balance_wallet</mat-icon>
       </div>
-      <div class="powered-by">
-        <span>Powered by</span>
-        <mat-icon style="font-size: 16px; width: 16px; height: 16px; margin: 0 0.25rem; vertical-align: middle; color: #94a3b8;">account_balance_wallet</mat-icon>
-        <strong>AppKit</strong>
-      </div>
-    </div>
-
-    <!-- Navegación de Pestañas (Tabs) -->
-    <div class="premium-tabs">
-      <button class="tab-btn" [class.active]="activeTab === 'balances'" (click)="switchTab('balances')">
-        <mat-icon>account_balance</mat-icon> Mis Saldos
-      </button>
-      <button class="tab-btn" [class.active]="activeTab === 'send'" (click)="switchTab('send')">
-        <mat-icon>send</mat-icon> Transferir
-      </button>
-      <button class="tab-btn" [class.active]="activeTab === 'swap'" (click)="switchTab('swap')">
-        <mat-icon>swap_horiz</mat-icon> Intercambiar
+      <h2>Billetera Virtual</h2>
+      <p class="subtitle">Conecta tu billetera virtual para gestionar tus activos y realizar pagos seguros dentro del ecosistema VibeCheck.</p>
+      
+      <button class="luxury-btn primary-btn" (click)="connect()">
+        <mat-icon>account_balance_wallet</mat-icon> Conectar Billetera
       </button>
     </div>
 
-    <!-- PESTAÑA: SALDOS -->
-    <div class="tab-content fade-in" *ngIf="activeTab === 'balances'">
-      <div class="balances-grid">
-        <!-- VBK -->
-        <div class="balance-glass-card">
-          <div class="card-icon-bg purple-bg"><mat-icon>toll</mat-icon></div>
-          <span class="asset-name">VibeCheck Token</span>
-          <div class="amount-row">
-            <span class="amount">{{ vbkBalance$ | async }}</span>
-            <span class="symbol">VBK</span>
-          </div>
-        </div>
-
-        <!-- USDC -->
-        <div class="balance-glass-card">
-          <div class="card-icon-bg blue-bg"><mat-icon>attach_money</mat-icon></div>
-          <span class="asset-name">Dólar Digital</span>
-          <div class="amount-row">
-            <span class="amount">{{ usdcBalance$ | async }}</span>
-            <span class="symbol">USDC</span>
-          </div>
-        </div>
-
-        <!-- ETH -->
-        <div class="balance-glass-card">
-          <div class="card-icon-bg indigo-bg"><mat-icon>local_gas_station</mat-icon></div>
-          <span class="asset-name">Ethereum (Gas)</span>
-          <div class="amount-row">
-            <span class="amount">{{ ethBalance$ | async }}</span>
-            <span class="symbol">ETH</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="dashboard-footer">
-        <a href="https://sepolia.etherscan.io/address/{{ connectedAddress$ | async }}" target="_blank" class="text-link">
-          Ver historial en Etherscan <mat-icon>launch</mat-icon>
-        </a>
-      </div>
+    <!-- CONECTADO PERO EN RED INCORRECTA -->
+    <div class="luxury-card center-content warning-state" *ngIf="(isConnected$ | async) && !(isSepolia$ | async)">
+      <mat-icon class="huge-icon">wifi_tethering_error</mat-icon>
+      <h2>Red Incorrecta</h2>
+      <p>La red actual no es compatible. VibeCheck opera de forma exclusiva sobre la red <strong>Sepolia Testnet</strong>.</p>
+      <button class="luxury-btn warning-btn" (click)="forceSwitchNetwork()">
+        <mat-icon>swap_horiz</mat-icon> Cambiar a Sepolia
+      </button>
     </div>
 
-    <!-- PESTAÑA: ENVIAR FONDOS -->
-    <div class="tab-content fade-in" *ngIf="activeTab === 'send'">
-      <div class="luxury-card form-card">
-        <div class="form-header">
-          <h3>Enviar Criptoactivos</h3>
-          <p>Transfiere valor a cualquier dirección de forma segura a través de MetaMask.</p>
+    <!-- CONECTADO Y EN SEPOLIA -->
+    <div class="dashboard-container" *ngIf="(isConnected$ | async) && (isSepolia$ | async)">
+      
+      <!-- Dashboard Header -->
+      <div class="dashboard-header luxury-card">
+        <div class="user-info">
+          <div class="avatar-circle">
+            <mat-icon style="font-size: 28px; width: 28px; height: 28px; color: #f6851b; display: flex; align-items: center; justify-content: center;">account_balance_wallet</mat-icon>
+          </div>
+          <div class="address-details">
+            <div class="badge-row">
+              <span class="network-badge">Sepolia Network</span>
+              <span *ngIf="isLinked" class="linked-badge">
+                <mat-icon class="badge-icon">check_circle</mat-icon>
+                Vinculada
+              </span>
+              <span *ngIf="!isLinked" class="unlinked-badge">
+                <mat-icon class="badge-icon">info_outline</mat-icon>
+                No Vinculada
+              </span>
+            </div>
+            <div class="address-row">
+              <h2 class="address">{{ truncateAddress(connectedAddress$ | async) }}</h2>
+              <button *ngIf="!isLinked" class="link-action-btn" (click)="linkWallet()" [disabled]="isLinking || isLoadingChallenge">
+                <mat-icon class="link-btn-icon" [class.spin]="isLinking">
+                  {{ isLinking ? 'sync' : 'link' }}
+                </mat-icon>
+                <span>{{ isLinking ? 'Vinculando...' : (isLoadingChallenge ? 'Cargando...' : 'Vincular Wallet') }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="powered-by">
+          <span>Powered by</span>
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px; margin: 0 0.25rem; vertical-align: middle; color: #94a3b8;">account_balance_wallet</mat-icon>
+          <strong>AppKit</strong>
+        </div>
+      </div>
+
+      <!-- Navegación de Pestañas (Tabs) -->
+      <div class="premium-tabs">
+        <button class="tab-btn" [class.active]="activeTab === 'balances'" (click)="switchTab('balances')">
+          <mat-icon>account_balance</mat-icon> Mis Saldos
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'send'" (click)="switchTab('send')">
+          <mat-icon>send</mat-icon> Transferir
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'swap'" (click)="switchTab('swap')">
+          <mat-icon>swap_horiz</mat-icon> Intercambiar
+        </button>
+      </div>
+
+      <!-- PESTAÑA: SALDOS -->
+      <div class="tab-content fade-in" *ngIf="activeTab === 'balances'">
+        <div class="balances-grid">
+          <!-- VBK -->
+          <div class="balance-glass-card">
+            <div class="card-icon-bg purple-bg"><mat-icon>toll</mat-icon></div>
+            <span class="asset-name">VibeCheck Token</span>
+            <div class="amount-row">
+              <span class="amount">{{ vbkBalance$ | async }}</span>
+              <span class="symbol">VBK</span>
+            </div>
+          </div>
+
+          <!-- USDC -->
+          <div class="balance-glass-card">
+            <div class="card-icon-bg blue-bg"><mat-icon>attach_money</mat-icon></div>
+            <span class="asset-name">Dólar Digital</span>
+            <div class="amount-row">
+              <span class="amount">{{ usdcBalance$ | async }}</span>
+              <span class="symbol">USDC</span>
+            </div>
+          </div>
+
+          <!-- ETH -->
+          <div class="balance-glass-card">
+            <div class="card-icon-bg indigo-bg"><mat-icon>local_gas_station</mat-icon></div>
+            <span class="asset-name">Ethereum (Gas)</span>
+            <div class="amount-row">
+              <span class="amount">{{ ethBalance$ | async }}</span>
+              <span class="symbol">ETH</span>
+            </div>
+          </div>
         </div>
 
-        <div class="premium-form">
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label>Activo</label>
-              <div class="custom-select-wrapper">
-                <select [(ngModel)]="selectedAsset" class="glass-input" [disabled]="isSending">
-                  <option value="ETH">Sepolia ETH</option>
-                  <option value="VBK">VBK Token</option>
-                  <option value="USDC">USDC</option>
-                </select>
-                <mat-icon class="select-icon">expand_more</mat-icon>
+        <div class="dashboard-footer">
+          <a href="https://sepolia.etherscan.io/address/{{ connectedAddress$ | async }}" target="_blank" class="text-link">
+            Ver historial en Etherscan <mat-icon>launch</mat-icon>
+          </a>
+        </div>
+      </div>
+
+      <!-- PESTAÑA: ENVIAR FONDOS -->
+      <div class="tab-content fade-in" *ngIf="activeTab === 'send'">
+        <div class="luxury-card form-card">
+          <div class="form-header">
+            <h3>Enviar Criptoactivos</h3>
+            <p>Transfiere valor a cualquier dirección de forma segura a través de MetaMask.</p>
+          </div>
+
+          <div class="premium-form">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label>Activo</label>
+                <div class="custom-select-wrapper">
+                  <select [(ngModel)]="selectedAsset" class="glass-input" [disabled]="isSending">
+                    <option value="ETH">Sepolia ETH</option>
+                    <option value="VBK">VBK Token</option>
+                    <option value="USDC">USDC</option>
+                  </select>
+                  <mat-icon class="select-icon">expand_more</mat-icon>
+                </div>
               </div>
+              
+              <div class="form-group flex-2">
+                <label>Monto a enviar</label>
+                <div class="input-with-icon">
+                  <input type="number" [(ngModel)]="sendAmount" placeholder="0.00" class="glass-input" [disabled]="isSending" min="0" step="0.0001">
+                  <span class="input-suffix">{{ selectedAsset }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Dirección de destino</label>
+              <div class="input-with-icon">
+                <mat-icon class="input-prefix">account_circle</mat-icon>
+                <input type="text" [(ngModel)]="sendToAddress" placeholder="0x..." class="glass-input pl-10" [disabled]="isSending">
+              </div>
+            </div>
+
+            <!-- Feedback Messages -->
+            <div class="alert-box error" *ngIf="sendError">
+              <mat-icon>error_outline</mat-icon> <span>{{ sendError }}</span>
             </div>
             
-            <div class="form-group flex-2">
-              <label>Monto a enviar</label>
-              <div class="input-with-icon">
-                <input type="number" [(ngModel)]="sendAmount" placeholder="0.00" class="glass-input" [disabled]="isSending" min="0" step="0.0001">
-                <span class="input-suffix">{{ selectedAsset }}</span>
+            <div class="alert-box success" *ngIf="sendSuccessHash">
+              <mat-icon>check_circle</mat-icon> 
+              <div class="success-details">
+                <strong>Transacción Exitosa</strong>
+                <a href="https://sepolia.etherscan.io/tx/{{ sendSuccessHash }}" target="_blank">Ver Recibo en Etherscan</a>
               </div>
             </div>
-          </div>
 
-          <div class="form-group">
-            <label>Dirección de destino</label>
-            <div class="input-with-icon">
-              <mat-icon class="input-prefix">account_circle</mat-icon>
-              <input type="text" [(ngModel)]="sendToAddress" placeholder="0x..." class="glass-input pl-10" [disabled]="isSending">
+            <div class="form-actions">
+              <button class="luxury-btn primary-btn submit-btn" (click)="onSendFunds()" [disabled]="isSending || !sendToAddress || !sendAmount">
+                <ng-container *ngIf="!isSending">
+                  <mat-icon>send</mat-icon> Confirmar en MetaMask
+                </ng-container>
+                <ng-container *ngIf="isSending">
+                  <mat-icon class="spin">sync</mat-icon> Esperando firma...
+                </ng-container>
+              </button>
             </div>
-          </div>
-
-          <!-- Feedback Messages -->
-          <div class="alert-box error" *ngIf="sendError">
-            <mat-icon>error_outline</mat-icon> <span>{{ sendError }}</span>
-          </div>
-          
-          <div class="alert-box success" *ngIf="sendSuccessHash">
-            <mat-icon>check_circle</mat-icon> 
-            <div class="success-details">
-              <strong>Transacción Exitosa</strong>
-              <a href="https://sepolia.etherscan.io/tx/{{ sendSuccessHash }}" target="_blank">Ver Recibo en Etherscan</a>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button class="luxury-btn primary-btn submit-btn" (click)="onSendFunds()" [disabled]="isSending || !sendToAddress || !sendAmount">
-              <ng-container *ngIf="!isSending">
-                <mat-icon>send</mat-icon> Confirmar en MetaMask
-              </ng-container>
-              <ng-container *ngIf="isSending">
-                <mat-icon class="spin">sync</mat-icon> Esperando firma...
-              </ng-container>
-            </button>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- PESTAÑA: INTERCAMBIAR -->
-    <div class="tab-content fade-in" *ngIf="activeTab === 'swap'">
-      <app-swap></app-swap>
-    </div>
+      <!-- PESTAÑA: INTERCAMBIAR -->
+      <div class="tab-content fade-in" *ngIf="activeTab === 'swap'">
+        <app-swap></app-swap>
+      </div>
 
-  </div>
+    </div>
+  </ng-container>
 </div>
