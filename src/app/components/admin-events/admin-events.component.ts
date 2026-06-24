@@ -527,7 +527,7 @@ export class AdminEventsComponent implements OnInit {
         maxResalePriceBps: event.maxResalePriceBps || 12000,
         royaltyBps: event.royaltyBps || 500,
         venueSigner: this.web3Service.VENUE_SIGNER_ADDRESS,
-        baseURI: `${environment.backendUrl}/api/events/public/${event.id}/image?tokenId=`
+        baseURI: `${environment.backendUrl}/api/events/public/${event.id}/metadata/`
       };
 
       const tiers = ticketTypes.map(tt => ({
