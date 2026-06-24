@@ -143,7 +143,12 @@
                   }
                 </select>
               </div>
-              <button mat-icon-button (click)="refreshCameras()" title="Recargar lista de cámaras" class="refresh-cameras-btn">
+              @if (availableDevices.length > 1) {
+                <button mat-icon-button (click)="switchCamera()" title="Girar cámara" class="switch-camera-btn" [disabled]="processing">
+                  <mat-icon>flip_camera_android</mat-icon>
+                </button>
+              }
+              <button mat-icon-button (click)="refreshCameras()" title="Recargar lista de cámaras" class="refresh-cameras-btn" [disabled]="processing">
                 <mat-icon>refresh</mat-icon>
               </button>
             </div>
