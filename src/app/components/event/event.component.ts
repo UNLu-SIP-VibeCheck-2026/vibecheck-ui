@@ -18,6 +18,7 @@ import { EventResponse } from "../../models/event.model";
 import { TicketTypeResponse } from "../../models/ticket-type.model";
 import { VenueResponse } from "../../models/venue.model";
 import { UserPublicResponse } from "../../models/user-public-response.model";
+import { parseDateRobust } from "../events/events.component";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { RatingDialogComponent, RatingDialogData } from "../shared/dialogs/rating-dialog/rating-dialog.component";
@@ -208,7 +209,8 @@ export class EventComponent implements OnInit {
   formatDate(dateStr: string | null | undefined): string {
     if (!dateStr) return "—";
     try {
-      return new Date(dateStr).toLocaleString("es-AR", {
+      const date = parseDateRobust(dateStr);
+      return date.toLocaleString("es-AR", {
         weekday: "long",
         day: "2-digit",
         month: "long",
@@ -217,7 +219,7 @@ export class EventComponent implements OnInit {
         minute: "2-digit",
       });
     } catch {
-      return dateStr;
+      return String(dateStr);
     }
   }
 

@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { EventService } from '../../../services/event.service';
 import { TicketTypeService } from '../../../services/ticket-type.service';
-import { EventSummary } from '../events.component';
+import { EventSummary, parseDateRobust } from '../events.component';
 
 @Component({
   selector: 'app-hero-carousel',
@@ -254,7 +254,7 @@ export class HeroCarouselComponent implements OnInit, OnDestroy, OnChanges {
   getFormattedDate(dateStr: string | undefined): string {
     if (!dateStr) return '—';
     try {
-      const date = new Date(dateStr);
+      const date = parseDateRobust(dateStr);
       const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
       const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
       

@@ -3,7 +3,6 @@ export interface ValidatorCreateRequest {
   password: string;
   name: string;
   lastName: string;
-  birthdate: string;
 }
 
 export interface ValidatorPasswordRotateRequest {

@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject } from "@angular/core";
+import { Component, OnInit, inject } from "@angular/core";
 import {
   AbstractControl,
   FormBuilder,
@@ -16,7 +16,7 @@ import { MatInputModule } from "@angular/material/input";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { Router, RouterModule } from "@angular/router";
+import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { RegisterRequest } from "../../models/register-request.model";
 import { AuthService } from "../../services/auth.service";
 import { environment } from "../../../environments/environment";
@@ -41,16 +41,28 @@ import { BirthdatePickerComponent } from "../shared/birthdate-picker/birthdate-p
   templateUrl: "./register.component.html",
   styleUrls: ["./register.component.scss"],
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private snackBar = inject(MatSnackBar);
+
+  referralCode = "";
 
   showPassword = false;
   showRepeatPassword = false;
   isSubmitting = false;
   apiError = "";
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params["ref"]) {
+        this.referralCode = params["ref"];
+        document.cookie = `vibecheck_ref=${this.referralCode}; path=/; max-age=3600; SameSite=Lax`;
+      }
+    });
+  }
 
   registerForm: FormGroup = this.fb.group(
     {
@@ -190,6 +202,7 @@ export class RegisterComponent {
       password: fv.password,
       birthdate: fv.birthdate,
       role: fv.role,
+      referralCode: this.referralCode || undefined,
     };
 
     this.authService.register(data).subscribe({

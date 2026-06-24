@@ -54,12 +54,29 @@ export class EventService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  findAllEvents(page: number, size: number, categoryId?: number, sort?: string[]): Observable<Page<EventResponse>> {
+  findAllEvents(
+    page: number,
+    size: number,
+    categoryId?: number,
+    search?: string,
+    startDate?: string,
+    endDate?: string,
+    sort?: string[]
+  ): Observable<Page<EventResponse>> {
     let params = new HttpParams()
       .set("page", page.toString())
       .set("size", size.toString());
     if (categoryId !== undefined && categoryId !== null) {
       params = params.set("categoryId", categoryId.toString());
+    }
+    if (search !== undefined && search !== null && search.trim() !== '') {
+      params = params.set("search", search.trim());
+    }
+    if (startDate !== undefined && startDate !== null && startDate !== '') {
+      params = params.set("startDate", startDate);
+    }
+    if (endDate !== undefined && endDate !== null && endDate !== '') {
+      params = params.set("endDate", endDate);
     }
     if (sort && sort.length > 0) {
       sort.forEach(s => {
@@ -80,6 +97,10 @@ export class EventService {
 
   findByIdEvent(id: number): Observable<EventResponse> {
     return this.http.get<EventResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  findPublicEventByAddress(address: string): Observable<EventResponse> {
+    return this.http.get<EventResponse>(`${this.apiUrl}/public/by-address/${address}`);
   }
 
   uploadEventImage(id: number, image: File): Observable<EventResponse> {

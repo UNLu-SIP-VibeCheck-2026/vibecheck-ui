@@ -35,6 +35,7 @@ export interface TicketTypeResponse {
   description: string;
   priceUsdc: number;
   maxQuantity: number;
+  quantitySold?: number;
   saleStartDate: string; // ISO date string
   saleEndDate: string; // ISO date string
   active: boolean;

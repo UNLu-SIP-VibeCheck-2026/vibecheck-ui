@@ -14,6 +14,7 @@ import { wagmiAdapter, config } from './wagmi.config';
 export interface SiweChallengeResponse {
   message: string;
   nonce: string;
+  walletAddress?: string;
 }
 
 export interface SiweVerifyResponse {

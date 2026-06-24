@@ -32,11 +32,23 @@ export class Web3WalletComponent implements OnInit {
   currentAddress: string | null = null;
   isLinking = false;
   isLinked = false;
+  isLoadingConnection = true;
 
   siweMessage: string | null = null;
   isLoadingChallenge = false;
 
   ngOnInit() {
+    const timeoutId = setTimeout(() => {
+      this.isLoadingConnection = false;
+    }, 800);
+
+    this.isConnected$.subscribe(connected => {
+      if (connected) {
+        clearTimeout(timeoutId);
+        this.isLoadingConnection = false;
+      }
+    });
+
     this.connectedAddress$.subscribe(address => {
       this.currentAddress = address;
       if (address) {
@@ -64,7 +76,15 @@ export class Web3WalletComponent implements OnInit {
     this.isLoadingChallenge = true;
     this.walletService.requestChallenge(address).subscribe({
       next: (challenge) => {
-        this.siweMessage = challenge.message;
+        const username = this.getCurrentUser();
+        if (challenge.walletAddress && challenge.walletAddress.toLowerCase() === address.toLowerCase()) {
+          this.isLinked = true;
+          localStorage.setItem(`linked_wallet_${username}`, challenge.walletAddress);
+        } else {
+          this.isLinked = false;
+          localStorage.removeItem(`linked_wallet_${username}`);
+          this.siweMessage = challenge.message;
+        }
         this.isLoadingChallenge = false;
       },
       error: (err) => {

@@ -27,6 +27,8 @@ import { VenueResponse } from '../../../models/venue.model';
 export class EventsGridComponent implements OnInit, OnChanges {
   @Input() categoryId: number | null = null;
   @Input() searchQuery: string = '';
+  @Input() startDate: string | null = null;
+  @Input() endDate: string | null = null;
   @Input() eventTierMap = new Map<string, 'HIGH' | 'MEDIUM' | 'LOW' | 'BASIC'>();
 
   private eventService = inject(EventService);
@@ -58,7 +60,7 @@ export class EventsGridComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['categoryId'] || changes['searchQuery']) {
+    if (changes['categoryId'] || changes['searchQuery'] || changes['startDate'] || changes['endDate']) {
       this.pageIndex.set(0);
       this.loadEventsPage();
     }
@@ -86,6 +88,9 @@ export class EventsGridComponent implements OnInit, OnChanges {
       this.pageIndex(), 
       this.pageSize(), 
       this.categoryId || undefined, 
+      this.searchQuery || undefined,
+      this.startDate || undefined,
+      this.endDate || undefined,
       ['startDate,asc']
     ).subscribe({
       next: (page) => {
@@ -110,17 +115,7 @@ export class EventsGridComponent implements OnInit, OnChanges {
           };
         });
 
-        // Client-side search filtering (since backend might not support search text directly in public/all API)
-        let filtered = mapped;
-        if (this.searchQuery) {
-          const query = this.searchQuery.toLowerCase();
-          filtered = mapped.filter(e => 
-            e.title.toLowerCase().includes(query) || 
-            e.venue.toLowerCase().includes(query)
-          );
-        }
-
-        this.events.set(filtered);
+        this.events.set(mapped);
         this.loadImages(page.content);
         
         this.isLoading.set(false);

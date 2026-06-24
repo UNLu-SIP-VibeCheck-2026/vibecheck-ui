@@ -41,6 +41,32 @@
           </div>
 
           <div class="field-group">
+            <label for="val-name">Nombre *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>person_outline</mat-icon>
+              <input matInput id="val-name" formControlName="name" placeholder="Nombre">
+            </mat-form-field>
+            <div class="field-errors" *ngIf="createValidatorForm.get('name')?.touched && createValidatorForm.get('name')?.invalid">
+              <span>⚠ Requerido</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group full-width">
+            <label for="val-lastname">Apellido *</label>
+            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
+              <mat-icon matPrefix>badge</mat-icon>
+              <input matInput id="val-lastname" formControlName="lastName" placeholder="Apellido">
+            </mat-form-field>
+            <div class="field-errors" *ngIf="createValidatorForm.get('lastName')?.touched && createValidatorForm.get('lastName')?.invalid">
+              <span>⚠ Requerido</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
             <label for="val-password">Contraseña *</label>
             <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
               <mat-icon matPrefix>lock_outline</mat-icon>
@@ -64,40 +90,19 @@
               </span>
             </div>
           </div>
-        </div>
-
-        <div class="field-row">
-          <div class="field-group">
-            <label for="val-name">Nombre *</label>
-            <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
-              <mat-icon matPrefix>person_outline</mat-icon>
-              <input matInput id="val-name" formControlName="name" placeholder="Nombre">
-            </mat-form-field>
-            <div class="field-errors" *ngIf="createValidatorForm.get('name')?.touched && createValidatorForm.get('name')?.invalid">
-              <span>⚠ Requerido</span>
-            </div>
-          </div>
 
           <div class="field-group">
-            <label for="val-lastname">Apellido *</label>
+            <label for="val-repeat-password">Confirmar Contraseña *</label>
             <mat-form-field appearance="outline" class="reg-field" subscriptSizing="dynamic">
-              <mat-icon matPrefix>badge</mat-icon>
-              <input matInput id="val-lastname" formControlName="lastName" placeholder="Apellido">
+              <mat-icon matPrefix>lock_outline</mat-icon>
+              <input matInput [type]="showCreateRepeatPassword ? 'text' : 'password'" id="val-repeat-password" formControlName="repeatPassword" placeholder="Repetí la contraseña">
+              <button mat-icon-button matSuffix type="button" (click)="toggleCreateRepeatPassword()">
+                <mat-icon>{{ showCreateRepeatPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
             </mat-form-field>
-            <div class="field-errors" *ngIf="createValidatorForm.get('lastName')?.touched && createValidatorForm.get('lastName')?.invalid">
-              <span>⚠ Requerido</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="field-row">
-          <div class="field-group full-width">
-            <app-birthdate-picker formControlName="birthdate" label="Fecha de Nacimiento *"></app-birthdate-picker>
-            <div class="field-errors" *ngIf="birthdateCtrl.touched && birthdateCtrl.invalid">
-              <span *ngIf="birthdateCtrl.hasError('required')">⚠ Requerida</span>
-              <span *ngIf="birthdateCtrl.hasError('underAge')">⚠ Debés tener al menos 13 años</span>
-              <span *ngIf="birthdateCtrl.hasError('tooOld')">⚠ Debés tener no más de 100 años</span>
-              <span *ngIf="birthdateCtrl.hasError('invalidBirthdate')">⚠ Fecha inválida</span>
+            <div class="field-errors" *ngIf="repeatPasswordCtrl.touched && (repeatPasswordCtrl.invalid || createPasswordMismatch)">
+              <span *ngIf="repeatPasswordCtrl.hasError('required')">⚠ Requerida</span>
+              <span *ngIf="createPasswordMismatch">⚠ Las contraseñas no coinciden</span>
             </div>
           </div>
         </div>

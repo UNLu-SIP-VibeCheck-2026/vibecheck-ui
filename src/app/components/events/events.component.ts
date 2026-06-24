@@ -86,6 +86,75 @@ export class EventsComponent implements OnInit, OnDestroy {
   // Filter signals bound to inputs
   selectedCategoryId = signal<number | null>(null);
   searchQuery = signal<string>('');
+  dateFilterOption = signal<string>('ALL'); // 'ALL', 'TODAY', 'WEEK', 'MONTH'
+
+  startDateParam = computed(() => {
+    const option = this.dateFilterOption();
+    const now = new Date();
+    if (option === 'TODAY') {
+      return now.toISOString();
+    }
+    if (option === 'WEEK') {
+      return now.toISOString();
+    }
+    if (option === 'MONTH') {
+      return now.toISOString();
+    }
+    return null;
+  });
+
+  endDateParam = computed(() => {
+    const option = this.dateFilterOption();
+    const now = new Date();
+    if (option === 'TODAY') {
+      const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      return todayEnd.toISOString();
+    }
+    if (option === 'WEEK') {
+      const weekEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return weekEnd.toISOString();
+    }
+    if (option === 'MONTH') {
+      const monthEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      return monthEnd.toISOString();
+    }
+    return null;
+  });
+
+  hasActiveFilters = computed(() => {
+    return this.searchQuery().trim().length > 0 || this.selectedCategoryId() !== null || this.dateFilterOption() !== 'ALL';
+  });
+
+  getCategoryName(id: number | null): string {
+    if (id === null) return '';
+    const cat = this.categories().find(c => c.id === id);
+    return cat ? cat.name : `Categoría #${id}`;
+  }
+
+  getDateOptionLabel(option: string): string {
+    if (option === 'TODAY') return 'Hoy';
+    if (option === 'WEEK') return 'Esta semana';
+    if (option === 'MONTH') return 'Próximos 30 días';
+    return '';
+  }
+
+  clearSearchQuery(): void {
+    this.searchQuery.set('');
+  }
+
+  clearCategory(): void {
+    this.selectedCategoryId.set(null);
+  }
+
+  clearDateFilter(): void {
+    this.dateFilterOption.set('ALL');
+  }
+
+  clearAllFilters(): void {
+    this.searchQuery.set('');
+    this.selectedCategoryId.set(null);
+    this.dateFilterOption.set('ALL');
+  }
 
   ngOnInit(): void {
     this.loadVenues();
@@ -126,7 +195,7 @@ export class EventsComponent implements OnInit, OnDestroy {
             title: backendEvent.title,
             description: backendEvent.description || 'Sin descripción',
             startDate: backendEvent.startDate,
-            startDateParsed: new Date(backendEvent.startDate),
+            startDateParsed: parseDateRobust(backendEvent.startDate),
             endDate: backendEvent.endDate,
             venue: this.getVenueName(backendEvent.venueId),
             venueId: backendEvent.venueId,
@@ -270,5 +339,58 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   onCategoryChange(): void {
     // Signals will reactively update the child EventsGridComponent
+  }
+}
+
+export function parseDateRobust(dateVal: any): Date {
+  if (!dateVal) return new Date();
+  if (dateVal instanceof Date) return dateVal;
+  try {
+    let date: Date;
+    if (Array.isArray(dateVal)) {
+      const year = dateVal[0];
+      const month = dateVal[1] - 1;
+      const day = dateVal[2];
+      const hour = dateVal[3] || 0;
+      const minute = dateVal[4] || 0;
+      const second = dateVal[5] || 0;
+      date = new Date(year, month, day, hour, minute, second);
+    } else {
+      let cleaned = String(dateVal).trim();
+      if (cleaned.startsWith('[') && cleaned.endsWith(']')) {
+        cleaned = cleaned.slice(1, -1);
+      }
+      if (cleaned.includes(',')) {
+        const parts = cleaned.split(',').map(p => parseInt(p, 10));
+        const year = parts[0];
+        const month = (parts[1] || 1) - 1;
+        const day = parts[2] || 1;
+        const hour = parts[3] || 0;
+        const minute = parts[4] || 0;
+        const second = parts[5] || 0;
+        date = new Date(year, month, day, hour, minute, second);
+      } else {
+        const hasTimezone = cleaned.endsWith('Z') || /[\+\-]\d{2}:\d{2}$/.test(cleaned);
+        const isoRegex = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/;
+        const match = cleaned.match(isoRegex);
+        if (match && !hasTimezone) {
+          const year = parseInt(match[1], 10);
+          const month = parseInt(match[2], 10) - 1;
+          const day = parseInt(match[3], 10);
+          const hour = match[4] ? parseInt(match[4], 10) : 0;
+          const minute = match[5] ? parseInt(match[5], 10) : 0;
+          const second = match[6] ? parseInt(match[6], 10) : 0;
+          date = new Date(year, month, day, hour, minute, second);
+        } else {
+          if (cleaned.includes(' ') && !cleaned.includes('T')) {
+            cleaned = cleaned.replace(' ', 'T');
+          }
+          date = new Date(cleaned);
+        }
+      }
+    }
+    return isNaN(date.getTime()) ? new Date() : date;
+  } catch {
+    return new Date();
   }
 }

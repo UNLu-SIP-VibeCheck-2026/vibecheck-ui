@@ -1,0 +1,447 @@
+@use '../../../tokens' as *;
+
+// =============================================================================
+// ReferralsComponent — Styles
+// Dark electric visual identity, flat surfaces, bold gradients.
+// =============================================================================
+
+.referrals-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-5);
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 80px);
+  background-color: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+
+  @include desktop {
+    padding: var(--space-8) var(--space-10);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Loading State
+// ---------------------------------------------------------------------------
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  min-height: 400px;
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--md-sys-color-outline-variant);
+    border-top-color: var(--md-sys-color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ---------------------------------------------------------------------------
+// Wallet Control / No Wallet State
+// ---------------------------------------------------------------------------
+.no-wallet-card {
+  background-color: var(--md-sys-color-surface);
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid rgba(248, 113, 113, 0.2); // Subtle red error tint
+  padding: var(--space-6);
+  max-width: 600px;
+  margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  align-items: center;
+  text-align: center;
+  box-shadow: none;
+
+  .no-wallet-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+
+    .warning-icon {
+      font-size: 56px;
+      width: 56px;
+      height: 56px;
+      color: var(--md-sys-color-error);
+    }
+  }
+
+  .no-wallet-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    align-items: center;
+
+    p {
+      margin: 0;
+      line-height: 1.6;
+    }
+  }
+
+  .btn-cta {
+    @include btn-cta;
+    margin-top: var(--space-2);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Referral Header
+// ---------------------------------------------------------------------------
+.referrals-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 56px);
+    margin: 0;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--md-sys-color-on-surface-variant);
+    max-width: 800px;
+    line-height: 1.6;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Referral Link Section
+// ---------------------------------------------------------------------------
+.referral-link-section {
+  .link-card {
+    background-color: var(--md-sys-color-surface);
+    border-radius: var(--md-sys-shape-corner-medium);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    padding: var(--space-5);
+    box-shadow: none;
+  }
+
+  .card-title-small {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0 0 var(--space-3) 0;
+  }
+
+  .link-input-group {
+    display: flex;
+    gap: var(--space-3);
+    flex-direction: column;
+
+    @include tablet {
+      flex-direction: row;
+    }
+  }
+
+  .link-box {
+    flex: 1;
+    background-color: var(--md-sys-color-surface-variant);
+    border-radius: var(--md-sys-shape-corner-small);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--md-sys-color-outline);
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    white-space: nowrap;
+
+    // Custom scrollbar for raw link text
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+
+    .link-text {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--md-sys-color-on-surface);
+    }
+  }
+
+  .copy-btn {
+    @include btn-cta;
+    height: 50px;
+    flex-shrink: 0;
+
+    @include tablet {
+      width: auto;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Statistics Cards
+// ---------------------------------------------------------------------------
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+
+  @include tablet {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-card {
+    background-color: var(--md-sys-color-surface);
+    border-radius: var(--md-sys-shape-corner-medium);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    padding: var(--space-5);
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 120px;
+  }
+
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--md-sys-color-on-surface-variant);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: var(--space-2);
+  }
+
+  .stat-value {
+    font-family: var(--font-ui);
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+
+    &.font-accent {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--md-sys-color-tertiary);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// History / Referred Contacts Section
+// ---------------------------------------------------------------------------
+.history-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  .section-subtitle {
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing: 0.05em;
+    margin: 0;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: var(--md-sys-shape-corner-medium);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface);
+
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 3px;
+    }
+  }
+
+  .referrals-table {
+    width: 100%;
+    background-color: transparent !important;
+    border-collapse: collapse;
+
+    th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--md-sys-color-on-surface-variant);
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--md-sys-color-outline-variant) !important;
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    td {
+      font-family: var(--font-ui);
+      font-size: 14px;
+      color: var(--md-sys-color-on-surface);
+      padding: var(--space-4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    tr:last-child td {
+      border-bottom: none !important;
+    }
+
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Status Badges
+// ---------------------------------------------------------------------------
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: var(--md-sys-shape-corner-full);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &[data-status="PENDING"] {
+    background-color: rgba(251, 191, 36, 0.1);
+    color: var(--md-sys-color-tertiary);
+    border: 1px solid rgba(251, 191, 36, 0.15);
+  }
+
+  &[data-status="COMPLETED"] {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.15);
+  }
+
+  &[data-status="FAILED"] {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--md-sys-color-error);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+  }
+
+  &[data-status="LIMIT_EXCEEDED"] {
+    background-color: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.15);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// TxHash Links
+// ---------------------------------------------------------------------------
+.tx-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  transition: color 200ms ease;
+
+  &:hover {
+    color: var(--md-sys-color-secondary);
+
+    .launch-icon {
+      color: var(--md-sys-color-secondary);
+    }
+  }
+
+  .launch-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: var(--md-sys-color-primary);
+    transition: color 200ms ease;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Empty State
+// ---------------------------------------------------------------------------
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-5);
+  background-color: var(--md-sys-color-surface);
+  border-radius: var(--md-sys-shape-corner-medium);
+  border: 1px dashed var(--md-sys-color-outline);
+  text-align: center;
+
+  .empty-state__icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: var(--space-3);
+  }
+
+  .empty-state__title {
+    font-family: var(--font-ui);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .empty-state__desc {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+    max-width: 400px;
+    line-height: 1.5;
+  }
+}
+
+.mt-2 { margin-top: var(--space-2); }
+.w-full { width: 100%; }
+
+.referral-email-section {
+  .email-invite-form {
+    display: flex;
+    gap: var(--space-3);
+    flex-direction: column;
+
+    @include tablet {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+
+    mat-form-field {
+      flex: 1;
+      width: 100%;
+    }
+
+    .invite-submit-btn {
+      @include btn-cta;
+      height: 56px;
+      flex-shrink: 0;
+      width: 100%;
+
+      @include tablet {
+        width: auto;
+      }
+    }
+  }
+}

@@ -16,7 +16,6 @@ import { ValidatorCreateRequest, ValidatorPasswordRotateRequest, ValidatorRespon
 import { ConfirmDialogComponent } from '../shared/dialogs/confirm-dialog/confirm-dialog.component';
 import { RotatePasswordDialogComponent } from '../shared/dialogs/rotate-password-dialog/rotate-password-dialog.component';
 import { ErrorService } from '../../services/error.service';
-import { BirthdatePickerComponent } from '../shared/birthdate-picker/birthdate-picker.component';
 
 @Component({
   selector: 'app-validator-management',
@@ -32,8 +31,7 @@ import { BirthdatePickerComponent } from '../shared/birthdate-picker/birthdate-p
     MatDialogModule,
     MatIconModule,
     MatTableModule,
-    MatProgressSpinnerModule,
-    BirthdatePickerComponent
+    MatProgressSpinnerModule
   ],
   templateUrl: './validator-management.component.html',
   styleUrl: './validator-management.component.scss'
@@ -54,16 +52,17 @@ export class ValidatorManagementComponent implements OnInit {
   isCreating = false;
   isRotating = false;
   showPassword = false;
+  showCreateRepeatPassword = false;
   showRotatePassword = false;
   showRotateRepeatPassword = false;
 
   createValidatorForm: FormGroup = this.fb.group({
     username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9_.\-]+$/)]],
     password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(100), this.passwordRequirementsValidator]],
+    repeatPassword: ['', [Validators.required]],
     name: ['', [Validators.required]],
-    lastName: ['', [Validators.required]],
-    birthdate: [null, [Validators.required, this.birthdateAgeValidator]]
-  });
+    lastName: ['', [Validators.required]]
+  }, { validators: this.createPasswordMatchValidator });
 
   rotatePasswordForm: FormGroup = this.fb.group({
     username: ['', [Validators.required]],
@@ -78,10 +77,17 @@ export class ValidatorManagementComponent implements OnInit {
   get passwordCtrl(): FormControl { return this.createValidatorForm.get('password') as FormControl; }
   get nameCtrl(): FormControl { return this.createValidatorForm.get('name') as FormControl; }
   get lastNameCtrl(): FormControl { return this.createValidatorForm.get('lastName') as FormControl; }
-  get birthdateCtrl(): FormControl { return this.createValidatorForm.get('birthdate') as FormControl; }
+  get repeatPasswordCtrl(): FormControl { return this.createValidatorForm.get('repeatPassword') as FormControl; }
   
   get rotatePasswordCtrl(): FormControl { return this.rotatePasswordForm.get('newPassword') as FormControl; }
   get rotateRepeatPasswordCtrl(): FormControl { return this.rotatePasswordForm.get('repeatPassword') as FormControl; }
+
+  get createPasswordMismatch(): boolean {
+    return (
+      this.createValidatorForm.hasError('passwordMismatch') &&
+      (this.repeatPasswordCtrl.dirty || this.repeatPasswordCtrl.touched)
+    );
+  }
 
   get passwordMismatch(): boolean {
     return (
@@ -121,20 +127,15 @@ export class ValidatorManagementComponent implements OnInit {
     return null;
   }
 
-  birthdateAgeValidator(control: AbstractControl): ValidationErrors | null {
-    const value = control.value;
-    if (!value) return null;
-    const birthdate = new Date(value);
-    if (Number.isNaN(birthdate.getTime())) return { invalidBirthdate: true };
-
-    const today = new Date();
-    const minAgeDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
-    if (birthdate > minAgeDate) return { underAge: true };
-    
-    const maxAgeDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
-    if (birthdate < maxAgeDate) return { tooOld: true };
-    
+  createPasswordMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const pw = control.get('password');
+    const rp = control.get('repeatPassword');
+    if (pw && rp && pw.value !== rp.value) return { passwordMismatch: true };
     return null;
+  }
+
+  toggleCreateRepeatPassword(): void {
+    this.showCreateRepeatPassword = !this.showCreateRepeatPassword;
   }
 
   passwordRequirementsValidator(control: AbstractControl): ValidationErrors | null {
@@ -193,7 +194,13 @@ export class ValidatorManagementComponent implements OnInit {
       if (!confirmed) return;
 
       this.isCreating = true;
-      const request: ValidatorCreateRequest = this.createValidatorForm.getRawValue();
+      const rawForm = this.createValidatorForm.getRawValue();
+      const request: ValidatorCreateRequest = {
+        username: rawForm.username,
+        password: rawForm.password,
+        name: rawForm.name,
+        lastName: rawForm.lastName
+      };
 
       this.eventService.createValidator(this.eventId!, request).subscribe({
         next: (validator) => {

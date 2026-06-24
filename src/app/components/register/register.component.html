@@ -29,6 +29,14 @@
         <p class="form-subtitle">Completá tus datos para empezar</p>
       </div>
 
+      <!-- Banner de Invitación de Referido -->
+      @if (referralCode) {
+        <div class="referral-banner">
+          <mat-icon>celebration</mat-icon>
+          <span>¡Registrándote con la invitación de tu amigo! (Código: <strong>{{ referralCode }}</strong>)</span>
+        </div>
+      }
+
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate autocomplete="off">
 
         <!-- Row 1: username + email -->

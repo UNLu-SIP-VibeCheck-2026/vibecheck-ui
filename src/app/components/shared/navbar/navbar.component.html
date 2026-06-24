@@ -80,6 +80,12 @@
             <span>Staking VBK</span>
           </button>
         }
+        @if (isCliente || isOrganizador) {
+          <button mat-menu-item (click)="navigateAndClose('/referrals')">
+            <mat-icon>person_add</mat-icon>
+            <span>Referir Contacto</span>
+          </button>
+        }
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="logout()">
           <mat-icon color="warn">exit_to_app</mat-icon>
@@ -209,6 +215,12 @@
               <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/staking')">
                 <mat-icon>lock</mat-icon>
                 <span>Staking VBK</span>
+              </button>
+            }
+            @if (isCliente || isOrganizador) {
+              <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/referrals')">
+                <mat-icon>person_add</mat-icon>
+                <span>Referir Contacto</span>
               </button>
             }
           }

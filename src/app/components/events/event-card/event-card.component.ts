@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
 import { SafeUrl } from '@angular/platform-browser';
 import { TicketTypeService } from '../../../services/ticket-type.service';
-import { EventSummary } from '../events.component';
+import { EventSummary, parseDateRobust } from '../events.component';
 
 @Component({
   selector: 'app-event-card',
@@ -101,7 +101,7 @@ export class EventCardComponent implements OnInit {
   getFormattedDate(dateStr: string | undefined): string {
     if (!dateStr) return '—';
     try {
-      const date = new Date(dateStr);
+      const date = parseDateRobust(dateStr);
       // Map to Spanish days/months
       const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
       const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];

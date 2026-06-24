@@ -12,6 +12,7 @@ import { MatDialog, MatDialogModule } from "@angular/material/dialog";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { ConfirmDialogComponent } from "../shared/dialogs/confirm-dialog/confirm-dialog.component";
 import { AuthService } from "../../services/auth.service";
+import { UsersService } from "../../services/users.service";
 
 @Component({
   selector: "app-purchase-options",
@@ -55,41 +56,31 @@ export class PurchaseOptionsComponent implements OnInit {
     this.checkRoleAndLoad();
   }
 
+  private usersService = inject(UsersService);
+
   private checkRoleAndLoad(): void {
     if (this.authService.isAuthenticated()) {
       const user = this.authService.getCurrentUserValue();
-      const currentRole = user?.role?.toLowerCase() || "";
-      const isClient = currentRole === "cliente" || currentRole === "comprar" || currentRole === "user";
+      if (user?.username) {
+        this.isLoading = true;
+        this.usersService.getUserByUsername(user.username).subscribe({
+          next: (dbUser) => {
+            this.isLoading = false;
+            const currentRole = dbUser.role?.toLowerCase() || "";
+            const isClient = currentRole === "cliente" || currentRole === "comprar" || currentRole === "user";
 
-      if (!isClient) {
-        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-          width: "400px",
-          disableClose: true,
-          data: {
-            title: "Cambiar rol a Cliente",
-            message: "Para comprar entradas necesitas estar en tu rol de Cliente. ¿Querés cambiar tu rol ahora?",
-            confirmText: "Sí, cambiar",
-            cancelText: "Cancelar",
-            success: true,
+            if (isClient) {
+              this.loadEvent(this.eventId!);
+            } else if (currentRole === "organizador") {
+              this.showRoleChangeDialog();
+            } else {
+              this.showUnauthorizedDialog(dbUser.role);
+            }
           },
-        });
-
-        dialogRef.afterClosed().subscribe((confirmed) => {
-          if (confirmed) {
-            this.isLoading = true;
-            this.authService.switchUserRole("cliente").subscribe({
-              next: () => {
-                this.snackBar.open("Rol cambiado a Cliente con éxito", "Cerrar", { duration: 3000 });
-                this.loadEvent(this.eventId!);
-              },
-              error: (err) => {
-                this.isLoading = false;
-                this.errorMessage = "No se pudo cambiar el rol. Intentá de nuevo o contactá a soporte.";
-                console.error("Error changing role:", err);
-              },
-            });
-          } else {
-            this.goBack();
+          error: (err) => {
+            this.isLoading = false;
+            this.errorMessage = "Error al verificar los datos de usuario.";
+            console.error("Error checking user role:", err);
           }
         });
         return;
@@ -97,6 +88,57 @@ export class PurchaseOptionsComponent implements OnInit {
     }
 
     this.loadEvent(this.eventId!);
+  }
+
+  private showRoleChangeDialog(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "400px",
+      disableClose: true,
+      data: {
+        title: "Cambiar rol a Cliente",
+        message: "Para comprar entradas necesitas estar en tu rol de Cliente. ¿Querés cambiar tu rol ahora?",
+        confirmText: "Sí, cambiar",
+        cancelText: "Cancelar",
+        success: true,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.isLoading = true;
+        this.authService.switchUserRole("cliente").subscribe({
+          next: () => {
+            this.snackBar.open("Rol cambiado a Cliente con éxito", "Cerrar", { duration: 3000 });
+            this.loadEvent(this.eventId!);
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.errorMessage = "No se pudo cambiar el rol. Intentá de nuevo o contactá a soporte.";
+            console.error("Error changing role:", err);
+          },
+        });
+      } else {
+        this.goBack();
+      }
+    });
+  }
+
+  private showUnauthorizedDialog(roleName: string): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "400px",
+      disableClose: true,
+      data: {
+        title: "Compra no autorizada",
+        message: `Tu usuario actual con rol ${roleName} no tiene permitido comprar entradas. Solo los roles de Cliente y Organizador (previo cambio) pueden hacerlo.`,
+        confirmText: "Volver",
+        hideCancel: true,
+        success: false,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.goBack();
+    });
   }
 
   private loadEvent(id: number): void {

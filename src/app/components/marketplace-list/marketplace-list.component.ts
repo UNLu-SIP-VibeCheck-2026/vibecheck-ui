@@ -1,14 +1,18 @@
-import { Component, OnInit, inject, signal } from "@angular/core";
+import { Component, OnInit, inject, signal, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule, Router, ActivatedRoute } from "@angular/router";
-import { FormsModule } from "@angular/forms";
+import { FormsModule, ReactiveFormsModule, FormControl } from "@angular/forms";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSelectModule } from "@angular/material/select";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { debounceTime, distinctUntilChanged, switchMap } from "rxjs/operators";
+import { of } from "rxjs";
 
 import { ListingResponse } from "../../models/listing.model";
 import { EventResponse } from "../../models/event.model";
@@ -28,14 +32,16 @@ import { AuthService } from "../../services/auth.service";
     CommonModule,
     RouterModule,
     FormsModule,
+    ReactiveFormsModule,
     MatCardModule,
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
     MatSelectModule,
     MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
     MatSnackBarModule,
-
   ],
   templateUrl: "./marketplace-list.component.html",
   styleUrl: "./marketplace-list.component.scss"
@@ -58,12 +64,53 @@ export class MarketplaceListComponent implements OnInit {
   ticketTypesMap = signal<Record<string, TicketTypeResponse[]>>({});
   tokenTiersCache = signal<Record<string, string>>({}); // cache key: "eventNftAddress_tokenId" -> tierName
 
+  // Autocomplete search control
+  eventSearchCtrl = new FormControl<any>("");
+  filteredEvents = signal<EventResponse[]>([]);
+  isLoadingEvents = signal<boolean>(false);
+
   // Filters
   selectedEventNftAddress = "";
   currentPage = 0;
   pageSize = 12;
   totalPages = 0;
   totalElements = 0;
+
+  // Max price and tier filters
+  maxPrice = signal<number | null>(null);
+  selectedTier = signal<string>("");
+
+  hasActiveFilters = computed(() => {
+    return !!this.selectedEventNftAddress || this.maxPrice() !== null || !!this.selectedTier();
+  });
+
+  availableTiers = computed(() => {
+    const eventNftAddr = this.selectedEventNftAddress;
+    if (!eventNftAddr) return [];
+    
+    const event = this.getEventForListing(eventNftAddr);
+    if (!event) return [];
+    
+    const ticketTypes = this.ticketTypesMap()[event.id.toString()];
+    return ticketTypes ? ticketTypes.map((t) => t.name) : [];
+  });
+
+  filteredListings = computed(() => {
+    let list = this.listings();
+    const maxP = this.maxPrice();
+    const tier = this.selectedTier();
+    
+    if (maxP !== null) {
+      list = list.filter((l) => l.priceUsdc <= maxP);
+    }
+    if (tier) {
+      list = list.filter((l) => {
+        const tierName = this.getTierName(l);
+        return tierName.toLowerCase().includes(tier.toLowerCase());
+      });
+    }
+    return list;
+  });
 
   // View state
   isLoading = signal<boolean>(true);
@@ -73,6 +120,34 @@ export class MarketplaceListComponent implements OnInit {
   walletAddress = signal<string | null>(null);
 
   ngOnInit(): void {
+    // Autocomplete search subscription
+    this.eventSearchCtrl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((value) => {
+        if (typeof value === "string" && value.trim().length > 0) {
+          this.isLoadingEvents.set(true);
+          return this.eventService.findAllEvents(0, 20, undefined, value.trim()).pipe(
+            switchMap((page) => {
+              this.isLoadingEvents.set(false);
+              return of(page.content || []);
+            })
+          );
+        } else {
+          this.isLoadingEvents.set(false);
+          return of([]);
+        }
+      })
+    ).subscribe({
+      next: (evts) => {
+        this.filteredEvents.set(evts);
+      },
+      error: (err) => {
+        console.error("Error searching events:", err);
+        this.isLoadingEvents.set(false);
+      }
+    });
+
     // Subscribe to auth state to react to login/logout
     this.authService.currentUser$.subscribe((user) => {
       if (user) {
@@ -114,29 +189,26 @@ export class MarketplaceListComponent implements OnInit {
     this.errorMessage.set("");
     this.isAuthRequired.set(false);
 
-    // Fetch public events to populate filters and event mapping
-    this.eventService.findAllEvents(0, 100).subscribe({
-      next: (eventsPage) => {
-        const eventsList = eventsPage.content || [];
-        this.events.set(eventsList);
-
-        const map: Record<string, EventResponse> = {};
-        eventsList.forEach((e) => {
-          if (e.eventNftAddress) {
-            map[e.eventNftAddress.toLowerCase()] = e;
-          }
-        });
-        this.eventsMap.set(map);
-
-        // Load listings page
-        this.loadListings();
-      },
-      error: (err) => {
-        console.error("Error loading events", err);
-        this.errorMessage.set("No se pudieron cargar los eventos del sistema.");
-        this.isLoading.set(false);
-      }
-    });
+    // If we have a preselected event NFT address (from query params), fetch it to initialize the search input
+    if (this.selectedEventNftAddress) {
+      this.eventService.findPublicEventByAddress(this.selectedEventNftAddress).subscribe({
+        next: (event) => {
+          const map = this.eventsMap();
+          map[event.eventNftAddress.toLowerCase()] = event;
+          this.eventsMap.set(map);
+          this.eventSearchCtrl.setValue(event, { emitEvent: false });
+          this.loadTicketTypesForEvent(event.id);
+          this.loadListings();
+        },
+        error: (err) => {
+          console.error("Error loading preselected event", err);
+          this.selectedEventNftAddress = "";
+          this.loadListings();
+        }
+      });
+    } else {
+      this.loadListings();
+    }
   }
 
   loadListings(): void {
@@ -149,6 +221,9 @@ export class MarketplaceListComponent implements OnInit {
         this.listings.set(content);
         this.totalPages = page.totalPages || 0;
         this.totalElements = page.totalElements || 0;
+
+        // Resolve missing events
+        this.resolveEventsForListings(content);
 
         // Resolve tiers for new listings
         this.resolveTiersForListings(content);
@@ -177,6 +252,82 @@ export class MarketplaceListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  resolveEventsForListings(content: ListingResponse[]): void {
+    content.forEach((listing) => {
+      const addr = listing.eventNftAddress.toLowerCase();
+      if (!this.eventsMap()[addr]) {
+        this.eventService.findPublicEventByAddress(listing.eventNftAddress).subscribe({
+          next: (event) => {
+            const map = this.eventsMap();
+            map[addr] = event;
+            this.eventsMap.set({ ...map });
+          },
+          error: (err) => {
+            console.warn(`Could not resolve event for address: ${listing.eventNftAddress}`, err);
+          }
+        });
+      }
+    });
+  }
+
+  onEventSelected(event: any): void {
+    const selected = event.option.value;
+    if (selected && selected.eventNftAddress) {
+      this.selectedEventNftAddress = selected.eventNftAddress;
+      const currentMap = this.eventsMap();
+      currentMap[selected.eventNftAddress.toLowerCase()] = selected;
+      this.eventsMap.set(currentMap);
+      this.loadTicketTypesForEvent(selected.id);
+    } else {
+      this.selectedEventNftAddress = "";
+      this.selectedTier.set("");
+    }
+    this.onFilterChange();
+  }
+
+  displayEventTitle(event: EventResponse | null): string {
+    return event ? event.title : "";
+  }
+
+  loadTicketTypesForEvent(eventId: number): void {
+    const eventIdStr = eventId.toString();
+    if (this.ticketTypesMap()[eventIdStr]) return;
+    
+    this.ticketTypeService.findTicketTypesByEvent(eventId).subscribe({
+      next: (types) => {
+        const currentMap = this.ticketTypesMap();
+        currentMap[eventIdStr] = types || [];
+        this.ticketTypesMap.set({ ...currentMap });
+      },
+      error: (err) => console.error("Error loading ticket types for event:", err)
+    });
+  }
+
+  clearEventFilter(): void {
+    this.eventSearchCtrl.setValue("");
+    this.selectedEventNftAddress = "";
+    this.selectedTier.set("");
+    this.filteredEvents.set([]);
+    this.onFilterChange();
+  }
+
+  clearMaxPriceFilter(): void {
+    this.maxPrice.set(null);
+  }
+
+  clearTierFilter(): void {
+    this.selectedTier.set("");
+  }
+
+  clearAllFilters(): void {
+    this.eventSearchCtrl.setValue("");
+    this.selectedEventNftAddress = "";
+    this.maxPrice.set(null);
+    this.selectedTier.set("");
+    this.filteredEvents.set([]);
+    this.onFilterChange();
   }
 
   onFilterChange(): void {

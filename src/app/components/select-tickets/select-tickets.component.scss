@@ -505,6 +505,22 @@
         color: var(--md-sys-color-on-surface-variant);
         text-transform: uppercase;
         letter-spacing: 0.05em;
+
+        &.label-usdc {
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
+        &.label-vbk {
+          background: var(--gradient-brand);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          display: inline-block;
+          border-bottom: 1.5px solid var(--md-sys-color-secondary);
+          line-height: 1.25;
+          padding-bottom: 1px;
+        }
       }
 
       .val {
