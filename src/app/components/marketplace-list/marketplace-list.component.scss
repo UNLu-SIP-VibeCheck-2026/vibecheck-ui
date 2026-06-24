@@ -29,9 +29,10 @@
 }
 
 .filters-panel {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
   gap: var(--space-4);
-  align-items: flex-end;
+  align-items: end;
   background-color: var(--md-sys-color-surface);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-medium);
@@ -40,20 +41,14 @@
   box-sizing: border-box;
 
   @include mobile {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
+    grid-template-columns: 1fr;
     padding: var(--space-3) 0;
     background-color: transparent;
     border: none;
   }
 
   @include tablet {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    width: 100%;
-    padding: var(--space-3) var(--space-4);
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -62,31 +57,24 @@
   flex-direction: column;
   gap: var(--space-1);
   box-sizing: border-box;
+  width: 100%;
+
+  mat-form-field {
+    width: 100%;
+  }
 
   &.event-group {
-    flex: 1;
-    min-width: 240px;
-    @include mobile {
-      width: 100%;
-      min-width: 0;
+    @include tablet {
+      grid-column: span 2;
     }
   }
 
   &.price-group {
-    width: 200px;
-    flex-shrink: 0;
-    @include mobile {
-      width: 100%;
-    }
+    // auto-placed
   }
 
   &.tier-group {
-    width: 240px;
-    flex-shrink: 0;
     transition: opacity 0.2s ease;
-    @include mobile {
-      width: 100%;
-    }
 
     &.disabled {
       opacity: 0.5;
