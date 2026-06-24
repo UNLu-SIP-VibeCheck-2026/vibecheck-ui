@@ -16,6 +16,8 @@ import { EventService } from '../../services/event.service';
 import { TicketTypeService } from '../../services/ticket-type.service';
 import { Web3Service } from '../../services/web3.service';
 import { ContractsService } from '../../services/contracts.service';
+import { VenueService } from '../../services/venue.service';
+import { parseDateRobust } from '../events/events.component';
 import { environment } from '../../../environments/environment';
 import { formatUnits } from 'viem';
 
@@ -30,6 +32,7 @@ import { formatUnits } from 'viem';
     MatCardModule,
     MatDialogModule,
     MatSnackBarModule,
+    ConfirmDialogComponent,
   ],
   templateUrl: './select-tickets.component.html',
   styleUrls: ['./select-tickets.component.scss']
@@ -42,6 +45,7 @@ export class TicketPurchaseComponent implements OnInit {
   private ticketTypeService = inject(TicketTypeService);
   private web3Service = inject(Web3Service);
   private contractsService = inject(ContractsService);
+  private venueService = inject(VenueService);
   private dialog = inject(MatDialog);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
@@ -85,6 +89,8 @@ export class TicketPurchaseComponent implements OnInit {
     eventNftAddress: string;
     name: string;
     startDate: string;
+    venueName?: string;
+    venueAddress?: string;
   } | null>(null);
 
   mappedTiers = signal<Array<{
@@ -358,9 +364,34 @@ export class TicketPurchaseComponent implements OnInit {
     const tiersInput = this.tiers;
 
     if (eventInput && tiersInput && tiersInput.length > 0) {
-      this.mappedEvent.set(eventInput);
+      const tempEvent = {
+        eventId: eventInput.eventId,
+        eventNftAddress: eventInput.eventNftAddress || '',
+        name: eventInput.name,
+        startDate: eventInput.startDate,
+        venueName: 'Cargando...',
+        venueAddress: ''
+      };
+      this.mappedEvent.set(tempEvent);
       this.mappedTiers.set(tiersInput);
       this.loadOnChainData();
+
+      // Try to load venue if possible
+      this.eventService.findByIdEvent(eventInput.eventId).subscribe({
+        next: (eventData) => {
+          if (eventData.venueId) {
+            this.venueService.findVenueById(eventData.venueId).subscribe({
+              next: (v) => {
+                this.mappedEvent.set({
+                  ...tempEvent,
+                  venueName: v.title,
+                  venueAddress: v.coordinates || ''
+                });
+              }
+            });
+          }
+        }
+      });
       return;
     }
 
@@ -373,12 +404,40 @@ export class TicketPurchaseComponent implements OnInit {
     this.isLoading.set(true);
     this.eventService.findByIdEvent(eventId).subscribe({
       next: (eventData) => {
-        this.mappedEvent.set({
+        const tempEvent = {
           eventId: eventData.id,
           eventNftAddress: eventData.eventNftAddress || '',
           name: eventData.title,
-          startDate: eventData.startDate
-        });
+          startDate: eventData.startDate,
+          venueName: 'Cargando...',
+          venueAddress: ''
+        };
+        this.mappedEvent.set(tempEvent);
+
+        if (eventData.venueId) {
+          this.venueService.findVenueById(eventData.venueId).subscribe({
+            next: (v) => {
+              this.mappedEvent.set({
+                ...tempEvent,
+                venueName: v.title,
+                venueAddress: v.coordinates || ''
+              });
+            },
+            error: () => {
+              this.mappedEvent.set({
+                ...tempEvent,
+                venueName: 'Dirección no disponible',
+                venueAddress: ''
+              });
+            }
+          });
+        } else {
+          this.mappedEvent.set({
+            ...tempEvent,
+            venueName: 'Sin sede asignada',
+            venueAddress: ''
+          });
+        }
 
         this.ticketTypeService.findTicketTypesByEvent(eventId).subscribe({
           next: (tickets) => {
@@ -388,7 +447,7 @@ export class TicketPurchaseComponent implements OnInit {
               name: t.name,
               priceUsdc: t.priceUsdc,
               maxQuantity: t.maxQuantity,
-              quantitySold: (t as any).quantitySold || 0,
+              quantitySold: t.quantitySold || 0,
               tierIndex: t.tierIndex
             }));
             this.mappedTiers.set(mapped);
@@ -488,7 +547,7 @@ export class TicketPurchaseComponent implements OnInit {
   async buyWithUSDC(tier: any) {
     const currentEvent = this.mappedEvent();
     if (!currentEvent || !currentEvent.eventNftAddress) {
-      this.errorMessage.set('El contrato del evento no está configurado.');
+      this.showError('El contrato del evento no está configurado.');
       return;
     }
 
@@ -498,7 +557,7 @@ export class TicketPurchaseComponent implements OnInit {
     // volver a tocar el botón una vez que cambie la red.
     const chainId = this.web3Service.chainId$.getValue();
     if (chainId !== 11155111) {
-      this.errorMessage.set('Cambiá a la red Sepolia antes de comprar.');
+      this.showError('Cambiá a la red Sepolia antes de comprar.');
       this.web3Service.switchToSepolia();
       return;
     }
@@ -506,7 +565,7 @@ export class TicketPurchaseComponent implements OnInit {
     // Verificar saldo de USDC antes de proceder
     const usdcBal = parseFloat(this.usdcBalance());
     if (usdcBal < tier.priceUsdc) {
-      this.errorMessage.set(`Saldo insuficiente de USDC. Necesitás ${tier.priceUsdc} USDC pero tenés ${usdcBal} USDC.`);
+      this.showError(`Saldo insuficiente de USDC. Necesitás ${tier.priceUsdc} USDC pero tenés ${usdcBal} USDC.`);
       return;
     }
 
@@ -540,14 +599,14 @@ export class TicketPurchaseComponent implements OnInit {
   async buyWithVBK(tier: any) {
     const currentEvent = this.mappedEvent();
     if (!currentEvent || !currentEvent.eventNftAddress) {
-      this.errorMessage.set('El contrato del evento no está configurado.');
+      this.showError('El contrato del evento no está configurado.');
       return;
     }
 
     // Misma verificación síncrona de red que buyWithUSDC.
     const chainId = this.web3Service.chainId$.getValue();
     if (chainId !== 11155111) {
-      this.errorMessage.set('Cambiá a la red Sepolia antes de comprar.');
+      this.showError('Cambiá a la red Sepolia antes de comprar.');
       this.web3Service.switchToSepolia();
       return;
     }
@@ -557,14 +616,14 @@ export class TicketPurchaseComponent implements OnInit {
     const quoteStr = this.vbkQuotes()[tier.ticketTypeId];
     const needed = quoteStr ? parseFloat(quoteStr) : 0;
     if (vbkBal < needed) {
-      this.errorMessage.set(`Saldo insuficiente de VBK. Necesitás ${needed.toFixed(4)} VBK pero tenés ${vbkBal.toFixed(4)} VBK.`);
+      this.showError(`Saldo insuficiente de VBK. Necesitás ${needed.toFixed(4)} VBK pero tenés ${vbkBal.toFixed(4)} VBK.`);
       return;
     }
 
     // Quote precargado en bigint: necesario para el monto máximo de VBK sin leer en el tap.
     const quote = this.vbkQuoteBig()[tier.ticketTypeId];
     if (!quote) {
-      this.errorMessage.set('No hay cotización de VBK disponible. Recargá la página.');
+      this.showError('No hay cotización de VBK disponible. Recargá la página.');
       return;
     }
     const maxVbkAmount = this.web3Service.vbkOfferingMaxAmount(quote);
@@ -596,21 +655,45 @@ export class TicketPurchaseComponent implements OnInit {
     }
   }
 
+  showError(message: string): void {
+    this.errorMessage.set(message);
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 6000,
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom'
+    });
+
+    const isVbkError = message.includes('VBK');
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: isVbkError ? 'Saldo Insuficiente de VBK' : 'Error de Compra',
+        message: message,
+        confirmText: 'Entendido',
+        hideCancel: true,
+        success: false
+      }
+    });
+  }
+
   handlePurchaseError(err: any) {
     console.error('Error durante la compra on-chain:', err);
+    let msg = '';
     if (err.code === 4001 || err.code === 'ACTION_REJECTED' || (err.message && err.message.includes('rejected'))) {
-      this.errorMessage.set('Transacción cancelada por el usuario.');
+      msg = 'Transacción cancelada por el usuario.';
     } else if (
       err.code === 'INSUFFICIENT_FUNDS' ||
       (err.message && err.message.toLowerCase().includes('insufficient funds')) ||
       (err.message && err.message.toLowerCase().includes('transfer amount exceeds balance'))
     ) {
-      this.errorMessage.set('Saldo insuficiente de USDC/VBK.');
+      msg = 'Saldo insuficiente de USDC/VBK.';
     } else if (err.reason) {
-      this.errorMessage.set(err.reason);
+      msg = err.reason;
     } else {
-      this.errorMessage.set(err.message || 'Ocurrió un error inesperado en la transacción.');
+      msg = err.message || 'Ocurrió un error inesperado en la transacción.';
     }
+    this.showError(msg);
   }
 
   confirmPurchaseOnBackend(ticketTypeId: number, txHash: string, tokenId: number) {
@@ -648,6 +731,25 @@ export class TicketPurchaseComponent implements OnInit {
   truncateAddress(address: string | null): string {
     if (!address) return '';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  }
+
+  getFormattedDate(dateStr: string | undefined): string {
+    if (!dateStr) return '—';
+    try {
+      const date = parseDateRobust(dateStr);
+      const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      
+      const dayName = days[date.getDay()];
+      const dayNum = date.getDate();
+      const monthName = months[date.getMonth()];
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      
+      return `${dayName} ${dayNum} ${monthName} · ${hours}:${minutes} hs`;
+    } catch {
+      return dateStr;
+    }
   }
 
   parseFloat(val: string): number {

@@ -134,7 +134,11 @@
           <div class="event-meta-row">
             <span class="meta-item">
               <mat-icon>calendar_today</mat-icon>
-              <span>{{ evt.startDate | date:'longDate':'':'es-AR' }}</span>
+              <span>{{ getFormattedDate(evt.startDate) }}</span>
+            </span>
+            <span class="meta-item" *ngIf="evt.venueName">
+              <mat-icon>place</mat-icon>
+              <span>{{ evt.venueName }}{{ evt.venueAddress ? ' (' + evt.venueAddress + ')' : '' }}</span>
             </span>
             <span class="meta-item">
               <mat-icon>token</mat-icon>
@@ -158,7 +162,7 @@
             <!-- USDC Price Breakdown -->
             <div class="price-section">
               <div class="info-row">
-                <span class="label">Entrada USDC</span>
+                <span class="label label-usdc">Entrada USDC</span>
                 <span class="val usdc-val">{{ tier.priceUsdc | currency:'USD':'symbol':'1.2-2' }}</span>
               </div>
               <div class="info-row fee-row">
@@ -177,7 +181,7 @@
             <div class="price-section">
               <div class="info-row">
                 <div class="label-wrapper">
-                  <span class="label">Entrada VBK</span>
+                  <span class="label label-vbk">Entrada VBK</span>
                   <span class="discount-badge">3% OFF Fee</span>
                 </div>
                 <span class="val vbk-val">
@@ -291,11 +295,11 @@
           <div class="receipt-body">
             <div class="receipt-row">
               <span class="label">Evento:</span>
-              <span class="val font-highlight">{{ ticket.eventName }}</span>
+              <span class="val font-highlight">{{ mappedEvent()?.name }}</span>
             </div>
             <div class="receipt-row">
               <span class="label">Categoría/Tier:</span>
-              <span class="val font-highlight">{{ ticket.ticketTypeName }}</span>
+              <span class="val font-highlight">{{ ticket.ticketType?.name || selectedTierName() }}</span>
             </div>
             <div class="receipt-row">
               <span class="label">Token ID (NFT):</span>
@@ -308,8 +312,8 @@
             <div class="receipt-row">
               <span class="label">Transacción:</span>
               <span class="val">
-                <a [href]="'https://sepolia.etherscan.io/tx/' + ticket.txHash" target="_blank" class="etherscan-link">
-                  <span>{{ truncateAddress(ticket.txHash) }}</span>
+                <a [href]="'https://sepolia.etherscan.io/tx/' + (ticket.mintTxHash || purchaseTxHash())" target="_blank" class="etherscan-link">
+                  <span>{{ truncateAddress(ticket.mintTxHash || purchaseTxHash()) }}</span>
                   <mat-icon>open_in_new</mat-icon>
                 </a>
               </span>

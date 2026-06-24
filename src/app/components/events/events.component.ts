@@ -195,7 +195,7 @@ export class EventsComponent implements OnInit, OnDestroy {
             title: backendEvent.title,
             description: backendEvent.description || 'Sin descripción',
             startDate: backendEvent.startDate,
-            startDateParsed: new Date(backendEvent.startDate),
+            startDateParsed: parseDateRobust(backendEvent.startDate),
             endDate: backendEvent.endDate,
             venue: this.getVenueName(backendEvent.venueId),
             venueId: backendEvent.venueId,
@@ -339,5 +339,58 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   onCategoryChange(): void {
     // Signals will reactively update the child EventsGridComponent
+  }
+}
+
+export function parseDateRobust(dateVal: any): Date {
+  if (!dateVal) return new Date();
+  if (dateVal instanceof Date) return dateVal;
+  try {
+    let date: Date;
+    if (Array.isArray(dateVal)) {
+      const year = dateVal[0];
+      const month = dateVal[1] - 1;
+      const day = dateVal[2];
+      const hour = dateVal[3] || 0;
+      const minute = dateVal[4] || 0;
+      const second = dateVal[5] || 0;
+      date = new Date(year, month, day, hour, minute, second);
+    } else {
+      let cleaned = String(dateVal).trim();
+      if (cleaned.startsWith('[') && cleaned.endsWith(']')) {
+        cleaned = cleaned.slice(1, -1);
+      }
+      if (cleaned.includes(',')) {
+        const parts = cleaned.split(',').map(p => parseInt(p, 10));
+        const year = parts[0];
+        const month = (parts[1] || 1) - 1;
+        const day = parts[2] || 1;
+        const hour = parts[3] || 0;
+        const minute = parts[4] || 0;
+        const second = parts[5] || 0;
+        date = new Date(year, month, day, hour, minute, second);
+      } else {
+        const hasTimezone = cleaned.endsWith('Z') || /[\+\-]\d{2}:\d{2}$/.test(cleaned);
+        const isoRegex = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/;
+        const match = cleaned.match(isoRegex);
+        if (match && !hasTimezone) {
+          const year = parseInt(match[1], 10);
+          const month = parseInt(match[2], 10) - 1;
+          const day = parseInt(match[3], 10);
+          const hour = match[4] ? parseInt(match[4], 10) : 0;
+          const minute = match[5] ? parseInt(match[5], 10) : 0;
+          const second = match[6] ? parseInt(match[6], 10) : 0;
+          date = new Date(year, month, day, hour, minute, second);
+        } else {
+          if (cleaned.includes(' ') && !cleaned.includes('T')) {
+            cleaned = cleaned.replace(' ', 'T');
+          }
+          date = new Date(cleaned);
+        }
+      }
+    }
+    return isNaN(date.getTime()) ? new Date() : date;
+  } catch {
+    return new Date();
   }
 }
