@@ -262,5 +262,11 @@ export const routes: Routes = [
     component: QrScannerComponent,
     canActivate: [authGuard, () => roleGuard(['validador'])],
   },
+  {
+    path: "cron-jobs",
+    loadComponent: () =>
+      import("./components/cron-jobs/cron-jobs.component").then((m) => m.CronJobsComponent),
+    canActivate: [authGuard, () => roleGuard(['ADMIN'])],
+  },
   { path: "**", component: NotFoundComponent },
 ];

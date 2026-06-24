@@ -264,6 +264,10 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/admin/statistics']);
   }
 
+  navigateToCronJobs() {
+    this.router.navigate(['/cron-jobs']);
+  }
+
   openCameraScanner(): void {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       this.errorService.handleError(

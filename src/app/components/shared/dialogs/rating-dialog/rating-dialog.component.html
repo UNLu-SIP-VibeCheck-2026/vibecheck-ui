@@ -14,11 +14,10 @@
     ></app-star-rating>
   </div>
 
-  @if (!isValid) {
-    <p class="rating-dialog__error">
-      Por favor selecciona una calificación
-    </p>
-  }
+  <p class="rating-dialog__hint">
+    Primer toque: media estrella<br>
+    Segundo toque: estrella completa
+  </p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

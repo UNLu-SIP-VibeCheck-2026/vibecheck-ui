@@ -13,12 +13,12 @@
       @if (star.state === 'half') {
         <svg class="star-rating__icon" viewBox="0 0 24 24">
           <defs>
-            <linearGradient id="half-star-gradient">
+            <linearGradient [id]="'half-star-gradient-' + star.value">
               <stop offset="50%" stop-color="var(--md-sys-color-tertiary)" />
-              <stop offset="50%" stop-color="var(--md-sys-color-outline)" />
+              <stop offset="50%" stop-color="var(--half-star-empty-color, var(--md-sys-color-outline))" />
             </linearGradient>
           </defs>
-          <path fill="url(#half-star-gradient)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+          <path [attr.fill]="'url(#half-star-gradient-' + star.value + ')'" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
         </svg>
       } @else {
         <mat-icon class="star-rating__icon">

@@ -12,19 +12,19 @@ import { UserPublicResponse } from '../../models/user-public-response.model';
 import { Achievement } from '../../models/achievement.model';
 import { UserHistoryItem } from '../../models/user-history.model';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { RatingDialogComponent, RatingDialogData } from '../shared/dialogs/rating-dialog/rating-dialog.component';
 import { UserUpdateRequest } from '../../models/user-update-request.model';
 import { ChangeRoleDialogComponent } from '../shared/dialogs/change-role-dialog/change-role-dialog.component';
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AvatarComponent } from '../shared/avatar/avatar.component';
 import { TierInfoDialogComponent } from '../shared/dialogs/tier-info-dialog/tier-info-dialog.component';
 import { StarRatingComponent } from '../shared/star-rating/star-rating.component';
-import { RatingDialogComponent, RatingDialogData } from '../shared/dialogs/rating-dialog/rating-dialog.component';
 
 @Component({
   selector: 'app-perfil-user',
@@ -284,6 +284,66 @@ export class PerfilUserComponent implements OnInit {
     if (p) {
       this.router.navigate(['/perfil-user', p.username, 'historial']);
     }
+  }
+
+  navigateToEvent(eventId: number): void {
+    this.router.navigate(['/event', eventId]);
+  }
+
+  openRatingDialogForHistory(item: UserHistoryItem): void {
+    const currentUser = this.authService.getCurrentUserValue();
+    if (!currentUser) return;
+
+    // Fetch event details to get organizer information
+    this.eventService.findByIdEvent(item.eventId).subscribe({
+      next: (event) => {
+        // Fetch organizer details to get the organizer's username
+        this.usersService.getPublicUserById(event.ownerId).subscribe({
+          next: (organizer) => {
+            const dialogData: RatingDialogData = {
+              organizerName: organizer.username,
+              eventId: item.eventId,
+              organizerId: event.ownerId,
+              currentRating: undefined,
+            };
+
+            const dialogRef = this.dialog.open(RatingDialogComponent, {
+              data: dialogData,
+              width: '400px',
+            });
+
+            dialogRef.afterClosed().subscribe((result) => {
+              if (result !== undefined && result !== null) {
+                this.submitRatingForHistory(event.ownerId, item.eventId, result);
+              }
+            });
+          },
+          error: (err) => {
+            this.snackBar.open('Error al cargar información del organizador', 'Cerrar', { duration: 4000 });
+          },
+        });
+      },
+      error: (err) => {
+        this.snackBar.open('Error al cargar información del evento', 'Cerrar', { duration: 4000 });
+      },
+    });
+  }
+
+  submitRatingForHistory(organizerId: number, eventId: number, ratingValue: number): void {
+    const request = {
+      organizerId: organizerId,
+      eventId: eventId,
+      ratingValue: ratingValue,
+    };
+
+    this.organizerRatingService.rateOrganizer(request).subscribe({
+      next: (response) => {
+        this.snackBar.open('Calificación enviada exitosamente', 'Cerrar', { duration: 3000 });
+      },
+      error: (err) => {
+        this.snackBar.open(err?.error?.message || 'Error al enviar calificación', 'Cerrar', { duration: 4000 });
+      },
+    });
   }
 
   toggleVisibility(item: UserHistoryItem): void {

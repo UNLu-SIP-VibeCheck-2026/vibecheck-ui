@@ -37,7 +37,7 @@
     <div class="history-content">
       <div class="events-grid">
         @for (item of historyItems(); track item.id) {
-          <div class="event-card-compact">
+          <div class="event-card-compact" (click)="navigateToEvent(item.eventId)">
             <!-- Image container -->
             <div class="event-image-container">
               @if (item.imageUrl) {
@@ -57,14 +57,14 @@
                   mat-icon-button
                   class="visibility-toggle-btn overlay"
                   [class.public]="item.publicVisibility"
-                  (click)="toggleVisibility(item)"
+                  (click)="toggleVisibility(item); $event.stopPropagation()"
                   [title]="item.publicVisibility ? 'Hacer privado (ocultar)' : 'Hacer público (mostrar)'"
                 >
                   <mat-icon>{{ item.publicVisibility ? 'visibility' : 'visibility_off' }}</mat-icon>
                 </button>
               }
             </div>
-            
+
             <!-- Info details -->
             <div class="event-info">
               <div class="card-badges">
@@ -80,6 +80,18 @@
                   <mat-icon>how_to_reg</mat-icon>
                   <span>Asistido: {{ formatHistoryDate(item.attendedAt) }}</span>
                 </div>
+              </div>
+              <div class="rating-action">
+                @if (isOwnProfile() && item.eventStatus === 'COMPLETED') {
+                  <button
+                    mat-icon-button
+                    class="rate-organizer-btn"
+                    (click)="openRatingDialogForHistory(item); $event.stopPropagation()"
+                    matTooltip="Calificar organizador"
+                  >
+                    <mat-icon>star</mat-icon>
+                  </button>
+                }
               </div>
             </div>
           </div>

@@ -1,0 +1,59 @@
+<div class="cron-jobs-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" (click)="goBack()" matTooltip="Volver al Dashboard">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="brand-title">Cron-<span class="text-gradient">Jobs</span></h1>
+        <p class="header-subtitle">Ejecución manual de tareas programadas del sistema</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jobs List -->
+  <div class="jobs-list">
+    @for (job of cronJobs; track job.id) {
+      <div class="job-item" @fadeIn>
+        <div class="job-icon">
+          <mat-icon>{{ job.icon }}</mat-icon>
+        </div>
+        
+        <div class="job-content">
+          <h3 class="job-name">{{ job.name }}</h3>
+          <p class="job-description">{{ job.description }}</p>
+          
+          @if (job.lastExecution) {
+            <div class="job-status" [class.success]="job.lastExecution.status === 'SUCCESS'" [class.error]="job.lastExecution.status === 'ERROR'">
+              <mat-icon class="status-icon">{{ job.lastExecution.status === 'SUCCESS' ? 'check_circle' : 'error' }}</mat-icon>
+              <span class="status-text">{{ job.lastExecution.status === 'SUCCESS' ? 'Última ejecución exitosa' : 'Última ejecución fallida' }}</span>
+              <span class="execution-time">{{ job.lastExecution.executedAt | date:'short' }}</span>
+            </div>
+          }
+        </div>
+
+        <button 
+          mat-raised-button 
+          color="primary"
+          class="execute-btn"
+          [disabled]="job.loading"
+          (click)="job.method()"
+        >
+          <ng-container matButtonIcon>
+            @if (job.loading) {
+              <mat-icon class="spinner">refresh</mat-icon>
+            } @else {
+              <mat-icon>play_arrow</mat-icon>
+            }
+          </ng-container>
+          @if (job.loading) {
+            <span>Ejecutando...</span>
+          } @else {
+            <span>  Ejecutar</span>
+          }
+        </button>
+      </div>
+    }
+  </div>
+</div>

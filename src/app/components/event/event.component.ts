@@ -143,7 +143,7 @@ export class EventComponent implements OnInit {
 
     this.organizerRatingService.getUserRatingForEvent(this.event.ownerId, this.event.id).subscribe({
       next: (rating) => {
-        this.myRating = rating.ratingValue;
+        this.myRating = rating?.ratingValue ?? null;
       },
       error: () => {
         this.myRating = null;
@@ -189,6 +189,7 @@ export class EventComponent implements OnInit {
       SCHEDULED: "PROGRAMADO",
       IN_PROGRESS: "EN CURSO",
       FINISHED: "FINALIZADO",
+      COMPLETED: "COMPLETADO",
       CANCELLED: "CANCELADO",
     };
     return map[this.event.status?.toUpperCase()] ?? this.event.status ?? "—";
@@ -199,6 +200,7 @@ export class EventComponent implements OnInit {
     if (s === "SCHEDULED" || s === "PROGRAMADO") return "status-scheduled";
     if (s === "IN_PROGRESS" || s === "EN_CURSO") return "status-inprogress";
     if (s === "FINISHED" || s === "FINALIZADO") return "status-finished";
+    if (s === "COMPLETED" || s === "COMPLETADO") return "status-completed";
     if (s === "CANCELLED" || s === "CANCELADO") return "status-cancelled";
     return "";
   }

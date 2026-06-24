@@ -392,3 +392,12 @@
     height: 18px !important;
   }
 }
+
+/* Rating button styles */
+.rate-organizer-btn {
+  color: var(--md-sys-color-tertiary);
+}
+
+.rate-organizer-btn:hover {
+  background-color: rgba(var(--md-sys-color-tertiary), 0.1);
+}

@@ -65,7 +65,14 @@
     <!-- Info section -->
     <div class="event-info-section">
 
-      <h1 class="event-title">{{ event.title }}</h1>
+      <h1 class="event-title">
+        {{ event.title }}
+        @if (canRateOrganizer) {
+          <button mat-icon-button class="rate-btn-large" (click)="openRatingDialog()" matTooltip="Calificar organizador">
+            <mat-icon>star</mat-icon>
+          </button>
+        }
+      </h1>
 
       <!-- MOBILE FIX: Metadata compacta inline visible solo en mobile -->
       <div class="mobile-compact-meta">
@@ -155,15 +162,10 @@
             <span>Organizador sin puntuar</span>
           </div>
         }
-        @if (canRateOrganizer) {
-          <button mat-icon-button class="rate-btn" (click)="openRatingDialog()" matTooltip="Calificar organizador">
-            <mat-icon>star</mat-icon>
-          </button>
-        }
       </div>
 
       <!-- MOBILE FIX: Contenedor de compra que se vuelve sticky bottom en mobile -->
-      <div class="purchase-sticky-container" *ngIf="event.active">
+      <div class="purchase-sticky-container" *ngIf="event.active && event.status?.toUpperCase() !== 'COMPLETED'">
         <div class="price-panel-wrapper" *ngIf="cheapestTicketPrice !== null">
           <div class="large-price-panel">
             <span class="price-label">Desde</span>

@@ -10,4 +10,5 @@ export interface UserHistoryItem {
   ownerWalletAtRedeem: string | null;
   redeemTxHash: string | null;
   publicVisibility: boolean;
+  eventStatus?: string; // EventStatus enum serialized as string
 }

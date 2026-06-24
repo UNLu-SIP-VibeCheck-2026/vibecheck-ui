@@ -1,0 +1,241 @@
+.cron-jobs-container {
+  padding: 48px 128px;
+  min-height: 100vh;
+  background: transparent;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.back-btn {
+  color: #f97316 !important;
+  background: rgba(249, 115, 22, 0.1) !important;
+
+  &:hover {
+    background: rgba(249, 115, 22, 0.2) !important;
+  }
+  margin-left: 16px;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brand-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  margin: 0;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #7c3aed 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-subtitle {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #94a3b8;
+  margin: 4px 0 0 0;
+}
+
+.jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0px 128px;
+}
+
+.job-item {
+  background: var(--md-sys-color-surface);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.job-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--md-sys-color-outline);
+}
+
+.job-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--md-sys-color-primary-container);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.job-icon mat-icon {
+  font-size: 28px;
+  color: var(--md-sys-color-primary);
+  width: 28px;
+  height: 28px;
+}
+
+.job-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.job-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.job-description {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.job-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  width: fit-content;
+}
+
+.job-status.success {
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.job-status.error {
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.status-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.job-status.success .status-icon {
+  color: #4caf50;
+}
+
+.job-status.error .status-icon {
+  color: #f44336;
+}
+
+.status-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.execution-time {
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-left: auto;
+}
+
+.execute-btn {
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: auto;
+  flex-shrink: 0;
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+}
+
+.execute-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.execute-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.execute-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .cron-jobs-container {
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .brand-title {
+    font-size: 32px;
+  }
+
+  .job-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .execute-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -33,6 +33,7 @@
     justify-content: center;
     cursor: default;
     transition: transform 0.2s ease;
+    pointer-events: auto;
 
     &--interactive {
       cursor: pointer;
@@ -58,6 +59,10 @@
 
   &__star--half &__icon {
     color: var(--md-sys-color-tertiary);
+
+    &:hover {
+      --half-star-empty-color: var(--md-sys-color-primary);
+    }
   }
 
   &__star--interactive:hover &__icon {

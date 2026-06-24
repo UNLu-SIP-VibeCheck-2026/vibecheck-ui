@@ -290,6 +290,9 @@
   margin-bottom: var(--space-8);
   letter-spacing: -0.03em;
   line-height: 1.05;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 // ---------------------------------------------------------------------------
@@ -438,6 +441,27 @@
   &:hover {
     background: var(--md-sys-color-primary-container) !important;
     color: var(--md-sys-color-on-primary-container) !important;
+  }
+}
+
+.rate-btn-large {
+  width: 56px !important;
+  height: 56px !important;
+  margin-left: 8px;
+  color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.1) !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+
+  mat-icon {
+    font-size: 32px !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding-top: 2px;
+  }
+
+  &:hover {
+    background: rgba(251, 191, 36, 0.2) !important;
+    color: #fbbf24 !important;
   }
 }
 
