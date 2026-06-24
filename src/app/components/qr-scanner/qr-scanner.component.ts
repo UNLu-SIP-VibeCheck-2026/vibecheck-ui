@@ -59,8 +59,8 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
   availableDevices: any[] = [];
   selectedDeviceId: string | null = null;
 
-  // Manual entry state
-  manualTicketId = '';
+  // Collapsible history state
+  historyCollapsed = true;
 
   // Recent validations log
   scanHistory: ScanHistoryItem[] = [];
@@ -401,12 +401,8 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  validateManual(): void {
-    const idStr = this.manualTicketId.trim();
-    if (!idStr || this.processing) return;
-
-    this.manualTicketId = ''; // Clear input
-    this.onScanSuccess(idStr);
+  toggleHistory(): void {
+    this.historyCollapsed = !this.historyCollapsed;
   }
 
   private showFeedback(type: 'success' | 'error', ticketId: string, message: string = ''): void {

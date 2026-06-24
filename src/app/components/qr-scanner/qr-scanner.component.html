@@ -151,28 +151,6 @@
         </div>
       }
 
-      <!-- Manual Validation Card -->
-      @if (assignedEvent) {
-        <div class="manual-validation-card">
-          <div class="card-header-manual">
-            <mat-icon>keyboard</mat-icon>
-            <h3 class="card-subtitle">Validación Manual</h3>
-          </div>
-          <p class="card-desc">Si el código QR está dañado o la cámara no lo lee, ingresá el número de entrada manualmente.</p>
-          <div class="manual-entry-box">
-            <input type="text" [(ngModel)]="manualTicketId" placeholder="Ej: 142" class="manual-input" (keyup.enter)="validateManual()" />
-            <button (click)="validateManual()" [disabled]="processing || !manualTicketId.trim()" class="manual-btn">
-              @if (processing && !manualTicketId) {
-                <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
-              } @else {
-                <mat-icon>send</mat-icon>
-                <span>Validar</span>
-              }
-            </button>
-          </div>
-        </div>
-      }
-
       <!-- Fallback views when camera fails -->
       @if (!hasCameraSupport) {
         <div class="error-state">
@@ -201,13 +179,17 @@
 
     <!-- Right Column: Scan History Logs -->
     <div class="scanner-column-side">
-      <div class="history-card">
-        <div class="history-header">
+      <div class="history-card" [class.collapsed-card]="historyCollapsed">
+        <div class="history-header" (click)="toggleHistory()" style="cursor: pointer; user-select: none;">
           <mat-icon>list_alt</mat-icon>
           <h3>Historial de Lectura</h3>
+          <span class="spacer" style="flex: 1;"></span>
+          <button mat-icon-button class="collapse-btn" (click)="$event.stopPropagation(); toggleHistory()">
+            <mat-icon>{{ historyCollapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </button>
         </div>
         
-        <div class="history-content">
+        <div class="history-content" *ngIf="!historyCollapsed">
           @if (scanHistory.length === 0) {
             <div class="empty-history">
               <mat-icon>qr_code_scanner</mat-icon>
