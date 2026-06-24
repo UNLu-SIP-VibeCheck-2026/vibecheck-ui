@@ -1,13 +1,23 @@
 @use '../../../tokens' as *;
 
 .marketplace-list-container {
-  padding: var(--space-6) var(--space-10);
   max-width: 1400px;
   margin: 0 auto;
   min-height: 80vh;
 
+  // Responsive padding
+  padding: var(--space-6) var(--space-10); // Large Desktop (>= 1280px)
+
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    padding: var(--space-6) var(--space-6); // Small/Medium Desktop
+  }
+
+  @include tablet {
+    padding: var(--space-5) var(--space-5); // Tablet (600px - 1023px)
+  }
+
   @include mobile {
-    padding: var(--space-5);
+    padding: var(--space-4) var(--space-4); // Mobile (< 600px)
   }
 }
 
@@ -17,14 +27,27 @@
   .display-medium {
     margin: 0 0 var(--space-2) 0;
     font-size: 40px;
-    @include mobile {
-      font-size: 32px;
-    }
   }
 
   .muted {
     color: var(--md-sys-color-on-surface-variant);
     margin: 0;
+  }
+
+  @include tablet {
+    text-align: center;
+    margin-bottom: var(--space-5);
+    .display-medium {
+      font-size: 36px;
+    }
+  }
+
+  @include mobile {
+    text-align: center;
+    margin-bottom: var(--space-4);
+    .display-medium {
+      font-size: 32px;
+    }
   }
 }
 
@@ -357,15 +380,12 @@
 
 .listings-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  justify-content: center;
   gap: var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
 
-  @include tablet {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @include mobile {
-    grid-template-columns: 1fr;
+  @media (max-width: 599px) {
+    gap: var(--space-4);
   }
 }
 

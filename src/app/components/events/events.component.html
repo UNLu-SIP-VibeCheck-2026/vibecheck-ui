@@ -114,23 +114,7 @@
         </div>
       </div>
 
-      <!-- Category Chips Horizontal Scroll (Mobile Only) -->
-      <div class="categories-chips-scroll">
-        <button type="button" 
-                class="category-chip" 
-                [class.active]="selectedCategoryId() === null" 
-                (click)="selectedCategoryId.set(null); onCategoryChange()">
-          Todas
-        </button>
-        @for (cat of categories(); track cat.id) {
-          <button type="button" 
-                  class="category-chip" 
-                  [class.active]="selectedCategoryId() === cat.id" 
-                  (click)="selectedCategoryId.set(cat.id); onCategoryChange()">
-            {{ cat.name }}
-          </button>
-        }
-      </div>
+
 
       <app-events-grid 
         [categoryId]="selectedCategoryId()" 

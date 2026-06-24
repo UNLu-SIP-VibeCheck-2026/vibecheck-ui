@@ -32,24 +32,18 @@
 
 .events-grid {
   display: grid;
-  align-items: start;
+  justify-content: center;
   gap: var(--space-5);
   margin-bottom: var(--space-8);
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
 
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
+  @media (max-width: 599px) {
     gap: var(--space-4);
-  }
-
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-5);
   }
 }
 
 .event-card--ultra-super {
-  @media (min-width: 768px) {
+  @media (min-width: 600px) {
     grid-column: span 2;
   }
 }
