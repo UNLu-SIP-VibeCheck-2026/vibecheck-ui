@@ -32,7 +32,6 @@ import { formatUnits } from 'viem';
     MatCardModule,
     MatDialogModule,
     MatSnackBarModule,
-    ConfirmDialogComponent,
   ],
   templateUrl: './select-tickets.component.html',
   styleUrls: ['./select-tickets.component.scss']
