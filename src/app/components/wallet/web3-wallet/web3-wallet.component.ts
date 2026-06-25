@@ -14,7 +14,7 @@ import { SwapComponent } from '../../swap/swap.component';
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIconModule, FormsModule, MatSnackBarModule, SwapComponent],
   templateUrl: './web3-wallet.component.html',
-  styleUrl: './web3-wallet.component.css'
+  styleUrl: './web3-wallet.component.scss'
 })
 export class Web3WalletComponent implements OnInit {
   web3Service = inject(Web3Service);

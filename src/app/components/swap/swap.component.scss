@@ -1,3 +1,5 @@
+@use '../../../tokens' as *;
+
 /* CONTENEDOR PRINCIPAL Y ORBES */
 .web3-premium-container {
   position: relative;
@@ -671,7 +673,7 @@
 }
 
 /* RESPONSIVE */
-@media (max-width: 600px) {
+@include mobile {
   .luxury-card {
     padding: 2rem 1.5rem;
   }

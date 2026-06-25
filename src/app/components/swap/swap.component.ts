@@ -13,7 +13,7 @@ import { formatUnits, parseUnits } from "viem";
   standalone: true,
   imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSnackBarModule],
   templateUrl: "./swap.component.html",
-  styleUrl: "./swap.component.css",
+  styleUrl: "./swap.component.scss",
 })
 export class SwapComponent implements OnInit, OnDestroy {
   web3Service = inject(Web3Service);

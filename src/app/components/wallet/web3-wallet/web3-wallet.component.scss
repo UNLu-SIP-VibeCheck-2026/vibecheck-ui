@@ -1,3 +1,5 @@
+@use '../../../tokens' as *;
+
 /* CONTENEDOR PRINCIPAL Y FONDOS */
 .web3-premium-container {
   position: relative;
@@ -674,7 +676,7 @@
 }
 
 /* RESPONSIVE */
-@media (max-width: 768px) {
+@include mobile {
   .dashboard-header {
     flex-direction: column;
     text-align: center;
@@ -796,4 +798,3 @@
   width: 140px;
   border-radius: 6px;
 }
-

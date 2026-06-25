@@ -17,7 +17,7 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: var(--md-sys-color-on-surface);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -36,8 +36,8 @@
     &.prev { left: -22px; }
     &.next { right: -22px; }
 
-    @media (max-width: 1199px) {
-      display: none;
+    @include large-desktop {
+      display: flex;
     }
   }
 

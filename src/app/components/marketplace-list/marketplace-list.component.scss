@@ -5,19 +5,19 @@
   margin: 0 auto;
   min-height: 80vh;
 
-  // Responsive padding
-  padding: var(--space-6) var(--space-10); // Large Desktop (>= 1280px)
-
-  @media (min-width: 1024px) and (max-width: 1279px) {
-    padding: var(--space-6) var(--space-6); // Small/Medium Desktop
-  }
+  // Responsive padding (Mobile-First)
+  padding: var(--space-4) var(--space-4);
 
   @include tablet {
-    padding: var(--space-5) var(--space-5); // Tablet (600px - 1023px)
+    padding: var(--space-5) var(--space-5);
   }
 
-  @include mobile {
-    padding: var(--space-4) var(--space-4); // Mobile (< 600px)
+  @include desktop {
+    padding: var(--space-6) var(--space-6);
+  }
+
+  @include large-desktop {
+    padding: var(--space-6) var(--space-10);
   }
 }
 
@@ -384,7 +384,7 @@
   gap: var(--space-5);
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
 
-  @media (max-width: 599px) {
+  @include mobile {
     gap: var(--space-4);
   }
 }

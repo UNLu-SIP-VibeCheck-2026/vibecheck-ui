@@ -1,3 +1,5 @@
+@use '../../../tokens' as *;
+
 .cron-jobs-container {
   padding: 48px 128px;
   min-height: 100vh;
@@ -214,7 +216,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@include mobile {
   .cron-jobs-container {
     padding: 16px;
   }

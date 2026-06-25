@@ -2,6 +2,7 @@
 // ValidatorManagementComponent — Styles
 // VibeCheck visual style based on register and admin-users components
 // =============================================================================
+@use '../../../tokens' as *;
 
 :host {
   display: flex;
@@ -89,14 +90,12 @@
 // ---------------------------------------------------------------------------
 .content-grid {
   display: grid;
-  grid-template-columns: 1fr 1.5fr;
+  grid-template-columns: 1fr;
   gap: 32px;
   align-items: start;
-}
 
-@media (max-width: 1200px) {
-  .content-grid {
-    grid-template-columns: 1fr;
+  @include desktop {
+    grid-template-columns: 1fr 1.5fr;
   }
 }
 
@@ -136,11 +135,18 @@
 
 .field-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 24px;
 
   &.single {
     grid-template-columns: 1fr;
+  }
+
+  @include tablet {
+    grid-template-columns: 1fr 1fr;
+  }
+  @include desktop {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -504,13 +510,29 @@
 // ---------------------------------------------------------------------------
 // Responsive
 // ---------------------------------------------------------------------------
-@media (max-width: 768px) {
+@include mobile {
   .admin-container {
     padding: 16px;
   }
 
-  .field-row {
-    grid-template-columns: 1fr;
+  .content-grid {
+    gap: 24px;
+  }
+
+  .form-section,
+  .list-section {
+    padding: 24px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@include tablet {
+  .admin-container {
+    padding: 16px;
   }
 
   .content-grid {

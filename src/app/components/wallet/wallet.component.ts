@@ -10,7 +10,7 @@ import { Web3WalletComponent } from './web3-wallet/web3-wallet.component';
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIconModule, Web3WalletComponent],
   templateUrl: './wallet.component.html',
-  styleUrl: './wallet.component.css'
+  styleUrl: './wallet.component.scss'
 })
 export class WalletComponent {
   private router = inject(Router);

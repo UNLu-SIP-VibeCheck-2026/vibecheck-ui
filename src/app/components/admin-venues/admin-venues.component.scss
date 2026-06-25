@@ -438,7 +438,7 @@
 // ---------------------------------------------------------------------------
 // Responsive
 // ---------------------------------------------------------------------------
-@media (max-width: 768px) {
+@include mobile {
   .page-header {
     flex-direction: column;
     align-items: stretch;

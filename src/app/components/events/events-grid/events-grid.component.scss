@@ -37,13 +37,18 @@
   margin-bottom: var(--space-8);
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
 
-  @media (max-width: 599px) {
+  @include mobile {
     gap: var(--space-4);
   }
 }
 
 .event-card--ultra-super {
-  @media (min-width: 600px) {
+  grid-column: span 1;
+
+  @include tablet {
+    grid-column: span 2;
+  }
+  @include desktop {
     grid-column: span 2;
   }
 }
@@ -57,7 +62,7 @@
     background: transparent !important;
     color: var(--md-sys-color-on-surface) !important;
 
-    @media (max-width: 600px) {
+    @include mobile {
       .mat-mdc-paginator-container {
         flex-wrap: wrap !important;
         justify-content: center !important;

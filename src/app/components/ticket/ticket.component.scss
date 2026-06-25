@@ -12,7 +12,10 @@
   }
 
   /* MOBILE FIX: Evitar que el contenido sea tapado por el qr-card sticky */
-  @media (max-width: 768px) {
+  @include mobile {
+    padding-bottom: 110px !important;
+  }
+  @include tablet {
     padding-bottom: 110px !important;
   }
 
@@ -111,7 +114,7 @@
       word-break: break-word;
       overflow-wrap: break-word;
 
-      @media (max-width: 600px) {
+      @include mobile {
         font-size: 2rem;
       }
     }
@@ -547,7 +550,10 @@
 .status-alert-container {
   padding: var(--space-6) var(--space-8) 0 var(--space-8);
 
-  @media (max-width: 960px) {
+  @include mobile {
+    padding: var(--space-4) var(--space-6) 0 var(--space-6);
+  }
+  @include tablet {
     padding: var(--space-4) var(--space-6) 0 var(--space-6);
   }
 }

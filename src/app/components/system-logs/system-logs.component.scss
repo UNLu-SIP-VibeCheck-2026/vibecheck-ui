@@ -1,3 +1,5 @@
+@use '../../../tokens' as *;
+
 :host {
   display: block;
   min-height: calc(100vh - 72px);
@@ -200,7 +202,7 @@
   color: var(--md-sys-color-on-surface) !important;
 }
 
-@media (max-width: 768px) {
+@include mobile {
   :host {
     padding: var(--space-4);
   }

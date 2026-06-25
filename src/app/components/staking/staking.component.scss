@@ -76,11 +76,11 @@
 // Layout Grid
 .dashboard-grid, .admin-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--space-5);
 
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
+  @include desktop {
+    grid-template-columns: 1.6fr 1fr;
   }
 }
 
@@ -115,12 +115,15 @@
 // Mi Estado Details
 .status-info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
 
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+  @include tablet {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @include desktop {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .info-block {
@@ -171,7 +174,7 @@
     padding: var(--space-4);
     border-radius: var(--md-sys-shape-corner-medium);
 
-    @media (max-width: 600px) {
+    @include mobile {
       flex-direction: column;
       align-items: stretch;
       gap: var(--space-4);
@@ -225,7 +228,7 @@
     justify-content: space-between;
     align-items: center;
 
-    @media (max-width: 600px) {
+    @include mobile {
       flex-direction: column;
       align-items: flex-start;
       gap: var(--space-3);
@@ -769,7 +772,7 @@
   padding: var(--space-4);
   border-radius: var(--md-sys-shape-corner-medium);
 
-  @media (max-width: 600px) {
+  @include mobile {
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-3);

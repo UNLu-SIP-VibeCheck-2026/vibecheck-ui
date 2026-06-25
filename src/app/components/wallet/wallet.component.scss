@@ -1,3 +1,5 @@
+@use '../../../tokens' as *;
+
 .wallet-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -354,7 +356,7 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@include mobile {
   .balance-section {
     flex-direction: column;
     text-align: center;

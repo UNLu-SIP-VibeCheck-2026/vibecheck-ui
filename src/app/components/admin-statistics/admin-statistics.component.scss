@@ -75,7 +75,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@include mobile {
   .page-header {
     flex-direction: column;
     align-items: flex-start;
@@ -423,21 +423,21 @@
 // --- Charts Section ---
 .charts-grid {
   display: grid;
-  grid-template-columns: 2fr 1.2fr;
+  grid-template-columns: 1fr;
   gap: var(--space-5);
 
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
+  @include desktop {
+    grid-template-columns: 2fr 1.2fr;
   }
 }
 
 .charts-grid-alt {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--space-5);
 
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
+  @include desktop {
+    grid-template-columns: 1.2fr 1fr;
   }
 }
 
