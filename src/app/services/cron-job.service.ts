@@ -46,4 +46,12 @@ export class CronJobService {
   runBlockchainIndexer(): Observable<CronJobExecutionResponse> {
     return this.http.post<CronJobExecutionResponse>(`${this.apiUrl}/run-blockchain-indexer`, {});
   }
+
+  sendUpcomingEventReminders(): Observable<CronJobExecutionResponse> {
+    return this.http.post<CronJobExecutionResponse>(`${this.apiUrl}/send-upcoming-event-reminders`, {});
+  }
+
+  cleanupExpiredValidators(): Observable<CronJobExecutionResponse> {
+    return this.http.post<CronJobExecutionResponse>(`${this.apiUrl}/cleanup-expired-validators`, {});
+  }
 }

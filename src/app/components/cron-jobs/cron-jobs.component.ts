@@ -95,6 +95,22 @@ export class CronJobsComponent implements OnInit {
       icon: 'link',
       method: () => this.executeJob('run-blockchain-indexer'),
       loading: false
+    },
+    {
+      id: 'send-upcoming-event-reminders',
+      name: 'Recordatorios de Eventos Próximos',
+      description: 'Envía un recordatorio por correo a los fans con entradas activas 24 horas antes del inicio.',
+      icon: 'notifications_active',
+      method: () => this.executeJob('send-upcoming-event-reminders'),
+      loading: false
+    },
+    {
+      id: 'cleanup-expired-validators',
+      name: 'Limpieza de Validadores Expirados',
+      description: 'Desactiva los validadores de eventos que ya finalizaron o fueron completados/cancelados.',
+      icon: 'person_remove',
+      method: () => this.executeJob('cleanup-expired-validators'),
+      loading: false
     }
   ];
 
@@ -134,6 +150,12 @@ export class CronJobsComponent implements OnInit {
         break;
       case 'run-blockchain-indexer':
         observable = this.cronJobService.runBlockchainIndexer();
+        break;
+      case 'send-upcoming-event-reminders':
+        observable = this.cronJobService.sendUpcomingEventReminders();
+        break;
+      case 'cleanup-expired-validators':
+        observable = this.cronJobService.cleanupExpiredValidators();
         break;
       default:
         job.loading = false;
