@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,8 +8,13 @@ import { EventService } from '../../services/event.service';
 import { EventResponse } from '../../models/event.model';
 import { Page } from '../../models/page.model';
 
+import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
@@ -20,32 +25,33 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     RouterModule,
     FormsModule,
     MatSnackBarModule,
+    MatCardModule,
     MatButtonModule,
     MatIconModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatProgressSpinnerModule,
+    MatPaginatorModule,
     MatTooltipModule
   ],
   templateUrl: './admin-events-approval.component.html',
   styleUrls: ['./admin-events-approval.component.scss']
 })
 export class AdminEventsApprovalComponent implements OnInit {
+  private eventService = inject(EventService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+
   events: EventResponse[] = [];
   currentPage = 0;
   pageSize = 10;
-  totalPages = 0;
   totalElements = 0;
   loading = false;
   error: string | null = null;
 
-  selectedEvent: EventResponse | null = null;
-  showRejectDialog = false;
+  rejectingEvent: EventResponse | null = null;
   rejectionReason = '';
-
-  constructor(
-    private eventService: EventService,
-    private authService: AuthService,
-    private router: Router,
-    private snackBar: MatSnackBar
-  ) {}
 
   ngOnInit(): void {
     this.checkRole();
@@ -67,7 +73,6 @@ export class AdminEventsApprovalComponent implements OnInit {
     this.eventService.findPendingEvents(this.currentPage, this.pageSize).subscribe({
       next: (page: Page<EventResponse>) => {
         this.events = page.content;
-        this.totalPages = page.totalPages;
         this.totalElements = page.totalElements;
         this.loading = false;
       },
@@ -83,10 +88,11 @@ export class AdminEventsApprovalComponent implements OnInit {
     this.loading = true;
     this.eventService.approveEvent(event.id).subscribe({
       next: () => {
+        this.snackBar.open('Evento aprobado exitosamente', 'Cerrar', { duration: 3000 });
         this.loadPendingEvents();
       },
       error: (err) => {
-        this.error = 'Error al aprobar el evento';
+        this.snackBar.open('Error al aprobar el evento', 'Cerrar', { duration: 3000 });
         this.loading = false;
         console.error(err);
       }
@@ -94,48 +100,41 @@ export class AdminEventsApprovalComponent implements OnInit {
   }
 
   openRejectDialog(event: EventResponse): void {
-    this.selectedEvent = event;
-    this.showRejectDialog = true;
+    this.rejectingEvent = event;
     this.rejectionReason = '';
   }
 
-  closeRejectDialog(): void {
-    this.selectedEvent = null;
-    this.showRejectDialog = false;
+  cancelReject(): void {
+    this.rejectingEvent = null;
     this.rejectionReason = '';
   }
 
-  rejectEvent(): void {
-    if (!this.selectedEvent || !this.rejectionReason.trim()) {
+  confirmReject(): void {
+    if (!this.rejectingEvent || !this.rejectionReason.trim()) {
+      this.snackBar.open('Por favor ingresa un motivo de rechazo', 'Cerrar', { duration: 3000 });
       return;
     }
 
     this.loading = true;
-    this.eventService.rejectEvent(this.selectedEvent.id, this.rejectionReason).subscribe({
+    this.eventService.rejectEvent(this.rejectingEvent.id, this.rejectionReason).subscribe({
       next: () => {
-        this.closeRejectDialog();
+        this.snackBar.open('Evento rechazado exitosamente', 'Cerrar', { duration: 3000 });
+        this.rejectingEvent = null;
+        this.rejectionReason = '';
         this.loadPendingEvents();
       },
       error: (err) => {
-        this.error = 'Error al rechazar el evento';
+        this.snackBar.open('Error al rechazar el evento', 'Cerrar', { duration: 3000 });
         this.loading = false;
         console.error(err);
       }
     });
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) {
-      this.currentPage++;
-      this.loadPendingEvents();
-    }
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      this.loadPendingEvents();
-    }
+  onPageChange(event: any): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadPendingEvents();
   }
 
   getStatusClass(status: string): string {

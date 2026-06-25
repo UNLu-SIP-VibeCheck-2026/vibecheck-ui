@@ -51,16 +51,9 @@
 
 .header-text {
   .brand-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 32px;
-    font-weight: 800;
+    @include text-display(var(--text-display-md));
     margin: 0;
     color: #ffffff;
-    letter-spacing: -0.5px;
-
-    @include mobile {
-      font-size: 26px;
-    }
   }
 
   .header-subtitle {
@@ -68,13 +61,6 @@
     color: var(--md-sys-color-on-surface-variant);
     margin: 4px 0 0 0;
   }
-}
-
-.text-gradient {
-  background: var(--gradient-brand-diagonal);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .stats-badge {
@@ -170,11 +156,10 @@
   -webkit-backdrop-filter: blur(16px);
   position: relative;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: var(--shadow-md) !important;
+  box-shadow: none !important;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(124, 58, 237, 0.15) !important;
     border-color: rgba(168, 85, 247, 0.3) !important;
   }
 }
@@ -312,7 +297,7 @@
       .btn-cancel {
         color: var(--md-sys-color-on-surface) !important;
         border-color: var(--md-sys-color-outline-variant) !important;
-        border-radius: var(--md-sys-shape-corner-small) !important;
+        border-radius: var(--md-sys-shape-corner-full) !important;
       }
 
       .btn-confirm-reject {
@@ -320,8 +305,8 @@
         color: #ffffff !important;
         font-weight: 700 !important;
         border: none !important;
-        border-radius: var(--md-sys-shape-corner-small) !important;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
+        border-radius: var(--md-sys-shape-corner-full) !important;
+        box-shadow: none !important;
 
         &:hover {
           filter: brightness(1.1);
@@ -343,14 +328,12 @@
     color: #ffffff !important;
     font-weight: 700 !important;
     height: 44px !important;
-    border-radius: var(--md-sys-shape-corner-small) !important;
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2) !important;
+    border-radius: var(--md-sys-shape-corner-full) !important;
+    box-shadow: none !important;
     border: none !important;
     transition: all 0.2s ease !important;
 
     &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.35) !important;
       filter: brightness(1.1);
     }
   }
@@ -361,7 +344,7 @@
     border-color: rgba(239, 68, 68, 0.3) !important;
     font-weight: 700 !important;
     height: 44px !important;
-    border-radius: var(--md-sys-shape-corner-small) !important;
+    border-radius: var(--md-sys-shape-corner-full) !important;
     transition: all 0.2s ease !important;
 
     &:hover {

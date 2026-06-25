@@ -6,7 +6,7 @@
               <mat-icon>arrow_back</mat-icon>
           </button>
           <div class="header-text">
-              <h1 class="brand-title">Aprobación de <span class="text-gradient">Eventos</span></h1>
+              <h1 class="brand-title display-md">Aprobación de <span class="text-gradient">Eventos</span></h1>
               <p class="header-subtitle">Gestioná la aprobación de eventos pendientes</p>
           </div>
       </div>
@@ -20,79 +20,96 @@
     {{ error }}
   </div>
 
-  <div *ngIf="loading" class="loading">
-    Cargando eventos pendientes...
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando eventos pendientes...</p>
   </div>
 
-  <div *ngIf="!loading && events.length === 0" class="empty-state">
-    <p>No hay eventos pendientes de aprobación</p>
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && events.length === 0">
+    <h3>No hay solicitudes pendientes</h3>
+    <p>Todas las solicitudes de eventos han sido procesadas.</p>
+    <button mat-raised-button class="btn-back" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver al Dashboard
+    </button>
   </div>
 
-  <div *ngIf="!loading && events.length > 0" class="events-list">
-    <div class="events-grid">
-      <div *ngFor="let event of events" class="event-card">
-        <div class="event-header">
-          <h3>{{ event.title }}</h3>
-          <span class="status-badge" [ngClass]="getStatusClass(event.status)">
-            {{ event.status === 'PENDING_APPROVAL' ? 'Pendiente' : event.status }}
-          </span>
+  <!-- Events grid -->
+  <div class="events-grid" *ngIf="!loading && events.length > 0">
+    <mat-card class="event-card" *ngFor="let event of events">
+
+      <!-- Status badge -->
+      <div class="status-badge badge-pending">
+        <mat-icon>schedule</mat-icon>
+        PENDIENTE
+      </div>
+
+      <div class="event-card-body">
+        <div class="event-icon-wrapper">
+          <mat-icon class="event-icon">festival</mat-icon>
         </div>
 
-        <div class="event-details">
-          <p><strong>Descripción:</strong> {{ event.description || 'Sin descripción' }}</p>
-          <p><strong>Fecha inicio:</strong> {{ event.startDate | date:'medium' }}</p>
-          <p><strong>Fecha fin:</strong> {{ event.endDate | date:'medium' }}</p>
-          <p><strong>Capacidad:</strong> {{ event.capacity }}</p>
-          <p><strong>Venue ID:</strong> {{ event.venueId }}</p>
-        </div>
-
-        <div class="event-actions">
-          <button (click)="approveEvent(event)" class="btn btn-approve" [disabled]="loading">
-            <span class="icon">✓</span> Aprobar
-          </button>
-          <button (click)="openRejectDialog(event)" class="btn btn-reject" [disabled]="loading">
-            <span class="icon">✕</span> Rechazar
-          </button>
+        <div class="event-info">
+          <h3 class="event-title">{{ event.title }}</h3>
+          <p class="event-desc" *ngIf="event.description">
+            <mat-icon class="inline-icon">notes</mat-icon>
+            {{ event.description }}
+          </p>
+          <p class="event-date">
+            <mat-icon class="inline-icon">date_range</mat-icon>
+            <span>{{ event.startDate | date:'dd/MM/yyyy HH:mm' }} - {{ event.endDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </p>
+          <p class="event-capacity">
+            <mat-icon class="inline-icon">people</mat-icon>
+            Capacidad: <strong>{{ event.capacity | number }}</strong>
+          </p>
+          <p class="event-venue">
+            <mat-icon class="inline-icon">location_on</mat-icon>
+            Venue ID: <strong>{{ event.venueId }}</strong>
+          </p>
         </div>
       </div>
-    </div>
 
-    <div class="pagination" *ngIf="totalPages > 1">
-      <button (click)="previousPage()" class="btn btn-secondary" [disabled]="currentPage === 0 || loading">
-        ← Anterior
-      </button>
-      <span class="page-info">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
-      <button (click)="nextPage()" class="btn btn-secondary" [disabled]="currentPage === totalPages - 1 || loading">
-        Siguiente →
-      </button>
-    </div>
-  </div>
-
-  <div *ngIf="showRejectDialog" class="dialog-overlay" (click)="closeRejectDialog()">
-    <div class="dialog" (click)="$event.stopPropagation()">
-      <div class="dialog-header">
-        <h2>Rechazar Evento</h2>
-        <button (click)="closeRejectDialog()" class="btn-close">×</button>
-      </div>
-      <div class="dialog-body">
-        <p>Estás a punto de rechazar el evento: <strong>{{ selectedEvent?.title }}</strong></p>
-        <div class="form-group">
-          <label for="rejectionReason">Motivo del rechazo:</label>
-          <textarea
-            id="rejectionReason"
-            [(ngModel)]="rejectionReason"
-            rows="4"
-            placeholder="Ingresa el motivo del rechazo..."
-            required
-          ></textarea>
+      <!-- Rejection dialog (inline) -->
+      <div class="rejection-dialog" *ngIf="rejectingEvent?.id === event.id">
+        <div class="rejection-content">
+          <h4>Motivo del rechazo</h4>
+          <mat-form-field appearance="outline" class="rejection-input">
+            <textarea matInput [(ngModel)]="rejectionReason" placeholder="Describí el motivo del rechazo..." rows="3"
+              maxlength="255"></textarea>
+            <mat-hint align="end">{{ rejectionReason.length }}/255</mat-hint>
+          </mat-form-field>
+          <div class="rejection-actions">
+            <button mat-stroked-button class="btn-cancel" (click)="cancelReject()">
+              Cancelar
+            </button>
+            <button mat-raised-button class="btn-confirm-reject" (click)="confirmReject()" [disabled]="!rejectionReason.trim() || loading">
+              <mat-icon>cancel</mat-icon>
+              Rechazar
+            </button>
+          </div>
         </div>
       </div>
-      <div class="dialog-footer">
-        <button (click)="closeRejectDialog()" class="btn btn-secondary">Cancelar</button>
-        <button (click)="rejectEvent()" class="btn btn-reject" [disabled]="!rejectionReason.trim() || loading">
+
+      <!-- Action buttons -->
+      <div class="event-card-actions" *ngIf="rejectingEvent?.id !== event.id">
+        <button mat-raised-button class="btn-approve" (click)="approveEvent(event)" [disabled]="loading" matTooltip="Aprobar evento">
+          <mat-icon>check_circle</mat-icon>
+          Aprobar
+        </button>
+        <button mat-stroked-button class="btn-reject" (click)="openRejectDialog(event)" [disabled]="loading" matTooltip="Rechazar evento">
+          <mat-icon>cancel</mat-icon>
           Rechazar
         </button>
       </div>
-    </div>
+
+    </mat-card>
   </div>
+
+  <!-- Paginator -->
+  <mat-paginator *ngIf="!loading && totalElements > pageSize" [length]="totalElements" [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 20]" [pageIndex]="currentPage" (page)="onPageChange($event)" class="custom-paginator">
+  </mat-paginator>
 </div>

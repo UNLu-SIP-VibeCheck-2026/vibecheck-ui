@@ -1,3 +1,5 @@
+@use '../../../tokens' as *;
+
 :host {
   display: block;
   min-height: calc(100vh - 72px);
@@ -41,13 +43,9 @@
 }
 
 .brand-title {
-  font-family: 'Outfit', sans-serif;
-  font-size: 40px;
-  font-weight: 800;
-  color: #ffffff;
+  @include text-display(var(--text-display-md));
   margin: 0;
-  letter-spacing: -1px;
-  line-height: 1.1;
+  color: #ffffff;
 }
 
 .header-subtitle {
@@ -59,22 +57,25 @@
 .btn-new {
   background: var(--gradient-brand) !important;
   color: #ffffff !important;
-  font-size: var(--text-body-md) !important;
-  font-weight: 700 !important;
+  font-family: var(--font-mono) !important;
+  font-size: var(--text-label-sm) !important;
+  font-weight: var(--weight-regular) !important;
+  letter-spacing: var(--tracking-mono) !important;
+  text-transform: uppercase !important;
   height: 48px !important;
-  border-radius: var(--md-sys-shape-corner-small) !important;
+  border-radius: var(--md-sys-shape-corner-full) !important;
   border: none !important;
   display: flex !important;
   align-items: center !important;
   gap: var(--space-2) !important;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3) !important;
+  box-shadow: none !important;
   white-space: nowrap;
   flex-shrink: 0;
   margin-top: 4px;
+  padding: 0 var(--space-5) !important;
 
   &:hover {
     filter: brightness(1.1);
-    transform: translateY(-1px);
   }
 }
 
@@ -421,7 +422,7 @@
     .primary-action-btn {
       height: 40px !important;
       padding: 0 var(--space-4) !important;
-      border-radius: var(--md-sys-shape-corner-small) !important;
+      border-radius: var(--md-sys-shape-corner-full) !important;
       font-weight: var(--weight-semibold) !important;
       text-transform: none !important;
       border: none !important;
@@ -446,12 +447,10 @@
       &.publish-btn-accent {
         background: var(--gradient-brand) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+        box-shadow: none !important;
 
         &:hover:not(:disabled) {
           filter: brightness(1.1);
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4) !important;
         }
 
         &:disabled {
@@ -463,12 +462,10 @@
       &.pay-btn-accent {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+        box-shadow: none !important;
 
         &:hover:not(:disabled) {
           filter: brightness(1.1);
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
         }
 
         &:disabled {
@@ -480,24 +477,20 @@
       &.metrics-btn-accent {
         background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3) !important;
+        box-shadow: none !important;
 
         &:hover:not(:disabled) {
           filter: brightness(1.1);
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(6, 182, 212, 0.4) !important;
         }
       }
 
       &.tickets-btn-accent {
         background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3) !important;
+        box-shadow: none !important;
 
         &:hover:not(:disabled) {
           filter: brightness(1.1);
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4) !important;
         }
       }
     }

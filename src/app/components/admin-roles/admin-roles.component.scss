@@ -1,3 +1,5 @@
+@use '../../../tokens' as *;
+
 :host {
   display: block;
   min-height: calc(100vh - 72px);
@@ -36,11 +38,9 @@
 
 .header-text {
   .brand-title {
-    font-size: 32px;
-    font-weight: 700;
+    @include text-display(var(--text-display-md));
     margin: 0;
     color: #ffffff;
-    letter-spacing: -0.5px;
   }
 
   .header-subtitle {
@@ -48,13 +48,6 @@
     color: #94a3b8;
     margin: 4px 0 0 0;
   }
-}
-
-.text-gradient {
-  background: linear-gradient(90deg, #7c3aed 0%, #f97316 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .stats-badge {
@@ -91,13 +84,27 @@
   margin-bottom: var(--space-6);
 
   .btn-add {
-    background-color: #22c55e !important;
+    background: var(--gradient-brand) !important;
     color: #ffffff !important;
-    font-weight: 600 !important;
+    font-family: var(--font-mono) !important;
+    font-size: var(--text-label-sm) !important;
+    font-weight: var(--weight-regular) !important;
+    letter-spacing: var(--tracking-mono) !important;
+    text-transform: uppercase !important;
     padding: 0 var(--space-6) !important;
-    height: 44px !important;
-    border-radius: var(--md-sys-shape-corner-small) !important;
+    height: 48px !important;
+    border-radius: var(--md-sys-shape-corner-full) !important;
+    border: none !important;
     box-shadow: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    transition: filter 200ms ease;
+
+    &:hover {
+      filter: brightness(1.1);
+    }
   }
 }
 

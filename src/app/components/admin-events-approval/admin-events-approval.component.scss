@@ -51,16 +51,9 @@
 
 .header-text {
   .brand-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 32px;
-    font-weight: 800;
+    @include text-display(var(--text-display-md));
     margin: 0;
     color: #ffffff;
-    letter-spacing: -0.5px;
-
-    @include mobile {
-      font-size: 26px;
-    }
   }
 
   .header-subtitle {
@@ -91,6 +84,9 @@
   font-family: var(--font-mono);
 }
 
+// ---------------------------------------------------------------------------
+// States (Error, Loading, Empty)
+// ---------------------------------------------------------------------------
 .error-message {
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.25);
@@ -102,212 +98,326 @@
   font-weight: 500;
 }
 
-.loading {
-  text-align: center;
-  padding: var(--space-8);
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10) var(--space-4);
   color: var(--md-sys-color-on-surface-variant);
-  font-weight: 500;
+
+  p {
+    margin-top: var(--space-4);
+    font-size: var(--text-body-lg);
+    font-weight: 500;
+  }
+
+  ::ng-deep .mat-mdc-progress-spinner circle {
+    stroke: var(--md-sys-color-primary);
+  }
 }
 
 .empty-state {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: var(--space-10) var(--space-4);
-  color: var(--md-sys-color-on-surface-variant);
+  text-align: center;
   background: rgba(18, 16, 42, 0.45);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-extra-large);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  font-size: var(--text-body-lg);
-  font-weight: 500;
-}
 
-.events-list {
-  .events-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: var(--space-5);
-    margin-bottom: var(--space-8);
-
-    @include mobile {
-      grid-template-columns: 1fr;
-    }
+  h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 var(--space-3) 0;
   }
 
-  .event-card {
-    background: rgba(18, 16, 42, 0.45);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-large);
-    padding: var(--space-5);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
+  p {
+    font-size: var(--text-body-lg);
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0 0 var(--space-5) 0;
+  }
+
+  .btn-back {
+    background: var(--gradient-brand) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    padding: 8px 24px !important;
+    height: 48px !important;
+    border-radius: var(--md-sys-shape-corner-full) !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
 
     &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 30px rgba(124, 58, 237, 0.15);
-      border-color: rgba(168, 85, 247, 0.3);
+      filter: brightness(1.1);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Events Grid & Cards
+// ---------------------------------------------------------------------------
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.event-card {
+  background: rgba(18, 16, 42, 0.45) !important;
+  border: 1px solid var(--md-sys-color-outline-variant) !important;
+  border-radius: var(--md-sys-shape-corner-large) !important;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: none !important;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(168, 85, 247, 0.3) !important;
+  }
+}
+
+.status-badge {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--md-sys-shape-corner-full);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
+
+  &.badge-pending {
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    color: #fbbf24;
+  }
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.event-card-body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.event-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: var(--md-sys-shape-corner-medium);
+
+  .event-icon {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+    color: var(--md-sys-color-primary);
+  }
+}
+
+.event-info {
+  .event-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: var(--text-title-sm);
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 var(--space-3) 0;
+  }
+
+  p {
+    font-size: var(--text-body-md);
+    color: var(--md-sys-color-on-surface-variant);
+    margin: var(--space-2) 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .inline-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: var(--md-sys-color-primary);
     }
 
-    .event-header {
+    strong {
+      color: #ffffff;
+      font-weight: 600;
+    }
+  }
+
+  .event-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    margin-bottom: var(--space-3);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Rejection Inline box
+// ---------------------------------------------------------------------------
+.rejection-dialog {
+  padding: var(--space-4) var(--space-5);
+  background: rgba(239, 68, 68, 0.04);
+  border-top: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 0 0 var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-large);
+
+  .rejection-content {
+    h4 {
+      font-size: var(--text-body-md);
+      font-weight: 700;
+      color: #f87171;
+      margin: 0 0 var(--space-3) 0;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding-bottom: var(--space-3);
-      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      gap: 6px;
+    }
+
+    .rejection-input {
+      width: 100%;
+      margin-bottom: var(--space-3);
+
+      ::ng-deep {
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
+          border-color: rgba(239, 68, 68, 0.3) !important;
+        }
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__notch,
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing {
+          border-color: #ef4444 !important;
+        }
+        .mat-mdc-form-field-flex {
+          background-color: rgba(239, 68, 68, 0.02) !important;
+        }
+        .mat-mdc-form-field-hint {
+          color: var(--md-sys-color-on-surface-variant);
+        }
+      }
+    }
+
+    .rejection-actions {
+      display: flex;
       gap: 12px;
+      justify-content: flex-end;
 
-      h3 {
-        font-family: 'Outfit', sans-serif;
-        font-size: var(--text-title-sm);
-        font-weight: 700;
-        margin: 0;
-        color: #fff;
-        line-height: 1.3;
+      .btn-cancel {
+        color: var(--md-sys-color-on-surface) !important;
+        border-color: var(--md-sys-color-outline-variant) !important;
+        border-radius: var(--md-sys-shape-corner-full) !important;
       }
 
-      .status-badge {
-        padding: 4px 12px;
-        border-radius: var(--md-sys-shape-corner-full);
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        flex-shrink: 0;
+      .btn-confirm-reject {
+        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border: none !important;
+        border-radius: var(--md-sys-shape-corner-full) !important;
+        box-shadow: none !important;
 
-        &.status-pending {
-          background: rgba(251, 191, 36, 0.1);
-          color: #fbbf24;
-          border: 1px solid rgba(251, 191, 36, 0.25);
-        }
-
-        &.status-approved {
-          background: rgba(34, 197, 94, 0.1);
-          color: #22c55e;
-          border: 1px solid rgba(34, 197, 94, 0.25);
-        }
-
-        &.status-rejected {
-          background: rgba(239, 68, 68, 0.1);
-          color: #f87171;
-          border: 1px solid rgba(239, 68, 68, 0.25);
-        }
-      }
-    }
-
-    .event-details {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-
-      p {
-        margin: 0;
-        color: var(--md-sys-color-on-surface-variant);
-        font-size: var(--text-body-md);
-        line-height: 1.5;
-
-        strong {
-          color: #fff;
-          font-weight: 600;
-        }
-      }
-    }
-
-    .event-actions {
-      display: flex;
-      gap: var(--space-3);
-      margin-top: auto;
-
-      .btn {
-        flex: 1;
-        padding: 10px 16px;
-        border-radius: var(--md-sys-shape-corner-small);
-        font-weight: 700;
-        font-size: var(--text-body-md);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        &.btn-approve {
-          background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
-          color: #fff;
-          border: none;
-          box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
-
-          &:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.35);
-            filter: brightness(1.1);
-          }
-        }
-
-        &.btn-reject {
-          background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-          color: #fff;
-          border: none;
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
-
-          &:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
-            filter: brightness(1.1);
-          }
+        &:hover {
+          filter: brightness(1.1);
         }
       }
     }
   }
+}
 
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-3) var(--space-5);
-    background: rgba(18, 16, 42, 0.45);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-medium);
+// ---------------------------------------------------------------------------
+// Card actions
+// ---------------------------------------------------------------------------
+.event-card-actions {
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  gap: var(--space-3);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+
+  .btn-approve {
+    flex: 1.2;
+    background: linear-gradient(135deg, #22c55e 0%, #15803d 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    height: 44px !important;
+    border-radius: var(--md-sys-shape-corner-full) !important;
+    box-shadow: none !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      filter: brightness(1.1);
+    }
+  }
+
+  .btn-reject {
+    flex: 1;
+    color: #f87171 !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    font-weight: 700 !important;
+    height: 44px !important;
+    border-radius: var(--md-sys-shape-corner-full) !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.08) !important;
+      border-color: #ef4444 !important;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Paginator
+// ---------------------------------------------------------------------------
+.custom-paginator {
+  margin-top: var(--space-8);
+  border-radius: var(--md-sys-shape-corner-large);
+  overflow: hidden;
+  border: 1px solid var(--md-sys-color-outline-variant);
+
+  ::ng-deep .mat-mdc-paginator {
+    background: rgba(18, 16, 42, 0.45) !important;
+    color: var(--md-sys-color-on-surface) !important;
     backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    margin-top: var(--space-6);
+  }
 
-    .page-info {
-      color: var(--md-sys-color-on-surface-variant);
-      font-size: var(--text-label-lg);
-      font-weight: 500;
-    }
+  ::ng-deep .mat-mdc-paginator-page-size-label,
+  ::ng-deep .mat-mdc-paginator-range-label {
+    color: var(--md-sys-color-on-surface-variant) !important;
+  }
 
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--md-sys-color-outline-variant);
-      color: #fff;
-      padding: 6px 16px;
-      border-radius: var(--md-sys-shape-corner-small);
-      font-weight: 600;
-      font-size: var(--text-body-md);
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: var(--md-sys-color-outline);
-      }
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    }
+  ::ng-deep .mat-mdc-icon-button {
+    color: var(--md-sys-color-primary) !important;
   }
 }
 
