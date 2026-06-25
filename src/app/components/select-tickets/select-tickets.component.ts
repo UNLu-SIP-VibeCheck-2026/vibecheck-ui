@@ -20,6 +20,7 @@ import { VenueService } from '../../services/venue.service';
 import { parseDateRobust } from '../events/events.component';
 import { environment } from '../../../environments/environment';
 import { formatUnits } from 'viem';
+import { DiscountService } from '../../services/discount.service';
 
 @Component({
   selector: 'app-ticket-purchase',
@@ -48,6 +49,7 @@ export class TicketPurchaseComponent implements OnInit {
   private dialog = inject(MatDialog);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private discountService = inject(DiscountService);
 
   @Input() event: {
     eventId: number;
@@ -116,6 +118,8 @@ export class TicketPurchaseComponent implements OnInit {
   purchaseTxHash = signal<string>('');
   purchaseTokenId = signal<number | null>(null);
   successTicket = signal<any | null>(null);
+  discountPreview = signal<any>(null);
+  purchasedTicketTypeId = signal<number | null>(null);
 
   ngOnInit() {
     window.scrollTo(0, 0);
@@ -499,6 +503,20 @@ export class TicketPurchaseComponent implements OnInit {
     this.vbkQuotes.set(quotes);
     this.vbkQuoteBig.set(quotesBig);
     this.preloadOfferingAllowances();
+
+    const wallet = this.connectedAddress();
+    if (wallet) {
+      this.discountService.getPreview(currentEvent.eventNftAddress, wallet).subscribe({
+        next: (preview) => {
+          this.discountPreview.set(preview);
+        },
+        error: (err) => {
+          console.error('Error fetching VBK cashback preview:', err);
+        }
+      });
+    } else {
+      this.discountPreview.set(null);
+    }
   }
 
   // Fase 3.A: precarga de las allowances del contrato Offering. Se hace fuera del tap,
@@ -707,6 +725,7 @@ export class TicketPurchaseComponent implements OnInit {
     }).subscribe({
       next: (res) => {
         this.isLoading.set(false);
+        this.purchasedTicketTypeId.set(ticketTypeId);
         this.successTicket.set(res);
       },
       error: () => {

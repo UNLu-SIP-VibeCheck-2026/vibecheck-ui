@@ -205,6 +205,32 @@
                     <span class="label">Total VBK</span>
                     <span class="val vbk-total">{{ (parseFloat(quote) * 1.04) | number:'1.2-4' }}</span>
                   </div>
+                  <!-- Rebate Cashback Breakdown -->
+                  <ng-container *ngIf="discountPreview() as preview">
+                    <ng-container *ngIf="preview.discountBps > 0 && preview.usosRestantesAnio > 0 && preview.previews[tier.ticketTypeId] as p">
+                      <div class="info-row cashback-row" style="color: #10b981; font-weight: 600; margin-top: 4px; font-size: 13px;">
+                        <span class="label" style="display: inline-flex; align-items: center; gap: 4px; color: #10b981;">
+                          <mat-icon style="font-size: 16px; width: 16px; height: 16px; margin: 0; padding: 0;">stars</mat-icon>
+                          Reembolso Fan ({{ preview.fanTier }})
+                        </span>
+                        <span class="val">-{{ p.descuentoVBK | number:'1.2-4' }} VBK</span>
+                      </div>
+                      <div class="info-row final-row" style="color: #6366f1; font-weight: 700; font-size: 14px; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 4px;">
+                        <span class="label" style="color: #c7d2fe;">Neto Final Estimado</span>
+                        <span class="val">{{ p.vbkNetoFinal | number:'1.2-4' }} VBK</span>
+                      </div>
+                      <div class="info-row quota-row" style="color: #94a3b8; font-size: 11px; margin-top: 2px;">
+                        <span class="label">Cupos anuales restantes</span>
+                        <span class="val">{{ preview.usosRestantesAnio }} usos</span>
+                      </div>
+                    </ng-container>
+                    <ng-container *ngIf="preview.discountBps > 0 && preview.usosRestantesAnio === 0">
+                      <div class="info-row quota-empty-row" style="color: #f59e0b; font-size: 11px; margin-top: 4px;">
+                        <span class="label">Sin cupo de reembolso anual</span>
+                        <span class="val">0 usos</span>
+                      </div>
+                    </ng-container>
+                  </ng-container>
                 </ng-container>
               </ng-container>
             </div>
@@ -318,6 +344,22 @@
                 </a>
               </span>
             </div>
+          </div>
+        </div>
+
+        <!-- Cashback Info Box -->
+        <div class="cashback-success-card" *ngIf="ticket.paymentToken === 'VBK' && discountPreview() as preview" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 16px; margin: 20px 0; text-align: left;">
+          <div style="display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: 700; margin-bottom: 8px;">
+            <mat-icon style="margin: 0; padding: 0;">stars</mat-icon>
+            <span>¡Reembolso VBK Iniciado!</span>
+          </div>
+          <p style="color: #cbd5e1; font-size: 13px; margin: 0 0 10px 0; line-height: 1.4;">
+            Por ser miembro del nivel <strong>{{ preview.fanTier }}</strong>, se ha programado un reembolso del <strong>{{ preview.discountBps / 100 }}%</strong> por tu compra. 
+            El monto se acreditará automáticamente en tu wallet en los próximos minutos.
+          </p>
+          <div style="display: flex; justify-content: space-between; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; font-size: 13px;" *ngIf="purchasedTicketTypeId() && preview.previews[purchasedTicketTypeId()!] as p">
+            <span style="color: #94a3b8;">Monto a Recibir:</span>
+            <strong style="color: #10b981;">{{ p.descuentoVBK | number:'1.2-4' }} VBK</strong>
           </div>
         </div>
 

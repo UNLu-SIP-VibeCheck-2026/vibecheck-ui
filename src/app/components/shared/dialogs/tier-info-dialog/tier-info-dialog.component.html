@@ -15,81 +15,43 @@
       Tu participación activa en <strong>VibeCheck</strong> te permite acumular puntos de experiencia (XP) y evolucionar tu rango. ¡Desbloqueá beneficios exclusivos a medida que subís de nivel!
     </p>
 
-    <!-- Tarjetas de Tiers -->
-    <div class="tiers-section-title">NIVELES DISPONIBLES</div>
-    <div class="tiers-list">
-      <!-- BRONCE -->
-      <div class="tier-card-item bronce">
-        <div class="tier-badge-col">
-          <div class="medal-circle">
-            <img src="/assets/VC-TierBRONZE.png" alt="Bronce" class="tier-medal-img" />
-          </div>
-        </div>
-        <div class="tier-info-col">
-          <div class="tier-header-row">
-            <h3 class="tier-title-name">BRONCE</h3>
-            <span class="tier-points-requirement">0 XP (Base)</span>
-          </div>
-          <p class="tier-benefit-desc">
-            Tier inicial con beneficios básicos de la plataforma y acceso general a eventos.
-          </p>
-        </div>
-      </div>
-
-      <!-- PLATA -->
-      <div class="tier-card-item plata">
-        <div class="tier-badge-col">
-          <div class="medal-circle">
-            <img src="/assets/VC-TierSILVER.png" alt="Plata" class="tier-medal-img" />
-          </div>
-        </div>
-        <div class="tier-info-col">
-          <div class="tier-header-row">
-            <h3 class="tier-title-name">PLATA</h3>
-            <span class="tier-points-requirement">100 XP</span>
-          </div>
-          <p class="tier-benefit-desc">
-            Acceso preferencial a pre-ventas seleccionadas y descuentos exclusivos en entradas de partners.
-          </p>
-        </div>
-      </div>
-
-      <!-- ORO -->
-      <div class="tier-card-item oro">
-        <div class="tier-badge-col">
-          <div class="medal-circle">
-            <img src="/assets/VC-TierGOLD.png" alt="Oro" class="tier-medal-img" />
-          </div>
-        </div>
-        <div class="tier-info-col">
-          <div class="tier-header-row">
-            <h3 class="tier-title-name">ORO</h3>
-            <span class="tier-points-requirement">300 XP</span>
-          </div>
-          <p class="tier-benefit-desc">
-            Prioridad alta en fila virtual para eventos masivos, devoluciones sin cargo en el marketplace y soporte preferencial.
-          </p>
-        </div>
-      </div>
-
-      <!-- PLATINO -->
-      <div class="tier-card-item platino">
-        <div class="tier-badge-col">
-          <div class="medal-circle">
-            <img src="/assets/VC-TierPLATINUM.png" alt="Platino" class="tier-medal-img" />
-          </div>
-        </div>
-        <div class="tier-info-col">
-          <div class="tier-header-row">
-            <h3 class="tier-title-name">PLATINO</h3>
-            <span class="tier-points-requirement">600 XP</span>
-          </div>
-          <p class="tier-benefit-desc">
-            Acceso VIP a lounge de eventos, posibilidades de meet & greet con artistas y beneficios exclusivos de socios fundadores.
-          </p>
-        </div>
-      </div>
+    <!-- Spinner during loading -->
+    <div *ngIf="isLoading()" style="display: flex; justify-content: center; align-items: center; padding: 40px;">
+      <mat-spinner diameter="40"></mat-spinner>
     </div>
+
+    <!-- Tarjetas de Tiers -->
+    <ng-container *ngIf="!isLoading()">
+      <div class="tiers-section-title">NIVELES DISPONIBLES</div>
+      <div class="tiers-list">
+        <div class="tier-card-item" *ngFor="let tier of tiers()" [ngClass]="tier.tier.toLowerCase()">
+          <div class="tier-badge-col">
+            <div class="medal-circle">
+              <img [src]="'/assets/VC-Tier' + (tier.tier.toUpperCase() === 'BRONCE' ? 'BRONZE' : tier.tier.toUpperCase()) + '.png'" [alt]="tier.tier" class="tier-medal-img" />
+            </div>
+          </div>
+          <div class="tier-info-col">
+            <div class="tier-header-row">
+              <h3 class="tier-title-name">{{ tier.tier | uppercase }}</h3>
+              <span class="tier-points-requirement">{{ tier.minPoints }} XP</span>
+            </div>
+            <p class="tier-benefit-desc">
+              {{ tier.description }}
+            </p>
+            <div class="tier-rebate-details" *ngIf="tier.discountBps > 0" style="display: flex; gap: 12px; margin-top: 8px; font-size: 12px; color: #10b981; font-weight: 500;">
+              <span style="display: flex; align-items: center; gap: 4px;">
+                <mat-icon style="font-size: 14px; width: 14px; height: 14px; margin: 0; padding: 0;">stars</mat-icon>
+                Cashback: {{ tier.cashbackPercent }}% VBK
+              </span>
+              <span style="display: flex; align-items: center; gap: 4px; color: #94a3b8;">
+                <mat-icon style="font-size: 14px; width: 14px; height: 14px; margin: 0; padding: 0;">replay</mat-icon>
+                Usos anuales: {{ tier.usesMaxPerYear }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
 
     <!-- Reglas de Puntos -->
     <div class="points-rules-card">
