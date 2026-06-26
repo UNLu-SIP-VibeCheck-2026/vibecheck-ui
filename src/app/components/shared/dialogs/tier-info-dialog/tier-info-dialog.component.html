@@ -27,7 +27,7 @@
         <div class="tier-card-item" *ngFor="let tier of tiers()" [ngClass]="tier.tier.toLowerCase()">
           <div class="tier-badge-col">
             <div class="medal-circle">
-              <img [src]="'/assets/VC-Tier' + (tier.tier.toUpperCase() === 'BRONCE' ? 'BRONZE' : tier.tier.toUpperCase()) + '.png'" [alt]="tier.tier" class="tier-medal-img" />
+              <img [src]="'/assets/VC-Tier' + getTierImageKey(tier.tier) + '.png'" [alt]="tier.tier" class="tier-medal-img" />
             </div>
           </div>
           <div class="tier-info-col">

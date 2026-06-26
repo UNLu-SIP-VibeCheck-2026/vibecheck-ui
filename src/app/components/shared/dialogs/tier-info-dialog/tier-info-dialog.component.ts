@@ -26,6 +26,21 @@ export class TierInfoDialogComponent implements OnInit {
   tiers = signal<TierConfigResponse[]>([]);
   isLoading = signal<boolean>(true);
 
+  tierImageMap: Record<string, string> = {
+    'BRONCE': 'BRONZE',
+    'BRONZE': 'BRONZE',
+    'PLATA': 'SILVER',
+    'SILVER': 'SILVER',
+    'ORO': 'GOLD',
+    'GOLD': 'GOLD',
+    'PLATINO': 'PLATINUM',
+    'PLATINUM': 'PLATINUM'
+  };
+
+  getTierImageKey(tier: string): string {
+    return this.tierImageMap[tier.toUpperCase()] || 'BRONZE';
+  }
+
   ngOnInit() {
     this.discountService.getTiersConfig().subscribe({
       next: (config) => {
