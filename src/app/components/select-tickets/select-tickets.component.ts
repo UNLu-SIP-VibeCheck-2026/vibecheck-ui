@@ -21,6 +21,7 @@ import { parseDateRobust } from '../events/events.component';
 import { environment } from '../../../environments/environment';
 import { formatUnits } from 'viem';
 import { DiscountService } from '../../services/discount.service';
+import { StakingService, StakingSummary } from '../../services/staking.service';
 
 @Component({
   selector: 'app-ticket-purchase',
@@ -50,6 +51,7 @@ export class TicketPurchaseComponent implements OnInit {
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private discountService = inject(DiscountService);
+  private stakingService = inject(StakingService);
 
   @Input() event: {
     eventId: number;
@@ -119,6 +121,7 @@ export class TicketPurchaseComponent implements OnInit {
   purchaseTokenId = signal<number | null>(null);
   successTicket = signal<any | null>(null);
   discountPreview = signal<any>(null);
+  stakingSummary = signal<StakingSummary | null>(null);
   purchasedTicketTypeId = signal<number | null>(null);
 
   ngOnInit() {
@@ -514,8 +517,17 @@ export class TicketPurchaseComponent implements OnInit {
           console.error('Error fetching VBK cashback preview:', err);
         }
       });
+      this.stakingService.getStakingSummary(wallet).subscribe({
+        next: (summary) => {
+          this.stakingSummary.set(summary);
+        },
+        error: (err) => {
+          console.error('Error fetching staking summary:', err);
+        }
+      });
     } else {
       this.discountPreview.set(null);
+      this.stakingSummary.set(null);
     }
   }
 
@@ -772,5 +784,23 @@ export class TicketPurchaseComponent implements OnInit {
 
   parseFloat(val: string): number {
     return parseFloat(val) || 0;
+  }
+
+  getNetFinalVbk(quoteStr: string, ticketTypeId: number): number {
+    const base = this.parseFloat(quoteStr);
+    let total = base * 1.04;
+    
+    if (this.stakingSummary() && (this.stakingSummary()?.feefreeRemaining || 0) > 0) {
+      total -= base * 0.04;
+    }
+    
+    const preview = this.discountPreview();
+    if (preview && preview.discountBps > 0 && preview.usosRestantesAnio > 0) {
+      const p = preview.previews[ticketTypeId];
+      if (p) {
+        total -= p.descuentoVBK;
+      }
+    }
+    return Math.max(0, total);
   }
 }

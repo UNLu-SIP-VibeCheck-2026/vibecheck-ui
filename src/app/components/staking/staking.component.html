@@ -41,7 +41,7 @@
           </div>
           <div class="info-block">
             <label>Reembolso de Tarifas Restante</label>
-            <div class="value">${{ stakingSummary()?.feefreeRemaining | number:'1.2-2' }} USD</div>
+            <div class="value">{{ stakingSummary()?.feefreeRemaining }} {{ stakingSummary()?.feefreeRemaining === 1 ? 'uso' : 'usos' }}</div>
           </div>
           <div class="info-block">
             <label>Acceso a Preventas</label>
@@ -118,7 +118,7 @@
                   {{ lock.electedBenefit === 'PRESALE' ? 'Preventa' : (lock.electedBenefit === 'CASHBACK' ? 'Cashback' : 'Compra sin Comisión') }}
                 </strong>
                 <span class="badge badge-info" *ngIf="lock.electedBenefit === 'FEEFREE'">
-                  Compras sin comisión restantes: ${{ lock.feefreeRemaining | number:'1.2-2' }} USD
+                  Compras sin comisión restantes: {{ lock.feefreeRemaining }} {{ lock.feefreeRemaining === 1 ? 'uso' : 'usos' }}
                 </span>
                 <span class="not-elected" *ngIf="!lock.electedBenefit && !lock.isExpired">
                   Sin beneficio seleccionado
