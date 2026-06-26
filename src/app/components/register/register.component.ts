@@ -67,11 +67,11 @@ export class RegisterComponent implements OnInit {
   registerForm: FormGroup = this.fb.group(
     {
       username: ["", [Validators.required, Validators.minLength(3), Validators.pattern(/^[a-zA-Z0-9_.\-]+$/)]],
-      email: ["", [Validators.required, Validators.email]],
+      email: ["", [Validators.required, this.emailValidator.bind(this)]],
       name: ["", [Validators.required]],
       lastName: ["", [Validators.required]],
       phoneNumber: ["", [this.phoneValidator]],
-      password: ["", [Validators.required, Validators.minLength(8), this.passwordRequirementsValidator]],
+      password: ["", [Validators.required, Validators.minLength(8), this.passwordRequirementsValidator.bind(this)]],
       repeatPassword: ["", [Validators.required]],
       birthdate: [null, [Validators.required, this.birthdateAgeValidator]],
       role: ["comprar", [Validators.required]],
@@ -101,7 +101,7 @@ export class RegisterComponent implements OnInit {
     if (!v) return null;
     const hasUpper = /[A-Z]/.test(v);
     const hasNumber = /\d/.test(v);
-    const hasSpecial = /[^a-zA-Z0-9]/.test(v);
+    const hasSpecial = /[@$!%*?&.#_/-]/.test(v);
     const score = [v.length >= 8, hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
     if (score <= 2) return "weak";
     if (score === 3) return "medium";
@@ -140,14 +140,18 @@ export class RegisterComponent implements OnInit {
     return null;
   }
 
+  emailValidator(control: AbstractControl): ValidationErrors | null {
+    const value = (control.value || "").toString().trim();
+    if (!value) return null;
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailPattern.test(value) ? null : { email: true };
+  }
+
   passwordRequirementsValidator(control: AbstractControl): ValidationErrors | null {
     const value = (control.value || "").toString();
     if (!value) return null;
-    const hasUpper = /[A-Z]/.test(value);
-    const hasLower = /[a-z]/.test(value);
-    const hasDigit = /\d/.test(value);
-    const hasSpecial = /[^A-Za-z0-9]/.test(value);
-    return hasUpper && hasLower && hasDigit && hasSpecial ? null : { passwordRequirements: true };
+    const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_/-])[A-Za-z\d@$!%*?&.#_/-]+$/;
+    return pattern.test(value) ? null : { passwordRequirements: true };
   }
 
   formatApiError(err: any): string {

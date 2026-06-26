@@ -101,7 +101,7 @@ export class ValidatorManagementComponent implements OnInit {
     if (!v) return null;
     const hasUpper = /[A-Z]/.test(v);
     const hasNumber = /\d/.test(v);
-    const hasSpecial = /[^a-zA-Z0-9]/.test(v);
+    const hasSpecial = /[@$!%*?&.#_/-]/.test(v);
     const score = [v.length >= 8, hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
     if (score <= 2) return 'weak';
     if (score === 3) return 'medium';
@@ -113,7 +113,7 @@ export class ValidatorManagementComponent implements OnInit {
     if (!v) return null;
     const hasUpper = /[A-Z]/.test(v);
     const hasNumber = /\d/.test(v);
-    const hasSpecial = /[^a-zA-Z0-9]/.test(v);
+    const hasSpecial = /[@$!%*?&.#_/-]/.test(v);
     const score = [v.length >= 8, hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
     if (score <= 2) return 'weak';
     if (score === 3) return 'medium';
@@ -141,11 +141,8 @@ export class ValidatorManagementComponent implements OnInit {
   passwordRequirementsValidator(control: AbstractControl): ValidationErrors | null {
     const value = (control.value || '').toString();
     if (!value) return null;
-    const hasUpper = /[A-Z]/.test(value);
-    const hasLower = /[a-z]/.test(value);
-    const hasDigit = /\d/.test(value);
-    const hasSpecial = /[^A-Za-z0-9]/.test(value);
-    return hasUpper && hasLower && hasDigit && hasSpecial ? null : { passwordRequirements: true };
+    const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_/-])[A-Za-z\d@$!%*?&.#_/-]+$/;
+    return pattern.test(value) ? null : { passwordRequirements: true };
   }
 
   ngOnInit(): void {

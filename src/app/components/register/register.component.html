@@ -170,7 +170,7 @@
                 <mat-icon>{{ showRepeatPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </mat-form-field>
-            <div class="field-errors" *ngIf="repeatPasswordCtrl.touched && repeatPasswordCtrl.invalid">
+            <div class="field-errors" *ngIf="repeatPasswordCtrl.touched && (repeatPasswordCtrl.invalid || passwordMismatch)">
               <span *ngIf="repeatPasswordCtrl.hasError('required')">⚠ Requerida.</span>
               <span *ngIf="passwordMismatch">⚠ Las contraseñas no coinciden</span>
             </div>
