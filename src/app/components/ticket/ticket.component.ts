@@ -71,7 +71,7 @@ export class TicketComponent implements OnInit {
     
     this.ticketService.getTicketById(Number(id)).subscribe({
         next: (t) => {
-            const qrPayload = JSON.stringify({ ticketId: t.id });
+             const qrPayload = JSON.stringify({ ticketId: t.id, eventId: t.ticketType.eventId, code: t.token });
 
             this.ticket = {
                 id: t.id.toString(),

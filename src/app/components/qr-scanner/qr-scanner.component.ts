@@ -375,11 +375,15 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.result = null;
     this.errorMessage = '';
 
-    // Extract ticketId from QR data
+    // Extract ticketId, eventId, and security code from QR data
     let ticketId: number;
+    let eventId: number | null = null;
+    let securityCode: string | null = null;
     try {
       const parsed = JSON.parse(decodedText);
       ticketId = parsed.ticketId || parsed.id || parseInt(decodedText);
+      eventId = parsed.eventId || null;
+      securityCode = parsed.code || null;
     } catch {
       ticketId = parseInt(decodedText);
     }
@@ -389,8 +393,20 @@ export class QrScannerComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Call redeemTicket
-    this.ticketService.redeemTicket(ticketId).subscribe({
+    // Client-side event validation: reject QR for a different event
+    if (eventId && this.assignedEvent && eventId !== this.assignedEvent.id) {
+      this.showFeedback('error', ticketId.toString(), 'Este ticket pertenece a otro evento.');
+      return;
+    }
+
+    // Security code is required for redeem
+    if (!securityCode) {
+      this.showFeedback('error', ticketId.toString(), 'QR inválido: falta el código de seguridad.');
+      return;
+    }
+
+    // Call redeemTicket with security code
+    this.ticketService.redeemTicket(ticketId, securityCode).subscribe({
       next: (response) => {
         this.showFeedback('success', ticketId.toString());
       },
