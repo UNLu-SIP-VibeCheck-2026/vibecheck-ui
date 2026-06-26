@@ -38,8 +38,8 @@ export class TicketService {
     return this.http.post<TicketResponse>(`${this.apiUrl}/${id}/redeem-confirm`, { txHash });
   }
 
-  redeemTicket(id: number): Observable<TicketResponse> {
-    return this.http.post<TicketResponse>(`${this.apiUrl}/${id}/redeem`, {});
+  redeemTicket(id: number, code: string): Observable<TicketResponse> {
+    return this.http.post<TicketResponse>(`${this.apiUrl}/${id}/redeem`, { code });
   }
 
   requestVoluntaryRefund(ticketId: number): Observable<RefundRequestResponse> {
