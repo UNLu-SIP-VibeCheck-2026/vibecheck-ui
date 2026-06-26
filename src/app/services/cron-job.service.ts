@@ -54,4 +54,8 @@ export class CronJobService {
   cleanupExpiredValidators(): Observable<CronJobExecutionResponse> {
     return this.http.post<CronJobExecutionResponse>(`${this.apiUrl}/cleanup-expired-validators`, {});
   }
+
+  checkMillionaireVbk(): Observable<CronJobExecutionResponse> {
+    return this.http.post<CronJobExecutionResponse>(`${this.apiUrl}/check-millionaire-vbk`, {});
+  }
 }

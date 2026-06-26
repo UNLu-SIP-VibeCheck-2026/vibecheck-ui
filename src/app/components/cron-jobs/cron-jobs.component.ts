@@ -111,6 +111,14 @@ export class CronJobsComponent implements OnInit {
       icon: 'person_remove',
       method: () => this.executeJob('cleanup-expired-validators'),
       loading: false
+    },
+    {
+      id: 'check-millionaire-vbk',
+      name: 'Verificación de Millonarios VBK',
+      description: 'Verifica balances on-chain cada hora y otorga el logro MILLIONAIRE_VBK a usuarios con ≥1,000,000 VBK en su wallet.',
+      icon: 'monetization_on',
+      method: () => this.executeJob('check-millionaire-vbk'),
+      loading: false
     }
   ];
 
@@ -156,6 +164,9 @@ export class CronJobsComponent implements OnInit {
         break;
       case 'cleanup-expired-validators':
         observable = this.cronJobService.cleanupExpiredValidators();
+        break;
+      case 'check-millionaire-vbk':
+        observable = this.cronJobService.checkMillionaireVbk();
         break;
       default:
         job.loading = false;
