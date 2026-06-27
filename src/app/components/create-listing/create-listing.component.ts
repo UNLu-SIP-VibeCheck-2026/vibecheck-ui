@@ -18,6 +18,7 @@ import { TransactionService, TxState } from "../../services/transaction.service"
 import { MarketplaceService } from "../../services/marketplace.service";
 import { EventService } from "../../services/event.service";
 import { TxStatusComponent } from "../shared/tx-status/tx-status.component";
+import { LoadingStateComponent } from "../shared/loading-state/loading-state.component";
 
 @Component({
   selector: "app-create-listing",
@@ -33,6 +34,7 @@ import { TxStatusComponent } from "../shared/tx-status/tx-status.component";
     MatInputModule,
     MatSnackBarModule,
     TxStatusComponent,
+    LoadingStateComponent,
   ],
   templateUrl: "./create-listing.component.html",
   styleUrl: "./create-listing.component.scss",

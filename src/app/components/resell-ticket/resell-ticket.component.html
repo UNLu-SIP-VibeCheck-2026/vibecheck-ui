@@ -8,10 +8,7 @@
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-state">
-    <mat-spinner diameter="50" color="primary"></mat-spinner>
-    <p>Cargando información de tu entrada...</p>
-  </div>
+  <app-loading-state *ngIf="isLoading" [mode]="'spinner'"></app-loading-state>
 
   <!-- Error State -->
   <div class="alert alert-danger" *ngIf="!isLoading && errorMessage">

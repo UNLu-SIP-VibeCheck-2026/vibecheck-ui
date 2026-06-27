@@ -1,23 +1,18 @@
 <div class="create-listing-container">
   <!-- Loading Event State -->
-  <div *ngIf="isLoading" class="loading-state">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Cargando...</span>
-    </div>
-    <p>Cargando información del contrato...</p>
-  </div>
+  <app-loading-state *ngIf="isLoading" [mode]="'spinner'"></app-loading-state>
 
   <div *ngIf="!isLoading && eventDetails" class="listing-content">
     <mat-card class="form-card">
-      <mat-card-header>
+      <div class="form-header">
         <div class="header-icon">
           <mat-icon>sell</mat-icon>
         </div>
-        <mat-card-title class="headline-large">Revender Entrada</mat-card-title>
-        <mat-card-subtitle class="body-medium">
+        <h2 class="headline-large">Revender Entrada</h2>
+        <p class="body-medium">
           Publicá tu ticket en el mercado secundario de VibeCheck.
-        </mat-card-subtitle>
-      </mat-card-header>
+        </p>
+      </div>
 
       <mat-card-content class="form-body">
         <div class="ticket-reference-card">
@@ -90,7 +85,7 @@
           <app-tx-status [txState]="currentTxState" *ngIf="currentTxState"></app-tx-status>
 
           <div class="backend-spinner" *ngIf="txStep === 'confirming'">
-            <div class="spinner-border text-primary" role="status"></div>
+            <app-loading-state [mode]="'spinner'"></app-loading-state>
             <p class="status-desc">Confirmando la operación en el servidor de VibeCheck...</p>
           </div>
 

@@ -25,6 +25,12 @@
     }
   }
 
+  .form-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--space-4);
+  }
+
   .form-card {
     background-color: var(--md-sys-color-surface);
     border: 1px solid var(--md-sys-color-outline-variant);
@@ -101,11 +107,11 @@
         padding-top: var(--space-2);
 
         .label {
-          color: var(--md-sys-color-secondary);
+          color: var(--md-sys-color-primary);
         }
 
         .value {
-          color: var(--md-sys-color-secondary);
+          color: var(--md-sys-color-primary);
           font-family: var(--font-mono), monospace;
           font-weight: 700;
         }
@@ -276,14 +282,8 @@
       gap: var(--space-3);
       padding: var(--space-4) 0;
 
-      .spinner-border {
-        width: 2.5rem;
-        height: 2.5rem;
-        color: var(--md-sys-color-primary);
-        border: 0.25em solid var(--md-sys-color-outline-variant);
-        border-right-color: var(--md-sys-color-primary);
-        border-radius: var(--md-sys-shape-corner-full);
-        animation: spinner-border .75s linear infinite;
+      ::ng-deep .loading-text {
+        display: none !important;
       }
     }
 
