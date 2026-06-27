@@ -112,17 +112,15 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.isSubmitting = false;
-        let errorMessage = "Usuario o contraseña incorrectos";
+        let errorMessage = "CREDENCIALES INVÁLIDAS";
 
         const errObj = error?.error || error;
         if (errObj?.code === "ACCOUNT_NOT_VERIFIED") {
           errorMessage = errObj.message || "La cuenta no está verificada. Revisá tu email para activar tu cuenta.";
-        } else if (error.status === 401) {
-          errorMessage =
-            "La contraseña es incorrecta. Por favor, verifica tus credenciales.";
-        } else if (error.status === 404) {
-          errorMessage =
-            "El usuario no existe. Por favor, verifica tu nombre de usuario.";
+        } else if (error.status === 401 || error.status === 404) {
+          errorMessage = "CREDENCIALES INVÁLIDAS";
+        } else if (errObj?.message) {
+          errorMessage = errObj.message;
         } else if (error.message) {
           errorMessage = error.message;
         }
