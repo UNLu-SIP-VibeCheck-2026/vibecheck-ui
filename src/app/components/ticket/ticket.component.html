@@ -58,6 +58,14 @@
           <p>Esta entrada está listada para la venta. Cancela el listing para gestionarla.</p>
         </div>
       </div>
+
+      <div class="status-alert-card expired" *ngIf="ticket.status === 'EXPIRED'">
+        <mat-icon>history</mat-icon>
+        <div class="alert-content">
+          <h4>Entrada Vencida</h4>
+          <p>Esta entrada no fue utilizada y ha expirado porque el evento ya finalizó.</p>
+        </div>
+      </div>
     </div>
 
     <div class="detail-grid">

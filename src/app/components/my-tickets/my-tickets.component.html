@@ -61,7 +61,7 @@
             <h3 class="event-title">{{ ticket.eventTitle }}</h3>
             <!-- Ticket Status -->
             <span class="status-badge" [ngClass]="ticket.status.toLowerCase()">
-              {{ ticket.status === 'ACTIVE' ? 'Activa' : ticket.status === 'REDEEMED' ? 'Canjeada' : ticket.status === 'REFUNDED' ? 'Reembolsada' : 'Cancelada' }}
+              {{ ticket.status === 'ACTIVE' ? 'Activa' : ticket.status === 'REDEEMED' ? 'Canjeada' : ticket.status === 'REFUNDED' ? 'Reembolsada' : ticket.status === 'EXPIRED' ? 'Vencida' : 'Cancelada' }}
             </span>
           </div>
           

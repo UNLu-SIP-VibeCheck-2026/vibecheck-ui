@@ -616,6 +616,13 @@
     color: var(--md-sys-color-primary);
     mat-icon { color: var(--md-sys-color-primary); }
   }
+
+  &.expired {
+    background: rgba(156, 163, 175, 0.1);
+    border-color: rgba(156, 163, 175, 0.2);
+    color: var(--md-sys-color-on-surface-variant);
+    mat-icon { color: var(--md-sys-color-on-surface-variant); }
+  }
 }
 
 // Refund Button
