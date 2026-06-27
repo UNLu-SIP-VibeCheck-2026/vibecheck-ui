@@ -111,7 +111,10 @@ export class LoginComponent implements OnInit {
         this.isSubmitting = false;
         let errorMessage = "Usuario o contraseña incorrectos";
 
-        if (error.status === 401) {
+        const errObj = error?.error || error;
+        if (errObj?.code === "ACCOUNT_NOT_VERIFIED") {
+          errorMessage = errObj.message || "La cuenta no está verificada. Revisá tu email para activar tu cuenta.";
+        } else if (error.status === 401) {
           errorMessage =
             "La contraseña es incorrecta. Por favor, verifica tus credenciales.";
         } else if (error.status === 404) {
