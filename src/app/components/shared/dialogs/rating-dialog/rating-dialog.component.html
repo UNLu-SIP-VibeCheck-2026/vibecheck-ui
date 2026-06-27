@@ -18,6 +18,21 @@
     Primer toque: media estrella<br>
     Segundo toque: estrella completa
   </p>
+
+  <div class="rating-dialog__comment-container">
+    <label for="ratingText" class="rating-dialog__comment-label">Dejar un comentario (opcional):</label>
+    <textarea
+      id="ratingText"
+      class="rating-dialog__comment-textarea"
+      [(ngModel)]="ratingText"
+      maxlength="500"
+      placeholder="¿Qué te pareció el evento y la organización?..."
+      [disabled]="isSubmitting"
+    ></textarea>
+    <div class="rating-dialog__char-counter">
+      {{ ratingText.length }}/500
+    </div>
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

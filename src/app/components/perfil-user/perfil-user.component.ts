@@ -318,8 +318,8 @@ export class PerfilUserComponent implements OnInit {
             });
 
             dialogRef.afterClosed().subscribe((result) => {
-              if (result !== undefined && result !== null) {
-                this.submitRatingForHistory(event.ownerId, item.eventId, result);
+              if (result !== undefined && result !== null && result.ratingValue !== undefined) {
+                this.submitRatingForHistory(item, event.ownerId, result.ratingValue, result.ratingText);
               }
             });
           },
@@ -334,21 +334,38 @@ export class PerfilUserComponent implements OnInit {
     });
   }
 
-  submitRatingForHistory(organizerId: number, eventId: number, ratingValue: number): void {
-    const request = {
-      organizerId: organizerId,
-      eventId: eventId,
-      ratingValue: ratingValue,
-    };
+  submitRatingForHistory(item: UserHistoryItem, organizerId: number, ratingValue: number, ratingText?: string): void {
+    if (item.eventNftAddress && item.tokenId !== null && item.tokenId !== undefined) {
+      const request = {
+        ratingValue: ratingValue,
+        ratingText: ratingText
+      };
+      this.organizerRatingService.rateOrganizerWithReward(item.eventNftAddress, Number(item.tokenId), request).subscribe({
+        next: (response) => {
+          this.snackBar.open('¡Calificación enviada! Recibirás tu recompensa en tu wallet.', 'Cerrar', { duration: 4000 });
+          this.loadHistory(this.profile()!.username);
+        },
+        error: (err) => {
+          this.snackBar.open(err?.error?.message || 'Error al enviar calificación', 'Cerrar', { duration: 4000 });
+        }
+      });
+    } else {
+      const request = {
+        organizerId: organizerId,
+        eventId: item.eventId,
+        ratingValue: ratingValue,
+      };
 
-    this.organizerRatingService.rateOrganizer(request).subscribe({
-      next: (response) => {
-        this.snackBar.open('Calificación enviada exitosamente', 'Cerrar', { duration: 3000 });
-      },
-      error: (err) => {
-        this.snackBar.open(err?.error?.message || 'Error al enviar calificación', 'Cerrar', { duration: 4000 });
-      },
-    });
+      this.organizerRatingService.rateOrganizer(request).subscribe({
+        next: (response) => {
+          this.snackBar.open('Calificación enviada exitosamente', 'Cerrar', { duration: 3000 });
+          this.loadHistory(this.profile()!.username);
+        },
+        error: (err) => {
+          this.snackBar.open(err?.error?.message || 'Error al enviar calificación', 'Cerrar', { duration: 4000 });
+        },
+      });
+    }
   }
 
   toggleVisibility(item: UserHistoryItem): void {
