@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/auth.service';
 import { EventService } from '../../services/event.service';
+import { TicketTypeService } from '../../services/ticket-type.service';
+import { TicketTypeResponse } from '../../models/ticket-type.model';
 import { EventResponse } from '../../models/event.model';
 import { Page } from '../../models/page.model';
 
@@ -39,6 +41,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class AdminEventsApprovalComponent implements OnInit {
   private eventService = inject(EventService);
+  private ticketTypeService = inject(TicketTypeService);
   private authService = inject(AuthService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
@@ -50,6 +53,7 @@ export class AdminEventsApprovalComponent implements OnInit {
   loading = false;
   error: string | null = null;
   activeTab: 'events' | 'cancellations' = 'events';
+  ticketTypesMap = new Map<number, TicketTypeResponse[]>();
 
   rejectingEvent: EventResponse | null = null;
   rejectionReason = '';
@@ -87,6 +91,7 @@ export class AdminEventsApprovalComponent implements OnInit {
       next: (page: Page<EventResponse>) => {
         this.events = page.content;
         this.totalElements = page.totalElements;
+        this.loadTicketTypesForEvents(page.content);
         this.loading = false;
       },
       error: (err) => {
@@ -104,6 +109,7 @@ export class AdminEventsApprovalComponent implements OnInit {
       next: (page: Page<EventResponse>) => {
         this.events = page.content;
         this.totalElements = page.totalElements;
+        this.loadTicketTypesForEvents(page.content);
         this.loading = false;
       },
       error: (err) => {
@@ -111,6 +117,19 @@ export class AdminEventsApprovalComponent implements OnInit {
         this.loading = false;
         console.error(err);
       }
+    });
+  }
+
+  loadTicketTypesForEvents(events: EventResponse[]): void {
+    events.forEach(event => {
+      this.ticketTypeService.findTicketTypesByEvent(event.id).subscribe({
+        next: (types) => {
+          this.ticketTypesMap.set(event.id, types);
+        },
+        error: (err) => {
+          console.error(`Error al cargar tipos de entradas para el evento ${event.id}:`, err);
+        }
+      });
     });
   }
 
