@@ -103,6 +103,11 @@ export class AdminEventsComponent implements OnInit {
   requestingCancelEventId: number | null = null;
   cancellationReason = "";
 
+  /** Tracks which event image is being uploaded */
+  uploadingImageId: number | null = null;
+  /** Holds the event whose image is being replaced (set before opening the file picker) */
+  private _pendingImageEvent: EventResponse | null = null;
+
   totalElements = 0;
   pageSize = 5;
   pageIndex = 0;
@@ -704,6 +709,64 @@ export class AdminEventsComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.showSnack("Configuración de reventa actualizada");
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Image upload (DRAFT only)
+  // -------------------------------------------------------------------------
+
+  /** Opens the hidden file input, storing the target event for later use. */
+  triggerImageUpload(event: EventResponse, fileInput: HTMLInputElement): void {
+    this._pendingImageEvent = event;
+    fileInput.value = '';   // reset so the same file can be re-selected
+    fileInput.click();
+  }
+
+  /** Called when the user picks a file from the OS dialog. */
+  onImageFileSelected(domEvent: Event): void {
+    const input = domEvent.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this._pendingImageEvent) return;
+
+    const eventToUpdate = this._pendingImageEvent;
+    this._pendingImageEvent = null;
+
+    // Validations
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      this.showSnack('Solo se permiten imágenes JPEG, PNG o WebP.', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.showSnack('La imagen no puede superar los 5 MB.', 'error');
+      return;
+    }
+
+    this.uploadingImageId = eventToUpdate.id;
+
+    this.eventService.uploadEventImage(eventToUpdate.id, file).subscribe({
+      next: () => {
+        // Refresh image from backend
+        this.eventService.getEventImage(eventToUpdate.id).subscribe({
+          next: (blob) => {
+            const safeUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+            this.imageMap.set(eventToUpdate.id, safeUrl);
+            this.uploadingImageId = null;
+            this.showSnack('Imagen actualizada correctamente');
+          },
+          error: () => {
+            this.uploadingImageId = null;
+            this.showSnack('Imagen subida, pero no se pudo refrescar la vista.', 'error');
+          }
+        });
+      },
+      error: (err) => {
+        this.uploadingImageId = null;
+        const msg = err?.error?.message || 'Error al subir la imagen';
+        this.showSnack(msg, 'error');
+        console.error(err);
       }
     });
   }
