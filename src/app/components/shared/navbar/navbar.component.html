@@ -21,6 +21,11 @@
         Dashboard
       </button>
 
+      <button mat-button (click)="navigateAndClose('/vibeband')" class="vibeband-btn">
+        <mat-icon>nfc</mat-icon>
+        VibeBand!
+      </button>
+
       <button mat-button (click)="navigateAndClose('/staking')" class="staking-btn">
         <mat-icon>lock</mat-icon>
         Staking VBK
@@ -180,6 +185,10 @@
             <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/dashboard')">
               <mat-icon>dashboard</mat-icon>
               <span>Dashboard</span>
+            </button>
+            <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/vibeband')">
+              <mat-icon>nfc</mat-icon>
+              <span>VibeBand!</span>
             </button>
             @if (isCliente) {
               <button mat-button class="drawer-nav-item" (click)="navigateAndClose('/my-tickets')">

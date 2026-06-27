@@ -1,0 +1,297 @@
+<div class="vibeband-container">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="loading">
+    <mat-spinner color="primary" diameter="60"></mat-spinner>
+    <p class="loading-text">{{ loadingMessage }}</p>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Success State -->
+    <div class="success-card" *ngIf="orderCreated">
+      <div class="success-icon-wrapper">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+      </div>
+      <h1 class="bebas-title">¡PEDIDO CONFIRMADO!</h1>
+      <p class="subtitle">Tu VibeBand NFC está en camino.</p>
+
+      <div class="order-details-card">
+        <div class="detail-row">
+          <span>ID de Pedido:</span>
+          <strong>{{ createdOrder?.id }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Destinatario:</span>
+          <strong>{{ createdOrder?.fullName }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Dirección de Envío:</span>
+          <strong>{{ createdOrder?.addressLine1 }}, {{ createdOrder?.city }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Pago Realizado:</span>
+          <strong class="token-highlight">
+            {{ createdOrder?.paymentToken === 'USDC' ? '25.00 USDC' : 'VBK' }}
+          </strong>
+        </div>
+        <div class="detail-row" *ngIf="createdOrder?.txHash">
+          <span>Transacción Blockchain:</span>
+          <a [href]="'https://sepolia.etherscan.io/tx/' + createdOrder?.txHash" target="_blank" class="etherscan-link">
+            Ver en Etherscan <mat-icon>open_in_new</mat-icon>
+          </a>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <button mat-flat-button class="cta-button" routerLink="/">EXPLORAR EVENTOS</button>
+        <button mat-stroked-button class="secondary-button" (click)="resetPage()">COMPRAR OTRA</button>
+      </div>
+    </div>
+
+    <!-- Main Purchase View -->
+    <div class="grid-layout" *ngIf="!orderCreated">
+
+      <!-- Product Details Column -->
+      <div class="details-column">
+        <div class="product-header">
+          <span class="badge">NUEVO LANZAMIENTO</span>
+          <h1 class="bebas-title main-title">VIBEBAND NFC</h1>
+          <p class="tagline">La pulsera inteligente definitiva para el ecosistema VibeCheck</p>
+        </div>
+
+        <div class="image-showcase">
+          <img src="assets/vibeband.png" alt="VibeBand NFC Smart Wristband" class="product-image">
+          <div class="glow-effect"></div>
+        </div>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <div class="feature-icon-container">
+              <mat-icon>nfc</mat-icon>
+            </div>
+            <div class="feature-info">
+              <h3>Acceso NFC Instantáneo</h3>
+              <p>Ingresá a tus eventos preferidos sin filas ni demoras. Validación segura a un toque.</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-container">
+              <mat-icon>account_balance_wallet</mat-icon>
+            </div>
+            <div class="feature-info">
+              <h3>Pagos On-Chain Sin Conexión</h3>
+              <p>Comprá bebidas y merch en el venue directamente con tu pulsera sin sacar el teléfono.</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-container">
+              <mat-icon>trending_up</mat-icon>
+            </div>
+            <div class="feature-info">
+              <h3>Boost de XP Permanente</h3>
+              <p>Obtené +15% de XP de lealtad en todas tus asistencias y compras de tickets en la plataforma.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Form Column -->
+      <div class="form-column">
+        <div class="glass-card">
+          <h2 class="form-title">DATOS DE ENVÍO</h2>
+
+          <!-- Wallet Connection Warning -->
+          <div class="wallet-status-alert" *ngIf="!walletConnected">
+            <mat-icon>warning</mat-icon>
+            <div class="alert-content">
+              <h4>Wallet Desconectada</h4>
+              <p>Necesitás conectar tu MetaMask para realizar el pago on-chain.</p>
+              <button mat-flat-button class="connect-btn" (click)="connectWallet()">
+                CONECTAR WALLET
+              </button>
+            </div>
+          </div>
+
+          <!-- Network switch warning -->
+          <div class="wallet-status-alert network-alert" *ngIf="walletConnected && !isSepolia">
+            <mat-icon>error_outline</mat-icon>
+            <div class="alert-content">
+              <h4>Red Incorrecta</h4>
+              <p>Para pagar Sepolia VBK/USDC debés cambiar tu red a Sepolia Testnet.</p>
+              <button mat-flat-button class="connect-btn switch-btn" (click)="switchToSepolia()">
+                CAMBIAR A SEPOLIA
+              </button>
+            </div>
+          </div>
+
+          <!-- Shipping Form -->
+          <form [formGroup]="shippingForm" (ngSubmit)="onSubmit()" *ngIf="walletConnected && isSepolia">
+
+            <div class="input-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nombre Completo</mat-label>
+                <input matInput formControlName="fullName" placeholder="Ej. Juan Pérez">
+                <mat-error *ngIf="shippingForm.get('fullName')?.hasError('required')">
+                  El nombre es obligatorio.
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="input-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email de Contacto</mat-label>
+                <input matInput formControlName="email" type="email" placeholder="juan@gmail.com">
+                <mat-error *ngIf="shippingForm.get('email')?.hasError('required')">
+                  El email es obligatorio.
+                </mat-error>
+                <mat-error *ngIf="shippingForm.get('email')?.hasError('email')">
+                  Ingresa un email válido.
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="input-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Dirección (Calle y Número)</mat-label>
+                <input matInput formControlName="addressLine1" placeholder="Av. Siempreviva 742">
+                <mat-error *ngIf="shippingForm.get('addressLine1')?.hasError('required')">
+                  La dirección es obligatoria.
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="input-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Depto / Piso / Unidad (Opcional)</mat-label>
+                <input matInput formControlName="addressLine2" placeholder="Piso 3 Depto B">
+              </mat-form-field>
+            </div>
+
+            <div class="grid-inputs">
+              <mat-form-field appearance="outline">
+                <mat-label>Ciudad</mat-label>
+                <input matInput formControlName="city" placeholder="CABA">
+                <mat-error *ngIf="shippingForm.get('city')?.hasError('required')">
+                  Obligatorio.
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Provincia / Estado</mat-label>
+                <input matInput formControlName="stateProvince" placeholder="Buenos Aires">
+                <mat-error *ngIf="shippingForm.get('stateProvince')?.hasError('required')">
+                  Obligatorio.
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="grid-inputs">
+              <mat-form-field appearance="outline">
+                <mat-label>Código Postal</mat-label>
+                <input matInput formControlName="postalCode" placeholder="C1425">
+                <mat-error *ngIf="shippingForm.get('postalCode')?.hasError('required')">
+                  Obligatorio.
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>País</mat-label>
+                <input matInput formControlName="country">
+                <mat-error *ngIf="shippingForm.get('country')?.hasError('required')">
+                  Obligatorio.
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Token Selection -->
+            <div class="payment-selection-section">
+              <h3 class="payment-title">MÉTODO DE PAGO</h3>
+
+              <div class="token-select-group">
+                <div class="token-card" [class.active]="shippingForm.get('paymentToken')?.value === 'USDC'"
+                  (click)="shippingForm.get('paymentToken')?.setValue('USDC')">
+                  <div class="token-logo-name">
+                    <span class="token-icon usdc-icon">$</span>
+                    <div class="token-desc">
+                      <span class="token-symbol">USDC</span>
+                      <span class="token-network">Sepolia ERC-20</span>
+                    </div>
+                  </div>
+                  <div class="token-radio-indicator"></div>
+                </div>
+
+                <div class="token-card" [class.active]="shippingForm.get('paymentToken')?.value === 'VBK'"
+                  (click)="shippingForm.get('paymentToken')?.setValue('VBK')">
+                  <div class="token-logo-name">
+                    <span class="token-icon vbk-icon">V</span>
+                    <div class="token-desc">
+                      <span class="token-symbol">VBK</span>
+                      <span class="token-network">Sepolia (2% Burn)</span>
+                    </div>
+                  </div>
+                  <div class="token-radio-indicator"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Wallet Balances Section -->
+            <div class="wallet-balances-container">
+              <div class="section-subtitle">
+                <mat-icon>account_balance_wallet</mat-icon>
+                <span>Balances en tu Wallet</span>
+              </div>
+              <div class="balances-row-pills">
+                <div class="balance-pill-card usdc-bg">
+                  <span class="pill-coin-name">USDC</span>
+                  <span class="pill-coin-amount">{{ usdcBalance }}</span>
+                </div>
+                <div class="balance-pill-card vbk-bg">
+                  <span class="pill-coin-name">VBK</span>
+                  <span class="pill-coin-amount">{{ vbkBalance }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="price-summary-box">
+              <div class="summary-line">
+                <span>Precio VibeBand</span>
+                <strong>25.00 USDC</strong>
+              </div>
+              <div class="summary-line" *ngIf="shippingForm.get('paymentToken')?.value === 'VBK'">
+                <span>Ajuste de Burn (2% extra)</span>
+                <span class="burn-note">Incluido al pagar</span>
+              </div>
+              <div class="summary-line total-line">
+                <span>Total a Transferir</span>
+                <strong *ngIf="shippingForm.get('paymentToken')?.value === 'USDC'">25.00 USDC</strong>
+                <strong *ngIf="shippingForm.get('paymentToken')?.value === 'VBK'" class="vbk-total">
+                  Pago en VBK
+                </strong>
+              </div>
+            </div>
+
+            <!-- Confirm Error Banner -->
+            <div class="confirm-error-banner" *ngIf="confirmErrorOccurred">
+              <mat-icon>error</mat-icon>
+              <div class="error-msg-content">
+                <p>La transacción se envió con éxito pero el servidor aún no la ha verificado en la blockchain (o está
+                  tardando).</p>
+                <button type="button" mat-stroked-button class="retry-confirm-btn" (click)="retryConfirmation()">
+                  REINTENTAR CONFIRMACIÓN
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button type="submit" mat-flat-button class="submit-order-btn cta-button">
+              COMPRAR AHORA
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

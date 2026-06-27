@@ -790,6 +790,15 @@ export class Web3Service {
     return txHash;
   }
 
+  async transferErc20(tokenAddress: string, to: string, amount: bigint): Promise<string> {
+    return await this.writeWithRedirect({
+      address: tokenAddress as `0x${string}`,
+      abi: this.ERC20_ABI,
+      functionName: "transfer",
+      args: [to as `0x${string}`, amount],
+    } as any);
+  }
+
   async waitForTransaction(txHash: string): Promise<any> {
     return await waitForTransactionReceipt(config, {
       hash: txHash as `0x${string}`,

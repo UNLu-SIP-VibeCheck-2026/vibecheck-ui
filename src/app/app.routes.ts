@@ -276,5 +276,12 @@ export const routes: Routes = [
       import("./components/cron-jobs/cron-jobs.component").then((m) => m.CronJobsComponent),
     canActivate: [authGuard, () => roleGuard(['ADMIN'])],
   },
+  {
+    path: "vibeband",
+    loadChildren: () =>
+      import("./components/vibeband/vibeband.module").then(
+        (m) => m.VibebandModule
+      ),
+  },
   { path: "**", component: NotFoundComponent },
 ];
