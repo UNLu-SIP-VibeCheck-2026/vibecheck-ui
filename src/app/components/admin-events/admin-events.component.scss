@@ -639,6 +639,11 @@
   color: var(--md-sys-color-on-surface) !important;
 }
 
+// Imagen inline para mobile (oculta en desktop)
+.mobile-event-image {
+  display: none;
+}
+
 .rejection-box {
   display: inline-flex;
   align-items: center;
@@ -775,43 +780,257 @@
   }
 }
 
+// =============================================================================
+// RESPONSIVE: MOBILE (≤ 599px)
+// Basado en principios antigravity responsive skill:
+//   – Mobile-First
+//   – Touch-friendly (min 44px targets)
+//   – Sin overflow horizontal
+//   – Tablas → Cards
+//   – CTAs full-width
+// =============================================================================
+
 @include mobile {
   :host {
-    padding: var(--space-5);
+    padding: var(--space-4);
   }
-  
+
+  // Mostrar imagen arriba de cada card (stack vertical)
+  // Ocultar la celda de imagen del table en mobile
   .mat-column-image {
     display: none !important;
   }
 
+  // Mostrar la imagen inline dentro del event-card-row
+  .mobile-event-image {
+    display: block;
+    margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0 calc(-1 * var(--space-4));
+
+    .event-image-wrapper {
+      width: 100%;
+      height: 200px;
+      border-radius: var(--md-sys-shape-corner-medium) var(--md-sys-shape-corner-medium) 0 0;
+      border-bottom: none;
+      overflow: hidden;
+
+      .event-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        overflow: hidden;
+      }
+
+      .no-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--md-sys-color-surface-container-highest);
+        color: var(--md-sys-color-on-surface-variant);
+
+        mat-icon {
+          font-size: 32px;
+          width: 32px;
+          height: 32px;
+        }
+      }
+    }
+  }
+
+  // ── Header ────────────────────────────────────────────────────────────────
   .page-header {
     flex-direction: column;
     align-items: stretch;
+    gap: var(--space-4);
 
-    .btn-new { width: 100%; justify-content: center !important; }
+    .header-text {
+      .brand-title {
+        font-size: 28px;
+      }
+      .header-subtitle {
+        font-size: var(--text-body-md);
+      }
+    }
+
+    .btn-new {
+      width: 100%;
+      justify-content: center !important;
+      height: 48px !important; // touch-friendly
+    }
   }
 
-  .brand-title { font-size: 28px; }
+  // ── Search / Filter ────────────────────────────────────────────────────────
+  .search-controls-row {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
 
+  .search-field {
+    width: 100%;
+
+    ::ng-deep {
+      .mat-mdc-form-field-flex {
+        height: 48px !important; // touch-friendly
+      }
+    }
+  }
+
+  .stats-badge {
+    align-self: flex-start;
+    font-size: var(--text-body-sm);
+    padding: 6px 12px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  // ── Event Card Row (tabla → card) ─────────────────────────────────────────
   .event-card-row {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: var(--space-4);
+    padding-top: 0;
+    min-height: 140px;
   }
-  
-  .actions-col {
+
+  // Cada columna ocupa el ancho completo con separación entre secciones
+  .details-col {
+    flex: none;
+    width: 100%;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .info-col,
+  .venue-col {
+    flex: none;
     width: 100%;
     flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+
+    .info-group {
+      flex: 1;
+      min-width: 100px;
+    }
+  }
+
+  // ── Botones / Acciones ─────────────────────────────────────────────────────
+  .actions-col {
+    min-width: auto;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
     border-top: 1px solid var(--md-sys-color-outline-variant);
     padding-top: var(--space-3);
+    margin-top: var(--space-3);
+
+    .action-buttons {
+      flex-direction: column;
+      gap: var(--space-3);
+
+      .stacked-buttons {
+        width: 100%;
+
+        .primary-action-btn {
+          min-height: 44px !important; // touch-friendly
+        }
+      }
+
+      .primary-action-btn {
+        width: 100% !important;
+        min-height: 44px !important; // touch-friendly
+        justify-content: center !important;
+      }
+
+      .more-actions-btn {
+        align-self: flex-end;
+        margin-top: var(--space-2);
+      }
+
+      .status-cancelled-label {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;            // touch-friendly
+        box-sizing: border-box;
+      }
+    }
+  }
+
+  // ── Rejection Dialog ───────────────────────────────────────────────────────
+  .rejection-dialog {
+    margin-top: var(--space-3);
+    padding: var(--space-3);
+
+    .rejection-content {
+      .rejection-actions {
+        flex-direction: column;
+        gap: var(--space-2);
+
+        .btn-cancel,
+        .btn-confirm-reject {
+          width: 100%;
+          min-height: 44px !important; // touch-friendly
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  // ── Paginator ──────────────────────────────────────────────────────────────
+  ::ng-deep .mat-mdc-paginator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+
+    .mat-mdc-paginator-container {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-2);
+    }
+
+    .mat-mdc-paginator-page-size {
+      margin-right: 0;
+    }
+
+    .mat-mdc-paginator-range-label {
+      font-size: var(--text-body-md);
+    }
   }
 }
 
+// =============================================================================
+// RESPONSIVE: TABLET (600px → 1023px)
+// Layout híbrido: columnas reducidas, acciones full-width
+// =============================================================================
+
 @include tablet {
+  // ── Event Card ─────────────────────────────────────────────────────────────
   .event-card-row {
     flex-wrap: wrap;
+    gap: var(--space-4);
   }
-  
+
+  .details-col {
+    flex: 1 1 100%;
+    min-width: 0;
+    margin-bottom: var(--space-2);
+  }
+
+  .info-col,
+  .venue-col {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  // ── Acciones ───────────────────────────────────────────────────────────────
   .actions-col {
     width: 100%;
     flex-direction: row;
@@ -819,5 +1038,21 @@
     align-items: center;
     border-top: 1px solid var(--md-sys-color-outline-variant);
     padding-top: var(--space-3);
+    min-width: auto;
+
+    .action-buttons {
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+
+      .primary-action-btn {
+        min-height: 44px !important; // touch-friendly
+      }
+
+      .stacked-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+    }
   }
 }

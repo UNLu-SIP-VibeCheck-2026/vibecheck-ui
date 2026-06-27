@@ -75,6 +75,19 @@
                 <th mat-header-cell *matHeaderCellDef style="display: none;">Evento</th>
                 <td mat-cell *matCellDef="let element" class="event-cell">
                     <div class="event-card-row">
+                        <!-- Mobile Image (hidden on desktop) -->
+                        <div class="mobile-event-image">
+                            <div class="event-image-wrapper">
+                                <img *ngIf="getEventImage(element.id)"
+                                     [src]="getEventImage(element.id)"
+                                     [alt]="element.title"
+                                     class="event-thumbnail">
+                                <div *ngIf="!getEventImage(element.id)" class="no-image-placeholder">
+                                    <mat-icon>image_not_supported</mat-icon>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Title & Description -->
                         <div class="details-col">
                             <div class="detail-group">
