@@ -166,4 +166,27 @@ export class EventService {
   rotateValidatorPassword(eventId: number, request: ValidatorPasswordRotateRequest): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${eventId}/validators/password`, request);
   }
+
+  requestCancellation(id: number, reason: string): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/request-cancellation`, { reason });
+  }
+
+  approveCancellation(id: number): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/approve-cancellation`, {});
+  }
+
+  confirmCancellation(id: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/confirm-cancellation`, {});
+  }
+
+  rejectCancellation(id: number, reason?: string): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${this.apiUrl}/${id}/reject-cancellation`, { reason });
+  }
+
+  findPendingCancellations(page: number, size: number): Observable<Page<EventResponse>> {
+    let params = new HttpParams()
+      .set("page", page.toString())
+      .set("size", size.toString());
+    return this.http.get<Page<EventResponse>>(`${this.apiUrl}/pending-cancellations`, { params });
+  }
 }

@@ -493,6 +493,21 @@
           filter: brightness(1.1);
         }
       }
+
+      &.confirm-cancel-btn-accent {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+
+        &:hover:not(:disabled) {
+          filter: brightness(1.1);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
     }
 
     .more-actions-btn {
@@ -687,6 +702,76 @@
     background-color: rgba(239, 68, 68, 0.1) !important;
     border: 1px solid rgba(239, 68, 68, 0.3) !important;
     --mdc-chip-label-text-color: #f87171 !important;
+  }
+  &.pending-cancellation-chip {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    --mdc-chip-label-text-color: #f59e0b !important;
+  }
+  &.cancellation-approved-chip {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    --mdc-chip-label-text-color: #10b981 !important;
+  }
+}
+
+// Rejection Inline box
+.rejection-dialog {
+  margin-top: 12px;
+  padding: var(--space-4) var(--space-5);
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--md-sys-shape-corner-large);
+
+  .rejection-content {
+    .rejection-input {
+      width: 100%;
+      margin-bottom: var(--space-3);
+
+      ::ng-deep {
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
+          border-color: rgba(239, 68, 68, 0.3) !important;
+        }
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__notch,
+        .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing {
+          border-color: #ef4444 !important;
+        }
+        .mat-mdc-form-field-flex {
+          background-color: rgba(239, 68, 68, 0.02) !important;
+        }
+        .mat-mdc-form-field-hint {
+          color: var(--md-sys-color-on-surface-variant);
+        }
+      }
+    }
+
+    .rejection-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+
+      .btn-cancel {
+        color: var(--md-sys-color-on-surface) !important;
+        border-color: var(--md-sys-color-outline-variant) !important;
+        border-radius: var(--md-sys-shape-corner-full) !important;
+      }
+
+      .btn-confirm-reject {
+        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border: none !important;
+        border-radius: var(--md-sys-shape-corner-full) !important;
+        box-shadow: none !important;
+
+        &:hover {
+          filter: brightness(1.1);
+        }
+      }
+    }
   }
 }
 

@@ -275,6 +275,22 @@
                                     <span class="status-cancelled-label" *ngSwitchCase="'CANCELLED'">
                                         <mat-icon class="inline-icon">block</mat-icon> Cancelado
                                     </span>
+
+                                    <!-- Cancellation Approved: Confirm Cancellation (double verification) -->
+                                    <button mat-raised-button 
+                                            class="primary-action-btn confirm-cancel-btn-accent"
+                                            (click)="confirmCancellation(element)"
+                                            [disabled]="cancellingId === element.id"
+                                            *ngSwitchCase="'CANCELLATION_APPROVED'">
+                                        <mat-spinner *ngIf="cancellingId === element.id" diameter="16" class="inline-spinner"></mat-spinner>
+                                        <mat-icon *ngIf="cancellingId !== element.id">check_circle</mat-icon>
+                                        <span>Confirmar Cancelación</span>
+                                    </button>
+
+                                    <!-- Pending Cancellation: Show label only -->
+                                    <span class="status-cancelled-label" *ngSwitchCase="'PENDING_CANCELLATION'">
+                                        <mat-icon class="inline-icon">hourglass_empty</mat-icon> Cancelación Pendiente
+                                    </span>
                                 </ng-container>
 
                                 <!-- Secondary Actions Menu Button -->
@@ -318,11 +334,11 @@
                                         <span>Configurar Publicidad</span>
                                     </button>
 
-                                    <!-- 4. Cancelar Evento: only if active, and not Draft/Pending/Approved/Cancelled/Finished -->
+                                    <!-- 4. Cancelar Evento: only if active, and not Draft/Pending/Approved/Cancelled/Finished/Pending Cancellation/Cancellation Approved -->
                                     <button mat-menu-item 
                                             (click)="cancelEvent(element)"
                                             [disabled]="cancellingId === element.id"
-                                            *ngIf="element.status !== 'DRAFT' && element.status !== 'REJECTED' && element.status !== 'PENDING_APPROVAL' && element.status !== 'APPROVED' && element.status !== 'CANCELLED' && element.status !== 'FINISHED' && element.active">
+                                            *ngIf="element.status !== 'DRAFT' && element.status !== 'REJECTED' && element.status !== 'PENDING_APPROVAL' && element.status !== 'APPROVED' && element.status !== 'CANCELLED' && element.status !== 'FINISHED' && element.status !== 'PENDING_CANCELLATION' && element.status !== 'CANCELLATION_APPROVED' && element.active">
                                         <mat-icon>block</mat-icon>
                                         <span>Cancelar Evento</span>
                                     </button>
@@ -337,6 +353,29 @@
                                         <span class="color-delete">Eliminar Evento</span>
                                     </button>
                                 </mat-menu>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Inline Cancellation Request Form -->
+                    <div class="rejection-dialog" *ngIf="requestingCancelEventId === element.id" style="margin-top: 12px; border-radius: var(--md-sys-shape-corner-large);">
+                        <div class="rejection-content">
+                            <h4 style="color: #f87171; display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: var(--text-body-md); margin: 0 0 8px 0;">
+                                <mat-icon>block</mat-icon> Solicitar Cancelación de Evento
+                            </h4>
+                            <p style="color: var(--md-sys-color-on-surface-variant); font-size: var(--text-body-sm); margin-bottom: 12px;">
+                                Explicá detalladamente el motivo de la cancelación. La solicitud será evaluada por un administrador.
+                            </p>
+                            <mat-form-field appearance="outline" class="rejection-input" style="width: 100%;">
+                                <textarea matInput [(ngModel)]="cancellationReason" placeholder="Describí el motivo..." rows="3" maxlength="255"></textarea>
+                                <mat-hint align="end">{{ cancellationReason.length }}/255</mat-hint>
+                            </mat-form-field>
+                            <div class="rejection-actions" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px;">
+                                <button mat-stroked-button class="btn-cancel" (click)="cancelRequestingCancel()">
+                                    Volver
+                                </button>
+                                <button mat-raised-button class="btn-confirm-reject" (click)="confirmRequestingCancel(element)" [disabled]="!cancellationReason.trim() || isLoading" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important; color: #ffffff !important; font-weight: 700 !important; border: none !important; border-radius: var(--md-sys-shape-corner-full) !important; box-shadow: none !important;">
+                                    <mat-icon>send</mat-icon> Enviar Solicitud
+                                </button>
                             </div>
                         </div>
                     </div>

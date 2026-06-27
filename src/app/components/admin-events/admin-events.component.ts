@@ -100,6 +100,8 @@ export class AdminEventsComponent implements OnInit {
   deletingId: number | null = null;
   publishingId: number | null = null;
   cancellingId: number | null = null;
+  requestingCancelEventId: number | null = null;
+  cancellationReason = "";
 
   totalElements = 0;
   pageSize = 5;
@@ -282,6 +284,12 @@ export class AdminEventsComponent implements OnInit {
       case "CANCELLED":
       case "CANCELADO":
         return "cancelled-chip";
+      case "PENDING_CANCELLATION":
+      case "PENDIENTE_CANCELACION":
+        return "pending-cancellation-chip";
+      case "CANCELLATION_APPROVED":
+      case "CANCELACION_APROBADA":
+        return "cancellation-approved-chip";
       default:
         return "";
     }
@@ -300,6 +308,8 @@ export class AdminEventsComponent implements OnInit {
       FINISHED: "FINALIZADO",
       COMPLETED: "FINALIZADO",
       CANCELLED: "CANCELADO",
+      PENDING_CANCELLATION: "PENDIENTE DE CANCELACIÓN",
+      CANCELLATION_APPROVED: "CANCELACIÓN APROBADA",
       BORRADOR: "BORRADOR",
       PENDIENTE: "PENDIENTE DE APROBACIÓN",
       PENDIENTE_APROBACION: "PENDIENTE DE APROBACIÓN",
@@ -311,6 +321,8 @@ export class AdminEventsComponent implements OnInit {
       EN_CURSO: "EN CURSO",
       FINALIZADO: "FINALIZADO",
       CANCELADO: "CANCELADO",
+      PENDIENTE_CANCELACION: "PENDIENTE DE CANCELACIÓN",
+      CANCELACION_APROBADA: "CANCELACIÓN APROBADA",
     };
     return map[status?.toUpperCase()] ?? status ?? "—";
   }
@@ -600,45 +612,80 @@ export class AdminEventsComponent implements OnInit {
   // -------------------------------------------------------------------------
 
   cancelEvent(event: EventResponse): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    this.requestingCancelEventId = event.id;
+    this.cancellationReason = "";
+  }
+
+  cancelRequestingCancel(): void {
+    this.requestingCancelEventId = null;
+    this.cancellationReason = "";
+  }
+
+  confirmRequestingCancel(event: EventResponse): void {
+    if (!this.cancellationReason.trim()) return;
+
+    this.isLoading = true;
+    this.eventService.requestCancellation(event.id, this.cancellationReason).subscribe({
+      next: (updated) => {
+        const idx = this.allEvents.findIndex((e) => e.id === updated.id);
+        if (idx !== -1) this.allEvents[idx] = updated;
+        this.applyFilter();
+        this.requestingCancelEventId = null;
+        this.cancellationReason = "";
+        this.isLoading = false;
+        this.showSnack(`Solicitud de cancelación para "${event.title}" enviada correctamente`);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.showSnack(err?.error?.message || "Error al solicitar la cancelación", "error");
+        console.error(err);
+      }
+    });
+  }
+
+  confirmCancellation(event: EventResponse): void {
+    const dialogRef1 = this.dialog.open(ConfirmDialogComponent, {
       width: "400px",
       data: {
-        title: "Cancelar evento",
-        message: `¿Estás seguro de que deseas cancelar el evento "${event.title}"? Esta acción no se puede deshacer.`,
-        confirmText: "Cancelar",
+        title: "Confirmar Cancelación Irreversible",
+        message: `¿Estás seguro de que deseas CONFIRMAR la cancelación del evento "${event.title}"? Esta acción no se puede deshacer y es completamente IRREVERSIBLE.`,
+        confirmText: "Confirmar",
         cancelText: "Volver",
       },
     });
 
-    dialogRef.afterClosed().subscribe((confirmed) => {
-      if (!confirmed) return;
+    dialogRef1.afterClosed().subscribe((confirmed1) => {
+      if (!confirmed1) return;
 
-      this.cancellingId = event.id;
-      const req = {
-        title: event.title,
-        description: event.description,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        capacity: event.capacity,
-        active: false,
-        venueId: event.venueId,
-      };
+      const dialogRef2 = this.dialog.open(ConfirmDialogComponent, {
+        width: "400px",
+        data: {
+          title: "⚠️ ÚLTIMA ADVERTENCIA",
+          message: `Al proceder se iniciarán los reembolsos automáticos y se cancelará el contrato inteligente. ¿Estás absolutamente seguro de continuar?`,
+          confirmText: "Sí, cancelar definitivamente",
+          cancelText: "No, volver atrás",
+        },
+      });
 
-      this.eventService.updateEvent(event.id, req).subscribe({
-        next: (updated) => {
-          const idx = this.allEvents.findIndex((e) => e.id === updated.id);
-          if (idx !== -1) this.allEvents[idx] = updated;
-          this.applyFilter();
-          this.cancellingId = null;
-          this.showSnack(`Evento "${event.title}" cancelado correctamente`);
-        },
-        error: (err) => {
-          this.cancellingId = null;
-          const errorMsg =
-            err?.error?.message || err?.message || "Error al cancelar el evento";
-          this.showSnack(errorMsg, "error");
-          console.error(err);
-        },
+      dialogRef2.afterClosed().subscribe((confirmed2) => {
+        if (!confirmed2) return;
+
+        this.cancellingId = event.id;
+        this.isLoading = true;
+        this.eventService.confirmCancellation(event.id).subscribe({
+          next: (res) => {
+            this.loadEvents();
+            this.cancellingId = null;
+            this.isLoading = false;
+            this.showSnack(`Cancelación del evento "${event.title}" ejecutada correctamente`);
+          },
+          error: (err) => {
+            this.cancellingId = null;
+            this.isLoading = false;
+            this.showSnack(err?.error?.message || "Error al confirmar la cancelación", "error");
+            console.error(err);
+          }
+        });
       });
     });
   }

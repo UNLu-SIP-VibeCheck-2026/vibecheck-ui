@@ -36,6 +36,7 @@ export interface EventResponse {
   active: boolean;
   status: string;
   rejectionReason?: string;
+  cancellationReason?: string;
   ownerId: number;
   venueId: number;
   hasImage: boolean;

@@ -49,13 +49,14 @@ export class AdminEventsApprovalComponent implements OnInit {
   totalElements = 0;
   loading = false;
   error: string | null = null;
+  activeTab: 'events' | 'cancellations' = 'events';
 
   rejectingEvent: EventResponse | null = null;
   rejectionReason = '';
 
   ngOnInit(): void {
     this.checkRole();
-    this.loadPendingEvents();
+    this.switchTab('events');
   }
 
   private checkRole(): void {
@@ -64,6 +65,18 @@ export class AdminEventsApprovalComponent implements OnInit {
     if (role !== 'admin' && role !== 'admin_eventos') {
       this.snackBar.open('No tienes permiso para acceder a esta página', 'Cerrar', { duration: 3000 });
       this.router.navigate(['/dashboard']);
+    }
+  }
+
+  switchTab(tab: 'events' | 'cancellations'): void {
+    this.activeTab = tab;
+    this.currentPage = 0;
+    this.events = [];
+    this.totalElements = 0;
+    if (tab === 'events') {
+      this.loadPendingEvents();
+    } else {
+      this.loadPendingCancellations();
     }
   }
 
@@ -84,6 +97,23 @@ export class AdminEventsApprovalComponent implements OnInit {
     });
   }
 
+  loadPendingCancellations(): void {
+    this.loading = true;
+    this.error = null;
+    this.eventService.findPendingCancellations(this.currentPage, this.pageSize).subscribe({
+      next: (page: Page<EventResponse>) => {
+        this.events = page.content;
+        this.totalElements = page.totalElements;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Error al cargar solicitudes de cancelación';
+        this.loading = false;
+        console.error(err);
+      }
+    });
+  }
+
   approveEvent(event: EventResponse): void {
     this.loading = true;
     this.eventService.approveEvent(event.id).subscribe({
@@ -93,6 +123,21 @@ export class AdminEventsApprovalComponent implements OnInit {
       },
       error: (err) => {
         this.snackBar.open('Error al aprobar el evento', 'Cerrar', { duration: 3000 });
+        this.loading = false;
+        console.error(err);
+      }
+    });
+  }
+
+  approveCancellation(event: EventResponse): void {
+    this.loading = true;
+    this.eventService.approveCancellation(event.id).subscribe({
+      next: () => {
+        this.snackBar.open('Solicitud de cancelación aprobada exitosamente', 'Cerrar', { duration: 3000 });
+        this.loadPendingCancellations();
+      },
+      error: (err) => {
+        this.snackBar.open('Error al aprobar la cancelación', 'Cerrar', { duration: 3000 });
         this.loading = false;
         console.error(err);
       }
@@ -116,34 +161,57 @@ export class AdminEventsApprovalComponent implements OnInit {
     }
 
     this.loading = true;
-    this.eventService.rejectEvent(this.rejectingEvent.id, this.rejectionReason).subscribe({
-      next: () => {
-        this.snackBar.open('Evento rechazado exitosamente', 'Cerrar', { duration: 3000 });
-        this.rejectingEvent = null;
-        this.rejectionReason = '';
-        this.loadPendingEvents();
-      },
-      error: (err) => {
-        this.snackBar.open('Error al rechazar el evento', 'Cerrar', { duration: 3000 });
-        this.loading = false;
-        console.error(err);
-      }
-    });
+    if (this.activeTab === 'events') {
+      this.eventService.rejectEvent(this.rejectingEvent.id, this.rejectionReason).subscribe({
+        next: () => {
+          this.snackBar.open('Evento rechazado exitosamente', 'Cerrar', { duration: 3000 });
+          this.rejectingEvent = null;
+          this.rejectionReason = '';
+          this.loadPendingEvents();
+        },
+        error: (err) => {
+          this.snackBar.open('Error al rechazar el evento', 'Cerrar', { duration: 3000 });
+          this.loading = false;
+          console.error(err);
+        }
+      });
+    } else {
+      this.eventService.rejectCancellation(this.rejectingEvent.id, this.rejectionReason).subscribe({
+        next: () => {
+          this.snackBar.open('Solicitud de cancelación rechazada exitosamente. El evento vuelve a PUBLIC.', 'Cerrar', { duration: 3000 });
+          this.rejectingEvent = null;
+          this.rejectionReason = '';
+          this.loadPendingCancellations();
+        },
+        error: (err) => {
+          this.snackBar.open('Error al rechazar la cancelación', 'Cerrar', { duration: 3000 });
+          this.loading = false;
+          console.error(err);
+        }
+      });
+    }
   }
 
   onPageChange(event: any): void {
     this.currentPage = event.pageIndex;
     this.pageSize = event.pageSize;
-    this.loadPendingEvents();
+    if (this.activeTab === 'events') {
+      this.loadPendingEvents();
+    } else {
+      this.loadPendingCancellations();
+    }
   }
 
   getStatusClass(status: string): string {
     switch (status) {
       case 'PENDING_APPROVAL':
+      case 'PENDING_CANCELLATION':
         return 'status-pending';
       case 'APPROVED':
+      case 'CANCELLATION_APPROVED':
         return 'status-approved';
       case 'REJECTED':
+      case 'CANCELLED':
         return 'status-rejected';
       default:
         return '';

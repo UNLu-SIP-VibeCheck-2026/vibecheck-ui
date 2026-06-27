@@ -15,6 +15,18 @@
           <span>{{ totalElements }} {{ totalElements === 1 ? 'evento pendiente' : 'eventos pendientes' }}</span>
       </div>
   </div>
+ 
+  <!-- Tab navigation -->
+  <div class="tab-navigation">
+      <button class="tab-btn" [class.active]="activeTab === 'events'" (click)="switchTab('events')">
+          <mat-icon>event</mat-icon>
+          Nuevos Eventos
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'cancellations'" (click)="switchTab('cancellations')">
+          <mat-icon>block</mat-icon>
+          Cancelación de Eventos
+      </button>
+  </div>
 
   <div *ngIf="error" class="error-message">
     {{ error }}
@@ -23,13 +35,13 @@
   <!-- Loading state -->
   <div class="loading-container" *ngIf="loading">
     <mat-spinner diameter="48"></mat-spinner>
-    <p>Cargando eventos pendientes...</p>
+    <p>Cargando solicitudes...</p>
   </div>
 
   <!-- Empty state -->
   <div class="empty-state" *ngIf="!loading && events.length === 0">
     <h3>No hay solicitudes pendientes</h3>
-    <p>Todas las solicitudes de eventos han sido procesadas.</p>
+    <p>{{ activeTab === 'events' ? 'Todas las solicitudes de eventos han sido procesadas.' : 'No hay solicitudes de cancelación pendientes.' }}</p>
     <button mat-raised-button class="btn-back" (click)="goBack()">
       <mat-icon>arrow_back</mat-icon>
       Volver al Dashboard
@@ -41,9 +53,9 @@
     <mat-card class="event-card" *ngFor="let event of events">
 
       <!-- Status badge -->
-      <div class="status-badge badge-pending">
-        <mat-icon>schedule</mat-icon>
-        PENDIENTE
+      <div class="status-badge" [ngClass]="activeTab === 'events' ? 'badge-pending' : 'badge-cancelled'">
+        <mat-icon>{{ activeTab === 'events' ? 'schedule' : 'warning' }}</mat-icon>
+        {{ activeTab === 'events' ? 'PENDIENTE' : 'SOLICITUD DE CANCELACIÓN' }}
       </div>
 
       <div class="event-card-body">
@@ -69,15 +81,19 @@
             <mat-icon class="inline-icon">location_on</mat-icon>
             Venue ID: <strong>{{ event.venueId }}</strong>
           </p>
+          <p class="event-desc" *ngIf="event.cancellationReason && activeTab === 'cancellations'" style="margin-top: 12px; padding: 10px; background: rgba(239, 68, 68, 0.05); border-left: 3px solid #ef4444; border-radius: 4px; color: var(--md-sys-color-on-surface);">
+            <mat-icon class="inline-icon" style="color: #ef4444; vertical-align: middle; margin-right: 4px;">warning</mat-icon>
+            Motivo de cancelación: <strong>{{ event.cancellationReason }}</strong>
+          </p>
         </div>
       </div>
 
       <!-- Rejection dialog (inline) -->
       <div class="rejection-dialog" *ngIf="rejectingEvent?.id === event.id">
         <div class="rejection-content">
-          <h4>Motivo del rechazo</h4>
+          <h4>{{ activeTab === 'events' ? 'Motivo del rechazo' : 'Motivo para denegar la cancelación' }}</h4>
           <mat-form-field appearance="outline" class="rejection-input">
-            <textarea matInput [(ngModel)]="rejectionReason" placeholder="Describí el motivo del rechazo..." rows="3"
+            <textarea matInput [(ngModel)]="rejectionReason" [placeholder]="activeTab === 'events' ? 'Describí el motivo del rechazo...' : 'Describí el motivo para denegar la cancelación...'" rows="3"
               maxlength="255"></textarea>
             <mat-hint align="end">{{ rejectionReason.length }}/255</mat-hint>
           </mat-form-field>
@@ -87,7 +103,7 @@
             </button>
             <button mat-raised-button class="btn-confirm-reject" (click)="confirmReject()" [disabled]="!rejectionReason.trim() || loading">
               <mat-icon>cancel</mat-icon>
-              Rechazar
+              {{ activeTab === 'events' ? 'Rechazar' : 'Denegar Cancelación' }}
             </button>
           </div>
         </div>
@@ -95,11 +111,11 @@
 
       <!-- Action buttons -->
       <div class="event-card-actions" *ngIf="rejectingEvent?.id !== event.id">
-        <button mat-raised-button class="btn-approve" (click)="approveEvent(event)" [disabled]="loading" matTooltip="Aprobar evento">
+        <button mat-raised-button class="btn-approve" (click)="activeTab === 'events' ? approveEvent(event) : approveCancellation(event)" [disabled]="loading" matTooltip="Aprobar">
           <mat-icon>check_circle</mat-icon>
           Aprobar
         </button>
-        <button mat-stroked-button class="btn-reject" (click)="openRejectDialog(event)" [disabled]="loading" matTooltip="Rechazar evento">
+        <button mat-stroked-button class="btn-reject" (click)="openRejectDialog(event)" [disabled]="loading" matTooltip="Rechazar">
           <mat-icon>cancel</mat-icon>
           Rechazar
         </button>
