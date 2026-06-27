@@ -6,6 +6,7 @@ import { parseUnits, formatUnits } from 'viem';
 import { config } from './wagmi.config';
 import { Web3Service } from './web3.service';
 import { ContractsService } from './contracts.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CollectibleMarketplaceService {
@@ -13,7 +14,7 @@ export class CollectibleMarketplaceService {
   private web3Service = inject(Web3Service);
   private contractsService = inject(ContractsService);
 
-  private readonly API_BASE = '/api/v1/collectibles';
+  private readonly API_BASE = `${environment.apiBaseUrl}/v1/collectibles`;
 
   connectWallet() {
     return this.web3Service.connectWallet();
