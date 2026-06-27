@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { OrganizerRatingRequest, OrganizerRatingResponse, OrganizerRatingSummary } from '../models/organizer-rating.model';
+import { OrganizerRatingRequest, OrganizerRatingResponse, OrganizerRatingSummary, ProfileRatingItem } from '../models/organizer-rating.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -28,5 +28,13 @@ export class OrganizerRatingService {
     return this.http.put<OrganizerRatingResponse>(`${this.apiUrl}/${ratingId}`, null, {
       params: { ratingValue: ratingValue.toString() }
     });
+  }
+
+  rateOrganizerWithReward(eventNftAddress: string, tokenId: number, request: { ratingValue: number, ratingText?: string }): Observable<OrganizerRatingResponse> {
+    return this.http.post<OrganizerRatingResponse>(`${environment.apiBaseUrl}/v1/events/${eventNftAddress}/tickets/${tokenId}/rate`, request);
+  }
+
+  getProfileRatings(): Observable<ProfileRatingItem[]> {
+    return this.http.get<ProfileRatingItem[]>(`${environment.apiBaseUrl}/v1/profile/ratings`);
   }
 }

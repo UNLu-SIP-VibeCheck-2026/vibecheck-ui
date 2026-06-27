@@ -25,4 +25,43 @@
     margin-top: 8px;
     text-align: center;
   }
+
+  &__comment-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__comment-label {
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 500;
+  }
+
+  &__comment-textarea {
+    width: 100%;
+    height: 80px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 14px;
+    resize: none;
+    font-family: inherit;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: var(--md-sys-color-primary);
+    }
+  }
+
+  &__char-counter {
+    align-self: flex-end;
+    font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 4px;
+  }
 }

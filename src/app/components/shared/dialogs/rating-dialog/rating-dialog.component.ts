@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -15,12 +16,13 @@ export interface RatingDialogData {
 @Component({
   selector: 'app-rating-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatDialogModule, StarRatingComponent],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatDialogModule, StarRatingComponent],
   templateUrl: './rating-dialog.component.html',
   styleUrls: ['./rating-dialog.component.scss']
 })
 export class RatingDialogComponent {
   selectedRating: number = 0;
+  ratingText: string = '';
   isSubmitting: boolean = false;
 
   constructor(
@@ -45,10 +47,13 @@ export class RatingDialogComponent {
       return;
     }
     this.isSubmitting = true;
-    this.dialogRef.close(this.selectedRating);
+    this.dialogRef.close({
+      ratingValue: this.selectedRating,
+      ratingText: this.ratingText.trim() || undefined
+    });
   }
 
   get isValid(): boolean {
-    return this.selectedRating > 0;
+    return this.selectedRating > 0 && this.ratingText.length <= 500;
   }
 }

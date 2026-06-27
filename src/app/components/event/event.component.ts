@@ -288,8 +288,8 @@ export class EventComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      if (result !== undefined && result !== null) {
-        this.submitRating(result);
+      if (result !== undefined && result !== null && result.ratingValue !== undefined) {
+        this.submitRating(result.ratingValue);
       }
     });
   }

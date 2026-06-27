@@ -11,4 +11,5 @@ export interface UserHistoryItem {
   redeemTxHash: string | null;
   publicVisibility: boolean;
   eventStatus?: string; // EventStatus enum serialized as string
+  eventNftAddress?: string;
 }
