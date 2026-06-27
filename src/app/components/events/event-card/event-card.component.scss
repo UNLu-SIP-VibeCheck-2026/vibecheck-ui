@@ -339,6 +339,9 @@
   }
 
   .btn-cta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background: var(--gradient-brand);
     border: none;
     border-radius: var(--md-sys-shape-corner-full);
