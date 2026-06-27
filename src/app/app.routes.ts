@@ -40,6 +40,9 @@ import { MarketplaceDetailComponent } from "./components/marketplace-detail/mark
 import { ValidatorManagementComponent } from "./components/validator-management/validator-management.component";
 import { AchievementsComponent } from "./components/achievements/achievements.component";
 import { QrScannerComponent } from "./components/qr-scanner/qr-scanner.component";
+import { CollectibleMarketplaceComponent } from "./components/collectible-marketplace/collectible-marketplace.component";
+import { ListCollectibleComponent } from "./components/list-collectible/list-collectible.component";
+import { MyCollectiblesComponent } from "./components/my-collectibles/my-collectibles.component";
 
 
 export const routes: Routes = [
@@ -259,6 +262,21 @@ export const routes: Routes = [
   {
     path: "marketplace/:listingId",
     component: MarketplaceDetailComponent,
+  },
+  {
+    path: "collectibles",
+    component: CollectibleMarketplaceComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "collectibles/list",
+    component: ListCollectibleComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: "collectibles/my",
+    component: MyCollectiblesComponent,
+    canActivate: [authGuard],
   },
   {
     path: "admin-events/:id/validators",

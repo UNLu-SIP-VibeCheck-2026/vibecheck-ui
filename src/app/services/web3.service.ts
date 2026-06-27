@@ -62,6 +62,7 @@ export class Web3Service {
   readonly REFUND_SIGNER_ADDRESS = "0xEcd25CC3A10144B8b7f171Bb8B458791998f80d3";
   readonly TREASURY_ADDRESS = "0x54618BBcc0b65778a872A0F01397f7D9983F8507";
   readonly STAKING_VAULT_ADDRESS = "0x9e275Ba91214063DD5D2562A298e12ffeD93ab8d";
+  readonly COLLECTIBLE_MARKETPLACE_ADDRESS = "0x6c5CF80dAF5CA913D76D86ED308D559378dA441d";
 
   private readonly SEPOLIA_CHAIN_ID = 11155111;
 
@@ -116,6 +117,18 @@ export class Web3Service {
   private readonly EVENT_NFT_ABI = parseAbi([
     "function approve(address to, uint256 tokenId) external",
     "function getApproved(uint256 tokenId) external view returns (address)",
+    "function redeemed(uint256 tokenId) view returns (bool)",
+    "function tokenURI(uint256 tokenId) view returns (string)",
+  ]);
+
+  readonly COLLECTIBLE_MARKETPLACE_ABI = parseAbi([
+    "function list(address eventNFT, uint256 tokenId, uint256 priceUSDC) external returns (uint256)",
+    "function buyWithUSDC(uint256 listingId) external",
+    "function buyWithVBK(uint256 listingId, uint256 maxVbkAmount) external",
+    "function quoteVBK(uint256 listingId) external view returns (uint256)",
+    "function cancelListing(uint256 listingId) external",
+    "function updatePrice(uint256 listingId, uint256 newPriceUSDC) external",
+    "function getListing(uint256 listingId) external view returns ((address seller, address eventNFT, uint256 tokenId, uint256 priceUSDC, bool active, uint256 listedAt))",
   ]);
 
   constructor() {
@@ -796,6 +809,51 @@ export class Web3Service {
       abi: this.ERC20_ABI,
       functionName: "transfer",
       args: [to as `0x${string}`, amount],
+    } as any);
+  }
+
+  async listCollectible(eventNftAddress: string, tokenId: bigint, priceUsdc: bigint): Promise<string> {
+    return await this.writeWithRedirect({
+      address: this.COLLECTIBLE_MARKETPLACE_ADDRESS as `0x${string}`,
+      abi: this.COLLECTIBLE_MARKETPLACE_ABI,
+      functionName: "list",
+      args: [eventNftAddress as `0x${string}`, tokenId, priceUsdc],
+    } as any);
+  }
+
+  async buyCollectibleWithUSDC(listingId: bigint): Promise<string> {
+    return await this.writeWithRedirect({
+      address: this.COLLECTIBLE_MARKETPLACE_ADDRESS as `0x${string}`,
+      abi: this.COLLECTIBLE_MARKETPLACE_ABI,
+      functionName: "buyWithUSDC",
+      args: [listingId],
+    } as any);
+  }
+
+  async buyCollectibleWithVBK(listingId: bigint, maxVbkAmount: bigint): Promise<string> {
+    return await this.writeWithRedirect({
+      address: this.COLLECTIBLE_MARKETPLACE_ADDRESS as `0x${string}`,
+      abi: this.COLLECTIBLE_MARKETPLACE_ABI,
+      functionName: "buyWithVBK",
+      args: [listingId, maxVbkAmount],
+    } as any);
+  }
+
+  async cancelCollectibleListing(listingId: bigint): Promise<string> {
+    return await this.writeWithRedirect({
+      address: this.COLLECTIBLE_MARKETPLACE_ADDRESS as `0x${string}`,
+      abi: this.COLLECTIBLE_MARKETPLACE_ABI,
+      functionName: "cancelListing",
+      args: [listingId],
+    } as any);
+  }
+
+  async updateCollectiblePrice(listingId: bigint, newPriceUsdc: bigint): Promise<string> {
+    return await this.writeWithRedirect({
+      address: this.COLLECTIBLE_MARKETPLACE_ADDRESS as `0x${string}`,
+      abi: this.COLLECTIBLE_MARKETPLACE_ABI,
+      functionName: "updatePrice",
+      args: [listingId, newPriceUsdc],
     } as any);
   }
 

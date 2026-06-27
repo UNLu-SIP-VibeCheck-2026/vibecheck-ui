@@ -1,0 +1,173 @@
+<div class="collectible-marketplace-container">
+  
+  <div class="marketplace-header">
+    <div class="header-text">
+      <h1 class="display-title">Coleccionables Digitales</h1>
+      <p class="subtitle">Encuentra y colecciona las pruebas criptográficas de asistencia de shows pasados. Recuerdos permanentes verificados en blockchain.</p>
+    </div>
+
+    <div class="header-actions">
+      <div class="wallet-section">
+        <button *ngIf="!walletAddress()" (click)="connectWallet()" class="btn-connect">
+          <mat-icon>account_balance_wallet</mat-icon>
+          Conectar Wallet
+        </button>
+        <div *ngIf="walletAddress()" class="wallet-badge">
+          <span class="dot"></span>
+          {{ walletAddress() | slice:0:6 }}...{{ walletAddress() | slice:-4 }}
+        </div>
+      </div>
+
+      <div class="navigation-tabs">
+        <a routerLink="/collectibles/list" class="nav-tab-btn secondary-btn">
+          <mat-icon>add_circle_outline</mat-icon>
+          Listar mi Coleccionable
+        </a>
+        <a routerLink="/collectibles/my" class="nav-tab-btn secondary-btn">
+          <mat-icon>sell</mat-icon>
+          Mis Listings
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="search-input-wrapper">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        [(ngModel)]="filterEventNft"
+        (ngModelChange)="loadListings()"
+        placeholder="Filtrar por dirección del evento NFT (0x...)"
+        class="filter-input"
+      />
+    </div>
+
+    <div class="currency-toggle">
+      <label class="currency-label">Método de pago:</label>
+      <div class="toggle-buttons">
+        <button 
+          (click)="paymentCurrency.set('USDC')" 
+          [class.active]="paymentCurrency() === 'USDC'" 
+          class="toggle-btn">
+          USDC (7% fee)
+        </button>
+        <button 
+          (click)="paymentCurrency.set('VBK')" 
+          [class.active]="paymentCurrency() === 'VBK'" 
+          class="toggle-btn">
+          VBK (4% fee)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-grid">
+    <div *ngFor="let i of [1,2,3,4,5,6]" class="listing-card skeleton-card">
+      <div class="skeleton-image"></div>
+      <div class="skeleton-text line1"></div>
+      <div class="skeleton-text line2"></div>
+      <div class="skeleton-text line3"></div>
+    </div>
+  </div>
+
+  <!-- Main Marketplace Grid -->
+  <div *ngIf="!loading()" class="listings-grid-wrapper">
+    <div *ngIf="listings().length > 0" class="listings-grid">
+      <div *ngFor="let listing of listings()" class="listing-card">
+        
+        <!-- NFT Image or Poster -->
+        <div class="nft-image-wrapper">
+          <img
+            [src]="listing.tokenUri || 'assets/collectible-placeholder.png'"
+            [alt]="'Coleccionable ' + listing.tokenId"
+            class="nft-image"
+            (error)="$any($event.target).src = 'assets/VC.png'"
+          />
+          <div class="attended-badge">
+            <mat-icon>verified</mat-icon>
+            Asistió
+          </div>
+        </div>
+
+        <!-- Listing details -->
+        <div class="listing-info">
+          <div class="event-meta">
+            <h3 class="event-name">{{ listing.eventName || 'Evento de VibeCheck' }}</h3>
+            <span class="token-id">Token #{{ listing.tokenId }}</span>
+          </div>
+
+          <div class="ticket-details">
+            <p class="detail-row">
+              <span class="label">Categoría:</span> 
+              <span class="value">{{ listing.tierName || 'Entrada general' }}</span>
+            </p>
+            <p class="detail-row" *ngIf="listing.originalPriceUsdc">
+              <span class="label">Precio original:</span> 
+              <span class="value">${{ (listing.originalPriceUsdc / 1000000).toFixed(2) }} USDC</span>
+            </p>
+            <p class="detail-row">
+              <span class="label">Fecha del evento:</span> 
+              <span class="value">{{ listing.eventDate | slice:0:10 }}</span>
+            </p>
+          </div>
+
+          <div class="price-section">
+            <div class="price-info">
+              <span class="price-title">Precio de Venta</span>
+              <span class="price-amount">{{ listing.priceUsdcFormatted }}</span>
+            </div>
+            <div class="seller-info">
+              <span class="seller-title">Vendedor</span>
+              <span class="seller-address">{{ listing.seller | slice:0:6 }}...{{ listing.seller | slice:-4 }}</span>
+            </div>
+          </div>
+
+          <div class="royalty-notice">
+            <mat-icon>info</mat-icon>
+            <span>5% de royalty para el organizador garantizado por EIP-2981.</span>
+          </div>
+
+          <button
+            class="btn-buy-cta"
+            [disabled]="buying() && buyingListingId() === listing.listingId"
+            (click)="buy(listing)"
+          >
+            <span *ngIf="!(buying() && buyingListingId() === listing.listingId)">
+              Comprar con {{ paymentCurrency() }}
+            </span>
+            <span *ngIf="buying() && buyingListingId() === listing.listingId" class="spinner-container">
+              <span class="btn-spinner"></span>
+              Procesando...
+            </span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="listings().length === 0" class="empty-state">
+      <div class="empty-icon-wrapper">
+        <mat-icon>sentiment_dissatisfied</mat-icon>
+      </div>
+      <h2>No hay coleccionables listados todavía</h2>
+      <p>Los fans que asistan a eventos y hagan check-in en la puerta podrán listar sus recuerdos aquí.</p>
+      <a routerLink="/collectibles/list" class="btn-cta-list">Listar mi Coleccionable</a>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="totalPages() > 1 && !loading()">
+    <button class="pag-btn" (click)="prevPage()" [disabled]="page() === 0">
+      <mat-icon>chevron_left</mat-icon>
+      Anterior
+    </button>
+    <span class="pag-info">Página {{ page() + 1 }} de {{ totalPages() }}</span>
+    <button class="pag-btn" (click)="nextPage()" [disabled]="page() === totalPages() - 1">
+      Siguiente
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+
+</div>

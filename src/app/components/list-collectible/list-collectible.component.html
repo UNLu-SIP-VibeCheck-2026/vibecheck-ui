@@ -1,0 +1,191 @@
+<div class="list-collectible-container">
+  
+  <div class="header-section">
+    <a routerLink="/collectibles" class="back-link">
+      <mat-icon>arrow_back</mat-icon>
+      Volver al Mercado
+    </a>
+    <h2 class="form-title">Listar mi Coleccionable</h2>
+    <p class="form-subtitle">Publica tu entrada NFT post-evento (marcada como redeemed) en el mercado secundario.</p>
+  </div>
+
+  <div class="form-card">
+    
+    <!-- Formulario -->
+    <form *ngIf="step() === 'form'" (ngSubmit)="submitListing()" #listForm="ngForm" class="listing-form">
+
+      <div class="form-group">
+        <label for="eventNft">Dirección del Contrato del Evento (EventNFT)</label>
+        <div class="input-with-icon">
+          <mat-icon class="input-icon">location_on</mat-icon>
+          <input
+            id="eventNft"
+            [(ngModel)]="eventNftAddress"
+            name="eventNft"
+            placeholder="0x..."
+            required
+            #eventNftInput="ngModel"
+            (blur)="checkToken()"
+            class="form-input"
+          />
+        </div>
+        <span *ngIf="eventNftInput.invalid && eventNftInput.touched" class="input-error-msg">Este campo es requerido</span>
+      </div>
+
+      <div class="form-group">
+        <label for="tokenId">Token ID on-chain</label>
+        <div class="input-with-icon">
+          <mat-icon class="input-icon">fingerprint</mat-icon>
+          <input
+            id="tokenId"
+            [(ngModel)]="tokenId"
+            name="tokenId"
+            type="number"
+            placeholder="Ej: 1"
+            required
+            #tokenIdInput="ngModel"
+            (blur)="checkToken()"
+            class="form-input"
+          />
+        </div>
+        <span *ngIf="tokenIdInput.invalid && tokenIdInput.touched" class="input-error-msg">Este campo es requerido</span>
+      </div>
+
+      <!-- Validacion redeemed -->
+      <div class="token-status-section" *ngIf="tokenId && eventNftAddress">
+        <div *ngIf="checkingToken()" class="status-checking">
+          <span class="mini-spinner"></span>
+          Verificando estado del token on-chain...
+        </div>
+        <div *ngIf="!checkingToken() && hasChecked()">
+          <div *ngIf="isRedeemed()" class="status-badge success-badge">
+            <mat-icon>check_circle</mat-icon>
+            Coleccionable verificado (canjeado)
+          </div>
+          <div *ngIf="!isRedeemed()" class="status-badge error-badge">
+            <mat-icon>cancel</mat-icon>
+            Error: El token no fue redeemed (no asistió al evento)
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="price">Precio de venta en USDC</label>
+        <div class="input-with-icon">
+          <mat-icon class="input-icon">attach_money</mat-icon>
+          <input
+            id="price"
+            [(ngModel)]="priceUSDC"
+            name="price"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="10.00"
+            required
+            #priceInput="ngModel"
+            class="form-input"
+          />
+        </div>
+        <span *ngIf="priceInput.invalid && priceInput.touched" class="input-error-msg">Ingrese un precio válido superior a 0</span>
+      </div>
+
+      <!-- Desglose de Comisiones -->
+      <div class="fee-breakdown-card" *ngIf="priceUSDC && +priceUSDC > 0">
+        <h4 class="breakdown-title">Desglose estimado</h4>
+        <div class="breakdown-row">
+          <span>Precio de lista:</span>
+          <strong>{{ (+priceUSDC).toFixed(2) }} USDC</strong>
+        </div>
+        <div class="breakdown-row">
+          <span>Fee de plataforma (7%):</span>
+          <span class="fee-negative">-{{ (+priceUSDC * 0.07).toFixed(2) }} USDC</span>
+        </div>
+        <div class="breakdown-row">
+          <span>Royalty del organizador (5%):</span>
+          <span class="fee-negative">-{{ (+priceUSDC * 0.05).toFixed(2) }} USDC</span>
+        </div>
+        <div class="breakdown-divider"></div>
+        <div class="breakdown-row total-row">
+          <span>Recibes neto:</span>
+          <span class="fee-positive">{{ (+priceUSDC * 0.88).toFixed(2) }} USDC</span>
+        </div>
+      </div>
+
+      <div class="submit-section">
+        <button 
+          type="button" 
+          *ngIf="!walletAddress()" 
+          (click)="connectWallet()" 
+          class="btn-submit connect-action">
+          Conectar Wallet
+        </button>
+
+        <button 
+          type="submit" 
+          [disabled]="listForm.invalid || !isRedeemed() || !priceUSDC || +priceUSDC <= 0" 
+          class="btn-submit submit-action">
+          Listar Coleccionable (2 Transacciones)
+        </button>
+      </div>
+
+    </form>
+
+    <!-- Estados de progreso -->
+    <div *ngIf="step() === 'approving'" class="step-status">
+      <div class="progress-animation">
+        <div class="spinner-glow"></div>
+      </div>
+      <h3>Paso 1/2: Aprobando NFT</h3>
+      <p class="description">Estamos autorizando al mercado para transferir tu coleccionable una vez se venda.</p>
+      <span class="metamask-hint">Por favor, confirma la transacción en MetaMask.</span>
+    </div>
+
+    <div *ngIf="step() === 'listing'" class="step-status">
+      <div class="progress-animation">
+        <div class="spinner-glow border-orange"></div>
+      </div>
+      <h3>Paso 2/2: Creando Listing</h3>
+      <p class="description">Publicando tu coleccionable con el precio definido en el contrato inteligente.</p>
+      <span class="metamask-hint">Por favor, confirma la segunda transacción en MetaMask.</span>
+    </div>
+
+    <!-- Done State -->
+    <div *ngIf="step() === 'done'" class="step-done">
+      <div class="success-icon-wrapper">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <h3>¡Coleccionable Publicado!</h3>
+      <p class="description">Tu listing ya está activo en Sepolia. Los fans podrán comprarlo utilizando USDC o VBK.</p>
+      
+      <div class="tx-badge" *ngIf="txHash">
+        <span class="tx-label">TX Hash:</span>
+        <a [href]="'https://sepolia.etherscan.io/tx/' + txHash" target="_blank" class="tx-link">
+          {{ txHash | slice:0:20 }}...{{ txHash | slice:-10 }}
+        </a>
+      </div>
+
+      <div class="done-actions">
+        <button (click)="step.set('form'); priceUSDC = ''; tokenId = ''; hasChecked.set(false)" class="btn-submit secondary-btn">
+          Listar Otro
+        </button>
+        <a routerLink="/collectibles" class="btn-submit primary-btn">
+          Volver al Mercado
+        </a>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="step() === 'error'" class="step-error">
+      <div class="error-icon-wrapper">
+        <mat-icon>error_outline</mat-icon>
+      </div>
+      <h3>Error en el proceso</h3>
+      <p class="error-msg">{{ errorMsg }}</p>
+      <button (click)="step.set('form')" class="btn-submit retry-btn">
+        Reintentar
+      </button>
+    </div>
+
+  </div>
+
+</div>

@@ -14,6 +14,7 @@ export class ContractsService {
   public readonly USDC_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
   public readonly VBK_ADDRESS = "0xF84c05F1278A60601989192077f40bAb340A1947";
   public readonly STAKING_VAULT_ADDRESS = "0x9e275Ba91214063DD5D2562A298e12ffeD93ab8d";
+  public readonly COLLECTIBLE_MARKETPLACE_ADDRESS = "0x6c5CF80dAF5CA913D76D86ED308D559378dA441d";
 
   public readonly ERC20_ABI = parseAbi([
     "function balanceOf(address owner) view returns (uint256)",
@@ -42,7 +43,19 @@ export class ContractsService {
     "function tokenTier(uint256 tokenId) external view returns (uint256)",
     "function tierOf(uint256 tokenId) external view returns (uint256)",
     "function tiers(uint256 index) external view returns (string name, uint256 priceUSDC, uint256 supply, uint256 sold)",
-    "function ownerOf(uint256 tokenId) external view returns (address)"
+    "function ownerOf(uint256 tokenId) external view returns (address)",
+    "function redeemed(uint256 tokenId) view returns (bool)",
+    "function tokenURI(uint256 tokenId) view returns (string)"
+  ]);
+
+  public readonly COLLECTIBLE_MARKETPLACE_ABI = parseAbi([
+    "function list(address eventNFT, uint256 tokenId, uint256 priceUSDC) external returns (uint256)",
+    "function buyWithUSDC(uint256 listingId) external",
+    "function buyWithVBK(uint256 listingId, uint256 maxVbkAmount) external",
+    "function quoteVBK(uint256 listingId) external view returns (uint256)",
+    "function cancelListing(uint256 listingId) external",
+    "function updatePrice(uint256 listingId, uint256 newPriceUSDC) external",
+    "function getListing(uint256 listingId) external view returns ((address seller, address eventNFT, uint256 tokenId, uint256 priceUSDC, bool active, uint256 listedAt))"
   ]);
 
   public readonly OFFERING_ABI = parseAbi([
