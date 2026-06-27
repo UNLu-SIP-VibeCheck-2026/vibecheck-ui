@@ -305,6 +305,12 @@
       margin: 0;
     }
 
+    .btn-cta {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
     .register-link-btn {
       color: var(--md-sys-color-primary) !important;
       font-weight: var(--weight-semibold) !important;
